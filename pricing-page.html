@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DebtFree Dashboard — Pricing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf9f6;
+    --white: #ffffff;
+    --ink: #111;
+    --ink2: #333;
+    --muted: #888;
+    --dim: #bbb;
+    --border: #e8e5de;
+    --border2: #d8d4ca;
+    --sage: #2d5a3d;
+    --sage-light: rgba(45,90,61,0.08);
+    --sage-border: rgba(45,90,61,0.2);
+    --gold: #b5860f;
+    --gold-bg: rgba(181,134,15,0.08);
+    --gold-border: rgba(181,134,15,0.2);
+    --slate: #1e3a5f;
+    --font-serif: 'Libre Baskerville', Georgia, serif;
+    --font-sans: 'Manrope', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(250,249,246,0.95);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .logo-ring {
+    width: 22px; height: 22px;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+  }
+
+  .nav-link {
+    font-size: 0.82rem;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-link:hover { color: var(--ink); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 90px 40px 60px;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sage);
+    background: var(--sage-light);
+    border: 1px solid var(--sage-border);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 28px;
+  }
+
+  .hero-h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(2.2rem, 5vw, 3.8rem);
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1.08;
+    margin-bottom: 20px;
+    color: var(--ink);
+  }
+
+  .hero-h1 em { font-style: italic; color: var(--sage); }
+
+  .hero-sub {
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 520px;
+    margin: 0 auto 40px;
+  }
+
+  /* ── TOGGLE ── */
+  .toggle-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 5px;
+    margin-bottom: 60px;
+  }
+
+  .toggle-opt {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 7px 18px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--muted);
+    border: none;
+    background: none;
+  }
+
+  .toggle-opt.active {
+    background: var(--ink);
+    color: white;
+  }
+
+  .toggle-save {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--sage);
+    background: var(--sage-light);
+    border: 1px solid var(--sage-border);
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* ── PRICING CARDS ── */
+  .pricing-section {
+    padding: 0 32px 100px;
+  }
+
+  .pricing-wrap {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  @media(max-width: 680px) { .cards-grid { grid-template-columns: 1fr; } }
+
+  .price-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    transition: box-shadow 0.25s, transform 0.25s;
+  }
+
+  .price-card:hover {
+    box-shadow: 0 12px 48px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+
+  .price-card.featured {
+    border-color: var(--sage);
+    box-shadow: 0 0 0 2px var(--sage);
+  }
+
+  .price-card.featured:hover {
+    box-shadow: 0 0 0 2px var(--sage), 0 16px 48px rgba(45,90,61,0.15);
+  }
+
+  .card-top {
+    padding: 32px 32px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tier-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+    border: 1px solid;
+  }
+
+  .badge-starter { color: var(--muted); border-color: var(--border2); background: var(--bg); }
+  .badge-pro { color: var(--sage); border-color: var(--sage-border); background: var(--sage-light); }
+
+  .most-popular {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--sage);
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .card-name {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .card-tagline {
+    font-size: 0.84rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
+  .price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    margin-bottom: 4px;
+  }
+
+  .price-dollar {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    color: var(--muted);
+  }
+
+  .price-num {
+    font-family: var(--font-serif);
+    font-size: 3.8rem;
+    font-weight: 700;
+    letter-spacing: -2px;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .price-card.featured .price-num { color: var(--sage); }
+
+  .price-cadence {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 24px;
+  }
+
+  .card-body { padding: 24px 32px 28px; }
+
+  .items-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 14px;
+  }
+
+  .item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.86rem;
+    color: var(--ink2);
+    line-height: 1.45;
+  }
+
+  .item-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+    border: 1px solid;
+  }
+
+  .check-base { background: var(--bg); border-color: var(--border2); color: var(--muted); }
+  .check-pro { background: var(--sage-light); border-color: var(--sage-border); color: var(--sage); }
+
+  .item-text { flex: 1; }
+  .item-text strong { font-weight: 600; color: var(--ink); }
+  .item-text .item-note { font-size: 0.78rem; color: var(--muted); display: block; margin-top: 1px; }
+
+  .btn-get {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.92rem;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.25s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-starter {
+    background: var(--bg);
+    color: var(--ink);
+    border: 1.5px solid var(--border2);
+  }
+
+  .btn-starter:hover {
+    background: var(--ink);
+    color: var(--white);
+    border-color: var(--ink);
+    transform: translateY(-1px);
+  }
+
+  .btn-pro {
+    background: var(--sage);
+    color: white;
+  }
+
+  .btn-pro:hover {
+    background: #24482f;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(45,90,61,0.25);
+  }
+
+  .guarantee-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 12px;
+    font-size: 0.75rem;
+    color: var(--dim);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-section {
+    padding: 0 32px 100px;
+  }
+
+  .compare-inner { max-width: 980px; margin: 0 auto; }
+
+  .compare-title {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border2);
+  }
+
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .compare-table th {
+    padding: 14px 20px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border2);
+    color: var(--muted);
+  }
+
+  .compare-table th:first-child { text-align: left; }
+
+  .compare-table th.col-pro {
+    color: var(--sage);
+    background: var(--sage-light);
+    border-radius: 8px 8px 0 0;
+  }
+
+  .compare-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.86rem;
+    text-align: center;
+    color: var(--ink2);
+  }
+
+  .compare-table td:first-child {
+    text-align: left;
+    color: var(--ink2);
+    font-weight: 400;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: rgba(0,0,0,0.015); }
+
+  .compare-table td.col-pro { background: rgba(45,90,61,0.03); }
+
+  .check-y { color: var(--sage); font-size: 1rem; }
+  .check-n { color: var(--dim); font-size: 0.8rem; }
+
+  .cat-row td {
+    background: var(--bg) !important;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 10px 20px 6px;
+    border-bottom: none;
+  }
+
+  /* ── FAQ ── */
+  .faq-section {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 32px;
+  }
+
+  .faq-inner { max-width: 680px; margin: 0 auto; }
+
+  .faq-title {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 36px;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .faq-q {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    gap: 16px;
+  }
+
+  .faq-q:hover { color: var(--sage); }
+
+  .faq-icon {
+    font-size: 1rem;
+    color: var(--muted);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+
+  .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    font-size: 0.86rem;
+    color: var(--muted);
+    line-height: 1.72;
+  }
+
+  .faq-item.open .faq-a {
+    max-height: 200px;
+    padding-bottom: 20px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 0.78rem;
+    color: var(--dim);
+  }
+
+  .footer-logo {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  @media(max-width: 600px) {
+    nav { padding: 14px 20px; }
+    .hero { padding: 60px 20px 40px; }
+    .pricing-section, .compare-section { padding: 0 16px 60px; }
+    .faq-section { padding: 60px 20px; }
+    footer { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">
+    <div class="logo-ring">DF</div>
+    DebtFree
+  </a>
+  <a href="#" class="nav-link">← Back to overview</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">🎯 Simple, honest pricing</div>
+  <h1 class="hero-h1">One purchase.<br><em>No surprises. Ever.</em></h1>
+  <p class="hero-sub">Both tiers are one-time purchases — yours to use forever, on any device. No renewal. No subscription. No account required.</p>
+</div>
+
+<!-- PRICING -->
+<section class="pricing-section">
+  <div class="pricing-wrap">
+    <div class="cards-grid">
+
+      <!-- STARTER -->
+      <div class="price-card">
+        <div class="card-top">
+          <div class="tier-badge badge-starter">Starter</div>
+          <div class="card-name">DebtFree Dashboard</div>
+          <p class="card-tagline">The complete interactive payoff toolkit. Everything you need to build a plan, pick a strategy, and stay on track.</p>
+          <div class="price-row">
+            <span class="price-dollar">$</span>
+            <span class="price-num">47</span>
+          </div>
+          <div class="price-cadence">One-time · instant download</div>
+        </div>
+        <div class="card-body">
+          <div class="items-label">What's included</div>
+          <div class="item-list">
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">Interactive dashboard (HTML file)</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">Avalanche, Snowball & Hybrid strategies</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">Live strategy comparison table</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">Payoff chart & freedom date calculator</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">"What If" scenario modeler with sliders</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">Windfall planner & payment logger</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">9 achievement milestone badges</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">Works on phone, tablet & desktop</div>
+            </div>
+            <div class="item">
+              <div class="item-check check-base">✓</div>
+              <div class="item-text">100% private — data stays on your device</div>
+            </div>
+          </div>
+          <a href="YOUR_GUMROAD_STARTER_LINK" class="btn-get btn-starter">Get Starter — $47 →</a>
+          <div class="guarantee-row">🛡️ 30-day money-back guarantee</div>
+        </div>
+      </div>
+
+      <!-- PRO -->
+      <div class="price-card featured">
+        <div class="most-popular">Most Popular</div>
+        <div class="card-top">
+          <div class="tier-badge badge-pro">Pro</div>
+          <div class="card-name">DebtFree Dashboard Pro</div>
+          <p class="card-tagline">Everything in Starter — plus a private 30-minute video walkthrough, action checklist, and priority support so you can hit the ground running.</p>
+          <div class="price-row">
+            <span class="price-dollar">$</span>
+            <span class="price-num">97</span>
+          </div>
+          <div class="price-cadence">One-time · instant access to everything</div>
+        </div>
+        <div class="card-body">
+          <div class="items-label">Everything in Starter, plus</div>
+          <div class="item-list">
+            <div class="item">
+              <div class="item-check check-pro">✓</div>
+              <div class="item-text">
+                <strong>Private 30-min video walkthrough</strong>
+                <span class="item-note">I show you my exact setup — which strategy I chose, how I entered my debts, and how I use the What If modeler to stay motivated.</span>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-check check-pro">✓</div>
+              <div class="item-text">
+                <strong>Debt-Free Action Checklist (PDF)</strong>
+                <span class="item-note">The 10 specific steps to take in your first 30 days, in order. No fluff.</span>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-check check-pro">✓</div>
+              <div class="item-text">
+                <strong>Priority email support</strong>
+                <span class="item-note">Direct access to me. Ask about your specific debt situation — I'll give you a real, personalized answer.</span>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-check check-pro">✓</div>
+              <div class="item-text">
+                <strong>Free lifetime dashboard updates</strong>
+                <span class="item-note">New features and improvements delivered automatically to Pro buyers.</span>
+              </div>
+            </div>
+          </div>
+          <a href="YOUR_GUMROAD_PRO_LINK" class="btn-get btn-pro">Get Pro — $97 →</a>
+          <div class="guarantee-row">🛡️ 30-day money-back guarantee</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section class="compare-section">
+  <div class="compare-inner">
+    <div class="compare-title">
+      Full comparison
+    </div>
+    <div style="overflow-x:auto">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Starter · $47</th>
+            <th class="col-pro">Pro · $97</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="cat-row"><td colspan="3">Core Dashboard</td></tr>
+          <tr>
+            <td>Interactive HTML dashboard</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Avalanche, Snowball & Hybrid strategies</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Strategy comparison table</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Live payoff chart</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Freedom date calculator</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+
+          <tr class="cat-row"><td colspan="3">Planning Tools</td></tr>
+          <tr>
+            <td>"What If" scenario modeler</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Windfall planner</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Payment logger & history</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Progress tracking & badges</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+
+          <tr class="cat-row"><td colspan="3">Pro Extras</td></tr>
+          <tr>
+            <td>30-min private video walkthrough</td>
+            <td><span class="check-n">—</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Debt-Free Action Checklist (PDF)</td>
+            <td><span class="check-n">—</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Priority email support</td>
+            <td><span class="check-n">—</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Lifetime dashboard updates</td>
+            <td><span class="check-n">—</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+
+          <tr class="cat-row"><td colspan="3">Platform</td></tr>
+          <tr>
+            <td>Works on mobile, tablet & desktop</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>Data stays 100% local (private)</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>No account, login, or internet required</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+          <tr>
+            <td>30-day money-back guarantee</td>
+            <td><span class="check-y">✓</span></td>
+            <td class="col-pro"><span class="check-y">✓</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section">
+  <div class="faq-inner">
+    <h2 class="faq-title">Questions & Answers</h2>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <span>What exactly do I get when I buy?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">You download a single HTML file that you open in any web browser — Chrome, Safari, Firefox. No installation required. Works on any device. Pro tier also includes a private video link (sent by email) and a PDF checklist.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <span>Is the Pro tier worth $50 more than Starter?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">It depends on how you learn. If you're comfortable experimenting on your own, Starter is excellent. If you want to see exactly how someone set up their plan, chose their strategy, and uses the tool day-to-day — the 30-minute walkthrough alone is worth the difference. The action checklist and priority support are bonuses on top of that.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <span>My data won't be shared anywhere?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Correct. The dashboard stores everything in your browser's local storage — it never sends data anywhere. There's no server involved at all. We literally cannot see your numbers. You can also run it completely offline after download.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <span>Will it work if I switch phones or get a new computer?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">The file itself is yours permanently — just copy it to any device. Because data is stored locally in each browser, you'd need to re-enter your debts on a new device. We recommend bookmarking it on your primary device and using it consistently there.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <span>What's your refund policy?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Full refund within 30 days, no questions asked. Just email us. We've built something we're genuinely proud of and confident you'll find valuable — but if it's not for you, we won't make it difficult.</div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+        <span>Can I share it with my partner or spouse?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Yes. One purchase covers your household. The file can be opened on multiple devices and used together to plan your family's debt payoff. We just ask that you don't redistribute or resell it.</div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">DebtFree</span>
+  <span>© 2025 DebtFree Dashboard · All rights reserved</span>
+  <span>Questions? hello@debtfreedashboard.com</span>
+</footer>
+
+</body>
+</html>

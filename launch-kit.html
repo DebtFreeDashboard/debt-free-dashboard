@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gumroad Copy + Social Kit — DebtFree Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --white: #ffffff;
+    --ink: #111;
+    --ink2: #333;
+    --muted: #888;
+    --border: #e8e5df;
+    --accent: #1a5c3a;
+    --accent-light: rgba(26,92,58,0.08);
+    --gold: #b8860b;
+    --gold-light: rgba(184,134,11,0.08);
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-body); background: var(--bg); color: var(--ink); }
+
+  .page { max-width: 840px; margin: 0 auto; padding: 48px 24px; }
+
+  /* Header */
+  .doc-header {
+    background: var(--ink);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+  }
+
+  .doc-header h1 {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .doc-header p { color: rgba(255,255,255,0.5); font-size: 0.88rem; }
+
+  /* Section blocks */
+  .copy-block {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .copy-block-header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .copy-block-title {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .copy-block-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid rgba(26,92,58,0.15);
+  }
+
+  .copy-block-tag.gold {
+    background: var(--gold-light);
+    color: var(--gold);
+    border-color: rgba(184,134,11,0.2);
+  }
+
+  .copy-content {
+    padding: 28px 24px;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    color: var(--ink2);
+    white-space: pre-wrap;
+    font-family: var(--font-body);
+  }
+
+  .copy-content strong { color: var(--ink); font-weight: 600; }
+  .copy-content em { color: var(--accent); font-style: italic; }
+
+  /* Post cards */
+  .post-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .post-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .post-card-header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .platform-badge {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .p-twitter { background: #e8f4fd; color: #1da1f2; border: 1px solid rgba(29,161,242,0.2); }
+  .p-instagram { background: #fce8f4; color: #c13584; border: 1px solid rgba(193,53,132,0.2); }
+  .p-linkedin { background: #e8eef8; color: #0077b5; border: 1px solid rgba(0,119,181,0.2); }
+  .p-tiktok { background: #f0e8f8; color: #6b21a8; border: 1px solid rgba(107,33,168,0.2); }
+  .p-thread { background: #f8f0e8; color: #b45309; border: 1px solid rgba(180,83,9,0.2); }
+
+  .post-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+  }
+
+  .post-content {
+    padding: 20px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--ink2);
+    white-space: pre-wrap;
+  }
+
+  .post-note {
+    padding: 10px 20px 16px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  /* Tips box */
+  .tips-box {
+    background: var(--accent-light);
+    border: 1px solid rgba(26,92,58,0.2);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .tips-box h3 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .tip-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 0.87rem;
+    color: var(--ink2);
+    line-height: 1.5;
+  }
+
+  .tip-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    font-weight: 500;
+    min-width: 20px;
+    padding-top: 1px;
+  }
+
+  /* Revenue math */
+  .revenue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.87rem;
+  }
+
+  .revenue-table th {
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-size: 0.65rem;
+    color: var(--muted);
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+  }
+
+  .revenue-table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--bg);
+    color: var(--ink2);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+
+  .revenue-table tr:last-child td { font-weight: 600; color: var(--accent); border-bottom: none; }
+
+  h2.section-h {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin: 40px 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+    color: var(--ink);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="doc-header">
+  <h1>DebtFree Dashboard — Launch Kit</h1>
+  <p>Gumroad product copy · Social media posts · Pricing strategy · Revenue roadmap</p>
+</div>
+
+<!-- ══════════ GUMROAD COPY ══════════ -->
+<h2 class="section-h">① Gumroad Product Page Copy</h2>
+
+<div class="copy-block">
+  <div class="copy-block-header">
+    <span class="copy-block-title">Product Title</span>
+    <span class="copy-block-tag">Gumroad</span>
+  </div>
+  <div class="copy-content">DebtFree Dashboard — The Interactive Payoff Command Center</div>
+</div>
+
+<div class="copy-block">
+  <div class="copy-block-header">
+    <span class="copy-block-title">Tagline / Short Description</span>
+    <span class="copy-block-tag">Gumroad</span>
+  </div>
+  <div class="copy-content">Stop guessing when you'll be debt-free. This interactive dashboard builds your personalized payoff plan, models every scenario, and tracks your progress — all in one private, no-subscription file.</div>
+</div>
+
+<div class="copy-block">
+  <div class="copy-block-header">
+    <span class="copy-block-title">Full Product Description</span>
+    <span class="copy-block-tag">Gumroad</span>
+  </div>
+  <div class="copy-content"><strong>You earn good money. So why is the debt still there?</strong>
+
+Most people with debt aren't irresponsible — they're just missing a clear plan. Minimum payments are designed to keep you paying for decades. Without a strategy, you're handing your bank thousands of dollars you'll never get back.
+
+<strong>DebtFree Dashboard changes that.</strong>
+
+It's a fully interactive, mobile-friendly payoff command center — delivered as a single HTML file you open in any browser. No app. No account. No subscription. Just a powerful tool that shows you exactly when you'll be free from debt, and the fastest way to get there.
+
+---
+
+<strong>🏔️ THREE PAYOFF STRATEGIES, SIDE BY SIDE</strong>
+Choose from Avalanche (highest interest first), Snowball (smallest balance first), or Hybrid (your custom order). The dashboard compares all three and tells you exactly which one saves you the most money.
+
+<strong>📊 LIVE PAYOFF CHART</strong>
+Watch your balance curve drop to zero as you adjust your monthly budget. Your freedom date updates in real-time.
+
+<strong>🔮 "WHAT IF" SCENARIO MODELER</strong>
+Drag a slider to add $100, $500, or $1,000/month more and instantly see how many months you save and how much interest you avoid. The numbers will motivate you.
+
+<strong>💸 WINDFALL PLANNER</strong>
+Got a tax refund, bonus, or side hustle income? Apply it to any debt and see the ripple effect across your entire plan instantly.
+
+<strong>📝 PAYMENT LOGGER</strong>
+Record every payment with a date and amount. Your progress bar updates in real-time. See the momentum build.
+
+<strong>🏆 MILESTONE BADGES</strong>
+Nine achievement badges that unlock automatically — from "First Payment Logged" to "$10,000 Paid Off." Because momentum matters and every win deserves recognition.
+
+<strong>🔒 COMPLETELY PRIVATE</strong>
+Your data never leaves your device. No cloud, no server, no account. Open the file, add your debts, and your data saves automatically to your local browser.
+
+---
+
+<strong>WHO THIS IS FOR:</strong>
+
+✓ High earners who carry credit card debt and want a real plan — not another app that costs $15/month
+✓ Anyone juggling multiple debts who doesn't know which to pay off first
+✓ People who want to model scenarios before making a financial move
+✓ Anyone who's tried budgeting apps but hates giving a company access to their bank account
+
+---
+
+<strong>WHAT YOU GET:</strong>
+
+→ Interactive DebtFree Dashboard (HTML file — works on phone, tablet, laptop)
+→ All 3 payoff strategies with live comparison
+→ Real-time payoff chart and freedom date
+→ What If scenario modeler with sliders
+→ Windfall & payment logger
+→ 9 achievement milestone badges
+→ Unlimited debt accounts
+→ Permanent local data storage — your progress is always saved
+
+---
+
+<strong>THE MATH:</strong>
+
+The average American with $20,000 in credit card debt at 22% APR will pay over $14,000 in interest making minimum payments — and take 12+ years to pay it off.
+
+Using the Avalanche strategy with just $300/month extra? Down to under 4 years. Interest paid: under $5,000.
+
+That's a $9,000 savings. This dashboard shows you your version of that number.
+
+---
+
+<strong>🛡️ 30-DAY MONEY-BACK GUARANTEE</strong>
+Not happy? Email me within 30 days and I'll refund you in full. No questions asked.</div>
+</div>
+
+<div class="copy-block">
+  <div class="copy-block-header">
+    <span class="copy-block-title">Pricing & Tags</span>
+    <span class="copy-block-tag">Gumroad Settings</span>
+  </div>
+  <div class="copy-content"><strong>Price:</strong> $47
+
+<strong>Suggested tags:</strong> personal finance, debt payoff, budget tool, financial freedom, credit card debt, avalanche method, snowball method, debt tracker, financial planning, productivity
+
+<strong>File type:</strong> Digital download (.html file)
+
+<strong>Refund policy:</strong> 30 days, no questions asked
+
+<strong>Enable "Pay what you want":</strong> No — anchor the value at $47
+
+<strong>Enable "Let buyers choose qty":</strong> No</div>
+</div>
+
+<!-- ══════════ REVENUE MATH ══════════ -->
+<h2 class="section-h">② Revenue Roadmap to $1,000/Month</h2>
+
+<div class="tips-box">
+  <h3>📈 Your $1K/Month Path</h3>
+  <div class="tip-item"><span class="tip-num">→</span><span>At $47/sale with Gumroad's ~9% fee, you net ~$42.77 per sale</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>You need 24 sales/month to hit $1,026 net — less than 1 sale per day</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>A single viral tweet/reel reaching 10K people can generate 20–30 sales in 24 hours</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>Month 1–2: Build audience + post consistently. Target 5–10 sales/mo</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>Month 3–4: First viral post + word of mouth. Target 15–20 sales/mo</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>Month 5–6: Compound traffic + affiliate option. Hit $1K+/mo</span></div>
+</div>
+
+<div class="copy-block">
+  <div class="copy-block-header">
+    <span class="copy-block-title">Revenue Scenarios</span>
+    <span class="copy-block-tag gold">Projections</span>
+  </div>
+  <div style="padding:0 24px 24px">
+    <table class="revenue-table" style="margin-top:20px">
+      <thead>
+        <tr>
+          <th>Sales/Month</th>
+          <th>Gross Revenue</th>
+          <th>Net (after ~9% fee)</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>5</td><td>$235</td><td>~$214</td><td>Early / organic only</td></tr>
+        <tr><td>12</td><td>$564</td><td>~$513</td><td>Consistent posting</td></tr>
+        <tr><td>24</td><td>$1,128</td><td>~$1,026</td><td>✓ Goal achieved</td></tr>
+        <tr><td>40</td><td>$1,880</td><td>~$1,711</td><td>With one viral post</td></tr>
+        <tr><td>80</td><td>$3,760</td><td>~$3,422</td><td>Affiliate + SEO kicking in</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════ SOCIAL MEDIA ══════════ -->
+<h2 class="section-h">③ Social Media Launch Kit</h2>
+
+<div class="tips-box">
+  <h3>💡 Posting Strategy</h3>
+  <div class="tip-item"><span class="tip-num">01</span><span><strong>Personal story first.</strong> The highest-converting posts lead with your own debt story or a relatable moment — not a product pitch.</span></div>
+  <div class="tip-item"><span class="tip-num">02</span><span><strong>Show the math.</strong> Screenshots of the "What If" modeler showing $9,000 saved perform extremely well.</span></div>
+  <div class="tip-item"><span class="tip-num">03</span><span><strong>Post the comparison table.</strong> Avalanche vs. Snowball vs. Minimum Payments — this is your best hook image.</span></div>
+  <div class="tip-item"><span class="tip-num">04</span><span><strong>Post 3–5x per week</strong> for the first 60 days. Consistency beats virality early on.</span></div>
+  <div class="tip-item"><span class="tip-num">05</span><span><strong>Always link in first comment</strong> on Instagram/TikTok, directly in tweet/thread/LinkedIn.</span></div>
+</div>
+
+<!-- TWITTER/X POSTS -->
+<div class="post-grid">
+
+<div class="post-card">
+  <div class="post-card-header">
+    <span class="platform-badge p-twitter">X / Twitter</span>
+    <span class="post-label">Hook Post #1 — Personal Story</span>
+  </div>
+  <div class="post-content">I made $95K last year and still had $24,000 in credit card debt.
+
+Not because I was broke.
+
+Because I had no plan.
+
+So I built one — a dashboard that finally showed me:
+
+→ My real payoff date
+→ How much I'm losing to interest every month
+→ Exactly what happens if I pay $300 more/month
+
+The answer was shocking. And motivating.
+
+I turned it into a product anyone can use.
+
+Link 👇</div>
+  <div class="post-note">📌 Tip: Add a screenshot of the Freedom Date stat card as your image.</div>
+</div>
+
+<div class="post-card">
+  <div class="post-card-header">
+    <span class="platform-badge p-twitter">X / Twitter</span>
+    <span class="post-label">Hook Post #2 — The Math</span>
+  </div>
+  <div class="post-content">If you have $20,000 in credit card debt at 22% APR:
+
+Making minimum payments:
+→ 12+ years to pay off
+→ $14,000+ in interest
+→ You pay almost double what you borrowed
+
+Using the Avalanche method + $300/mo extra:
+→ 3.5 years
+→ $4,800 in interest
+→ You save $9,200 and a decade of your life
+
+The strategy is free. The clarity is priceless.
+
+I built a dashboard that calculates this for your exact numbers 👇</div>
+  <div class="post-note">📌 Tip: This is a great "no image needed" post. The numbers speak for themselves.</div>
+</div>
+
+<div class="post-card">
+  <div class="post-card-header">
+    <span class="platform-badge p-twitter">X / Twitter</span>
+    <span class="post-label">Hook Post #3 — Product Pitch</span>
+  </div>
+  <div class="post-content">I built a debt payoff dashboard that:
+
+✅ Compares Avalanche vs Snowball vs min payments
+✅ Shows your exact freedom date
+✅ Models "what if I paid $X more per month"
+✅ Tracks every payment you make
+✅ Unlocks achievement badges as you pay it down
+✅ Works on your phone
+✅ Never shares your data (it all stays local)
+
+One-time purchase. No subscription. $47.
+
+Thread on why I built it 👇</div>
+  <div class="post-note">📌 Tip: Follow with a thread explaining your personal debt story.</div>
+</div>
+
+<div class="post-card">
+  <div class="post-card-header">
+    <span class="platform-badge p-instagram">Instagram / TikTok</span>
+    <span class="post-label">Reel/Video Script — "The Slide" Hook</span>
+  </div>
+  <div class="post-content">[HOOK — first 2 seconds]
+"Watch what happens when I add $300/month to my debt plan…"
+
+[SCREEN RECORD: Open dashboard → go to What If tab → drag slider from $0 to $300]
+
+[VOICEOVER]
+"Three hundred dollars a month. That's it."
+
+[Show the results appearing]
+"That's 4 years saved. And $8,000 I don't have to pay in interest."
+
+[Cut to Freedom Date stat]
+"My payoff date just moved from 2031 to 2027."
+
+[CTA]
+"I built this dashboard and it's $47 — link in bio. It works on your phone, saves your data locally, and calculates everything for you."
+
+[Text on screen: "No subscription. No app. Just a plan."]</div>
+  <div class="post-note">📌 Tip: Screen recording of the slider moving = best performing content. Keep under 30 seconds.</div>
+</div>
+
+<div class="post-card">
+  <div class="post-card-header">
+    <span class="platform-badge p-linkedin">LinkedIn</span>
+    <span class="post-label">Long-Form Post — Professional Audience</span>
+  </div>
+  <div class="post-content">A few months ago I did the math on my credit card debt.
+
+The result made me feel sick — and then weirdly motivated.
+
+I had $24,000 across 4 cards. All above 20% APR. Making minimum payments on all of them because I "didn't have extra money."
+
+Here's the thing: I did have extra money. I just didn't have a plan.
+
+When I finally ran the numbers:
+• At min payments: I was 12+ years away from being debt-free
+• I would pay over $14,000 in interest — on top of money I'd already borrowed
+• Every month I waited was costing me ~$440 in interest
+
+So I built a dashboard. For myself first.
+
+It compares three payoff strategies (Avalanche, Snowball, Hybrid), shows you your real freedom date, and lets you model scenarios — "what if I put my tax refund here?" "what if I pay $200 more per month?"
+
+The What If modeler alone changed how I think about money.
+
+I turned it into a product because I know I'm not the only high earner carrying debt they can't seem to shake.
+
+It's $47. One time. No subscription. Works on your phone. Your data stays on your device.
+
+If you've got debt and you're tired of the fog, this is your plan.
+
+[Link in comments]</div>
+  <div class="post-note">📌 Tip: LinkedIn long-form posts perform best Tuesday–Thursday mornings. End with a question to drive comments.</div>
+</div>
+
+<div class="post-card">
+  <div class="post-card-header">
+    <span class="platform-badge p-thread">Threads / Reddit</span>
+    <span class="post-label">r/personalfinance or r/debtfree Post</span>
+  </div>
+  <div class="post-content"><strong>Title:</strong> I built a free-to-try debt payoff dashboard — Avalanche vs Snowball comparison built in, "What If" modeler, tracks payments over time. Wanted to share.
+
+<strong>Body:</strong>
+Hey everyone — long-time lurker, first-time poster.
+
+After getting frustrated with apps that want monthly subscriptions or access to my bank account, I built my own debt payoff dashboard as a single HTML file.
+
+It does everything I wished existing tools did:
+- Compares Avalanche, Snowball, and Hybrid side by side (so you can see which saves you the most)
+- Shows your exact payoff date and freedom month
+- Has a "What If" slider — drag to add $50, $100, $500/month more and watch your timeline change in real time
+- Logs payments over time so you can track real progress
+- Works completely offline, data stays on your device
+
+I'm charging $47 for it (which I know is controversial here — feel free to roast me). But I'm happy to answer any questions about the math behind the strategies.
+
+What questions do you have about Avalanche vs Snowball? Happy to dig into it.</div>
+  <div class="post-note">📌 Tip: Reddit rules vary by sub — read the sidebar. Many allow self-promotion with transparency. Lead with value, not pitch.</div>
+</div>
+
+<div class="post-card">
+  <div class="post-card-header">
+    <span class="platform-badge p-tiktok">TikTok / Instagram Reels</span>
+    <span class="post-label">Educational Hook — "Avalanche vs Snowball"</span>
+  </div>
+  <div class="post-content">[HOOK]
+"Most people pick the wrong debt payoff method. Here's how to know which one is right for you."
+
+[POINT 1 — 5 seconds]
+"The Snowball method: pay your smallest balance first. You get quick wins. Great for motivation."
+
+[POINT 2 — 5 seconds]
+"The Avalanche method: pay your highest interest rate first. Mathematically saves you the most money."
+
+[POINT 3 — 5 seconds]
+"The truth? For most people with high-interest credit card debt — Avalanche wins. Often by thousands of dollars."
+
+[DEMO — 10 seconds]
+[Screen record the Strategy Comparison tab showing both methods with real numbers]
+"See this? Same debt. Same monthly payment. $3,400 difference in interest paid."
+
+[CTA — 3 seconds]
+"I built a dashboard that calculates this for your exact debt. Link in bio. $47, one time."</div>
+  <div class="post-note">📌 Tip: Add captions. 80% of TikTok/Reels watched without sound. Use trending audio underneath.</div>
+</div>
+
+</div>
+
+<!-- ══════════ EMAIL SEQUENCE ══════════ -->
+<h2 class="section-h">④ Post-Purchase Email (send via Gumroad)</h2>
+
+<div class="copy-block">
+  <div class="copy-block-header">
+    <span class="copy-block-title">Delivery / Welcome Email</span>
+    <span class="copy-block-tag">Gumroad Auto-Send</span>
+  </div>
+  <div class="copy-content"><strong>Subject:</strong> Your DebtFree Dashboard is ready 🎯
+
+Hey [First Name],
+
+Your dashboard is attached to this email — it's the file called <strong>debt-payoff-dashboard.html</strong>.
+
+<strong>Here's how to get started in 3 minutes:</strong>
+
+1. Download the file and save it somewhere you'll remember (Desktop works great)
+2. Open it in Chrome, Safari, or Firefox
+3. Add your first debt — just name, balance, APR, and minimum payment
+4. Set your monthly extra payment budget
+5. Watch your Freedom Date appear
+
+<strong>Pro tip:</strong> On your phone, open the file in Safari (iOS) or Chrome (Android), then use "Add to Home Screen" to bookmark it like a native app.
+
+<strong>Where to start:</strong> I recommend the Dashboard tab first to add all your debts, then jump to the Strategy tab to see which method saves you the most. Then go to What If and prepare to be motivated.
+
+If you have any questions or run into anything, just reply to this email.
+
+Here's to your freedom date 🥂
+
+[Your Name]
+
+P.S. — When you pay off your first debt, I'd genuinely love to hear about it. Reply and tell me.</div>
+</div>
+
+<!-- ══════════ AFFILIATE ══════════ -->
+<h2 class="section-h">⑤ Affiliate / Referral Program (Month 3+)</h2>
+
+<div class="tips-box">
+  <h3>🤝 Affiliate Strategy to Scale Past $1K/Month</h3>
+  <div class="tip-item"><span class="tip-num">→</span><span>Set up Gumroad's built-in affiliate program at 30% commission ($14.10/sale for affiliates)</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>Reach out to personal finance content creators with under 50K followers — they convert better than large accounts</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>Target: r/personalfinance moderators, debt-free journey TikTokers, money-saving Instagram accounts</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>Pitch: "I'll give you 30% of every sale. Here's the dashboard to try for free."</span></div>
+  <div class="tip-item"><span class="tip-num">→</span><span>10 affiliates generating 3 sales each = 30 extra sales/month = +$1,283 net revenue</span></div>
+</div>
+
+</div>
+</body>
+</html>

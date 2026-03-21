@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affiliate Outreach Kit — DebtFree Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --white: #ffffff;
+    --ink: #0f0f0f;
+    --ink2: #2a2a2a;
+    --muted: #777;
+    --dim: #aaa;
+    --border: #e5e2db;
+    --border2: #d8d4cc;
+    --green: #166534;
+    --green-bg: rgba(22,101,52,0.07);
+    --green-border: rgba(22,101,52,0.18);
+    --amber: #92400e;
+    --amber-bg: rgba(146,64,14,0.07);
+    --blue: #1e40af;
+    --blue-bg: rgba(30,64,175,0.07);
+    --blue-border: rgba(30,64,175,0.18);
+    --purple: #581c87;
+    --purple-bg: rgba(88,28,135,0.07);
+    --font-d: 'Syne', sans-serif;
+    --font-m: 'DM Mono', monospace;
+    --font-b: 'DM Sans', sans-serif;
+    --r: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-b); background: var(--bg); color: var(--ink); line-height: 1.6; }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* ── DOC HEADER ── */
+  .doc-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .doc-title {
+    font-family: var(--font-d);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+
+  .doc-sub {
+    font-size: 0.88rem;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .doc-badge {
+    background: var(--ink);
+    color: white;
+    font-family: var(--font-m);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  /* ── SECTION HEADING ── */
+  h2.sh {
+    font-family: var(--font-d);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin: 48px 0 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  h2.sh .num {
+    font-family: var(--font-m);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    background: var(--border);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  /* ── STRATEGY BOX ── */
+  .strategy-box {
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    border-radius: var(--r);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .strategy-box h3 {
+    font-family: var(--font-d);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--green);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .s-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 9px;
+    font-size: 0.86rem;
+    color: var(--ink2);
+    line-height: 1.5;
+  }
+
+  .s-icon { flex-shrink: 0; color: var(--green); font-size: 0.8rem; margin-top: 2px; }
+
+  /* ── EMAIL BLOCK ── */
+  .email-block {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+
+  .email-header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .email-meta { display: flex; flex-direction: column; gap: 3px; }
+
+  .email-title {
+    font-family: var(--font-d);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .email-target {
+    font-family: var(--font-m);
+    font-size: 0.62rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .email-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  .etag {
+    font-family: var(--font-m);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+
+  .etag-cold { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+  .etag-warm { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+  .etag-follow { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(146,64,14,0.2); }
+  .etag-partner { background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(88,28,135,0.2); }
+
+  .email-subject-line {
+    padding: 12px 20px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .subject-label {
+    font-family: var(--font-m);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .subject-text {
+    font-family: var(--font-d);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .email-body {
+    padding: 16px 20px 20px;
+    font-size: 0.88rem;
+    color: var(--ink2);
+    line-height: 1.75;
+    white-space: pre-wrap;
+    font-family: var(--font-b);
+    font-weight: 300;
+  }
+
+  .email-body strong { color: var(--ink); font-weight: 600; }
+
+  .email-note {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 10px 20px;
+    font-family: var(--font-m);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── TARGET TABLE ── */
+  .target-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+    margin-top: 4px;
+  }
+
+  .target-table th {
+    text-align: left;
+    font-family: var(--font-m);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg);
+  }
+
+  .target-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink2);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .target-table tr:last-child td { border-bottom: none; }
+  .target-table tr:hover td { background: rgba(0,0,0,0.015); }
+
+  .platform-chip {
+    display: inline-block;
+    font-family: var(--font-m);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-bottom: 3px;
+  }
+
+  .chip-ig { background: #fce8f4; color: #c13584; }
+  .chip-tt { background: #f0e8f8; color: #6b21a8; }
+  .chip-yt { background: #fde8e8; color: #b91c1c; }
+  .chip-li { background: #e8eef8; color: #0077b5; }
+  .chip-rd { background: #fde8e0; color: #c04a17; }
+  .chip-tw { background: #e8f4fd; color: #1da1f2; }
+  .chip-pod { background: #e8f8ef; color: #166534; }
+
+  .priority-high { color: var(--green); font-weight: 600; font-family: var(--font-m); font-size: 0.75rem; }
+  .priority-med { color: var(--amber); font-weight: 600; font-family: var(--font-m); font-size: 0.75rem; }
+
+  /* ── COMMISSION BOX ── */
+  .commission-box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  @media(max-width:500px) { .commission-box { grid-template-columns: 1fr; } }
+
+  .commission-cell {
+    background: var(--white);
+    padding: 22px 20px;
+    text-align: center;
+  }
+
+  .cc-label {
+    font-family: var(--font-m);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .cc-val {
+    font-family: var(--font-d);
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .cc-sub { font-size: 0.75rem; color: var(--muted); }
+
+  /* ── CHECKLIST ── */
+  .checklist {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--ink2);
+  }
+
+  .check-item:last-child { border-bottom: none; }
+
+  .check-box {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border2);
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .check-week {
+    font-family: var(--font-m);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--green);
+    min-width: 52px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="doc-header">
+    <div>
+      <div class="doc-title">Affiliate Outreach Kit</div>
+      <div class="doc-sub">DebtFree Dashboard · Partner recruitment emails, target finder, commission structure & 60-day timeline</div>
+    </div>
+    <div class="doc-badge">Scale to $2K+/mo</div>
+  </div>
+
+  <!-- ══ COMMISSION STRUCTURE ══ -->
+  <h2 class="sh"><span class="num">01</span> Commission Structure</h2>
+
+  <div class="commission-box">
+    <div class="commission-cell">
+      <div class="cc-label">Your Price</div>
+      <div class="cc-val">$47</div>
+      <div class="cc-sub">Starter tier</div>
+    </div>
+    <div class="commission-cell">
+      <div class="cc-label">Affiliate Commission</div>
+      <div class="cc-val">30%</div>
+      <div class="cc-sub">$14.10 per Starter sale</div>
+    </div>
+    <div class="commission-cell">
+      <div class="cc-label">Pro Tier Commission</div>
+      <div class="cc-val">$29</div>
+      <div class="cc-sub">30% of $97 Pro tier</div>
+    </div>
+  </div>
+
+  <div class="strategy-box">
+    <h3>📐 Why 30% works for everyone</h3>
+    <div class="s-row"><span class="s-icon">→</span><span>You net $32.90/sale after commission (still above your $1K/month target at 31 sales)</span></div>
+    <div class="s-row"><span class="s-icon">→</span><span>Affiliates earn $14.10 per Starter sale — better than most digital product programs (usually 15–25%)</span></div>
+    <div class="s-row"><span class="s-icon">→</span><span>10 active affiliates generating 3 sales each = 30 sales = +$987 net revenue added to your baseline</span></div>
+    <div class="s-row"><span class="s-icon">→</span><span>Gumroad handles tracking automatically — no extra tech needed. Enable under Product → Affiliates</span></div>
+    <div class="s-row"><span class="s-icon">→</span><span>Consider boosting to 40% for your first 3 affiliates — early partners are worth more than their commission</span></div>
+  </div>
+
+  <!-- ══ WHO TO TARGET ══ -->
+  <h2 class="sh"><span class="num">02</span> Who to Target (& Where to Find Them)</h2>
+
+  <div class="email-block">
+    <div style="overflow-x:auto">
+      <table class="target-table">
+        <thead>
+          <tr>
+            <th>Creator Type</th>
+            <th>Platform</th>
+            <th>Why They Convert</th>
+            <th>Follower Sweet Spot</th>
+            <th>Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Debt-free journey creators</strong><br><span style="font-size:0.78rem;color:var(--muted)">Documenting their own payoff</span></td>
+            <td><span class="platform-chip chip-tt">TikTok</span> <span class="platform-chip chip-ig">Instagram</span> <span class="platform-chip chip-yt">YouTube</span></td>
+            <td>Their audience is actively trying to pay off debt — perfect intent match</td>
+            <td>5K–80K</td>
+            <td class="priority-high">HIGH</td>
+          </tr>
+          <tr>
+            <td><strong>Personal finance educators</strong><br><span style="font-size:0.78rem;color:var(--muted)">Budgeting, savings tips, money mindset</span></td>
+            <td><span class="platform-chip chip-ig">Instagram</span> <span class="platform-chip chip-tt">TikTok</span> <span class="platform-chip chip-yt">YouTube</span></td>
+            <td>Trusted voices. Audience already buys finance products</td>
+            <td>10K–150K</td>
+            <td class="priority-high">HIGH</td>
+          </tr>
+          <tr>
+            <td><strong>Frugal living / FIRE bloggers</strong><br><span style="font-size:0.78rem;color:var(--muted)">Financial independence content</span></td>
+            <td><span class="platform-chip chip-rd">Reddit</span> <span class="platform-chip chip-yt">YouTube</span> <span class="platform-chip chip-tw">Twitter</span></td>
+            <td>Strong purchase intent for financial tools</td>
+            <td>3K–50K</td>
+            <td class="priority-high">HIGH</td>
+          </tr>
+          <tr>
+            <td><strong>Side hustle / income creators</strong><br><span style="font-size:0.78rem;color:var(--muted)">Extra income, digital products</span></td>
+            <td><span class="platform-chip chip-tt">TikTok</span> <span class="platform-chip chip-tw">Twitter</span> <span class="platform-chip chip-ig">Instagram</span></td>
+            <td>Often carry debt themselves; relatable story angle</td>
+            <td>5K–100K</td>
+            <td class="priority-med">MED</td>
+          </tr>
+          <tr>
+            <td><strong>Personal finance podcasters</strong><br><span style="font-size:0.78rem;color:var(--muted)">Weekly finance shows, interview formats</span></td>
+            <td><span class="platform-chip chip-pod">Podcast</span> <span class="platform-chip chip-yt">YouTube</span></td>
+            <td>Dedicated listeners buy products their hosts recommend</td>
+            <td>1K–20K listeners</td>
+            <td class="priority-med">MED</td>
+          </tr>
+          <tr>
+            <td><strong>LinkedIn finance professionals</strong><br><span style="font-size:0.78rem;color:var(--muted)">Financial advisors, coaches</span></td>
+            <td><span class="platform-chip chip-li">LinkedIn</span></td>
+            <td>High-income audience matches your buyer profile exactly</td>
+            <td>2K–30K connections</td>
+            <td class="priority-med">MED</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ OUTREACH EMAILS ══ -->
+  <h2 class="sh"><span class="num">03</span> Outreach Email Templates</h2>
+
+  <!-- EMAIL 1 -->
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-meta">
+        <div class="email-title">Cold Outreach — Debt Journey Creator</div>
+        <div class="email-target">Best for: TikTok/Instagram debt-free journey accounts, 5K–80K followers</div>
+      </div>
+      <div class="email-tags">
+        <span class="etag etag-cold">Cold</span>
+        <span class="etag etag-warm">High Convert</span>
+      </div>
+    </div>
+    <div class="email-subject-line">
+      <span class="subject-label">Subject</span>
+      <span class="subject-text">Quick thing for your audience — 30% affiliate on a tool they'll actually love</span>
+    </div>
+    <div class="email-body">Hey [Name],
+
+I've been following your debt-free journey — the [specific post or milestone] you shared recently really resonated with me. Your audience is clearly serious about paying off debt and not just talking about it.
+
+I built a tool called <strong>DebtFree Dashboard</strong> that I think would genuinely serve them.
+
+It's an interactive payoff dashboard — a single HTML file (no app, no subscription, no bank login). Users add their debts, pick Avalanche or Snowball, and instantly see their freedom date, a live payoff chart, and a "What If" modeler that shows exactly how much time and money they save by paying more each month.
+
+I'm inviting a small group of creators to promote it at <strong>30% commission</strong> ($14.10 per sale at $47, $29 per sale at $97 Pro tier).
+
+Here's what I'd offer you:
+→ Free access to the full dashboard to try it yourself
+→ Your unique affiliate link (tracked through Gumroad)
+→ Ready-made content angles and caption templates if helpful
+→ 30-day cookie window on every click
+
+It's $47 one-time (no subscription), so it's an easy yes for your audience.
+
+Would you be open to giving it a look? I'll send access right now — no obligation.
+
+[Your Name]
+[Your social handle]</div>
+    <div class="email-note">💡 Tip: Personalize the [specific post] line — it's the difference between 40% reply rate and 8%.</div>
+  </div>
+
+  <!-- EMAIL 2 -->
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-meta">
+        <div class="email-title">Cold Outreach — Personal Finance Educator</div>
+        <div class="email-target">Best for: Budgeting/money tip creators, 10K–150K, finance niche</div>
+      </div>
+      <div class="email-tags">
+        <span class="etag etag-cold">Cold</span>
+      </div>
+    </div>
+    <div class="email-subject-line">
+      <span class="subject-label">Subject</span>
+      <span class="subject-text">Affiliate opportunity — debt payoff dashboard, 30% commission, $47 one-time</span>
+    </div>
+    <div class="email-body">Hi [Name],
+
+Your content on [specific topic — e.g., the avalanche vs snowball breakdown] was excellent. You explained it better than most finance sites I've seen.
+
+I built a product that's a natural extension of that kind of content: <strong>DebtFree Dashboard</strong> — an interactive payoff tool that compares Avalanche, Snowball, and Hybrid strategies side-by-side, calculates a live freedom date, and has a "What If" modeler so users can see instantly how much time and interest they save by paying more each month.
+
+It's a single HTML file — no subscription, no app, no bank access. Data stays local on the user's device. $47 one-time (Pro tier at $97 with video walkthrough also available).
+
+I'm running a <strong>30% affiliate program</strong> through Gumroad. Every sale you refer earns you $14.10 (Starter) or $29.10 (Pro).
+
+I'd love to send you free access so you can see if it's a fit for your audience before deciding anything.
+
+Worth a look?
+
+[Your Name]</div>
+    <div class="email-note">💡 Tip: Reference a specific piece of their content in the opening — this is the highest-leverage personalization.</div>
+  </div>
+
+  <!-- EMAIL 3 -->
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-meta">
+        <div class="email-title">Follow-Up #1 (5 days after no reply)</div>
+        <div class="email-target">Send to anyone who opened but didn't reply</div>
+      </div>
+      <div class="email-tags">
+        <span class="etag etag-follow">Follow-Up</span>
+      </div>
+    </div>
+    <div class="email-subject-line">
+      <span class="subject-label">Subject</span>
+      <span class="subject-text">Re: Quick thing for your audience</span>
+    </div>
+    <div class="email-body">Hey [Name],
+
+Just bumping this up in case it got buried.
+
+Short version: I built a debt payoff dashboard your audience would love, and I want to pay you 30% of every sale you send my way.
+
+Free access if you want to try it first. No pitch, no obligation — just want you to see the product before deciding.
+
+Worth 5 minutes?
+
+[Your Name]</div>
+    <div class="email-note">💡 Tip: Short follow-ups outperform long ones 3:1. This one works because it reduces friction to a single question.</div>
+  </div>
+
+  <!-- EMAIL 4 -->
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-meta">
+        <div class="email-title">Follow-Up #2 — The Breakup Email (10 days after first)</div>
+        <div class="email-target">Final touch — sends after 2 ignored messages</div>
+      </div>
+      <div class="email-tags">
+        <span class="etag etag-follow">Follow-Up</span>
+      </div>
+    </div>
+    <div class="email-subject-line">
+      <span class="subject-label">Subject</span>
+      <span class="subject-text">Closing the loop</span>
+    </div>
+    <div class="email-body">Hey [Name],
+
+I'll stop reaching out after this — I know your inbox is full.
+
+But I wanted to leave the door open. If you ever want to check out the DebtFree Dashboard or talk about a partnership, you know where to find me.
+
+Either way, keep doing what you're doing. Your content is genuinely helping people.
+
+[Your Name]</div>
+    <div class="email-note">💡 Tip: "Breakup" emails get surprisingly high reply rates — people feel the door closing and respond. Don't skip this one.</div>
+  </div>
+
+  <!-- EMAIL 5 -->
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-meta">
+        <div class="email-title">Warm Outreach — After Affiliate Says Yes</div>
+        <div class="email-target">Send within 24 hours of agreement</div>
+      </div>
+      <div class="email-tags">
+        <span class="etag etag-warm">Onboarding</span>
+      </div>
+    </div>
+    <div class="email-subject-line">
+      <span class="subject-label">Subject</span>
+      <span class="subject-text">You're in — here's your link + everything you need</span>
+    </div>
+    <div class="email-body">Hey [Name],
+
+So glad to have you on board. Here's everything you need:
+
+<strong>Your affiliate link:</strong> [GUMROAD AFFILIATE LINK]
+<strong>Commission:</strong> 30% per sale ($14.10 Starter / $29.10 Pro)
+<strong>Cookie window:</strong> 30 days
+<strong>Payout:</strong> Gumroad handles it automatically — paid monthly
+
+<strong>Content that converts best for this product:</strong>
+→ Screen recording of the "What If" slider (drag it from $0 to $300 extra/month and show the years that disappear)
+→ Side-by-side comparison — Avalanche vs. Snowball vs. min payments for a real example
+→ Your personal debt numbers — "Here's what this shows for my actual situation"
+
+The dashboard is attached so you can play with it using your own numbers. The more real your content feels, the better it converts.
+
+No posting schedule required — share when it feels right for your audience.
+
+Any questions, just reply here. And please let me know when you post — I'll reshare it on my channels.
+
+[Your Name]</div>
+    <div class="email-note">💡 Tip: Including content angles in the onboarding email doubles affiliate activation rate. Don't just send the link.</div>
+  </div>
+
+  <!-- EMAIL 6 -->
+  <div class="email-block">
+    <div class="email-header">
+      <div class="email-meta">
+        <div class="email-title">Podcast Pitch — Guest + Affiliate Combo</div>
+        <div class="email-target">Best for: Finance podcast hosts, 1K–20K listeners</div>
+      </div>
+      <div class="email-tags">
+        <span class="etag etag-partner">Guest Pitch</span>
+      </div>
+    </div>
+    <div class="email-subject-line">
+      <span class="subject-label">Subject</span>
+      <span class="subject-text">Guest idea: "Why high earners stay in debt longer" + a tool your listeners will use immediately</span>
+    </div>
+    <div class="email-body">Hi [Host Name],
+
+I've been listening to [podcast name] — the episode on [specific topic] was particularly good. Your listeners are clearly serious about their finances.
+
+I have an episode angle I think would resonate with them: <strong>"Why High Earners Stay in Debt Longer (And the Strategy That Actually Works)"</strong> — covering why income alone doesn't solve debt, the math behind Avalanche vs. Snowball, and the psychological traps that keep smart people in debt.
+
+I built a product called <strong>DebtFree Dashboard</strong> — an interactive payoff tool I can demo live on the episode. It's $47 one-time, no subscription, completely private. I'd offer your listeners a discount code and pay you <strong>30% on every sale</strong> your link generates.
+
+Happy to send a one-pager, a product demo link, or jump on a 15-minute call if it sounds like a fit.
+
+[Your Name]</div>
+    <div class="email-note">💡 Tip: The episode angle does double duty — it gives the host a reason to book you AND sets up a natural product mention.</div>
+  </div>
+
+  <!-- ══ 60-DAY TIMELINE ══ -->
+  <h2 class="sh"><span class="num">04</span> 60-Day Affiliate Launch Timeline</h2>
+
+  <div class="checklist">
+    <div class="check-item">
+      <div class="check-week">Week 1</div>
+      <div class="check-box"></div>
+      <span>Enable Gumroad affiliate program at 30%. Set cookie to 30 days. Create a short landing page or PDF one-pager about the affiliate program.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Week 1</div>
+      <div class="check-box"></div>
+      <span>Build your target list: 30 creators in the debt-free/personal finance niche with 5K–150K followers. Use TikTok, Instagram, and YouTube search — "#debtfree", "#debtpayoff", "#avalanchemethod".</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Week 1</div>
+      <div class="check-box"></div>
+      <span>Send first 10 outreach emails. Personalize each one with a reference to their specific content. Use Template #1 or #2 above.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Week 2</div>
+      <div class="check-box"></div>
+      <span>Send follow-up #1 to anyone who opened but didn't reply. Send next 10 cold outreach emails from your target list.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Week 2</div>
+      <div class="check-box"></div>
+      <span>Onboard any affiliates who said yes — send Template #5 within 24 hours. Attach the dashboard file. Ask when they plan to post.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Week 3</div>
+      <div class="check-box"></div>
+      <span>Send follow-up #2 (breakup email) to Week 1 non-responders. Send next 10 cold emails. Start podcast outreach with Template #6.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Week 4</div>
+      <div class="check-box"></div>
+      <span>Check in with active affiliates — ask if they need content ideas or screenshots. Reshare any posts they make on your own channels.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Month 2</div>
+      <div class="check-box"></div>
+      <span>Review affiliate performance in Gumroad. Double down on affiliates who've generated sales — offer them bonus commission (35%) for next 30 days.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Month 2</div>
+      <div class="check-box"></div>
+      <span>Run a 48-hour promotion (10% off) and notify all affiliates in advance. Give them graphics and caption templates to post during the sale.</span>
+    </div>
+    <div class="check-item">
+      <div class="check-week">Month 2</div>
+      <div class="check-box"></div>
+      <span>Target: 5 active affiliates generating 3+ sales each = 15+ affiliate sales/month = additional $494/month net on top of your direct sales.</span>
+    </div>
+  </div>
+
+  <!-- ══ WHAT TO SEND AFFILIATES ══ -->
+  <h2 class="sh"><span class="num">05</span> Affiliate Resource Pack (send with onboarding)</h2>
+
+  <div class="strategy-box">
+    <h3>📦 What to include in your affiliate resource email</h3>
+    <div class="s-row"><span class="s-icon">✓</span><span><strong>The dashboard file</strong> — let them use it with their real numbers. Authentic content always converts better.</span></div>
+    <div class="s-row"><span class="s-icon">✓</span><span><strong>3 proven content angles</strong> — (1) The math comparison, (2) The slider demo, (3) Personal story + freedom date reveal</span></div>
+    <div class="s-row"><span class="s-icon">✓</span><span><strong>Sample captions</strong> — one for TikTok/Reels, one for long-form (YouTube/LinkedIn), one for Twitter thread opener</span></div>
+    <div class="s-row"><span class="s-icon">✓</span><span><strong>Their unique Gumroad link</strong> — track this in a spreadsheet so you know who's generating what</span></div>
+    <div class="s-row"><span class="s-icon">✓</span><span><strong>Discount code option</strong> — offer affiliates a personal 10% discount code for their audience (e.g., MORGAN10). Perceived exclusivity drives conversions.</span></div>
+    <div class="s-row"><span class="s-icon">✓</span><span><strong>Your contact</strong> — make it easy to reach you for questions. Responsive partners get more promotion.</span></div>
+  </div>
+
+</div>
+</body>
+</html>

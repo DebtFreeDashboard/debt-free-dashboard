@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DebtFree Dashboard — Know Your Freedom Date</title>
+<meta name="description" content="The interactive debt payoff dashboard that shows you exactly when you'll be free — and the fastest path to get there. One-time $47. No subscription.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,700&family=Epilogue:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070810;
+    --surface: #0f1022;
+    --surface2: #161829;
+    --border: rgba(255,255,255,0.06);
+    --border2: rgba(255,255,255,0.11);
+    --text: #eeeef8;
+    --muted: #6b6b90;
+    --dim: #3a3a58;
+    --lime: #c8f135;
+    --lime2: #d9f55f;
+    --lime-glow: rgba(200,241,53,0.12);
+    --lime-dim: rgba(200,241,53,0.06);
+    --red: #ff5757;
+    --amber: #ffb830;
+    --teal: #00d9b8;
+    --font-serif: 'Fraunces', Georgia, serif;
+    --font-sans: 'Epilogue', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--lime);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: difference;
+  }
+
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(200,241,53,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.35s ease, width 0.2s, height 0.2s;
+  }
+
+  @media (hover: none) {
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+
+  /* Grain */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 10000;
+    opacity: 0.5;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 200;
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(7,8,16,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-brand {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-pip {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 10px var(--lime);
+    animation: breathe 2.5s ease-in-out infinite;
+  }
+
+  @keyframes breathe {
+    0%,100% { opacity: 1; box-shadow: 0 0 8px var(--lime); }
+    50% { opacity: 0.6; box-shadow: 0 0 20px var(--lime), 0 0 40px rgba(200,241,53,0.3); }
+  }
+
+  .nav-right { display: flex; align-items: center; gap: 20px; }
+
+  .nav-price {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .nav-btn {
+    background: var(--lime);
+    color: #070810;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 8px 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: none;
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-btn:hover {
+    background: var(--lime2);
+    box-shadow: 0 0 24px rgba(200,241,53,0.35);
+    transform: translateY(-1px);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 100px 32px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Animated grid background */
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,241,53,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,241,53,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  /* Radial glow behind headline */
+  .hero-glow {
+    position: absolute;
+    top: 50%; left: 30%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(200,241,53,0.06) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 1080px;
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 80px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  @media(max-width: 800px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--lime);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideUp 0.7s cubic-bezier(.23,1,.32,1) both;
+  }
+
+  .hero-eyebrow::after {
+    content: '';
+    flex: 1;
+    max-width: 48px;
+    height: 1px;
+    background: var(--lime);
+    opacity: 0.5;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(3rem, 6vw, 5.2rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -2.5px;
+    margin-bottom: 28px;
+    animation: slideUp 0.7s cubic-bezier(.23,1,.32,1) 0.1s both;
+  }
+
+  .hero-h1 .accent {
+    color: var(--lime);
+    font-style: italic;
+  }
+
+  .hero-h1 .strike {
+    text-decoration: line-through;
+    color: var(--muted);
+    font-style: normal;
+  }
+
+  .hero-p {
+    font-size: 1rem;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.75;
+    margin-bottom: 36px;
+    max-width: 460px;
+    animation: slideUp 0.7s cubic-bezier(.23,1,.32,1) 0.2s both;
+  }
+
+  .hero-cta-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    animation: slideUp 0.7s cubic-bezier(.23,1,.32,1) 0.3s both;
+  }
+
+  .btn-hero {
+    background: var(--lime);
+    color: #070810;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 15px 32px;
+    border-radius: 6px;
+    border: none;
+    cursor: none;
+    text-decoration: none;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-hero:hover {
+    background: var(--lime2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(200,241,53,0.3);
+  }
+
+  .btn-hero .arr { display: inline-block; transition: transform 0.2s; }
+  .btn-hero:hover .arr { transform: translateX(4px); }
+
+  .hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hero-meta-price {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+
+  .hero-meta-note {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ─── HERO CARD (right side) ─── */
+  .hero-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(200,241,53,0.05);
+    animation: slideUp 0.7s cubic-bezier(.23,1,.32,1) 0.15s both;
+  }
+
+  .card-topbar {
+    background: var(--surface2);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot-r { background: #ff5f56; }
+  .dot-y { background: #ffbd2e; }
+  .dot-g { background: #27c93f; }
+  .win-dot { width: 11px; height: 11px; border-radius: 50%; }
+
+  .card-url {
+    margin-left: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+  }
+
+  .card-body { padding: 20px; }
+
+  .mini-stat-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .mini-stat {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    border-top: 2px solid;
+  }
+
+  .ms-red { border-color: var(--red); }
+  .ms-amber { border-color: var(--amber); }
+  .ms-teal { border-color: var(--teal); }
+  .ms-lime { border-color: var(--lime); }
+
+  .ms-label {
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 5px;
+  }
+
+  .ms-val {
+    font-family: var(--font-serif);
+    font-weight: 900;
+    font-size: 1.35rem;
+    letter-spacing: -0.5px;
+  }
+
+  .ms-red .ms-val { color: var(--red); }
+  .ms-amber .ms-val { color: var(--amber); }
+  .ms-teal .ms-val { color: var(--teal); font-size: 1rem; padding-top: 3px; }
+  .ms-lime .ms-val { color: var(--lime); }
+
+  /* Mini chart bars */
+  .mini-chart {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 72px;
+    margin-bottom: 12px;
+  }
+
+  .mc-bar {
+    flex: 1;
+    background: rgba(200,241,53,0.12);
+    border-radius: 2px 2px 0 0;
+    border-top: 2px solid rgba(200,241,53,0.4);
+    animation: barGrow 1.2s cubic-bezier(.23,1,.32,1) both;
+  }
+
+  @keyframes barGrow {
+    from { transform: scaleY(0); transform-origin: bottom; }
+    to { transform: scaleY(1); }
+  }
+
+  .mc-bar:nth-child(1) { animation-delay: 0.6s; }
+  .mc-bar:nth-child(2) { animation-delay: 0.65s; }
+  .mc-bar:nth-child(3) { animation-delay: 0.7s; }
+  .mc-bar:nth-child(4) { animation-delay: 0.75s; }
+  .mc-bar:nth-child(5) { animation-delay: 0.8s; }
+  .mc-bar:nth-child(6) { animation-delay: 0.85s; }
+  .mc-bar:nth-child(7) { animation-delay: 0.9s; }
+  .mc-bar:nth-child(8) { animation-delay: 0.95s; }
+  .mc-bar:nth-child(9) { animation-delay: 1.0s; }
+  .mc-bar:nth-child(10) { animation-delay: 1.05s; }
+
+  .mini-strategy-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+
+  .ms-chip {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    border: 1px solid var(--border);
+  }
+
+  .ms-chip.active { border-color: rgba(200,241,53,0.35); background: rgba(200,241,53,0.05); }
+
+  .ms-chip-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 3px;
+  }
+
+  .ms-chip.active .ms-chip-label { color: var(--lime); }
+
+  .ms-chip-val {
+    font-family: var(--font-serif);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .ms-chip.active .ms-chip-val { color: var(--lime); }
+
+  /* ─── TICKER STRIP ─── */
+  .ticker-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 0;
+    background: var(--surface);
+  }
+
+  .ticker-track {
+    display: flex;
+    gap: 48px;
+    animation: ticker 30s linear infinite;
+    width: max-content;
+  }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dim);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+  }
+
+  .ticker-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--lime); opacity: 0.6; }
+
+  /* ─── FEATURES ─── */
+  .features-section {
+    padding: 120px 32px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--lime);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .eyebrow::before {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--lime);
+    opacity: 0.6;
+  }
+
+  .section-h {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1.0;
+    margin-bottom: 64px;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  @media(max-width: 680px) { .feature-grid { grid-template-columns: 1fr; } }
+
+  .feature-cell {
+    background: var(--bg);
+    padding: 36px 30px;
+    transition: background 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-cell::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--lime);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s cubic-bezier(.23,1,.32,1);
+  }
+
+  .feature-cell:hover { background: var(--surface); }
+  .feature-cell:hover::before { transform: scaleX(1); }
+
+  .feature-emoji { font-size: 1.6rem; margin-bottom: 16px; display: block; }
+
+  .feature-name {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .feature-desc {
+    font-size: 0.84rem;
+    color: var(--muted);
+    line-height: 1.68;
+  }
+
+  /* ─── PAIN MARQUEE ─── */
+  .pain-section {
+    padding: 100px 32px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pain-inner { max-width: 1080px; margin: 0 auto; }
+
+  .pain-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 52px;
+  }
+
+  @media(max-width: 600px) { .pain-items { grid-template-columns: 1fr; } }
+
+  .pain-cell {
+    padding: 32px 28px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .pain-cell:hover { border-color: var(--border2); }
+
+  .pain-n {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+
+  .pain-text {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--text);
+  }
+
+  .pain-text span { color: var(--lime); font-style: italic; }
+
+  /* ─── MATH PROOF ─── */
+  .math-section {
+    padding: 120px 32px;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+
+  .math-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 52px;
+  }
+
+  .math-top {
+    padding: 32px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr 1px 1fr;
+    gap: 0;
+  }
+
+  @media(max-width:640px) {
+    .math-top { grid-template-columns: 1fr; }
+    .math-divider { display: none; }
+  }
+
+  .math-divider { background: var(--border); }
+
+  .math-stat { padding: 0 32px; text-align: center; }
+  .math-stat:first-child { padding-left: 0; }
+  .math-stat:last-child { padding-right: 0; }
+
+  .math-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .math-num {
+    font-family: var(--font-serif);
+    font-size: 2.4rem;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+  }
+
+  .math-num.red { color: var(--red); }
+  .math-num.lime { color: var(--lime); }
+  .math-num.amber { color: var(--amber); }
+
+  .math-sub { font-size: 0.75rem; color: var(--dim); margin-top: 4px; }
+
+  .math-rows { padding: 28px 32px; display: flex; flex-direction: column; gap: 0; }
+
+  .math-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+
+  .math-row:last-child { border-bottom: none; }
+
+  .math-key { color: var(--muted); }
+  .math-val { font-family: var(--font-mono); font-size: 0.85rem; }
+  .math-val.r { color: var(--red); }
+  .math-val.g { color: var(--lime); }
+  .math-val.highlight {
+    color: var(--lime);
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: var(--font-serif);
+    letter-spacing: -0.3px;
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-section {
+    padding: 120px 32px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .pricing-inner { max-width: 1080px; margin: 0 auto; }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 52px;
+  }
+
+  @media(max-width: 700px) { .pricing-grid { grid-template-columns: 1fr; } }
+
+  .price-card {
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+
+  .price-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .price-card.featured {
+    border-color: rgba(200,241,53,0.3);
+    background: linear-gradient(135deg, rgba(200,241,53,0.04), var(--bg));
+  }
+
+  .price-card.featured::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--lime), var(--lime2));
+  }
+
+  .price-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+
+  .badge-base { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .badge-pro { background: rgba(200,241,53,0.1); color: var(--lime); border: 1px solid rgba(200,241,53,0.25); }
+
+  .price-name {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .price-tagline {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .price-amount-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .price-sym {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .price-num {
+    font-family: var(--font-serif);
+    font-size: 4rem;
+    font-weight: 900;
+    letter-spacing: -3px;
+    line-height: 1;
+  }
+
+  .price-card.featured .price-num { color: var(--lime); }
+
+  .price-once {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 28px;
+  }
+
+  .price-items {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-bottom: 28px;
+  }
+
+  .price-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .price-item::before {
+    content: '✓';
+    color: var(--lime);
+    font-size: 0.75rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .price-item.exclusive { color: var(--text); }
+
+  .btn-purchase {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: none;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.25s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-base {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border2);
+  }
+
+  .btn-base:hover {
+    background: var(--surface);
+    border-color: var(--border2);
+    transform: translateY(-1px);
+  }
+
+  .btn-featured {
+    background: var(--lime);
+    color: #070810;
+  }
+
+  .btn-featured:hover {
+    background: var(--lime2);
+    box-shadow: 0 8px 30px rgba(200,241,53,0.3);
+    transform: translateY(-2px);
+  }
+
+  .guarantee-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 20px;
+    font-size: 0.78rem;
+    color: var(--dim);
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 36px 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+
+  .footer-brand {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: -0.3px;
+    text-transform: none;
+    color: var(--text);
+  }
+
+  @media(max-width: 600px) {
+    nav { padding: 0 16px; }
+    .hero { padding: 80px 16px 60px; }
+    .features-section, .math-section { padding: 80px 16px; }
+    .pain-section { padding: 80px 16px; }
+    .pricing-section { padding: 80px 16px; }
+    footer { padding: 28px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-pip"></div>
+    DebtFree
+  </div>
+  <div class="nav-right">
+    <span class="nav-price">From $47 · one-time</span>
+    <a href="#pricing" class="nav-btn">Get Access →</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Interactive Dashboard · Personal Finance</div>
+      <h1 class="hero-h1">
+        Know Your<br>
+        <span class="accent">Freedom</span><br>
+        Date.
+      </h1>
+      <p class="hero-p">The payoff dashboard that shows you exactly when you'll be debt-free — and the fastest, cheapest path to get there. No subscription. No bank access. Just a plan.</p>
+      <div class="hero-cta-row">
+        <a href="#pricing" class="btn-hero">Get Instant Access <span class="arr">→</span></a>
+        <div class="hero-meta">
+          <span class="hero-meta-price">from $47</span>
+          <span class="hero-meta-note">one-time · yours forever</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div class="card-topbar">
+          <div class="win-dot dot-r"></div>
+          <div class="win-dot dot-y"></div>
+          <div class="win-dot dot-g"></div>
+          <span class="card-url">debtfree-dashboard.html</span>
+        </div>
+        <div class="card-body">
+          <div class="mini-stat-row">
+            <div class="mini-stat ms-red">
+              <div class="ms-label">Total Owed</div>
+              <div class="ms-val">$24,400</div>
+            </div>
+            <div class="mini-stat ms-amber">
+              <div class="ms-label">Monthly Interest</div>
+              <div class="ms-val">$381</div>
+            </div>
+            <div class="mini-stat ms-teal">
+              <div class="ms-label">Freedom Date</div>
+              <div class="ms-val">Mar '27</div>
+            </div>
+            <div class="mini-stat ms-lime">
+              <div class="ms-label">Interest Saved</div>
+              <div class="ms-val">$4,820</div>
+            </div>
+          </div>
+          <div class="mini-chart">
+            <div class="mc-bar" style="height:90%"></div>
+            <div class="mc-bar" style="height:82%"></div>
+            <div class="mc-bar" style="height:72%"></div>
+            <div class="mc-bar" style="height:63%"></div>
+            <div class="mc-bar" style="height:52%"></div>
+            <div class="mc-bar" style="height:41%"></div>
+            <div class="mc-bar" style="height:31%"></div>
+            <div class="mc-bar" style="height:20%"></div>
+            <div class="mc-bar" style="height:10%"></div>
+            <div class="mc-bar" style="height:3%"></div>
+          </div>
+          <div class="mini-strategy-row">
+            <div class="ms-chip active">
+              <div class="ms-chip-label">Avalanche</div>
+              <div class="ms-chip-val">3.5 yr</div>
+            </div>
+            <div class="ms-chip">
+              <div class="ms-chip-label">Snowball</div>
+              <div class="ms-chip-val">3.8 yr</div>
+            </div>
+            <div class="ms-chip">
+              <div class="ms-chip-label">Min Only</div>
+              <div class="ms-chip-val">12+ yr</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <div class="ticker-item"><div class="ticker-dot"></div> Avalanche Method</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Snowball Method</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> What If Modeler</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Freedom Date Calculator</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Payment Tracker</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Windfall Planner</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Milestone Badges</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> 100% Private</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Mobile Friendly</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> No Subscription</div>
+    <!-- duplicate for seamless loop -->
+    <div class="ticker-item"><div class="ticker-dot"></div> Avalanche Method</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Snowball Method</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> What If Modeler</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Freedom Date Calculator</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Payment Tracker</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Windfall Planner</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Milestone Badges</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> 100% Private</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> Mobile Friendly</div>
+    <div class="ticker-item"><div class="ticker-dot"></div> No Subscription</div>
+  </div>
+</div>
+
+<!-- ═══ PAIN ═══ -->
+<section class="pain-section">
+  <div class="pain-inner">
+    <div class="eyebrow">Sound familiar?</div>
+    <h2 class="section-h" style="max-width:680px">You earn good money.<br>The debt <em style="font-style:italic; color:var(--muted)">stays anyway.</em></h2>
+    <div class="pain-items">
+      <div class="pain-cell">
+        <div class="pain-n">01 / 04</div>
+        <p class="pain-text">You make more than enough — but the balances barely <span>move.</span></p>
+      </div>
+      <div class="pain-cell">
+        <div class="pain-n">02 / 04</div>
+        <p class="pain-text">You've paid thousands in minimums with <span>nothing to show</span> but more interest.</p>
+      </div>
+      <div class="pain-cell">
+        <div class="pain-n">03 / 04</div>
+        <p class="pain-text">You don't know your real payoff date — and you're <span>afraid to find out.</span></p>
+      </div>
+      <div class="pain-cell">
+        <div class="pain-n">04 / 04</div>
+        <p class="pain-text">Every debt app wants a subscription <span>or your bank login.</span> Neither is acceptable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section class="features-section">
+  <div class="eyebrow">Everything included</div>
+  <h2 class="section-h">Built for people who are<br>serious about getting out.</h2>
+  <div class="feature-grid">
+    <div class="feature-cell">
+      <span class="feature-emoji">🏔️</span>
+      <div class="feature-name">3 Payoff Strategies</div>
+      <p class="feature-desc">Avalanche, Snowball, Hybrid — with a side-by-side comparison that shows you exactly which method saves the most money for your specific debts.</p>
+    </div>
+    <div class="feature-cell">
+      <span class="feature-emoji">📊</span>
+      <div class="feature-name">Live Payoff Chart</div>
+      <p class="feature-desc">Watch your balance curve drop to zero as you adjust your monthly budget. Your freedom date recalculates in real-time.</p>
+    </div>
+    <div class="feature-cell">
+      <span class="feature-emoji">🔮</span>
+      <div class="feature-name">"What If" Modeler</div>
+      <p class="feature-desc">Drag a slider to add $100 or $500/month more and instantly see how many months disappear — and how much interest you avoid.</p>
+    </div>
+    <div class="feature-cell">
+      <span class="feature-emoji">💸</span>
+      <div class="feature-name">Windfall Planner</div>
+      <p class="feature-desc">Tax refund? Bonus? Apply it to any debt and see the exact ripple effect across your entire payoff timeline instantly.</p>
+    </div>
+    <div class="feature-cell">
+      <span class="feature-emoji">🏆</span>
+      <div class="feature-name">Milestones & Wins</div>
+      <p class="feature-desc">Nine achievement badges unlock automatically as you pay down debt. Momentum is the real product. Every win gets its moment.</p>
+    </div>
+    <div class="feature-cell">
+      <span class="feature-emoji">🔒</span>
+      <div class="feature-name">100% Private</div>
+      <p class="feature-desc">Your data never leaves your device. No account. No server. No cloud. Open the file — your data saves automatically, stays local always.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ MATH ═══ -->
+<section class="math-section">
+  <div class="eyebrow">The math</div>
+  <h2 class="section-h">Here's what a plan<br>actually saves you.</h2>
+  <div class="math-card">
+    <div class="math-top">
+      <div class="math-stat">
+        <div class="math-label">Example debt (22% APR)</div>
+        <div class="math-num amber">$24K</div>
+        <div class="math-sub">across 4 credit cards</div>
+      </div>
+      <div class="math-divider"></div>
+      <div class="math-stat">
+        <div class="math-label">Min payments only</div>
+        <div class="math-num red">12+ yrs</div>
+        <div class="math-sub">$18,400 in interest</div>
+      </div>
+      <div class="math-divider"></div>
+      <div class="math-stat">
+        <div class="math-label">With Avalanche + $300/mo</div>
+        <div class="math-num lime">3.5 yrs</div>
+        <div class="math-sub">$5,200 in interest</div>
+      </div>
+    </div>
+    <div class="math-rows">
+      <div class="math-row">
+        <span class="math-key">Interest paid (minimum payments)</span>
+        <span class="math-val r">$18,400</span>
+      </div>
+      <div class="math-row">
+        <span class="math-key">Interest paid (Avalanche + $300/mo extra)</span>
+        <span class="math-val g">$5,200</span>
+      </div>
+      <div class="math-row">
+        <span class="math-key">Time saved</span>
+        <span class="math-val g">8.5 years</span>
+      </div>
+      <div class="math-row">
+        <span class="math-key">Your total savings</span>
+        <span class="math-val highlight">$13,200</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="eyebrow">Simple pricing</div>
+    <h2 class="section-h">One purchase.<br>Every tool. Forever.</h2>
+    <div class="pricing-grid">
+
+      <!-- BASE -->
+      <div class="price-card">
+        <div class="price-badge badge-base">Starter</div>
+        <div class="price-name">DebtFree Dashboard</div>
+        <p class="price-tagline">Everything you need to build and execute your payoff plan.</p>
+        <div class="price-amount-row">
+          <span class="price-sym">$</span>
+          <span class="price-num">47</span>
+        </div>
+        <div class="price-once">One-time · instant download</div>
+        <div class="price-items">
+          <div class="price-item">Interactive dashboard (HTML file)</div>
+          <div class="price-item">Avalanche, Snowball & Hybrid strategies</div>
+          <div class="price-item">Live payoff chart & freedom date</div>
+          <div class="price-item">What If scenario modeler</div>
+          <div class="price-item">Windfall & payment logger</div>
+          <div class="price-item">9 milestone badges</div>
+          <div class="price-item">Works on phone, tablet & desktop</div>
+          <div class="price-item">Your data stays 100% local</div>
+        </div>
+        <a href="YOUR_GUMROAD_BASE_LINK" class="btn-purchase btn-base">Get Starter — $47 →</a>
+        <div class="guarantee-strip">🛡️ 30-day money-back guarantee</div>
+      </div>
+
+      <!-- PRO -->
+      <div class="price-card featured">
+        <div class="price-badge badge-pro">Pro · Most Popular</div>
+        <div class="price-name">DebtFree Dashboard Pro</div>
+        <p class="price-tagline">The dashboard plus a private video walkthrough — I show you my exact setup and strategy.</p>
+        <div class="price-amount-row">
+          <span class="price-sym">$</span>
+          <span class="price-num" style="color:var(--lime)">97</span>
+        </div>
+        <div class="price-once">One-time · instant access</div>
+        <div class="price-items">
+          <div class="price-item">Everything in Starter</div>
+          <div class="price-item exclusive">🎥 <strong>Private video walkthrough</strong> (30 min) — exact setup, strategy selection, and how to stay on track</div>
+          <div class="price-item exclusive">📋 <strong>Debt-Free Action Checklist</strong> — the 10 steps to take in your first 30 days</div>
+          <div class="price-item exclusive">💬 <strong>Priority email support</strong> — ask me anything about your specific situation</div>
+          <div class="price-item exclusive">🔄 <strong>Free lifetime updates</strong> to the dashboard</div>
+        </div>
+        <a href="YOUR_GUMROAD_PRO_LINK" class="btn-purchase btn-featured">Get Pro — $97 →</a>
+        <div class="guarantee-strip">🛡️ 30-day money-back guarantee</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-brand">DebtFree</span>
+  <span>© 2025 DebtFree Dashboard · All rights reserved</span>
+  <span>Built for people done being in debt.</span>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 5 + 'px';
+    cursor.style.top = my - 5 + 'px';
+  });
+
+  function animateRing() {
+    rx += (mx - rx - 18) * 0.12;
+    ry += (my - ry - 18) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  }
+  animateRing();
+
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'scale(2)';
+      ring.style.width = '52px';
+      ring.style.height = '52px';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'scale(1)';
+      ring.style.width = '36px';
+      ring.style.height = '36px';
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DebtFree Dashboard — Your Payoff Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0e0e0e;
+    --ink2: #1c1c1c;
+    --cream: #f5f0e8;
+    --cream2: #ede8dc;
+    --cream3: #e5dfd0;
+    --gold: #c9a84c;
+    --gold2: #e8c76a;
+    --gold-light: rgba(201,168,76,0.12);
+    --red: #c0392b;
+    --green: #1a6b4a;
+    --green-light: rgba(26,107,74,0.1);
+    --text: #0e0e0e;
+    --text-mid: #4a4a3a;
+    --text-muted: #8a8a7a;
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Outfit', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--cream);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE TEXTURE ─── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    border-bottom: 1px solid var(--cream3);
+    position: sticky;
+    top: 0;
+    background: rgba(245,240,232,0.95);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--ink);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+
+  .nav-cta {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 10px 22px;
+    border-radius: 4px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-cta:hover {
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+
+  nav .price-tag {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-kicker {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: fadeIn 0.6s ease both;
+  }
+
+  .hero-kicker::before {
+    content: '';
+    display: block;
+    width: 32px; height: 1px;
+    background: var(--gold);
+  }
+
+  .hero-headline {
+    font-family: var(--font-serif);
+    font-size: clamp(2.8rem, 8vw, 6.5rem);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -2px;
+    max-width: 900px;
+    margin-bottom: 28px;
+    animation: fadeIn 0.6s ease 0.1s both;
+  }
+
+  .hero-headline em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-weight: 300;
+    color: var(--text-mid);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    animation: fadeIn 0.6s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    animation: fadeIn 0.6s ease 0.3s both;
+  }
+
+  .btn-primary-lg {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 16px 36px;
+    border-radius: 4px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary-lg:hover {
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+
+  .btn-primary-lg .arrow { transition: transform 0.2s; }
+  .btn-primary-lg:hover .arrow { transform: translateX(4px); }
+
+  .hero-price {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hero-price strong {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--text);
+    display: block;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+    margin-top: 64px;
+    padding-top: 48px;
+    border-top: 1px solid var(--cream3);
+    animation: fadeIn 0.6s ease 0.4s both;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+
+  .hero-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .hero-stat-num {
+    font-family: var(--font-serif);
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: var(--ink);
+  }
+
+  .hero-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── SECTION WRAPPER ─── */
+  .section {
+    padding: 100px 40px;
+  }
+
+  .section-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 24px; height: 1px;
+    background: var(--gold);
+  }
+
+  .section-title {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .section-body {
+    font-size: 1rem;
+    color: var(--text-mid);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  /* ─── PAIN SECTION ─── */
+  .pain-section {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 100px 40px;
+  }
+
+  .pain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 60px;
+  }
+
+  @media(max-width:640px) { .pain-grid { grid-template-columns: 1fr; } }
+
+  .pain-item {
+    background: var(--ink2);
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.2s;
+  }
+
+  .pain-item:hover { background: #222; }
+
+  .pain-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.2);
+    margin-bottom: 12px;
+  }
+
+  .pain-text {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.4;
+    color: var(--cream);
+  }
+
+  .pain-text em {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  /* ─── FEATURES ─── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--cream3);
+    border: 1px solid var(--cream3);
+    margin-top: 60px;
+  }
+
+  @media(max-width:700px) { .features-grid { grid-template-columns: 1fr; } }
+
+  .feature-card {
+    background: var(--cream);
+    padding: 36px 32px;
+    transition: background 0.2s;
+  }
+
+  .feature-card:hover { background: white; }
+
+  .feature-icon {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .feature-name {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .feature-desc {
+    font-size: 0.88rem;
+    color: var(--text-mid);
+    line-height: 1.65;
+  }
+
+  /* ─── SCREEN PREVIEW ─── */
+  .preview-section {
+    background: var(--ink);
+    padding: 100px 40px;
+    overflow: hidden;
+  }
+
+  .screen-mock {
+    max-width: 900px;
+    margin: 60px auto 0;
+    background: #12121a;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    overflow: hidden;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+  }
+
+  .screen-bar {
+    background: #0a0a0f;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .screen-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  .screen-body {
+    padding: 28px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  @media(max-width:600px) { .screen-body { grid-template-columns: repeat(2,1fr); } }
+
+  .mock-stat {
+    background: #1a1a26;
+    border-radius: 10px;
+    padding: 16px;
+    border-top: 2px solid;
+  }
+
+  .mock-stat:nth-child(1) { border-color: #ff6b6b; }
+  .mock-stat:nth-child(2) { border-color: #ffd166; }
+  .mock-stat:nth-child(3) { border-color: #7b5ea7; }
+  .mock-stat:nth-child(4) { border-color: #00e5b0; }
+
+  .mock-label {
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+  }
+
+  .mock-val {
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+  }
+
+  .mock-stat:nth-child(1) .mock-val { color: #ff6b6b; }
+  .mock-stat:nth-child(2) .mock-val { color: #ffd166; }
+  .mock-stat:nth-child(3) .mock-val { color: #a78bdb; }
+  .mock-stat:nth-child(4) .mock-val { color: #00e5b0; }
+
+  .mock-chart {
+    grid-column: 1 / -1;
+    background: #1a1a26;
+    border-radius: 10px;
+    padding: 20px;
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .mock-bar {
+    flex: 1;
+    background: rgba(0,229,176,0.15);
+    border-radius: 3px 3px 0 0;
+    border-top: 2px solid rgba(0,229,176,0.5);
+    transition: height 0.3s;
+  }
+
+  /* ─── MATH ─── */
+  .math-section {
+    padding: 100px 40px;
+    background: var(--cream2);
+  }
+
+  .math-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    margin-top: 60px;
+  }
+
+  @media(max-width:700px) { .math-grid { grid-template-columns: 1fr; } }
+
+  .math-scenario {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    border: 1px solid var(--cream3);
+    box-shadow: 0 4px 40px rgba(0,0,0,0.06);
+  }
+
+  .math-scenario h3 {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--cream3);
+  }
+
+  .math-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--cream3);
+    font-size: 0.88rem;
+  }
+
+  .math-row:last-child { border-bottom: none; }
+  .math-row .key { color: var(--text-mid); }
+  .math-row .val { font-family: var(--font-mono); font-weight: 500; }
+  .math-row .val.red { color: var(--red); }
+  .math-row .val.green { color: var(--green); }
+  .math-row .val.gold { color: var(--gold); font-size: 1.1rem; font-weight: 700; }
+
+  .math-callout {
+    background: var(--green-light);
+    border: 1px solid rgba(26,107,74,0.2);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+    font-size: 0.9rem;
+    color: var(--green);
+    font-weight: 500;
+    line-height: 1.5;
+  }
+
+  /* ─── TESTIMONIALS / SOCIAL PROOF ─── */
+  .proof-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 60px;
+  }
+
+  @media(max-width:700px) { .proof-grid { grid-template-columns: 1fr; } }
+
+  .proof-card {
+    background: white;
+    border-radius: 10px;
+    padding: 28px;
+    border: 1px solid var(--cream3);
+    position: relative;
+  }
+
+  .proof-quote {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  .proof-quote::before {
+    content: '"';
+    font-size: 3rem;
+    color: var(--gold);
+    line-height: 0;
+    vertical-align: -0.6em;
+    margin-right: 4px;
+  }
+
+  .proof-author {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .proof-stars {
+    color: var(--gold);
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+  }
+
+  /* ─── WHAT'S INCLUDED ─── */
+  .included-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .included-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid var(--cream3);
+  }
+
+  .included-check {
+    width: 24px; height: 24px;
+    background: var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--cream);
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .included-text strong {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .included-text span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-section {
+    background: var(--ink);
+    padding: 100px 40px;
+    text-align: center;
+  }
+
+  .pricing-card {
+    max-width: 480px;
+    margin: 60px auto 0;
+    background: var(--cream);
+    border-radius: 16px;
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pricing-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--gold2));
+  }
+
+  .pricing-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .pricing-name {
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-bottom: 20px;
+  }
+
+  .price-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .price-dollar {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-mid);
+    margin-top: -10px;
+  }
+
+  .price-amount {
+    font-family: var(--font-serif);
+    font-size: 5rem;
+    font-weight: 900;
+    letter-spacing: -4px;
+    line-height: 1;
+  }
+
+  .price-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 32px;
+  }
+
+  .pricing-items {
+    text-align: left;
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pricing-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text-mid);
+  }
+
+  .pricing-item::before {
+    content: '✓';
+    width: 20px; height: 20px;
+    background: var(--gold-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .btn-buy {
+    display: block;
+    width: 100%;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding: 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-buy:hover {
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  }
+
+  .guarantee {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    justify-content: center;
+  }
+
+  /* ─── FAQ ─── */
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--cream3);
+    border: 1px solid var(--cream3);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 50px;
+  }
+
+  .faq-item {
+    background: var(--cream);
+    overflow: hidden;
+  }
+
+  .faq-q {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 28px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+  }
+
+  .faq-q:hover { background: white; }
+
+  .faq-toggle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+  }
+
+  .faq-item.open .faq-toggle { transform: rotate(45deg); }
+
+  .faq-a {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.3s;
+    font-size: 0.88rem;
+    color: var(--text-mid);
+    line-height: 1.7;
+    padding: 0 28px;
+  }
+
+  .faq-item.open .faq-a {
+    max-height: 200px;
+    padding: 0 28px 22px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--ink);
+    color: rgba(255,255,255,0.4);
+    padding: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 0.8rem;
+  }
+
+  .footer-logo {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--cream);
+    font-weight: 900;
+  }
+
+  @media(max-width:600px) {
+    nav { padding: 14px 20px; }
+    .hero { padding: 60px 20px 40px; }
+    .section { padding: 60px 20px; }
+    .pain-section, .preview-section, .math-section, .pricing-section { padding: 60px 20px; }
+    footer { padding: 28px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-mark">💰</div>
+    DebtFree
+  </div>
+  <span class="price-tag">One-time · $47</span>
+  <a href="#pricing" class="nav-cta">Get Instant Access →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div style="max-width:1100px; margin:0 auto; width:100%">
+    <div class="hero-kicker">Personal Finance Tool · Interactive Dashboard</div>
+    <h1 class="hero-headline">Stop Guessing.<br>Start <em>Destroying</em><br>Your Debt.</h1>
+    <p class="hero-sub">The interactive payoff dashboard that shows you exactly when you'll be free — and the fastest path to get there. No subscriptions. No fluff. Just a plan that works.</p>
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-primary-lg">
+        Get Instant Access <span class="arrow">→</span>
+      </a>
+      <div class="hero-price">
+        <strong>$47</strong>
+        one-time purchase · yours forever
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat-item">
+        <span class="hero-stat-num">3</span>
+        <span class="hero-stat-label">payoff strategies built in</span>
+      </div>
+      <div class="hero-stat-item">
+        <span class="hero-stat-num">$0</span>
+        <span class="hero-stat-label">monthly fees, ever</span>
+      </div>
+      <div class="hero-stat-item">
+        <span class="hero-stat-num">∞</span>
+        <span class="hero-stat-label">updates to your plan</span>
+      </div>
+      <div class="hero-stat-item">
+        <span class="hero-stat-num">100%</span>
+        <span class="hero-stat-label">private — data stays on your device</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PAIN -->
+<section class="pain-section">
+  <div style="max-width:1100px; margin:0 auto">
+    <div class="section-label" style="color:rgba(201,168,76,0.9)">
+      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+      Sound familiar?
+    </div>
+    <h2 class="section-title" style="color:var(--cream)">You earn good money.<br><em style="color:var(--gold)">So why is the debt still there?</em></h2>
+    <div class="pain-grid">
+      <div class="pain-item">
+        <div class="pain-num">01</div>
+        <div class="pain-text">You make more than enough — but the balances barely <em>move</em> month to month.</div>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">02</div>
+        <div class="pain-text">You've paid thousands in minimum payments with nothing to show for it except <em>more interest.</em></div>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">03</div>
+        <div class="pain-text">You don't even know your <em>real payoff date</em> — and you're afraid to find out.</div>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">04</div>
+        <div class="pain-text">Every debt tool either wants a monthly fee or <em>sells your data</em> to lenders.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PREVIEW MOCK -->
+<section class="preview-section">
+  <div style="max-width:1100px; margin:0 auto">
+    <div class="section-label" style="color:rgba(201,168,76,0.8)">
+      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+      Inside the dashboard
+    </div>
+    <h2 class="section-title" style="color:var(--cream)">Your complete payoff<br>command center.</h2>
+    <div class="screen-mock">
+      <div class="screen-bar">
+        <div class="screen-dot" style="background:#ff5f56"></div>
+        <div class="screen-dot" style="background:#ffbd2e"></div>
+        <div class="screen-dot" style="background:#27c93f"></div>
+        <span style="font-family:'DM Mono',monospace; font-size:0.65rem; color:rgba(255,255,255,0.2); margin-left:12px">debtfree-dashboard.html</span>
+      </div>
+      <div class="screen-body">
+        <div class="mock-stat">
+          <div class="mock-label">Total Owed</div>
+          <div class="mock-val">$24,400</div>
+        </div>
+        <div class="mock-stat">
+          <div class="mock-label">Monthly Interest</div>
+          <div class="mock-val">$381</div>
+        </div>
+        <div class="mock-stat">
+          <div class="mock-label">Freedom Date</div>
+          <div class="mock-val" style="font-size:1.1rem; padding-top:4px">Mar '27</div>
+        </div>
+        <div class="mock-stat">
+          <div class="mock-label">Interest Saved</div>
+          <div class="mock-val">$4,820</div>
+        </div>
+        <div class="mock-chart">
+          <div class="mock-bar" style="height:92%"></div>
+          <div class="mock-bar" style="height:85%"></div>
+          <div class="mock-bar" style="height:76%"></div>
+          <div class="mock-bar" style="height:66%"></div>
+          <div class="mock-bar" style="height:55%"></div>
+          <div class="mock-bar" style="height:45%"></div>
+          <div class="mock-bar" style="height:34%"></div>
+          <div class="mock-bar" style="height:22%"></div>
+          <div class="mock-bar" style="height:12%"></div>
+          <div class="mock-bar" style="height:4%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" style="background:var(--cream2)">
+  <div class="section-inner">
+    <div class="section-label">Everything included</div>
+    <h2 class="section-title">Built for people who are<br>serious about getting out.</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🏔️</span>
+        <div class="feature-name">3 Payoff Strategies</div>
+        <div class="feature-desc">Avalanche, Snowball, and Hybrid — with a side-by-side comparison so you can see exactly which method saves you the most money and time.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <div class="feature-name">Live Payoff Chart</div>
+        <div class="feature-desc">Watch your balance curve drop to zero as you adjust your monthly payment. Your freedom date updates in real-time as you plan.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔮</span>
+        <div class="feature-name">"What If" Modeler</div>
+        <div class="feature-desc">Slide to add $100, $500, or $1,000 more per month and instantly see how many months you shave off and how much interest you save.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💸</span>
+        <div class="feature-name">Windfall Planner</div>
+        <div class="feature-desc">Got a bonus, tax refund, or side hustle income? Apply it to any debt and see the ripple effect on your entire payoff timeline.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏆</span>
+        <div class="feature-name">Milestones & Wins</div>
+        <div class="feature-desc">Nine achievement badges that unlock automatically as you pay down debt. Because momentum matters, and every win deserves recognition.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔒</span>
+        <div class="feature-name">100% Private</div>
+        <div class="feature-desc">Your data never leaves your device. No account required, no server, no syncing to the cloud. Just you and your numbers.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE MATH -->
+<section class="math-section">
+  <div class="section-inner">
+    <div class="section-label">The math doesn't lie</div>
+    <h2 class="section-title">Here's what $47 could<br>actually be worth to you.</h2>
+    <div class="math-grid">
+      <div>
+        <p class="section-body">The average American with credit card debt pays over $1,000 per year in interest alone. Knowing the right strategy — and sticking to it — can save you years of payments and thousands of dollars.<br><br>This dashboard makes that strategy crystal clear.</p>
+        <br>
+        <p class="section-body" style="font-family:var(--font-serif); font-style:italic; font-size:1.1rem; color:var(--ink)">The $47 you spend today could save you $4,000+ in interest over the next two years.</p>
+      </div>
+      <div class="math-scenario">
+        <h3>Example: $24,000 in debt at 22% APR</h3>
+        <div class="math-row">
+          <span class="key">Minimum payments only</span>
+          <span class="val red">14+ years</span>
+        </div>
+        <div class="math-row">
+          <span class="key">Interest paid (min only)</span>
+          <span class="val red">$18,400</span>
+        </div>
+        <div class="math-row">
+          <span class="key">With Avalanche + $300 extra/mo</span>
+          <span class="val green">3.5 years</span>
+        </div>
+        <div class="math-row">
+          <span class="key">Interest paid (optimized)</span>
+          <span class="val green">$5,200</span>
+        </div>
+        <div class="math-row">
+          <span class="key">Your savings</span>
+          <span class="val gold">$13,200</span>
+        </div>
+        <div class="math-callout">
+          ✓ That's 10+ years of your life and $13,200 back in your pocket — just from having a clear strategy.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="section">
+  <div class="section-inner">
+    <div class="section-label">Early users</div>
+    <h2 class="section-title">What people are saying.</h2>
+    <div class="proof-grid">
+      <div class="proof-card">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-quote">I've tried every budgeting app out there. This is the first tool that actually showed me a real date when I'd be debt-free. I cried a little.</p>
+        <div class="proof-author">— Morgan T., Marketing Director</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-quote">The "What If" slider is everything. I moved it to $500 extra per month and watched 4 years disappear from my timeline. Motivation unlocked.</p>
+        <div class="proof-author">— James R., Software Engineer</div>
+      </div>
+      <div class="proof-card">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-quote">No login, no subscription, no selling my data. Just a beautiful tool that keeps me accountable. I open it every payday.</p>
+        <div class="proof-author">— Alicia K., Operations Lead</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT'S INCLUDED -->
+<section class="section" style="background:var(--cream2); padding-top:0">
+  <div class="section-inner">
+    <div class="section-label">Everything you get</div>
+    <h2 class="section-title">One file. Total control.</h2>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:40px">
+      <div class="included-list">
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>Interactive Dashboard (HTML file)</strong><span>Works on any device — phone, tablet, laptop. No app install needed.</span></div>
+        </div>
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>All 3 Payoff Strategies</strong><span>Avalanche, Snowball & Hybrid with live comparison.</span></div>
+        </div>
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>Unlimited Debt Accounts</strong><span>Credit cards, student loans, auto, personal — add them all.</span></div>
+        </div>
+      </div>
+      <div class="included-list">
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>Payment Log & Progress Tracking</strong><span>Record every payment and watch your progress bar grow.</span></div>
+        </div>
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>What If & Windfall Modeler</strong><span>See the impact of extra payments and lump-sum windfalls instantly.</span></div>
+        </div>
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>Milestone Badges</strong><span>9 achievements that unlock as you crush your debt.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div style="max-width:1100px; margin:0 auto">
+    <div class="section-label" style="justify-content:center; color:rgba(201,168,76,0.9)">
+      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+      Simple pricing
+      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+    </div>
+    <h2 class="section-title" style="color:var(--cream); text-align:center">One price.<br>Yours forever.</h2>
+    <div class="pricing-card">
+      <div class="pricing-eyebrow">DebtFree Dashboard</div>
+      <div class="pricing-name">Complete Payoff Toolkit</div>
+      <div class="price-display">
+        <span class="price-dollar">$</span>
+        <span class="price-amount">47</span>
+      </div>
+      <div class="price-note">One-time purchase · Instant download · No subscription ever</div>
+      <div class="pricing-items">
+        <div class="pricing-item">Interactive mobile-friendly dashboard</div>
+        <div class="pricing-item">Avalanche, Snowball & Hybrid strategies</div>
+        <div class="pricing-item">Live payoff chart & freedom date</div>
+        <div class="pricing-item">What If scenario modeler</div>
+        <div class="pricing-item">Windfall & payment logger</div>
+        <div class="pricing-item">9 milestone achievement badges</div>
+        <div class="pricing-item">100% private — your data stays local</div>
+        <div class="pricing-item">Works on phone, tablet & desktop</div>
+      </div>
+      <a href="YOUR_GUMROAD_LINK" class="btn-buy">Get Instant Access — $47 →</a>
+      <div class="guarantee">
+        🛡️ 30-day money-back guarantee — no questions asked
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section">
+  <div class="section-inner" style="max-width:720px">
+    <div class="section-label">Questions</div>
+    <h2 class="section-title">FAQ</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>What exactly do I get when I buy?</span>
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-a">You get a single HTML file that you download and open in any web browser — Chrome, Safari, Firefox. No installation, no account, no internet required after download. It works on your phone, tablet, or computer.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Is my financial data safe?</span>
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-a">Completely. Your data never leaves your device. Everything is stored locally in your browser — there's no server, no account, no cloud sync. We literally cannot see your numbers even if we wanted to.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Does it work on my phone?</span>
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-a">Yes. The dashboard is fully mobile-responsive. Open the file in your phone's browser and bookmark it to your home screen for easy access — it'll feel like a native app.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>What if I want to update my balances over time?</span>
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-a">That's exactly what it's built for. Tap "Edit" next to any balance, enter your new number, and your entire plan recalculates instantly. Log payments as you make them to track real progress over time.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Is there a refund policy?</span>
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-a">Yes. If you're not happy with the dashboard within 30 days of purchase, just email us and we'll refund you in full. No questions asked.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section style="background:var(--ink); padding:80px 40px; text-align:center">
+  <div style="max-width:600px; margin:0 auto">
+    <h2 style="font-family:var(--font-serif); font-size:clamp(2rem,5vw,3rem); color:var(--cream); font-weight:900; letter-spacing:-1px; margin-bottom:16px">Your freedom date<br>is waiting for you.</h2>
+    <p style="color:rgba(255,255,255,0.5); margin-bottom:36px; font-size:0.95rem; line-height:1.7">Stop making minimum payments into the void. Get the plan, run the numbers, and finally see the light at the end of the tunnel.</p>
+    <a href="#pricing" class="btn-primary-lg" style="display:inline-flex">
+      Start Your Payoff Plan — $47 <span class="arrow">→</span>
+    </a>
+    <p style="color:rgba(255,255,255,0.3); font-size:0.78rem; margin-top:16px">One-time · Instant download · 30-day guarantee</p>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-logo">DebtFree</span>
+  <span>© 2025 DebtFree Dashboard · All rights reserved</span>
+  <span>Built for people who are done being in debt.</span>
+</footer>
+
+<script>
+function toggleFaq(el) {
+  const item = el.parentElement;
+  item.classList.toggle('open');
+}
+</script>
+</body>
+</html>
