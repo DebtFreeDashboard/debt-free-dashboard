@@ -1,0 +1,24 @@
+<svg width="320" height="100" viewBox="0 0 320 100" xmlns="http://www.w3.org/2000/svg">
+  <rect width="320" height="100" rx="14" fill="#f5f4f0" stroke="#e0ddd6" stroke-width="1"/>
+
+  <!-- Icon mark — dark ink -->
+  <g transform="translate(16, 18)">
+    <path d="M16 0 L6 0 L6 44 L16 44"  fill="none" stroke="#0a0a0f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M28 0 L38 0 L38 44 L28 44" fill="none" stroke="#0a0a0f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="9"  y="4"  width="8" height="33" rx="2" fill="#0a0a0f"/>
+    <rect x="19" y="13" width="8" height="24" rx="2" fill="#0a0a0f" opacity="0.55"/>
+    <rect x="28" y="24" width="7" height="13" rx="2" fill="#0a0a0f" opacity="0.28"/>
+    <circle cx="34" cy="40" r="3" fill="#1a6b4a"/>
+    <line x1="6" y1="44" x2="38" y2="44" stroke="#0a0a0f" stroke-width="0.8" stroke-opacity="0.12"/>
+  </g>
+
+  <!-- Wordmark — dark with green accent -->
+  <text x="66" y="52" font-family="'Syne','Helvetica Neue',Arial,sans-serif" font-size="32" font-weight="800" fill="#0a0a0f" letter-spacing="-1.5">Debt<tspan fill="#1a6b4a">Free</tspan></text>
+
+  <!-- DASHBOARD pill -->
+  <rect x="67" y="61" width="72" height="15" rx="7.5" fill="#1a6b4a" fill-opacity="0.07" stroke="#1a6b4a" stroke-width="0.7" stroke-opacity="0.35"/>
+  <text x="103" y="72" text-anchor="middle" font-family="'DM Mono','Courier New',monospace" font-size="8" fill="#1a6b4a" letter-spacing="2.5" font-weight="500">DASHBOARD</text>
+
+  <!-- Tagline -->
+  <text x="67" y="90" font-family="'Helvetica Neue',Arial,sans-serif" font-size="10.5" fill="#8a8a7a" letter-spacing="0.2">Know your freedom date.</text>
+</svg>
