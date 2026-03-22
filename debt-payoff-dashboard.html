@@ -962,7 +962,7 @@
         </div>
         <div class="form-field">
           <label>Balance ($)</label>
-          <input type="number" id="debt-balance" placeholder="5000" min="0" step="1" />
+          <input type="number" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview()" />
         </div>
         <div class="form-field">
           <label>APR (%)</label>
@@ -973,6 +973,46 @@
           <input type="number" id="debt-min" placeholder="100" min="0" step="1" />
         </div>
       </div>
+
+      <!-- Promo APR toggle -->
+      <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="debt-has-promo" onchange="togglePromoFields()" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
+        <label for="debt-has-promo" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
+          This debt has a 0% / promotional APR
+        </label>
+      </div>
+
+      <!-- Promo fields (hidden by default) -->
+      <div id="promo-fields" style="display:none; margin-top:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:16px;">
+        <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">🎯 Promotional APR Details</div>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="form-field">
+            <label>Promo APR (%)</label>
+            <input type="number" id="debt-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
+          </div>
+          <div class="form-field">
+            <label>Promo End Date</label>
+            <input type="date" id="debt-promo-end" />
+          </div>
+          <div class="form-field">
+            <label>Post-Promo APR (%)</label>
+            <input type="number" id="debt-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
+          </div>
+        </div>
+        <div class="form-grid" style="grid-template-columns:1fr 2fr; margin-top:10px;">
+          <div class="form-field">
+            <label>Transfer Fee (%)</label>
+            <input type="number" id="debt-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateFeePreview()" />
+          </div>
+          <div id="promo-fee-preview" style="display:flex;align-items:flex-end;padding-bottom:10px;">
+            <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>
+          </div>
+        </div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;line-height:1.5;">
+          The transfer fee will be added to your balance. After the promo end date, the post-promo APR kicks in automatically in all calculations.
+        </div>
+      </div>
+
       <button class="btn btn-primary btn-full" onclick="addDebt()">+ Add Debt</button>
     </div>
 
@@ -1284,7 +1324,15 @@ function progressPct() {
 }
 
 function monthlyInterest() {
-  return debts.filter(d=>d.balance>0).reduce((a,d)=>a+(d.balance*(d.apr/100/12)),0);
+  return debts.filter(d=>d.balance>0).reduce((a,d)=>{
+    let effectiveApr = d.apr;
+    if (d.promoEnd) {
+      const now = new Date();
+      const promoEndDate = new Date(d.promoEnd);
+      effectiveApr = now < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.apr);
+    }
+    return a + (d.balance * (effectiveApr / 100 / 12));
+  }, 0);
 }
 
 function badgeClass(type) {
@@ -1322,7 +1370,15 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy) {
     // Accrue interest + apply min payments
     for (let d of balances) {
       if (d.bal <= 0) continue;
-      const interest = d.bal * (d.apr / 100 / 12);
+      // Determine effective APR for this month
+      let effectiveApr = d.apr;
+      if (d.promoEnd) {
+        const promoEndDate = new Date(d.promoEnd);
+        const currentDate = new Date();
+        currentDate.setMonth(currentDate.getMonth() + month - 1);
+        effectiveApr = currentDate < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.apr);
+      }
+      const interest = d.bal * (effectiveApr / 100 / 12);
       monthInterest += interest;
       d.bal += interest;
       const payment = Math.min(d.bal, d.minPayment || 25);
@@ -1361,17 +1417,55 @@ function addDebt() {
   const balance = parseFloat(document.getElementById('debt-balance').value);
   const apr = parseFloat(document.getElementById('debt-apr').value);
   const min = parseFloat(document.getElementById('debt-min').value);
+  const hasPromo = document.getElementById('debt-has-promo').checked;
 
   if (!name || isNaN(balance) || isNaN(apr) || isNaN(min)) {
     alert('Please fill in all fields.');
     return;
   }
 
-  debts.push({ id: nextId++, name, type, balance, originalBalance: balance, apr, minPayment: min });
+  let promoApr = null, promoEnd = null, postPromoApr = null, transferFee = 0;
+  let finalBalance = balance;
+
+  if (hasPromo) {
+    promoApr = parseFloat(document.getElementById('debt-promo-apr').value) || 0;
+    promoEnd = document.getElementById('debt-promo-end').value || null;
+    postPromoApr = parseFloat(document.getElementById('debt-post-promo-apr').value);
+    const feeRate = parseFloat(document.getElementById('debt-transfer-fee').value) || 0;
+    transferFee = Math.round(balance * (feeRate / 100) * 100) / 100;
+    finalBalance = balance + transferFee;
+    if (isNaN(postPromoApr)) {
+      alert('Please enter the post-promo APR.');
+      return;
+    }
+  }
+
+  debts.push({
+    id: nextId++, name, type,
+    balance: finalBalance,
+    originalBalance: finalBalance,
+    apr: hasPromo ? promoApr : apr,
+    regularApr: apr,
+    minPayment: min,
+    promoApr: hasPromo ? promoApr : null,
+    promoEnd: hasPromo ? promoEnd : null,
+    postPromoApr: hasPromo ? postPromoApr : null,
+    transferFee: hasPromo ? transferFee : 0,
+    hasPromo
+  });
+
+  // Reset form
   document.getElementById('debt-name').value = '';
   document.getElementById('debt-balance').value = '';
   document.getElementById('debt-apr').value = '';
   document.getElementById('debt-min').value = '';
+  document.getElementById('debt-has-promo').checked = false;
+  document.getElementById('debt-promo-apr').value = '0';
+  document.getElementById('debt-promo-end').value = '';
+  document.getElementById('debt-post-promo-apr').value = '';
+  document.getElementById('debt-transfer-fee').value = '';
+  document.getElementById('promo-fields').style.display = 'none';
+  document.getElementById('promo-fee-preview').innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>';
 
   save();
   render();
@@ -1584,11 +1678,33 @@ function renderDebtList() {
   list.innerHTML = debts.map(d => {
     const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
+
+    // Promo status
+    let promoBadge = '';
+    let promoInfo = '';
+    if (d.hasPromo && d.promoEnd) {
+      const promoEndDate = new Date(d.promoEnd);
+      const now = new Date();
+      const isActive = now < promoEndDate;
+      const endStr = promoEndDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+      if (isActive) {
+        const msLeft = promoEndDate - now;
+        const daysLeft = Math.ceil(msLeft / (1000*60*60*24));
+        promoBadge = `<span class="tag tag-accent" style="margin-left:6px;font-size:0.58rem;">0% promo · ${daysLeft}d left</span>`;
+        promoInfo = `<div class="debt-stat"><span class="debt-stat-label">After ${endStr}</span><span class="debt-stat-val" style="color:var(--accent3)">${d.postPromoApr}%</span></div>`;
+      } else {
+        promoBadge = `<span class="tag tag-muted" style="margin-left:6px;font-size:0.58rem;">promo ended</span>`;
+      }
+    }
+    const transferFeeInfo = d.transferFee > 0
+      ? `<div class="debt-stat"><span class="debt-stat-label">Transfer Fee</span><span class="debt-stat-val" style="color:var(--accent4)">${fmtDec(d.transferFee)}</span></div>`
+      : '';
+
     return `
     <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
-      <div class="debt-name">${d.name} ${isZero ? '✅' : ''}</div>
+      <div class="debt-name">${d.name} ${isZero ? '✅' : ''}${promoBadge}</div>
       <div class="debt-stats">
         <div class="debt-stat">
           <span class="debt-stat-label">Balance</span>
@@ -1605,6 +1721,8 @@ function renderDebtList() {
           <span class="debt-stat-label">Min Pmt</span>
           <span class="debt-stat-val">${fmt(d.minPayment)}</span>
         </div>
+        ${promoInfo}
+        ${transferFeeInfo}
       </div>
       <button class="btn btn-danger" onclick="removeDebt(${d.id})">✕</button>
       <div class="progress-wrap" style="min-width:100%">
@@ -1818,6 +1936,33 @@ function load() {
     if (n) nextId = parseInt(n);
     if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
   } catch(e) {}
+}
+
+// ═══════════════════════════════════════════
+//  PROMO APR HELPERS
+// ═══════════════════════════════════════════
+function togglePromoFields() {
+  const checked = document.getElementById('debt-has-promo').checked;
+  document.getElementById('promo-fields').style.display = checked ? 'block' : 'none';
+  if (checked) {
+    // Set default promo end date to 12 months from now
+    const d = new Date();
+    d.setMonth(d.getMonth() + 12);
+    document.getElementById('debt-promo-end').value = d.toISOString().split('T')[0];
+    updateFeePreview();
+  }
+}
+
+function updateFeePreview() {
+  const balance = parseFloat(document.getElementById('debt-balance').value) || 0;
+  const fee = parseFloat(document.getElementById('debt-transfer-fee').value) || 0;
+  const feeAmt = balance * (fee / 100);
+  const preview = document.getElementById('promo-fee-preview');
+  if (balance > 0 && fee > 0) {
+    preview.innerHTML = `<span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent4);">Fee: ${fmtDec(feeAmt)} → New balance: ${fmtDec(balance + feeAmt)}</span>`;
+  } else {
+    preview.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>';
+  }
 }
 
 // ═══════════════════════════════════════════
