@@ -1091,7 +1091,7 @@
       <div id="hybrid-order-note" style="display:none; margin-bottom:12px;">
         <div class="alert warning">
           <span>🎯</span>
-          <span>Hybrid mode is active. Go back to the <strong>Dashboard</strong> tab and use the <strong>≡ drag handle</strong> on the left of each debt to reorder them. Your custom order is saved automatically.</span>
+          <span>Hybrid mode is active. Use the <strong>≡ drag handle</strong> on the left of each debt card to reorder them. Your custom order is saved automatically.</span>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -1441,7 +1441,9 @@ function selectStrategy(s) {
   if (s === 'hybrid') {
     document.body.classList.add('hybrid-mode');
   } else {
+    // Restore insertion order when leaving Hybrid so Dashboard list is neutral
     document.body.classList.remove('hybrid-mode');
+    debts.sort((a, b) => a.id - b.id);
   }
 
   save(); renderStrategy(); recalculate();
