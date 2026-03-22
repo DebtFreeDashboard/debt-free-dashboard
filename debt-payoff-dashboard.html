@@ -1745,10 +1745,10 @@ function recalculate() {
 //  WHAT IF
 // ═══════════════════════════════════════════
 function updateWhatIf() {
-  const extra = parseInt(document.getElementById('wi-extra').value);
-  const lump = parseInt(document.getElementById('wi-lump').value);
+  const extra = parseInt(document.getElementById('wi-extra').value) || 0;
+  const lump  = parseInt(document.getElementById('wi-lump').value)  || 0;
   document.getElementById('wi-extra-label').textContent = fmt(extra)+'/mo';
-  document.getElementById('wi-lump-label').textContent = fmt(lump);
+  document.getElementById('wi-lump-label').textContent  = fmt(lump);
 
   const activeDebts = debts.filter(d=>d.balance>0);
   if (!activeDebts.length) {
@@ -1758,15 +1758,19 @@ function updateWhatIf() {
     return;
   }
 
-  const baseline = simulate(activeDebts, extraMonthly, 0, strategy);
-  const scenario = simulate(activeDebts, extra, lump, strategy);
+  // Always read the current extra payment from the Dashboard input
+  // so the baseline reflects what the user has actually set
+  const currentExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
+
+  const baseline = simulate(activeDebts, currentExtra, 0, strategy);
+  const scenario  = simulate(activeDebts, extra, lump, strategy);
 
   const monthsSaved = baseline.months - scenario.months;
-  const intSaved = baseline.totalInterest - scenario.totalInterest;
+  const intSaved    = baseline.totalInterest - scenario.totalInterest;
 
-  document.getElementById('wi-time-saved').textContent = monthsSaved > 0 ? monthsSaved + ' mo' : '0 mo';
-  document.getElementById('wi-int-saved').textContent = fmt(Math.max(0, intSaved));
-  document.getElementById('wi-total-int').textContent = fmt(scenario.totalInterest);
+  document.getElementById('wi-time-saved').textContent  = monthsSaved > 0 ? monthsSaved + ' mo' : '0 mo';
+  document.getElementById('wi-int-saved').textContent   = fmt(Math.max(0, intSaved));
+  document.getElementById('wi-total-int').textContent   = fmt(scenario.totalInterest);
   document.getElementById('wi-months-left').textContent = scenario.months + ' months remaining';
 
   const freeDate = new Date();
