@@ -1259,7 +1259,7 @@
 
       <div class="range-wrap">
         <div class="range-label">
-          <span>Extra Monthly Payment</span>
+          <span>Additional Monthly Payment (on top of your current plan)</span>
           <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
         </div>
         <input type="range" id="wi-extra" min="0" max="2000" step="25" value="0" oninput="updateWhatIf()" />
@@ -1750,9 +1750,9 @@ function recalculate() {
 //  WHAT IF
 // ═══════════════════════════════════════════
 function updateWhatIf() {
-  const extra = parseInt(document.getElementById('wi-extra').value) || 0;
-  const lump  = parseInt(document.getElementById('wi-lump').value)  || 0;
-  document.getElementById('wi-extra-label').textContent = fmt(extra)+'/mo';
+  const sliderExtra = parseInt(document.getElementById('wi-extra').value) || 0;
+  const lump        = parseInt(document.getElementById('wi-lump').value)  || 0;
+  document.getElementById('wi-extra-label').textContent = sliderExtra > 0 ? '+' + fmt(sliderExtra) + '/mo' : '$0/mo';
   document.getElementById('wi-lump-label').textContent  = fmt(lump);
 
   const activeDebts = debts.filter(d=>d.balance>0);
@@ -1763,10 +1763,13 @@ function updateWhatIf() {
     return;
   }
 
-  // Baseline = minimum payments only ($0 extra) — always the worst-case
-  // so Time Saved and Interest Saved show the true gain vs doing nothing extra
-  const baseline = simulate(activeDebts, 0, 0, strategy);
-  const scenario  = simulate(activeDebts, extra, lump, strategy);
+  // Baseline = user's current plan (Dashboard extra payment)
+  // Scenario = baseline + what the slider adds on top
+  const dashboardExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const scenarioExtra  = dashboardExtra + sliderExtra;
+
+  const baseline = simulate(activeDebts, dashboardExtra, 0, strategy);
+  const scenario  = simulate(activeDebts, scenarioExtra, lump, strategy);
 
   const monthsSaved = baseline.months - scenario.months;
   const intSaved    = baseline.totalInterest - scenario.totalInterest;
@@ -1782,7 +1785,7 @@ function updateWhatIf() {
 
   const baseDate = new Date();
   baseDate.setMonth(baseDate.getMonth() + baseline.months);
-  document.getElementById('wi-new-date').textContent = 'vs. ' + baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'}) + ' (min payments only)';
+  document.getElementById('wi-new-date').textContent = 'vs. your current plan (' + baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'}) + ')';
 
   // populate windfall debt select
   const ws = document.getElementById('wi-windfall-debt');
