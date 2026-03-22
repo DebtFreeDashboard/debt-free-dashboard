@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DebtFree — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -759,6 +759,43 @@
   .col-span-full { grid-column: 1 / -1; }
 
   /* Update balance inline */
+  /* ── DRAG HANDLE (Hybrid mode) ── */
+  .drag-handle {
+    display: none;
+    flex-direction: column;
+    gap: 3px;
+    padding: 6px 4px;
+    cursor: grab;
+    flex-shrink: 0;
+    opacity: 0.35;
+    transition: opacity 0.2s;
+  }
+
+  .drag-handle:active { cursor: grabbing; }
+  .drag-handle:hover { opacity: 0.8; }
+
+  .drag-handle span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    background: var(--text);
+    border-radius: 1px;
+  }
+
+  body.hybrid-mode .drag-handle { display: flex; }
+
+  .debt-item.drag-over {
+    border-color: var(--accent) !important;
+    background: rgba(0,229,176,0.05) !important;
+  }
+
+  .debt-item.dragging {
+    opacity: 0.4;
+    border-style: dashed !important;
+  }
+
+  body.hybrid-mode .debt-item { cursor: default; }
+
   .update-balance-btn {
     font-family: var(--font-mono);
     font-size: 0.65rem;
@@ -1054,7 +1091,7 @@
       <div id="hybrid-order-note" style="display:none; margin-bottom:12px;">
         <div class="alert warning">
           <span>🎯</span>
-          <span>Drag debts in your debt list to reorder them for Hybrid mode, or they'll follow the order you added them.</span>
+          <span>Hybrid mode is active. Use the <strong>≡ drag handle</strong> on the left of each debt card to reorder them. Your custom order is saved automatically.</span>
         </div>
       </div>
       <div style="overflow-x:auto">
@@ -1399,6 +1436,14 @@ function selectStrategy(s) {
   document.getElementById('card-' + s).classList.add('selected');
   document.getElementById('strategy-select').value = s;
   document.getElementById('hybrid-order-note').style.display = s === 'hybrid' ? 'block' : 'none';
+
+  // Toggle hybrid drag mode
+  if (s === 'hybrid') {
+    document.body.classList.add('hybrid-mode');
+  } else {
+    document.body.classList.remove('hybrid-mode');
+  }
+
   save(); renderStrategy(); recalculate();
 }
 
@@ -1538,7 +1583,8 @@ function renderDebtList() {
     const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
     return `
-    <div class="debt-item" style="${isZero ? 'opacity:0.5' : ''}">
+    <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
+      <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
       <div class="debt-name">${d.name} ${isZero ? '✅' : ''}</div>
       <div class="debt-stats">
@@ -1567,6 +1613,9 @@ function renderDebtList() {
 
   // Payment log visibility
   document.getElementById('payment-log-card').style.display = debts.length ? 'block' : 'none';
+
+  // Init drag-and-drop if hybrid
+  if (strategy === 'hybrid') initDragDrop();
 }
 
 function renderChart() {
@@ -1770,10 +1819,64 @@ function load() {
 }
 
 // ═══════════════════════════════════════════
+//  DRAG AND DROP (Hybrid mode)
+// ═══════════════════════════════════════════
+function initDragDrop() {
+  const list = document.getElementById('debt-list');
+  const items = list.querySelectorAll('.debt-item[data-id]');
+  let dragSrc = null;
+
+  items.forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.dataset.id);
+    });
+
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      list.querySelectorAll('.debt-item').forEach(i => i.classList.remove('drag-over'));
+    });
+
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (item !== dragSrc) {
+        list.querySelectorAll('.debt-item').forEach(i => i.classList.remove('drag-over'));
+        item.classList.add('drag-over');
+      }
+    });
+
+    item.addEventListener('dragleave', () => {
+      item.classList.remove('drag-over');
+    });
+
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrc && dragSrc !== item) {
+        const srcId = parseInt(dragSrc.dataset.id);
+        const tgtId = parseInt(item.dataset.id);
+        const srcIdx = debts.findIndex(d => d.id === srcId);
+        const tgtIdx = debts.findIndex(d => d.id === tgtId);
+        if (srcIdx !== -1 && tgtIdx !== -1) {
+          const [moved] = debts.splice(srcIdx, 1);
+          debts.splice(tgtIdx, 0, moved);
+          save();
+          render();
+        }
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
 document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
 load();
+// Restore hybrid body class if strategy was saved as hybrid
+if (strategy === 'hybrid') document.body.classList.add('hybrid-mode');
 render();
 </script>
 </body>
