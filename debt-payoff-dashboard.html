@@ -639,6 +639,26 @@
     color: var(--accent);
   }
 
+  .btn-delete-payment {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+  }
+
+  .payment-entry:hover .btn-delete-payment { opacity: 1; }
+  .btn-delete-payment:hover { color: var(--accent3); border-color: rgba(255,107,107,0.4); }
+
   /* ─── EXTRAS ─── */
   .divider {
     height: 1px;
@@ -1762,6 +1782,31 @@ function updateWhatIf() {
   ws.innerHTML = activeDebts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
 }
 
+// ═══════════════════════════════════════════
+//  DELETE PAYMENT (recalculates from scratch)
+// ═══════════════════════════════════════════
+function deletePayment(paymentId) {
+  const idx = payments.findIndex(p => p.id === paymentId);
+  if (idx === -1) return;
+
+  const p = payments[idx];
+
+  // Remove the payment first
+  payments.splice(idx, 1);
+
+  // Recalculate this debt's balance by replaying all remaining
+  // payments for it against the original balance
+  const d = debts.find(x => x.id === p.debtId);
+  if (d) {
+    const totalPaidOnDebt = payments
+      .filter(x => x.debtId === p.debtId)
+      .reduce((sum, x) => sum + x.amount, 0);
+    d.balance = Math.max(0, d.originalBalance - totalPaidOnDebt);
+  }
+
+  save(); render();
+}
+
 function applyWindfall() {
   const debtId = parseInt(document.getElementById('wi-windfall-debt').value);
   const amt = parseFloat(document.getElementById('wi-windfall-amt').value);
@@ -1773,18 +1818,25 @@ function applyWindfall() {
   const old = d.balance;
   d.balance = Math.max(0, d.balance - amt);
   const saved = old - d.balance;
+  const paymentId = Date.now();
 
-  payments.push({ id: Date.now(), debtId, debtName: d.name, amount: saved, date: new Date().toISOString().split('T')[0], eliminated: d.balance <= 0, note: 'Windfall' });
+  payments.push({ id: paymentId, debtId, debtName: d.name, amount: saved, date: new Date().toISOString().split('T')[0], eliminated: d.balance <= 0, note: 'Windfall' });
 
   document.getElementById('windfall-result').innerHTML = `
-    <div class="alert">
-      ✅ Applied ${fmt(saved)} to <strong>${d.name}</strong>. 
-      New balance: <strong>${fmtDec(d.balance)}</strong>.
-      ${d.balance === 0 ? ' 🎉 <strong>Debt eliminated!</strong>' : ''}
+    <div class="alert" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <span>✅ Applied ${fmt(saved)} to <strong>${d.name}</strong>. New balance: <strong>${fmtDec(d.balance)}</strong>.${d.balance === 0 ? ' 🎉 <strong>Debt eliminated!</strong>' : ''}</span>
+      <button class="btn btn-ghost" style="font-size:0.75rem;padding:6px 14px;white-space:nowrap;border-color:rgba(255,107,107,0.4);color:var(--accent3);" onclick="undoWindfall(${paymentId})">↩ Undo</button>
     </div>`;
 
   document.getElementById('wi-windfall-amt').value = '';
   save(); render(); updateWhatIf();
+}
+
+function undoWindfall(paymentId) {
+  deletePayment(paymentId);
+  document.getElementById('windfall-result').innerHTML = `
+    <div class="alert warning">↩ Windfall undone — balance restored.</div>`;
+  updateWhatIf();
 }
 
 // ═══════════════════════════════════════════
@@ -1974,6 +2026,7 @@ function renderPaymentLog() {
       <span class="payment-date">${p.date}</span>
       <span class="payment-debt">${p.debtName} ${p.note ? '<span class="tag tag-accent" style="margin-left:4px">'+p.note+'</span>' : ''} ${p.eliminated ? '🎉' : ''}</span>
       <span class="payment-amount">-${fmtDec(p.amount)}</span>
+      <button class="btn-delete-payment" onclick="deletePayment(${p.id})" title="Delete and restore balance">✕ undo</button>
     </div>`).join('');
 }
 
