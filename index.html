@@ -366,7 +366,8 @@
     margin-top: 60px;
   }
 
-  @media(max-width:700px) { .features-grid { grid-template-columns: 1fr; } }
+  @media(max-width:900px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media(max-width:600px) { .features-grid { grid-template-columns: 1fr; } }
 
   .feature-card {
     background: var(--cream);
@@ -870,7 +871,7 @@
   <div style="max-width:1100px; margin:0 auto; width:100%">
     <div class="hero-kicker">Personal Finance Tool · Interactive Dashboard</div>
     <h1 class="hero-headline">Stop Guessing.<br>Start <em>Destroying</em><br>Your Debt.</h1>
-    <p class="hero-sub">The interactive payoff dashboard that shows you exactly when you'll be free — and the fastest path to get there. No subscriptions. No fluff. Just a plan that works.</p>
+    <p class="hero-sub">The interactive payoff dashboard that shows you exactly when you'll be free — and the fastest path to get there. Track every debt, model every scenario, and update your plan as your life changes. No subscriptions. No bank access. Just a plan that works.</p>
     <div class="hero-actions">
       <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-primary-lg">
         Get Instant Access <span class="arrow">→</span>
@@ -988,32 +989,47 @@
       <div class="feature-card">
         <span class="feature-icon">🏔️</span>
         <div class="feature-name">3 Payoff Strategies</div>
-        <div class="feature-desc">Avalanche, Snowball, and Hybrid — with a side-by-side comparison so you can see exactly which method saves you the most money and time.</div>
+        <div class="feature-desc">Avalanche, Snowball, and Hybrid — with a live side-by-side comparison showing exactly which method saves you the most. Hybrid mode lets you drag debts into your own custom payoff order.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">📊</span>
         <div class="feature-name">Live Payoff Chart</div>
-        <div class="feature-desc">Watch your balance curve drop to zero as you adjust your monthly payment. Your freedom date updates in real-time as you plan.</div>
+        <div class="feature-desc">Watch your balance curve drop to zero as you adjust your monthly budget. Your Freedom Date recalculates in real-time every time you change a number.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🔮</span>
         <div class="feature-name">"What If" Modeler</div>
-        <div class="feature-desc">Slide to add $100, $500, or $1,000 more per month and instantly see how many months you shave off and how much interest you save.</div>
+        <div class="feature-desc">Add more monthly payment on top of your current plan and instantly see months saved and interest avoided — compared against your actual plan, not a hypothetical baseline.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎯</span>
+        <div class="feature-name">Promotional APR Tracking</div>
+        <div class="feature-desc">Have a 0% balance transfer? Enter the promo rate, end date, transfer fee, and post-promo APR. The dashboard automatically switches rates when your promo expires — so your math is always accurate.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">💸</span>
         <div class="feature-name">Windfall Planner</div>
-        <div class="feature-desc">Got a bonus, tax refund, or side hustle income? Apply it to any debt and see the ripple effect on your entire payoff timeline.</div>
+        <div class="feature-desc">Apply a tax refund, bonus, or side hustle income to any debt and instantly see the ripple effect on your entire timeline. Made a mistake? Undo it — your balance restores automatically.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📝</span>
+        <div class="feature-name">Payment Logger with Undo</div>
+        <div class="feature-desc">Log every payment with a date and amount. Delete any entry — even out of order — and the dashboard recalculates your balance from scratch so the math is always right.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">✏️</span>
+        <div class="feature-name">Full Debt Editing</div>
+        <div class="feature-desc">Edit any field on any debt at any time — name, type, balance, APR, minimum payment, and all promo fields. Your entire plan updates immediately. Built for real ongoing use.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🏆</span>
         <div class="feature-name">Milestones & Wins</div>
-        <div class="feature-desc">Nine achievement badges that unlock automatically as you pay down debt. Because momentum matters, and every win deserves recognition.</div>
+        <div class="feature-desc">Nine achievement badges unlock automatically — from your first payment logged to $10,000 paid off. Momentum is the real product. Every win gets its moment.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🔒</span>
         <div class="feature-name">100% Private</div>
-        <div class="feature-desc">Your data never leaves your device. No account required, no server, no syncing to the cloud. Just you and your numbers.</div>
+        <div class="feature-desc">Your data never leaves your device. No account, no server, no cloud sync. Open in any browser — your data saves locally and persists automatically across every session.</div>
       </div>
     </div>
   </div>
@@ -1098,25 +1114,33 @@
         </div>
         <div class="included-item">
           <div class="included-check">✓</div>
-          <div class="included-text"><strong>All 3 Payoff Strategies</strong><span>Avalanche, Snowball & Hybrid with live comparison.</span></div>
+          <div class="included-text"><strong>All 3 Payoff Strategies + Drag-to-Reorder</strong><span>Avalanche, Snowball & Hybrid with live comparison. Hybrid lets you set your own order.</span></div>
         </div>
         <div class="included-item">
           <div class="included-check">✓</div>
-          <div class="included-text"><strong>Unlimited Debt Accounts</strong><span>Credit cards, student loans, auto, personal — add them all.</span></div>
+          <div class="included-text"><strong>Promotional APR Tracking</strong><span>0% balance transfer support with auto rate-switching when your promo expires.</span></div>
+        </div>
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>Full Debt Editing</strong><span>Edit every field on every debt at any time — including all promo fields.</span></div>
         </div>
       </div>
       <div class="included-list">
         <div class="included-item">
           <div class="included-check">✓</div>
-          <div class="included-text"><strong>Payment Log & Progress Tracking</strong><span>Record every payment and watch your progress bar grow.</span></div>
+          <div class="included-text"><strong>Payment Logger with Undo</strong><span>Log payments, delete any entry out of order — balance recalculates from scratch every time.</span></div>
         </div>
         <div class="included-item">
           <div class="included-check">✓</div>
-          <div class="included-text"><strong>What If & Windfall Modeler</strong><span>See the impact of extra payments and lump-sum windfalls instantly.</span></div>
+          <div class="included-text"><strong>What If Modeler + Windfall Planner</strong><span>Model additional payments on top of your plan. Apply and undo windfalls instantly.</span></div>
         </div>
         <div class="included-item">
           <div class="included-check">✓</div>
-          <div class="included-text"><strong>Milestone Badges</strong><span>9 achievements that unlock as you crush your debt.</span></div>
+          <div class="included-text"><strong>9 Milestone Badges</strong><span>Unlock automatically as you crush your debt — from first payment to debt eliminated.</span></div>
+        </div>
+        <div class="included-item">
+          <div class="included-check">✓</div>
+          <div class="included-text"><strong>100% Private — Data Stays Local</strong><span>No account, no server, no cloud. Your numbers never leave your device.</span></div>
         </div>
       </div>
     </div>
@@ -1142,10 +1166,14 @@
       <div class="price-note">One-time purchase · Instant download · No subscription ever</div>
       <div class="pricing-items">
         <div class="pricing-item">Interactive mobile-friendly dashboard</div>
-        <div class="pricing-item">Avalanche, Snowball & Hybrid strategies</div>
+        <div class="pricing-item">Avalanche, Snowball & Hybrid strategies with live comparison</div>
+        <div class="pricing-item">Drag-to-reorder Hybrid mode</div>
         <div class="pricing-item">Live payoff chart & freedom date</div>
-        <div class="pricing-item">What If scenario modeler</div>
-        <div class="pricing-item">Windfall & payment logger</div>
+        <div class="pricing-item">Promotional APR tracking with auto rate-switching</div>
+        <div class="pricing-item">What If scenario modeler (vs. your actual plan)</div>
+        <div class="pricing-item">Windfall planner with one-click undo</div>
+        <div class="pricing-item">Payment logger with out-of-order deletion</div>
+        <div class="pricing-item">Full debt editing — every field, any time</div>
         <div class="pricing-item">9 milestone achievement badges</div>
         <div class="pricing-item">100% private — your data stays local</div>
         <div class="pricing-item">Works on phone, tablet & desktop</div>
