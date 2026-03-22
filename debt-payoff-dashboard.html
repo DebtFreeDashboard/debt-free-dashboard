@@ -1260,9 +1260,9 @@
       <div class="range-wrap">
         <div class="range-label">
           <span>Extra Monthly Payment</span>
-          <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$200/mo</span>
+          <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
         </div>
-        <input type="range" id="wi-extra" min="0" max="2000" step="25" value="200" oninput="updateWhatIf()" />
+        <input type="range" id="wi-extra" min="0" max="2000" step="25" value="0" oninput="updateWhatIf()" />
       </div>
 
       <div class="range-wrap" style="margin-top:12px">
@@ -1391,7 +1391,12 @@ function showSection(id) {
       t.classList.add('active');
     }
   });
-  if (id === 'whatif') updateWhatIf();
+  if (id === 'whatif') {
+    // Reset sliders to 0 so the tab always starts from a clean state
+    document.getElementById('wi-extra').value = 0;
+    document.getElementById('wi-lump').value  = 0;
+    updateWhatIf();
+  }
   if (id === 'milestones') renderMilestones();
   if (id === 'strategy') renderStrategy();
 }
@@ -1758,11 +1763,9 @@ function updateWhatIf() {
     return;
   }
 
-  // Always read the current extra payment from the Dashboard input
-  // so the baseline reflects what the user has actually set
-  const currentExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
-
-  const baseline = simulate(activeDebts, currentExtra, 0, strategy);
+  // Baseline = minimum payments only ($0 extra) — always the worst-case
+  // so Time Saved and Interest Saved show the true gain vs doing nothing extra
+  const baseline = simulate(activeDebts, 0, 0, strategy);
   const scenario  = simulate(activeDebts, extra, lump, strategy);
 
   const monthsSaved = baseline.months - scenario.months;
@@ -1779,7 +1782,7 @@ function updateWhatIf() {
 
   const baseDate = new Date();
   baseDate.setMonth(baseDate.getMonth() + baseline.months);
-  document.getElementById('wi-new-date').textContent = 'vs. ' + baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  document.getElementById('wi-new-date').textContent = 'vs. ' + baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'}) + ' (min payments only)';
 
   // populate windfall debt select
   const ws = document.getElementById('wi-windfall-debt');
