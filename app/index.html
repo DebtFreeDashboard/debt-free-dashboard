@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DebtFree">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="manifest" href="/app/manifest.json">
+<link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+<link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
+<title>DebtFree Dashboard — Install</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #0a0a0f;
+    color: #f0f0f8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 20px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 40px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-pip {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #c8f135;
+    box-shadow: 0 0 12px #c8f135;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 8px #c8f135; }
+    50% { box-shadow: 0 0 20px #c8f135, 0 0 40px rgba(200,241,53,0.3); }
+  }
+
+  .card {
+    background: #12121a;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 32px;
+    width: 100%;
+    max-width: 440px;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .card-sub {
+    font-size: 0.85rem;
+    color: #6b6b8a;
+    font-weight: 300;
+    margin-bottom: 24px;
+    line-height: 1.55;
+  }
+
+  /* ── DEVICE TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: #1a1a26;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: 7px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #4a4a6a;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+  }
+
+  .tab.active {
+    background: #c8f135;
+    color: #0a0a0f;
+    font-weight: 500;
+  }
+
+  /* ── STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 3px; }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    background: #1a1a26;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    background: rgba(200,241,53,0.1);
+    color: #c8f135;
+    border: 1px solid rgba(200,241,53,0.2);
+    border-radius: 5px;
+    padding: 3px 7px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    letter-spacing: 0.05em;
+  }
+
+  .step-text {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #c0c0d8;
+    font-weight: 300;
+  }
+
+  .step-text strong { color: #f0f0f8; font-weight: 500; }
+  .step-text .lime { color: #c8f135; font-weight: 500; }
+
+  /* ── OPEN BUTTON ── */
+  .btn-open {
+    display: block;
+    width: 100%;
+    background: #c8f135;
+    color: #0a0a0f;
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: -0.3px;
+    margin-top: 20px;
+  }
+
+  .btn-open:hover {
+    background: #d9f55f;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(200,241,53,0.3);
+  }
+
+  .already-installed {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: #3a3a5a;
+    text-align: center;
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  .already-installed a {
+    color: #6b6b8a;
+    text-decoration: none;
+  }
+
+  .already-installed a:hover { color: #c8f135; }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: flex; flex-direction: column; gap: 3px; }
+
+  /* iOS share icon inline */
+  .share-icon {
+    display: inline-block;
+    width: 14px; height: 14px;
+    vertical-align: middle;
+    margin: 0 2px;
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">
+  <div class="logo-pip"></div>
+  DebtFree
+</div>
+
+<div class="card">
+  <div class="card-title">Install your dashboard</div>
+  <p class="card-sub">DebtFree works as a full app on every device. Pick yours below for setup instructions.</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('ios')">iPhone / iPad</button>
+    <button class="tab" onclick="showTab('android')">Android</button>
+    <button class="tab" onclick="showTab('desktop')">Desktop</button>
+  </div>
+
+  <!-- iOS -->
+  <div class="step-panel active" id="panel-ios">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-text">Tap the <strong>Open Dashboard</strong> button below to open it in Safari</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-text">Tap the <span class="lime">Share button</span> at the bottom of Safari (the square with an arrow pointing up)</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-text">Scroll down and tap <span class="lime">Add to Home Screen</span></div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-text">Tap <strong>Add</strong> — the DebtFree icon appears on your home screen instantly</div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-text">Open from your home screen — it runs like a native app, works offline, and saves your data automatically</div>
+    </div>
+  </div>
+
+  <!-- Android -->
+  <div class="step-panel" id="panel-android">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-text">Tap <strong>Open Dashboard</strong> below — it opens in Chrome</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-text">Tap the <span class="lime">three dots menu</span> in the top right corner of Chrome</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-text">Tap <span class="lime">Add to Home Screen</span> or <span class="lime">Install App</span></div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-text">Tap <strong>Install</strong> — DebtFree appears on your home screen and works like a native app</div>
+    </div>
+  </div>
+
+  <!-- Desktop -->
+  <div class="step-panel" id="panel-desktop">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-text">Tap <strong>Open Dashboard</strong> below — it opens in your browser</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-text"><strong>Chrome / Edge:</strong> Look for the <span class="lime">install icon</span> (⊕) in the address bar and click it to install as a desktop app</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-text"><strong>Safari (Mac):</strong> File menu → <span class="lime">Add to Dock</span></div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-text"><strong>Any browser:</strong> Bookmark it — your data saves automatically and the page works offline</div>
+    </div>
+  </div>
+
+  <a href="/app/dashboard.html" class="btn-open">Open Dashboard →</a>
+  <div class="already-installed">Already installed? <a href="/app/dashboard.html">Open directly →</a></div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['ios','android','desktop'][i] === id);
+  });
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+}
+
+// Auto-detect device and show correct tab
+function detectDevice() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/iphone|ipad|ipod/.test(ua)) showTab('ios');
+  else if (/android/.test(ua)) showTab('android');
+  else showTab('desktop');
+}
+detectDevice();
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
+</body>
+</html>
