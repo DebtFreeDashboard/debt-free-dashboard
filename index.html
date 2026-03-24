@@ -641,19 +641,21 @@
   /* ─── PRICING ─── */
   .pricing-section {
     background: var(--ink);
-    padding: 100px 40px;
+    padding: 100px 24px;
     text-align: center;
   }
 
   .pricing-card {
-    max-width: 480px;
-    margin: 60px auto 0;
+    width: 100%;
+    margin: 0;
     background: var(--cream);
     border-radius: 16px;
     padding: 48px 40px;
     position: relative;
     overflow: hidden;
   }
+
+  @media(max-width:700px) { .pricing-grid { grid-template-columns: 1fr !important; } }
 
   .pricing-card::before {
     content: '';
@@ -1157,7 +1159,7 @@
     </div>
     <h2 class="section-title" style="color:var(--cream); text-align:center">Two tiers.<br>One freedom date.</h2>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:900px; margin:40px auto 0;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:900px; margin:40px auto 0; align-items:start;">
 
       <!-- STARTER -->
       <div class="pricing-card" style="position:relative;">
@@ -1186,30 +1188,30 @@
       </div>
 
       <!-- PRO -->
-      <div class="pricing-card" style="position:relative; border-color:var(--gold); background:linear-gradient(160deg,rgba(201,168,76,0.06),transparent);">
-        <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1a1208;font-family:var(--font-mono);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap;">Most Popular</div>
+      <div class="pricing-card" style="position:relative; border-color:var(--gold); background:linear-gradient(160deg,rgba(201,168,76,0.08),#1a1208); padding-top:56px;">
+        <div style="position:absolute;top:16px;left:50%;transform:translateX(-50%);background:var(--gold);color:#1a1208;font-family:var(--font-mono);font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:4px 14px;border-radius:20px;white-space:nowrap;">Most Popular</div>
         <div class="pricing-eyebrow" style="color:var(--gold)">Pro</div>
-        <div class="pricing-name">DebtFree Dashboard Pro</div>
+        <div class="pricing-name" style="color:var(--cream);">DebtFree Dashboard Pro</div>
         <div class="price-display">
-          <span class="price-dollar">$</span>
+          <span class="price-dollar" style="color:var(--gold);">$</span>
           <span class="price-amount" style="color:var(--gold)">97</span>
         </div>
-        <div class="price-note">One-time · Everything in Starter, plus</div>
+        <div class="price-note" style="color:rgba(255,255,255,0.5);">One-time · Everything in Starter, plus</div>
         <div class="pricing-items">
           <div class="pricing-item" style="color:var(--gold);font-weight:500;">⭐ Private 30-min video walkthrough</div>
           <div class="pricing-item" style="color:var(--gold);font-weight:500;">⭐ Debt-Free Action Checklist (10 steps)</div>
           <div class="pricing-item" style="color:var(--gold);font-weight:500;">⭐ Priority email support</div>
           <div class="pricing-item" style="color:var(--gold);font-weight:500;">⭐ Free lifetime updates</div>
-          <div class="pricing-item">Everything in Starter included</div>
-          <div class="pricing-item">Installs as native app on any device</div>
-          <div class="pricing-item">All 3 strategies + live comparison</div>
-          <div class="pricing-item">What If modeler + Windfall planner</div>
-          <div class="pricing-item">Full debt editing + payment logger</div>
-          <div class="pricing-item">9 milestone badges</div>
-          <div class="pricing-item">100% private — data stays local</div>
+          <div class="pricing-item" style="color:rgba(255,255,255,0.65);">Everything in Starter included</div>
+          <div class="pricing-item" style="color:rgba(255,255,255,0.65);">Installs as native app on any device</div>
+          <div class="pricing-item" style="color:rgba(255,255,255,0.65);">All 3 strategies + live comparison</div>
+          <div class="pricing-item" style="color:rgba(255,255,255,0.65);">What If modeler + Windfall planner</div>
+          <div class="pricing-item" style="color:rgba(255,255,255,0.65);">Full debt editing + payment logger</div>
+          <div class="pricing-item" style="color:rgba(255,255,255,0.65);">9 milestone badges</div>
+          <div class="pricing-item" style="color:rgba(255,255,255,0.65);">100% private — data stays local</div>
         </div>
-        <a href="https://debtfreedashboard.gumroad.com/l/laxic" class="btn-buy" style="background:var(--gold);color:#1a1208;border-color:var(--gold);">Get Pro — $97 →</a>
-        <div class="guarantee">🛡️ 30-day money-back guarantee</div>
+        <a href="YOUR_GUMROAD_PRO_LINK" class="btn-buy" style="background:var(--gold);color:#1a1208;border-color:var(--gold);">Get Pro — $97 →</a>
+        <div class="guarantee" style="color:rgba(255,255,255,0.45);">🛡️ 30-day money-back guarantee</div>
       </div>
 
     </div>
@@ -1275,7 +1277,7 @@
       <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-primary-lg" style="display:inline-flex;">
         Get Starter — $49 <span class="arrow">→</span>
       </a>
-      <a href="https://debtfreedashboard.gumroad.com/l/laxic" class="btn-primary-lg" style="display:inline-flex; background:var(--gold); border-color:var(--gold); color:#1a1208;">
+      <a href="YOUR_GUMROAD_PRO_LINK" class="btn-primary-lg" style="display:inline-flex; background:var(--gold); border-color:var(--gold); color:#1a1208;">
         Get Pro — $97 <span class="arrow">→</span>
       </a>
     </div>
