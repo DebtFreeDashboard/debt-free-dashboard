@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="manifest" href="/app/manifest.json">
+<link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+<link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
+<title>DebtFree Dashboard Pro — Welcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0f0f8;
+    --muted: #6b6b8a;
+    --dim: #3a3a58;
+    --lime: #c8f135;
+    --lime-dim: rgba(200,241,53,0.07);
+    --lime-border: rgba(200,241,53,0.18);
+    --gold: #ffb830;
+    --gold-dim: rgba(255,184,48,0.08);
+    --gold-border: rgba(255,184,48,0.25);
+    --font-d: 'Syne', sans-serif;
+    --font-m: 'DM Mono', monospace;
+    --font-b: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-b);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(200,241,53,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,241,53,0.02) 1px, transparent 1px);
+    background-size: 52px 52px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; border-bottom: 1px solid var(--border);
+    position: relative; z-index: 1;
+  }
+
+  .nav-logo {
+    font-family: var(--font-d); font-size: 1rem; font-weight: 800;
+    letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .pip {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--lime); box-shadow: 0 0 8px var(--lime);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100%{box-shadow:0 0 6px var(--lime);} 50%{box-shadow:0 0 16px var(--lime),0 0 32px rgba(200,241,53,0.3);} }
+
+  .pro-badge {
+    font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.12em;
+    text-transform: uppercase; background: var(--gold-dim); color: var(--gold);
+    border: 1px solid var(--gold-border); padding: 4px 10px; border-radius: 20px;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 40px 20px 80px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+
+  .hero { text-align: center; margin-bottom: 40px; animation: fadeUp 0.5s ease both; }
+
+  .welcome-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font-m); font-size: 0.62rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--gold); background: var(--gold-dim);
+    border: 1px solid var(--gold-border); padding: 6px 16px; border-radius: 20px; margin-bottom: 20px;
+  }
+
+  .wdot { width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1.5s ease-in-out infinite; }
+
+  .hero h1 {
+    font-family: var(--font-d); font-size: clamp(2rem,7vw,2.8rem);
+    font-weight: 800; letter-spacing: -1.5px; line-height: 1.05; margin-bottom: 12px;
+  }
+
+  .lime { color: var(--lime); }
+  .gold { color: var(--gold); }
+
+  .hero p { font-size: 0.9rem; color: var(--muted); font-weight: 300; line-height: 1.65; }
+
+  .section-eyebrow {
+    font-family: var(--font-m); font-size: 0.6rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .section-eyebrow::before { content:''; width:20px; height:1px; background:var(--muted); opacity:0.4; }
+
+  /* ── BONUS CARDS ── */
+  .bonus-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px; margin-bottom: 10px;
+    transition: border-color 0.2s; animation: fadeUp 0.5s ease both;
+  }
+
+  .bonus-card:nth-child(1){animation-delay:0.1s;}
+  .bonus-card:nth-child(2){animation-delay:0.2s;}
+  .bonus-card:nth-child(3){animation-delay:0.3s;}
+  .bonus-card:nth-child(4){animation-delay:0.4s;}
+  .bonus-card:hover { border-color: var(--border2); }
+  .bonus-card.gold-card { border-color: var(--gold-border); background: linear-gradient(135deg,rgba(255,184,48,0.04),var(--surface)); }
+
+  .bonus-header { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+
+  .bonus-icon {
+    width:40px;height:40px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.2rem;flex-shrink:0;
+  }
+
+  .i-video   { background:rgba(255,184,48,0.1);   border:1px solid var(--gold-border); }
+  .i-check   { background:var(--lime-dim);          border:1px solid var(--lime-border); }
+  .i-support { background:rgba(123,94,167,0.1);     border:1px solid rgba(123,94,167,0.25); }
+  .i-updates { background:rgba(0,229,176,0.08);     border:1px solid rgba(0,229,176,0.2); }
+
+  .bonus-title { font-family:var(--font-d); font-size:0.95rem; font-weight:700; letter-spacing:-0.2px; margin-bottom:2px; }
+
+  .bonus-tag {
+    font-family:var(--font-m); font-size:0.58rem; letter-spacing:0.1em;
+    text-transform:uppercase; color:var(--gold);
+  }
+
+  .bonus-desc { font-size:0.82rem; color:var(--muted); line-height:1.55; font-weight:300; margin-bottom:14px; }
+
+  .btn {
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--font-d); font-weight:700; font-size:0.78rem;
+    padding:9px 18px; border-radius:8px; text-decoration:none;
+    border:none; cursor:pointer; transition:all 0.2s; letter-spacing:0.02em;
+  }
+
+  .btn-gold { background:var(--gold); color:#0a0a0f; }
+  .btn-gold:hover { background:#ffc94d; transform:translateY(-1px); box-shadow:0 6px 20px rgba(255,184,48,0.3); }
+
+  .btn-lime { background:var(--lime-dim); color:var(--lime); border:1px solid var(--lime-border); }
+  .btn-lime:hover { background:rgba(200,241,53,0.12); transform:translateY(-1px); }
+
+  .btn-ghost { background:var(--surface2); color:var(--muted); border:1px solid var(--border2); }
+  .btn-ghost:hover { color:var(--text); border-color:var(--lime-border); }
+
+  /* ── DIVIDER ── */
+  .divider { height:1px; background:var(--border); margin:28px 0; }
+
+  /* ── INSTALL SECTION ── */
+  .install-card {
+    background: var(--surface); border:1px solid var(--lime-border);
+    border-radius:14px; padding:22px; margin-bottom:28px;
+    animation: fadeUp 0.5s ease 0.5s both;
+  }
+
+  .install-title { font-family:var(--font-d); font-size:1rem; font-weight:700; margin-bottom:6px; letter-spacing:-0.3px; }
+  .install-sub { font-size:0.82rem; color:var(--muted); font-weight:300; margin-bottom:18px; line-height:1.5; }
+
+  .tabs { display:flex; gap:4px; background:var(--surface2); border-radius:8px; padding:4px; margin-bottom:18px; }
+
+  .tab {
+    flex:1; text-align:center; padding:7px;
+    border-radius:5px; font-family:var(--font-m); font-size:0.62rem;
+    letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--dim); cursor:pointer; transition:all 0.2s;
+    border:none; background:none;
+  }
+
+  .tab.active { background:var(--lime); color:#0a0a0f; font-weight:500; }
+
+  .step-panel { display:none; flex-direction:column; gap:3px; }
+  .step-panel.active { display:flex; }
+
+  .step {
+    display:flex; align-items:flex-start; gap:12px;
+    padding:12px 14px; background:var(--surface2);
+    border-radius:8px; border:1px solid var(--border);
+  }
+
+  .step-n {
+    font-family:var(--font-m); font-size:0.62rem;
+    background:var(--lime-dim); color:var(--lime);
+    border:1px solid var(--lime-border); border-radius:4px;
+    padding:2px 6px; flex-shrink:0; margin-top:1px;
+  }
+
+  .step-t { font-size:0.82rem; color:#c0c0d8; font-weight:300; line-height:1.5; }
+  .step-t strong { color:var(--text); font-weight:500; }
+  .step-t .hl { color:var(--lime); font-weight:500; }
+
+  .btn-open {
+    display:block; width:100%; background:var(--lime); color:#0a0a0f;
+    font-family:var(--font-d); font-weight:800; font-size:0.95rem;
+    padding:14px; border-radius:10px; text-align:center;
+    text-decoration:none; border:none; cursor:pointer;
+    transition:all 0.2s; letter-spacing:-0.2px; margin-top:16px;
+  }
+
+  .btn-open:hover { background:#d9f55f; transform:translateY(-1px); box-shadow:0 8px 24px rgba(200,241,53,0.3); }
+
+  /* ── SUPPORT ── */
+  .support-bar {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:12px; padding:18px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:14px; flex-wrap:wrap; animation: fadeUp 0.5s ease 0.6s both;
+  }
+
+  .support-text { font-size:0.84rem; font-weight:300; color:var(--muted); }
+  .support-text strong { color:var(--text); font-weight:500; }
+
+  .btn-email {
+    font-family:var(--font-m); font-size:0.68rem; letter-spacing:0.06em;
+    color:var(--muted); background:var(--surface2); border:1px solid var(--border2);
+    padding:8px 14px; border-radius:7px; text-decoration:none; transition:all 0.2s; white-space:nowrap;
+  }
+
+  .btn-email:hover { color:var(--text); border-color:var(--gold-border); }
+
+  /* ── TOAST ── */
+  .toast {
+    position:fixed; bottom:24px; right:20px;
+    background:var(--surface); border:1px solid var(--gold-border);
+    border-radius:12px; padding:14px 18px;
+    display:flex; align-items:center; gap:12px;
+    z-index:999; max-width:290px;
+    animation: toastIn 0.4s cubic-bezier(.23,1,.32,1) 0.8s both, toastOut 0.4s ease 6s both;
+  }
+
+  @keyframes toastIn { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+  @keyframes toastOut { from{opacity:1;} to{opacity:0;transform:translateY(6px);} }
+
+  .toast-icon { font-size:1.3rem; flex-shrink:0; }
+  .toast-title { font-family:var(--font-d); font-size:0.8rem; font-weight:700; color:var(--gold); margin-bottom:2px; }
+  .toast-sub { font-size:0.72rem; color:var(--muted); }
+
+  .footer-note {
+    text-align:center; font-family:var(--font-m); font-size:0.62rem;
+    letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--dim); margin-top:32px;
+  }
+
+  .footer-note a { color:var(--muted); text-decoration:none; }
+  .footer-note a:hover { color:var(--lime); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo"><div class="pip"></div>DebtFree</div>
+  <div class="pro-badge">Pro Member</div>
+</nav>
+
+<div class="page">
+
+  <div class="hero">
+    <div class="welcome-pill"><div class="wdot"></div>Pro access confirmed</div>
+    <h1>You're in.<br><span class="gold">Welcome to Pro.</span></h1>
+    <p>Everything below is yours. Start with the video walkthrough before opening the dashboard — it'll save you hours.</p>
+  </div>
+
+  <!-- BONUS 1: VIDEO -->
+  <div class="section-eyebrow">Your Pro bonuses</div>
+
+  <div class="bonus-card gold-card">
+    <div class="bonus-header">
+      <div class="bonus-icon i-video">🎥</div>
+      <div>
+        <div class="bonus-title">30-min private video walkthrough</div>
+        <div class="bonus-tag">Watch this first</div>
+      </div>
+    </div>
+    <p class="bonus-desc">I walk through my exact setup — which strategy I chose, how I entered my debts, the specific What If scenario that changed how I think about money, and how I use the dashboard week to week. Watch before you open the app.</p>
+    <a href="YOUR_VIDEO_LINK" class="btn btn-gold">▶ Watch Walkthrough →</a>
+  </div>
+
+  <!-- BONUS 2: CHECKLIST -->
+  <div class="bonus-card">
+    <div class="bonus-header">
+      <div class="bonus-icon i-check">📋</div>
+      <div>
+        <div class="bonus-title">Debt-Free Action Checklist</div>
+        <div class="bonus-tag">10 steps · First 30 days</div>
+      </div>
+    </div>
+    <p class="bonus-desc">The exact 10 steps to take in your first 30 days — in order, no fluff. Covers strategy selection, setting your budget, using the What If modeler, and building the habit of logging payments.</p>
+    <a href="/pro/checklist.html" class="btn btn-lime">📥 Open Checklist →</a>
+  </div>
+
+  <!-- BONUS 3: SUPPORT -->
+  <div class="bonus-card">
+    <div class="bonus-header">
+      <div class="bonus-icon i-support">💬</div>
+      <div>
+        <div class="bonus-title">Priority support</div>
+        <div class="bonus-tag">Direct access</div>
+      </div>
+    </div>
+    <p class="bonus-desc">As a Pro member you get direct email access. Ask about your specific debt situation — APR strategy, promo timing, windfall decisions — and you'll get a real, personalized answer.</p>
+    <a href="mailto:YOUR_SUPPORT_EMAIL?subject=DebtFree Pro Support" class="btn btn-ghost">✉ Email Support →</a>
+  </div>
+
+  <!-- BONUS 4: UPDATES -->
+  <div class="bonus-card">
+    <div class="bonus-header">
+      <div class="bonus-icon i-updates">🔄</div>
+      <div>
+        <div class="bonus-title">Free lifetime updates</div>
+        <div class="bonus-tag">Automatic</div>
+      </div>
+    </div>
+    <p class="bonus-desc">Every improvement made to the dashboard is automatically available to you — no re-purchase, no new download. The PWA updates itself in the background every time you open it.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- INSTALL SECTION -->
+  <div class="install-card">
+    <div class="install-title">Install your dashboard</div>
+    <p class="install-sub">Pick your device below for setup instructions. Takes 30 seconds.</p>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('ios')">iPhone/iPad</button>
+      <button class="tab" onclick="showTab('android')">Android</button>
+      <button class="tab" onclick="showTab('desktop')">Desktop</button>
+    </div>
+
+    <div class="step-panel active" id="panel-ios">
+      <div class="step"><div class="step-n">01</div><div class="step-t">Tap <strong>Open Dashboard</strong> below — opens in Safari</div></div>
+      <div class="step"><div class="step-n">02</div><div class="step-t">Tap the <span class="hl">Share button</span> at the bottom (square with arrow up)</div></div>
+      <div class="step"><div class="step-n">03</div><div class="step-t">Scroll and tap <span class="hl">Add to Home Screen</span></div></div>
+      <div class="step"><div class="step-n">04</div><div class="step-t">Tap <strong>Add</strong> — DebtFree icon appears on your home screen</div></div>
+      <div class="step"><div class="step-n">05</div><div class="step-t">Open from home screen — full app experience, works offline, saves automatically</div></div>
+    </div>
+
+    <div class="step-panel" id="panel-android">
+      <div class="step"><div class="step-n">01</div><div class="step-t">Tap <strong>Open Dashboard</strong> below — opens in Chrome</div></div>
+      <div class="step"><div class="step-n">02</div><div class="step-t">Tap the <span class="hl">three dots menu</span> in top right</div></div>
+      <div class="step"><div class="step-n">03</div><div class="step-t">Tap <span class="hl">Add to Home Screen</span> or <span class="hl">Install App</span></div></div>
+      <div class="step"><div class="step-n">04</div><div class="step-t">Tap <strong>Install</strong> — works like a native app instantly</div></div>
+    </div>
+
+    <div class="step-panel" id="panel-desktop">
+      <div class="step"><div class="step-n">01</div><div class="step-t">Tap <strong>Open Dashboard</strong> below</div></div>
+      <div class="step"><div class="step-n">02</div><div class="step-t"><strong>Chrome/Edge:</strong> Click the <span class="hl">install icon ⊕</span> in the address bar</div></div>
+      <div class="step"><div class="step-n">03</div><div class="step-t"><strong>Safari Mac:</strong> File menu → <span class="hl">Add to Dock</span></div></div>
+      <div class="step"><div class="step-n">04</div><div class="step-t">Any browser: bookmark it — works offline immediately</div></div>
+    </div>
+
+    <a href="/app/dashboard.html" class="btn-open">Open Dashboard →</a>
+  </div>
+
+  <!-- SUPPORT BAR -->
+  <div class="support-bar">
+    <div class="support-text"><strong>Questions?</strong> Reply to your purchase email or reach out directly.</div>
+    <a href="mailto:YOUR_SUPPORT_EMAIL?subject=DebtFree Pro Support" class="btn-email">Email support →</a>
+  </div>
+
+  <div class="footer-note">
+    <a href="/">← Back to home</a> &nbsp;·&nbsp; © 2025 DebtFree Dashboard
+  </div>
+
+</div>
+
+<div class="toast">
+  <div class="toast-icon">⭐</div>
+  <div>
+    <div class="toast-title">Pro access unlocked</div>
+    <div class="toast-sub">All bonuses available above.</div>
+  </div>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',['ios','android','desktop'][i]===id);
+  });
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+}
+function detect() {
+  const ua = navigator.userAgent.toLowerCase();
+  if(/iphone|ipad|ipod/.test(ua)) showTab('ios');
+  else if(/android/.test(ua)) showTab('android');
+  else showTab('desktop');
+}
+detect();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+</script>
+</body>
+</html>
