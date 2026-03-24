@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="DebtFree">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="Your interactive debt payoff command center. Know your freedom date.">
-<link rel="manifest" href="/app/manifest.json">
-<link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
-<link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/debt-free-dashboard/app/manifest.json">
+<link rel="apple-touch-icon" href="/debt-free-dashboard/assets/icons/icon-192.png">
+<link rel="icon" href="/debt-free-dashboard/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
 <title>DebtFree — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
@@ -1700,6 +1700,7 @@ function saveEditDebt() {
   const balance = parseFloat(document.getElementById('edit-balance').value);
   const apr     = parseFloat(document.getElementById('edit-apr').value);
   const min     = parseFloat(document.getElementById('edit-min').value);
+  const hasPromo = document.getElementById('edit-has-promo').checked;
 
   if (!name || isNaN(balance) || isNaN(apr) || isNaN(min)) {
     alert('Please fill in all fields.'); return;
@@ -1711,6 +1712,7 @@ function saveEditDebt() {
     document.getElementById('edit-apr').focus();
     return;
   }
+
   let finalBalance = Math.max(0, balance);
   let promoApr = null, promoEnd = null, postPromoApr = null, transferFee = 0;
 
@@ -2092,11 +2094,11 @@ function renderStrategy() {
   const activeDebts = debts.filter(d=>d.balance>0);
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
 
-  // Comparison
+  // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
   if (activeDebts.length) {
-    const av = simulateStrategyResult(activeDebts, extra, 'avalanche');
-    const sb = simulateStrategyResult(activeDebts, extra, 'snowball');
-    const mn = simulateStrategyResult(activeDebts, 0, 'avalanche');
+    const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche');
+    const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball');
+    const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche');
 
     document.getElementById('cmp-av-months').textContent = av.months;
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
@@ -2108,9 +2110,9 @@ function renderStrategy() {
     const best = av.totalInterest <= sb.totalInterest ? 'Avalanche' : 'Snowball';
     const savings = Math.abs(av.totalInterest - sb.totalInterest);
     document.getElementById('best-strategy-alert').style.display = 'flex';
-    document.getElementById('best-strategy-text').textContent = `The ${best} method saves you ${fmt(savings)} more in interest for your current debts.`;
+    document.getElementById('best-strategy-text').textContent =
+      `The ${best} method saves you ${fmt(savings)} more in interest for your current debts.`;
 
-    // Highlight best in comparison
     document.querySelectorAll('.comparison-card').forEach(c => c.classList.remove('best'));
     if (best === 'Avalanche') document.querySelectorAll('.comparison-card')[0].classList.add('best');
     else document.querySelectorAll('.comparison-card')[1].classList.add('best');
@@ -2123,16 +2125,59 @@ function renderStrategy() {
     return;
   }
 
-  let sorted = [...activeDebts];
+  // Sort copy by selected strategy
+  let sorted = activeDebts.map(d=>({...d}));
   if (strategy === 'avalanche') sorted.sort((a,b)=>b.apr-a.apr);
   else if (strategy === 'snowball') sorted.sort((a,b)=>a.balance-b.balance);
 
-  let cumulativeMonths = 0;
+  // Run full cascade simulation to get accurate per-debt payoff months
+  let simBalances = sorted.map(d => ({ ...d, bal: d.balance, paidOffMonth: null }));
+  let month = 0;
+  const MAX_MONTHS = 600;
+
+  while (simBalances.some(d => d.bal > 0.01) && month < MAX_MONTHS) {
+    month++;
+    let extraLeft = extra;
+
+    for (let d of simBalances) {
+      if (d.bal <= 0) continue;
+      let effectiveApr = d.apr;
+      if (d.promoEnd) {
+        const promoEndDate = new Date(d.promoEnd);
+        const currentDate = new Date();
+        currentDate.setMonth(currentDate.getMonth() + month - 1);
+        effectiveApr = currentDate < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
+      }
+      const interest = d.bal * (effectiveApr / 100 / 12);
+      d.bal += interest;
+      const payment = Math.min(d.bal, d.minPayment || 25);
+      d.bal -= payment;
+      d.bal = Math.max(0, d.bal);
+    }
+
+    for (let d of simBalances) {
+      if (d.bal <= 0) continue;
+      if (extraLeft <= 0) break;
+      const payment = Math.min(d.bal, extraLeft);
+      d.bal -= payment;
+      extraLeft -= payment;
+      d.bal = Math.max(0, d.bal);
+    }
+
+    for (let d of simBalances) {
+      if (d.paidOffMonth === null && d.bal <= 0.01) {
+        d.paidOffMonth = month;
+      }
+    }
+  }
+
   tbody.innerHTML = sorted.map((d, i) => {
-    const res = simulate([d], (i === 0 ? extra : 0), 0, 'avalanche');
-    cumulativeMonths += res.months;
+    const sb = simBalances.find(x => x.id === d.id);
+    const payoffMonth = sb && sb.paidOffMonth ? sb.paidOffMonth : month;
     const date = new Date();
-    date.setMonth(date.getMonth() + cumulativeMonths);
+    date.setMonth(date.getMonth() + payoffMonth);
+    const indivRes = simulate([{...d}], i === 0 ? extra : 0, 0, 'avalanche');
+
     return `<tr>
       <td><span class="order-num">${i+1}</span></td>
       <td>
@@ -2142,7 +2187,7 @@ function renderStrategy() {
       <td>${fmtDec(d.balance)}</td>
       <td style="color:${d.apr > 20 ? 'var(--accent3)' : d.apr > 10 ? 'var(--accent4)' : 'var(--text-muted)'}">${d.apr}%</td>
       <td>${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}</td>
-      <td style="color:var(--accent3)">${fmt(res.totalInterest)}</td>
+      <td style="color:var(--accent3)">${fmt(indivRes.totalInterest)}</td>
     </tr>`;
   }).join('');
 }
