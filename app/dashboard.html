@@ -1570,6 +1570,7 @@ function addDebt() {
     return;
   }
   let finalBalance = balance;
+  let promoApr = null, promoEnd = null, postPromoApr = null, transferFee = 0;
 
   if (hasPromo) {
     promoApr = parseFloat(document.getElementById('debt-promo-apr').value) || 0;
@@ -1757,6 +1758,11 @@ function saveEditDebt() {
   // Update debt object
   d.name           = name;
   d.type           = type;
+  // Only update originalBalance if balance increased (manual correction) or no payments logged
+  const paymentsOnDebt = payments.filter(p => p.debtId === d.id);
+  if (paymentsOnDebt.length === 0 || finalBalance > d.originalBalance) {
+    d.originalBalance = finalBalance;
+  }
   d.balance        = finalBalance;
   d.apr            = hasPromo ? promoApr : apr;
   d.realApr        = apr;
@@ -1786,8 +1792,9 @@ function logPayment() {
   const d = debts.find(x=>x.id===debtId);
   if (!d) return;
 
-  d.balance = Math.max(0, d.balance - amount);
-  payments.push({ id: Date.now(), debtId, debtName: d.name, amount, date, eliminated: d.balance <= 0 });
+  const actualPayment = Math.min(amount, d.balance); // cap at remaining balance
+  d.balance = Math.max(0, d.balance - actualPayment);
+  payments.push({ id: Date.now(), debtId, debtName: d.name, amount: actualPayment, date, eliminated: d.balance <= 0 });
 
   document.getElementById('log-amount').value = '';
   save(); render();
@@ -1844,8 +1851,8 @@ function updateWhatIf() {
   const dashboardExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
-  const baseline = simulate(activeDebts, dashboardExtra, 0, strategy);
-  const scenario  = simulate(activeDebts, scenarioExtra, lump, strategy);
+  const baseline = simulate(activeDebts.map(d=>({...d})), dashboardExtra, 0, strategy);
+  const scenario  = simulate(activeDebts.map(d=>({...d})), scenarioExtra, lump, strategy);
 
   const monthsSaved = baseline.months - scenario.months;
   const intSaved    = baseline.totalInterest - scenario.totalInterest;
@@ -1947,8 +1954,8 @@ function renderStats() {
   document.getElementById('stat-interest').textContent = fmtDec(interest);
 
   if (activeDebts.length) {
-    const res = simulate(activeDebts, extra, 0, strategy);
-    const minRes = simulate(activeDebts, 0, 0, strategy);
+    const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy);
+    const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy);
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
@@ -2024,7 +2031,7 @@ function renderDebtList() {
         </div>
         <div class="debt-stat">
           <span class="debt-stat-label">APR</span>
-          <span class="debt-stat-val">${d.apr}%</span>
+          <span class="debt-stat-val">${d.hasPromo && d.promoEnd && new Date() < new Date(d.promoEnd) ? (d.promoApr || 0) + '% <span style=\"font-size:0.65rem;color:var(--accent4)\">promo</span>' : (d.realApr || d.apr) + '%'}</span>
         </div>
         <div class="debt-stat">
           <span class="debt-stat-label">Min Pmt</span>
@@ -2054,7 +2061,7 @@ function renderChart() {
   if (!activeDebts.length) return;
 
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const res = simulate(activeDebts, extra, 0, strategy);
+  const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy);
   const labels = res.monthlyData.map(m => 'Mo '+m.month);
   const data = res.monthlyData.map(m => m.remaining);
 
@@ -2293,8 +2300,27 @@ function load() {
     const s = localStorage.getItem('debtfree_strategy');
     const e = localStorage.getItem('debtfree_extra');
     const n = localStorage.getItem('debtfree_nextid');
-    if (d) debts = JSON.parse(d);
-    if (p) payments = JSON.parse(p);
+    if (d) {
+      const parsed = JSON.parse(d);
+      // Sanitize loaded debts — fix missing fields from older saved data
+      debts = parsed.map(debt => ({
+        ...debt,
+        balance: isNaN(debt.balance) ? 0 : Math.max(0, debt.balance),
+        originalBalance: isNaN(debt.originalBalance) || debt.originalBalance <= 0 
+          ? (isNaN(debt.balance) ? 0 : Math.max(0, debt.balance)) 
+          : debt.originalBalance,
+        apr: (!isNaN(debt.apr) && debt.apr >= 0 && debt.apr <= 100) ? debt.apr : 0,
+        realApr: (!isNaN(debt.realApr) && debt.realApr >= 0 && debt.realApr <= 100) 
+          ? debt.realApr 
+          : ((!isNaN(debt.apr) && debt.apr >= 0 && debt.apr <= 100) ? debt.apr : 0),
+        minPayment: isNaN(debt.minPayment) || debt.minPayment <= 0 ? 25 : debt.minPayment,
+      }));
+    }
+    if (p) {
+      const parsedP = JSON.parse(p);
+      // Sanitize payments — filter out any with NaN amounts
+      payments = parsedP.filter(pay => !isNaN(pay.amount) && pay.amount > 0);
+    }
     if (s) strategy = s;
     if (e) { extraMonthly = parseFloat(e); document.getElementById('extra-payment').value = extraMonthly || ''; }
     if (n) nextId = parseInt(n);
