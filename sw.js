@@ -1,9 +1,8 @@
-const CACHE_NAME = 'debtfree-v1';
+const CACHE_NAME = 'debtfree-v3';
 const ASSETS = [
   '/app/',
   '/app/index.html',
-  'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
-  'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap'
+  '/app/dashboard.html',
 ];
 
 self.addEventListener('install', event => {
