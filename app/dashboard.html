@@ -1444,11 +1444,13 @@ function progressPct() {
 
 function monthlyInterest() {
   return debts.filter(d=>d.balance>0).reduce((a,d)=>{
-    let effectiveApr = d.apr;
+    const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
+    let effectiveApr = safeApr;
     if (d.promoEnd) {
       const now = new Date();
       const promoEndDate = new Date(d.promoEnd);
-      effectiveApr = now < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
+      const raw = now < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || safeApr);
+      effectiveApr = (!isNaN(raw) && raw >= 0 && raw <= 100) ? raw : 0;
     }
     return a + (d.balance * (effectiveApr / 100 / 12));
   }, 0);
@@ -1470,18 +1472,29 @@ function badgeLabel(type) {
 function simulate(debtList, extraPerMonth, lumpSum, customStrategy) {
   if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [] };
   const strat = customStrategy || strategy;
-  let balances = debtList.map(d => ({ ...d, bal: Math.max(0, d.balance - (lumpSum || 0) / debtList.length) }));
+
+  // Sanitize debts before simulating — clamp APR and ensure minimum payment covers interest
+  let balances = debtList.map(d => {
+    const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
+    const safeBalance = Math.max(0, d.balance - (lumpSum || 0) / debtList.length);
+    const monthlyRate = safeApr / 100 / 12;
+    const minInterest = safeBalance * monthlyRate;
+    // Ensure minimum payment is at least $1 more than monthly interest to guarantee payoff
+    const safeMinPayment = Math.max((d.minPayment || 25), minInterest + 1);
+    return { ...d, apr: safeApr, bal: safeBalance, minPayment: safeMinPayment };
+  });
+
   // Sort by strategy
   if (strat === 'avalanche') balances.sort((a,b) => b.apr - a.apr);
   else if (strat === 'snowball') balances.sort((a,b) => a.bal - b.bal);
-  // hybrid: keep as-is
 
   let month = 0;
   let totalInterest = 0;
   let monthlyData = [];
   const MAX_MONTHS = 600;
+  const MAX_INTEREST = 10000000; // $10M cap — if exceeded something is wrong
 
-  while (balances.some(d=>d.bal>0.01) && month < MAX_MONTHS) {
+  while (balances.some(d=>d.bal>0.01) && month < MAX_MONTHS && totalInterest < MAX_INTEREST) {
     month++;
     let extra = extraPerMonth;
     let monthInterest = 0;
@@ -1496,6 +1509,8 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy) {
         const currentDate = new Date();
         currentDate.setMonth(currentDate.getMonth() + month - 1);
         effectiveApr = currentDate < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
+        // Clamp effective APR too
+        effectiveApr = (!isNaN(effectiveApr) && effectiveApr >= 0 && effectiveApr <= 100) ? effectiveApr : 0;
       }
       const interest = d.bal * (effectiveApr / 100 / 12);
       monthInterest += interest;
@@ -1517,6 +1532,11 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy) {
 
     totalInterest += monthInterest;
     monthlyData.push({ month, remaining: balances.reduce((a,d)=>a+d.bal,0), interest: monthInterest });
+  }
+
+  // If we hit the interest cap something went wrong — return safe zeros
+  if (totalInterest >= MAX_INTEREST) {
+    return { months: 0, totalInterest: 0, order: balances, monthlyData: [] };
   }
 
   return { months: month, totalInterest, order: balances, monthlyData };
