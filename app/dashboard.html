@@ -1480,7 +1480,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.2.1';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2102,15 +2102,26 @@ function updateWhatIf() {
   scenDate.setMonth(scenDate.getMonth() + scenario.months);
   var scenDateStr = scenDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
 
-  // Always update all fields based on current state
-  document.getElementById('wi-total-int').textContent   = fmt(scenario.totalInterest);
-  document.getElementById('wi-int-saved').textContent   = fmt(Math.max(0, intSaved));
-  document.getElementById('wi-freedom').textContent     = (sliderExtra === 0 && lump === 0) ? baseDateStr : scenDateStr;
-  document.getElementById('wi-months-left').textContent = ((sliderExtra === 0 && lump === 0) ? baseline.months : scenario.months) + ' months remaining';
-  document.getElementById('wi-time-saved').textContent  = (monthsSaved > 0) ? monthsSaved + ' mo' : '0 mo';
-  document.getElementById('wi-new-date').textContent    = (sliderExtra === 0 && lump === 0)
-    ? 'Move the sliders above to model a scenario'
-    : 'vs. your current plan (' + baseDateStr + ')';
+  // Update all fields
+  var wiFields = {
+    'wi-total-int': fmt(scenario.totalInterest),
+    'wi-int-saved': fmt(Math.max(0, intSaved)),
+    'wi-freedom':   (sliderExtra === 0 && lump === 0) ? baseDateStr : scenDateStr,
+    'wi-months-left': ((sliderExtra === 0 && lump === 0) ? baseline.months : scenario.months) + ' months remaining',
+    'wi-time-saved': (monthsSaved > 0) ? monthsSaved + ' mo' : '0 mo',
+    'wi-new-date':  (sliderExtra === 0 && lump === 0)
+      ? 'Move the sliders above to model a scenario'
+      : 'vs. your current plan (' + baseDateStr + ')'
+  };
+  Object.keys(wiFields).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = wiFields[id];
+    // Force repaint for Safari/iPad — toggle a style to bust render cache
+    el.style.webkitTransform = 'translateZ(0)';
+    el.offsetHeight; // trigger reflow
+    el.style.webkitTransform = '';
+  });
 
   // Populate windfall debt select
   var ws = document.getElementById('wi-windfall-debt');
