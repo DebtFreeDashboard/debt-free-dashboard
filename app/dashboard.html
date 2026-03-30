@@ -515,38 +515,6 @@
     height: 220px;
   }
 
-  /* ─── CUSTOM SLIDERS (iOS Safari compatible) ─── */
-  .custom-slider-track {
-    position: relative;
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    cursor: pointer;
-    margin: 12px 0 4px;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .custom-slider-fill {
-    position: absolute;
-    left: 0; top: 0; height: 100%;
-    background: var(--accent);
-    border-radius: 3px;
-    pointer-events: none;
-    transition: width 0.05s;
-  }
-  .custom-slider-thumb {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 22px; height: 22px;
-    background: var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 0 0 3px rgba(0,229,176,0.3);
-    pointer-events: none;
-    transition: left 0.05s;
-  }
-
   /* ─── WHAT IF ─── */
   .whatif-grid {
     display: grid;
@@ -1387,13 +1355,16 @@
           <span>Additional Monthly Payment (on top of your current plan)</span>
           <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
         </div>
-        <div class="custom-slider-track" id="wi-extra-track" onclick="sliderClick(event,'wi-extra',0,2000,25)">
-          <div class="custom-slider-fill" id="wi-extra-fill" style="width:0%"></div>
-          <div class="custom-slider-thumb" id="wi-extra-thumb" style="left:0%"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <button onclick="stepWiExtra(-25)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">-</button>
+          <input type="number" id="wi-extra" min="0" max="2000" step="25" value="0"
+            style="flex:1;text-align:center;font-family:var(--font-serif);font-size:1.4rem;font-weight:900;color:var(--accent);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px;-webkit-appearance:none;appearance:none;"
+            oninput="clampWiExtra(); updateWhatIf();"
+            onchange="clampWiExtra(); updateWhatIf();" />
+          <button onclick="stepWiExtra(25)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">+</button>
         </div>
-        <input type="hidden" id="wi-extra" value="0" />
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
-          <span>$0</span><span>$500</span><span>$1,000</span><span>$1,500</span><span>$2,000</span>
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:6px;">
+          <span>$0/mo</span><span>$500/mo</span><span>$1,000/mo</span><span>$2,000/mo</span>
         </div>
       </div>
 
@@ -1402,13 +1373,16 @@
           <span>Lump Sum Paydown</span>
           <span style="color:var(--accent4); font-weight:500" id="wi-lump-label">$0</span>
         </div>
-        <div class="custom-slider-track" id="wi-lump-track" onclick="sliderClick(event,'wi-lump',0,20000,250)">
-          <div class="custom-slider-fill" id="wi-lump-fill" style="width:0%;background:var(--accent4)"></div>
-          <div class="custom-slider-thumb" id="wi-lump-thumb" style="left:0%;background:var(--accent4);box-shadow:0 0 0 3px rgba(201,168,76,0.3)"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+          <button onclick="stepWiLump(-250)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">-</button>
+          <input type="number" id="wi-lump" min="0" max="20000" step="250" value="0"
+            style="flex:1;text-align:center;font-family:var(--font-serif);font-size:1.4rem;font-weight:900;color:var(--accent4);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px;-webkit-appearance:none;appearance:none;"
+            oninput="clampWiLump(); updateWhatIf();"
+            onchange="clampWiLump(); updateWhatIf();" />
+          <button onclick="stepWiLump(250)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">+</button>
         </div>
-        <input type="hidden" id="wi-lump" value="0" />
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
-          <span>$0</span><span>$5k</span><span>$10k</span><span>$15k</span><span>$20k</span>
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:6px;">
+          <span>$0</span><span>$5,000</span><span>$10,000</span><span>$20,000</span>
         </div>
       </div>
 
@@ -1518,7 +1492,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.8';
+const APP_VERSION = '1.1.9';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1554,9 +1528,7 @@ function showSection(id) {
     }
   });
   if (id === 'whatif') {
-    // Reset custom sliders to 0
-    setSliderValue('wi-extra', 0, 2000, 25, 0);
-    setSliderValue('wi-lump', 0, 20000, 250, 0);
+    resetWiInputs();
     updateWhatIf();
   }
   if (id === 'milestones') renderMilestones();
@@ -2035,58 +2007,39 @@ function recalculate() {
 }
 
 // ═══════════════════════════════════════════
-//  CUSTOM SLIDER LOGIC (iOS Safari compatible)
+//  WHAT IF STEPPER CONTROLS
 // ═══════════════════════════════════════════
-function setSliderValue(id, min, max, step, pct) {
-  var raw = min + (pct / 100) * (max - min);
-  var stepped = Math.round(raw / step) * step;
-  var clamped = Math.max(min, Math.min(max, stepped));
-  var finalPct = ((clamped - min) / (max - min)) * 100;
-
-  document.getElementById(id).value = clamped;
-  document.getElementById(id + '-fill').style.width = finalPct + '%';
-  document.getElementById(id + '-thumb').style.left = finalPct + '%';
+function stepWiExtra(delta) {
+  var el = document.getElementById('wi-extra');
+  var val = Math.max(0, Math.min(2000, (parseInt(el.value) || 0) + delta));
+  el.value = val;
   updateWhatIf();
 }
 
-function sliderClick(e, id, min, max, step) {
-  var track = document.getElementById(id + '-track');
-  var rect = track.getBoundingClientRect();
-  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
-  var pct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
-  setSliderValue(id, min, max, step, pct);
+function stepWiLump(delta) {
+  var el = document.getElementById('wi-lump');
+  var val = Math.max(0, Math.min(20000, (parseInt(el.value) || 0) + delta));
+  el.value = val;
+  updateWhatIf();
 }
 
-function initSliderDrag(id, min, max, step) {
-  var track = document.getElementById(id + '-track');
-  if (!track) return;
+function clampWiExtra() {
+  var el = document.getElementById('wi-extra');
+  var val = parseInt(el.value) || 0;
+  el.value = Math.max(0, Math.min(2000, val));
+}
 
-  function handleMove(e) {
-    e.preventDefault();
-    var rect = track.getBoundingClientRect();
-    var clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    var pct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
-    setSliderValue(id, min, max, step, pct);
-  }
+function clampWiLump() {
+  var el = document.getElementById('wi-lump');
+  var val = parseInt(el.value) || 0;
+  el.value = Math.max(0, Math.min(20000, val));
+}
 
-  // Mouse events (desktop)
-  track.addEventListener('mousedown', function(e) {
-    handleMove(e);
-    document.addEventListener('mousemove', handleMove);
-    document.addEventListener('mouseup', function() {
-      document.removeEventListener('mousemove', handleMove);
-    }, { once: true });
-  });
-
-  // Touch events (iOS Safari, Android)
-  track.addEventListener('touchstart', function(e) {
-    handleMove(e);
-  }, { passive: false });
-
-  track.addEventListener('touchmove', function(e) {
-    e.preventDefault();
-    handleMove(e);
-  }, { passive: false });
+function resetWiInputs() {
+  var ex = document.getElementById('wi-extra');
+  var lp = document.getElementById('wi-lump');
+  if (ex) ex.value = 0;
+  if (lp) lp.value = 0;
 }
 
 // ═══════════════════════════════════════════
@@ -3216,6 +3169,12 @@ function save() {
     localStorage.setItem('debtfree_nextid', nextId);
     localStorage.setItem('debtfree_lumpsums', JSON.stringify(lumpSums));
   } catch(e) {}
+  // Redundant backup in sessionStorage for iOS PWA resilience
+  try {
+    sessionStorage.setItem('debtfree_lumpsums_bak', JSON.stringify(lumpSums));
+    sessionStorage.setItem('debtfree_debts_bak', JSON.stringify(debts));
+    sessionStorage.setItem('debtfree_payments_bak', JSON.stringify(payments));
+  } catch(e) {}
 }
 
 function load() {
@@ -3276,6 +3235,22 @@ function load() {
     if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
     const ls = localStorage.getItem('debtfree_lumpsums');
     if (ls) { try { lumpSums = JSON.parse(ls); } catch(e) { lumpSums = []; } }
+    // If localStorage was cleared by iOS, try sessionStorage backup
+    if (!lumpSums.length) {
+      try {
+        const lsBak = sessionStorage.getItem('debtfree_lumpsums_bak');
+        if (lsBak) { lumpSums = JSON.parse(lsBak); }
+      } catch(e) {}
+    }
+    // Also restore debts/payments from sessionStorage if localStorage was wiped
+    if (!debts.length) {
+      try {
+        const dBak = sessionStorage.getItem('debtfree_debts_bak');
+        const pBak = sessionStorage.getItem('debtfree_payments_bak');
+        if (dBak) debts = JSON.parse(dBak);
+        if (pBak) payments = JSON.parse(pBak);
+      } catch(e) {}
+    }
   } catch(e) {}
 }
 
@@ -3370,9 +3345,7 @@ load();
 // Process any payments or lump sums that became due today
 if (processDuePayments()) render();
 
-// Initialize custom sliders
-initSliderDrag('wi-extra', 0, 2000, 25);
-initSliderDrag('wi-lump', 0, 20000, 250);
+// What If inputs initialized via HTML oninput/onchange
 // Check again once per day if app stays open
 setInterval(function() {
   if (processDuePayments()) render();
