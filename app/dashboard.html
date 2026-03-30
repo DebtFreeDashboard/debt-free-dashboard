@@ -1355,7 +1355,7 @@
           <span>Additional Monthly Payment (on top of your current plan)</span>
           <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
         </div>
-        <input type="range" id="wi-extra" min="0" max="2000" step="25" value="0" oninput="updateWhatIf()" />
+        <input type="range" id="wi-extra" min="0" max="2000" step="25" value="0" oninput="updateWhatIf()" onchange="updateWhatIf()" />
       </div>
 
       <div class="range-wrap" style="margin-top:12px">
@@ -1363,7 +1363,7 @@
           <span>Lump Sum Paydown</span>
           <span style="color:var(--accent4); font-weight:500" id="wi-lump-label">$0</span>
         </div>
-        <input type="range" id="wi-lump" min="0" max="20000" step="250" value="0" oninput="updateWhatIf()" />
+        <input type="range" id="wi-lump" min="0" max="20000" step="250" value="0" oninput="updateWhatIf()" onchange="updateWhatIf()" />
       </div>
 
       <div class="divider"></div>
@@ -1411,7 +1411,6 @@
       <div id="windfall-result" style="margin-top:12px"></div>
     </div>
 
-    <div id="wi-debug" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-muted);padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:12px;word-break:break-all;"></div>
     <div class="cta-bar">
       <h3>Every dollar extra matters.</h3>
       <p>Putting just $100 more per month toward your debt can shave years off your payoff date and save thousands in interest.</p>
@@ -1473,7 +1472,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.6';
+const APP_VERSION = '1.1.7';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2056,15 +2055,6 @@ function updateWhatIf() {
   document.getElementById('wi-new-date').textContent    = (sliderExtra === 0 && lump === 0)
     ? 'Move the sliders above to model a scenario'
     : 'vs. your current plan (' + baseDateStr + ')';
-
-  // Debug output — shows raw simulation results
-  var dbg = document.getElementById('wi-debug');
-  if (dbg) {
-    dbg.textContent = 'BASE: ' + baseline.months + 'mo / $' + Math.round(baseline.totalInterest) +
-      ' | SCEN: ' + scenario.months + 'mo / $' + Math.round(scenario.totalInterest) +
-      ' | extra=' + scenarioExtra + ' lump=' + lump +
-      ' | debts=' + activeDebts.length + ' lumpsums=' + lumpSums.length;
-  }
 
   // Populate windfall debt select
   var ws = document.getElementById('wi-windfall-debt');
@@ -3275,6 +3265,19 @@ document.getElementById('log-date').value = new Date().toISOString().split('T')[
 const versionEl = document.getElementById('current-version');
 if (versionEl) versionEl.textContent = APP_VERSION;
 load();
+
+// iOS Safari fix: attach multiple event types to range sliders
+// Safari does not reliably fire oninput on range inputs
+(function() {
+  var sliders = ['wi-extra', 'wi-lump'];
+  sliders.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    ['input', 'change', 'touchend', 'touchmove'].forEach(function(evt) {
+      el.addEventListener(evt, function() { updateWhatIf(); }, { passive: true });
+    });
+  });
+})();
 // Process any payments or lump sums that became due today
 if (processDuePayments()) render();
 // Check again once per day if app stays open
