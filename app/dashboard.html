@@ -1156,6 +1156,24 @@
       </div>
     </div>
 
+    <!-- Backup & Restore -->
+    <div class="card" id="backup-card">
+      <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="update-btn" class="btn btn-primary" onclick="checkForUpdates()" style="flex:2;min-width:180px;">&#10231; Check for Updates</button>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="exportData()" style="flex:1;min-width:140px;">&#11015; Export Backup</button>
+        <label class="btn btn-ghost" style="flex:1;min-width:140px;cursor:pointer;text-align:center;">
+          &#11014; Import Backup
+          <input type="file" accept=".json" onchange="importData(event)" style="display:none;" />
+        </label>
+      </div>
+      <div style="margin-top:8px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
+      <div id="backup-msg" style="margin-top:12px;"></div>
+    </div>
+
     <!-- Payment Log -->
     <div class="card" id="payment-log-card" style="display:none">
       <div class="card-title"><div class="dot"></div> Payment Log</div>
@@ -1379,6 +1397,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
+const APP_VERSION = '1.0.2';
 let debts = [];
 let payments = [];
 let strategy = 'avalanche';
@@ -2336,6 +2355,119 @@ function populateDebtSelects() {
 // ═══════════════════════════════════════════
 //  PERSISTENCE
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  CHECK FOR UPDATES
+// ═══════════════════════════════════════════
+async function checkForUpdates() {
+  const btn = document.getElementById('update-btn');
+  const msg = document.getElementById('backup-msg');
+  
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+  msg.innerHTML = '';
+
+  try {
+    // Fetch version.json from server with cache-busting
+    const res = await fetch('/app/version.json?t=' + Date.now());
+    if (!res.ok) throw new Error('Could not reach server');
+    const data = await res.json();
+    const serverVersion = data.version;
+
+    if (serverVersion === APP_VERSION) {
+      // Already up to date
+      msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>You have the latest version (v' + APP_VERSION + '). No update needed.</span></div>';
+      btn.disabled = false;
+      btn.textContent = '⟳ Check for Updates';
+      return;
+    }
+
+    // Update available — save data to pending restore key, then reload
+    msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>🔄</span><span>Update found (v' + serverVersion + ')! Saving your data and updating now...</span></div>';
+    
+    // Save ALL user data to pending restore
+    const backup = {
+      version: serverVersion,
+      debts,
+      payments,
+      strategy,
+      extraMonthly: parseFloat(document.getElementById('extra-payment').value) || 0,
+      nextId
+    };
+    localStorage.setItem('debtfree_pending_restore', JSON.stringify(backup));
+
+    // Force reload the dashboard bypassing cache
+    setTimeout(() => {
+      window.location.href = '/app/dashboard.html?v=' + serverVersion;
+    }, 1500);
+
+  } catch(err) {
+    msg.innerHTML = '<div class="alert warning" style="display:flex;gap:8px;align-items:center;"><span>⚠️</span><span>Could not check for updates. Make sure you're connected to the internet.</span></div>';
+    btn.disabled = false;
+    btn.textContent = '⟳ Check for Updates';
+  }
+}
+
+// ═══════════════════════════════════════════
+//  EXPORT / IMPORT
+// ═══════════════════════════════════════════
+function exportData() {
+  const data = {
+    version: 1,
+    exportDate: new Date().toISOString(),
+    debts,
+    payments,
+    strategy,
+    extraMonthly,
+    nextId
+  };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'debtfree-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  const msg = document.getElementById('backup-msg');
+  if (msg) msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>Backup exported successfully. Save this file somewhere safe.</span></div>';
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.debts || !Array.isArray(data.debts)) {
+        throw new Error('Invalid backup file');
+      }
+      // Restore all data
+      debts = data.debts || [];
+      payments = data.payments || [];
+      strategy = data.strategy || 'avalanche';
+      extraMonthly = data.extraMonthly || 0;
+      nextId = data.nextId || (debts.length ? Math.max(...debts.map(d => d.id)) + 1 : 1);
+      // Update UI
+      document.getElementById('extra-payment').value = extraMonthly || '';
+      document.getElementById('strategy-select').value = strategy;
+      selectStrategy(strategy);
+      save();
+      render();
+      const msg = document.getElementById('backup-msg');
+      if (msg) msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>Restored ' + debts.length + ' debts and ' + payments.length + ' payments successfully.</span></div>';
+    } catch(err) {
+      const msg = document.getElementById('backup-msg');
+      if (msg) msg.innerHTML = '<div class="alert warning" style="display:flex;gap:8px;align-items:center;"><span>⚠️</span><span>Could not read backup file. Make sure it's a valid DebtFree export.</span></div>';
+    }
+  };
+  reader.readAsText(file);
+  // Reset file input so same file can be re-imported if needed
+  event.target.value = '';
+}
+
 function save() {
   try {
     localStorage.setItem('debtfree_debts', JSON.stringify(debts));
@@ -2347,6 +2479,31 @@ function save() {
 }
 
 function load() {
+  // Check for pending update restore — set by checkForUpdates() before reloading
+  try {
+    const pending = localStorage.getItem('debtfree_pending_restore');
+    if (pending) {
+      localStorage.removeItem('debtfree_pending_restore');
+      const data = JSON.parse(pending);
+      if (data.debts && Array.isArray(data.debts)) {
+        debts = data.debts;
+        payments = data.payments || [];
+        strategy = data.strategy || 'avalanche';
+        extraMonthly = data.extraMonthly || 0;
+        nextId = data.nextId || (debts.length ? Math.max(...debts.map(d => d.id)) + 1 : 1);
+        document.getElementById('extra-payment').value = extraMonthly || '';
+        document.getElementById('strategy-select').value = strategy;
+        // Show success message after render
+        setTimeout(() => {
+          const msg = document.getElementById('backup-msg');
+          if (msg) msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>Update complete! Your data was restored automatically — ' + debts.length + ' debts and ' + payments.length + ' payments.</span></div>';
+          // Save restored data to normal localStorage keys
+          save();
+        }, 500);
+        return; // Skip normal load — data already restored
+      }
+    }
+  } catch(e) {}
   try {
     const d = localStorage.getItem('debtfree_debts');
     const p = localStorage.getItem('debtfree_payments');
@@ -2464,6 +2621,9 @@ function initDragDrop() {
 //  INIT
 // ═══════════════════════════════════════════
 document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+// Display current version
+const versionEl = document.getElementById('current-version');
+if (versionEl) versionEl.textContent = APP_VERSION;
 load();
 // Restore hybrid body class if strategy was saved as hybrid
 if (strategy === 'hybrid') document.body.classList.add('hybrid-mode');
