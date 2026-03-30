@@ -1,5 +1,5 @@
 {
-  "version": "1.1.9",
+  "version": "1.2.0",
   "releaseDate": "2026-03-30",
-  "notes": "What If: replaced sliders with +/- number inputs. Fixed lump sum persistence on iOS with sessionStorage backup."
+  "notes": "Restored sliders, deep copy fix for iPad simulation bug, zoom fix, cross-platform slider events"
 }

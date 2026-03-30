@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -1355,16 +1355,10 @@
           <span>Additional Monthly Payment (on top of your current plan)</span>
           <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-          <button onclick="stepWiExtra(-25)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">-</button>
-          <input type="number" id="wi-extra" min="0" max="2000" step="25" value="0"
-            style="flex:1;text-align:center;font-family:var(--font-serif);font-size:1.4rem;font-weight:900;color:var(--accent);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px;-webkit-appearance:none;appearance:none;"
-            oninput="clampWiExtra(); updateWhatIf();"
-            onchange="clampWiExtra(); updateWhatIf();" />
-          <button onclick="stepWiExtra(25)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">+</button>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:6px;">
-          <span>$0/mo</span><span>$500/mo</span><span>$1,000/mo</span><span>$2,000/mo</span>
+        <input type="range" id="wi-extra" min="0" max="2000" step="25" value="0"
+          style="width:100%;margin:12px 0 4px;touch-action:pan-y;-webkit-appearance:auto;" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);">
+          <span>$0</span><span>$500</span><span>$1,000</span><span>$1,500</span><span>$2,000</span>
         </div>
       </div>
 
@@ -1373,16 +1367,10 @@
           <span>Lump Sum Paydown</span>
           <span style="color:var(--accent4); font-weight:500" id="wi-lump-label">$0</span>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-          <button onclick="stepWiLump(-250)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">-</button>
-          <input type="number" id="wi-lump" min="0" max="20000" step="250" value="0"
-            style="flex:1;text-align:center;font-family:var(--font-serif);font-size:1.4rem;font-weight:900;color:var(--accent4);background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px;-webkit-appearance:none;appearance:none;"
-            oninput="clampWiLump(); updateWhatIf();"
-            onchange="clampWiLump(); updateWhatIf();" />
-          <button onclick="stepWiLump(250)" style="width:40px;height:40px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:1.2rem;cursor:pointer;flex-shrink:0;">+</button>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:6px;">
-          <span>$0</span><span>$5,000</span><span>$10,000</span><span>$20,000</span>
+        <input type="range" id="wi-lump" min="0" max="20000" step="250" value="0"
+          style="width:100%;margin:12px 0 4px;touch-action:pan-y;-webkit-appearance:auto;" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);">
+          <span>$0</span><span>$5k</span><span>$10k</span><span>$15k</span><span>$20k</span>
         </div>
       </div>
 
@@ -1492,7 +1480,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.9';
+const APP_VERSION = '1.2.0';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2042,6 +2030,19 @@ function resetWiInputs() {
   if (lp) lp.value = 0;
 }
 
+function initWiSliders() {
+  // Attach all relevant events for cross-browser + iPad compatibility
+  var ids = ['wi-extra', 'wi-lump'];
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    // All these events cover every browser/device combination
+    el.addEventListener('input',     function() { updateWhatIf(); });
+    el.addEventListener('change',    function() { updateWhatIf(); });
+    el.addEventListener('touchend',  function() { updateWhatIf(); });
+  });
+}
+
 // ═══════════════════════════════════════════
 //  WHAT IF
 // ═══════════════════════════════════════════
@@ -2068,11 +2069,12 @@ function updateWhatIf() {
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
   // Baseline: current plan with all planned lump sums, no slider additions
-  const baselineDebts = activeDebts.map(function(d) { return Object.assign({}, d); });
+  // Use JSON deep copy to prevent simulate() mutations from leaking between calls
+  const baselineDebts = JSON.parse(JSON.stringify(activeDebts));
   const baseline = simulate(baselineDebts, dashboardExtra, 0, strategy, lumpSums);
 
   // Scenario: adds slider extra monthly + windfall lump sum on top of existing plan
-  const scenarioDebts = activeDebts.map(function(d) { return Object.assign({}, d); });
+  const scenarioDebts = JSON.parse(JSON.stringify(activeDebts));
   var scenarioLumps = lumpSums.slice(); // copy array
   if (lump > 0) {
     // Add windfall as an immediate planned lump — applies at month 1
@@ -3345,7 +3347,8 @@ load();
 // Process any payments or lump sums that became due today
 if (processDuePayments()) render();
 
-// What If inputs initialized via HTML oninput/onchange
+// Initialize What If sliders with cross-platform events
+initWiSliders();
 // Check again once per day if app stays open
 setInterval(function() {
   if (processDuePayments()) render();
