@@ -1449,7 +1449,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.0.7';
+const APP_VERSION = '1.0.8';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2093,6 +2093,70 @@ function setLumpMode(mode) {
 
 // Calculate how a lump sum would be distributed by strategy at a future date
 // Returns array of { debtId, debtName, amount } allocations
+// Core projection engine: simulate balances month by month from startingBalances,
+// applying previousLumps at the correct months along the way.
+// Returns a map of { debtId -> projectedBalance } at targetMonth.
+function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) {
+  // Build a map of month -> [{debtId, amount}] for previously scheduled lumps
+  const today = new Date();
+  const lumpByMonth = {};
+  if (previousLumps && previousLumps.length) {
+    previousLumps.forEach(function(l) {
+      const lDate = new Date(l.date);
+      const diffMs = lDate - today;
+      const mth = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24 * 30.44)));
+      if (mth <= targetMonth) {
+        if (!lumpByMonth[mth]) lumpByMonth[mth] = [];
+        lumpByMonth[mth].push({ debtId: l.debtId, amount: l.amount });
+      }
+    });
+  }
+
+  // Deep copy starting balances
+  const sim = startingBalances.map(function(d) { return {...d}; });
+
+  // Sort by strategy
+  if (strategy === 'avalanche') sim.sort(function(a,b){ return b.apr - a.apr; });
+  else if (strategy === 'snowball') sim.sort(function(a,b){ return a.bal - b.bal; });
+
+  for (let month = 1; month <= targetMonth; month++) {
+    // Accrue interest and apply min payments
+    let extraLeft = extra;
+    for (let i = 0; i < sim.length; i++) {
+      const d = sim[i];
+      if (d.bal <= 0) continue;
+      const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
+      const interest = d.bal * (safeApr / 100 / 12);
+      d.bal += interest;
+      const minPay = Math.min(d.bal, Math.max(d.minPayment || 25, interest + 1));
+      d.bal = Math.max(0, d.bal - minPay);
+    }
+    // Apply extra to focus debt
+    for (let i = 0; i < sim.length; i++) {
+      const d = sim[i];
+      if (d.bal <= 0 || extraLeft <= 0) continue;
+      const pay = Math.min(d.bal, extraLeft);
+      d.bal -= pay;
+      extraLeft -= pay;
+      d.bal = Math.max(0, d.bal);
+    }
+    // Apply any previously scheduled lump sums due this month
+    if (lumpByMonth[month]) {
+      lumpByMonth[month].forEach(function(lump) {
+        const target = sim.find(function(b) { return b.id === lump.debtId; });
+        if (target && target.bal > 0) {
+          target.bal = Math.max(0, target.bal - lump.amount);
+        }
+      });
+    }
+  }
+
+  // Build result map
+  const result = {};
+  sim.forEach(function(d) { result[d.id] = Math.max(0, d.bal); });
+  return { balanceMap: result, simOrder: sim };
+}
+
 function calculateLumpAllocation(totalAmount, targetDate) {
   const today = new Date();
   const lDate = new Date(targetDate);
@@ -2103,54 +2167,33 @@ function calculateLumpAllocation(totalAmount, targetDate) {
 
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
 
-  // Run simulation per-debt to get each debt's projected balance at the target month
-  // We simulate each debt independently with its share of extra payment to get individual projections
-  // Better: run full simulation and track each debt's balance month by month
-  const debtCopies = activeDebts.map(function(d) { return {...d, bal: d.balance}; });
+  // Build starting balances including ALL previously scheduled lump sums
+  // that occur BEFORE this new lump sum's date
+  const priorLumps = lumpSums.filter(function(l) { return l.date < targetDate; });
 
-  // Sort copies by strategy
-  const sorted4sim = [...debtCopies];
-  if (strategy === 'avalanche') sorted4sim.sort(function(a,b){ return b.apr - a.apr; });
-  else if (strategy === 'snowball') sorted4sim.sort(function(a,b){ return a.bal - b.bal; });
+  const startingBalances = activeDebts.map(function(d) {
+    return { id: d.id, name: d.name, bal: d.balance, apr: d.apr, minPayment: d.minPayment };
+  });
 
-  // Run the simulation month by month up to monthsUntil, tracking each debt's balance
-  const MAX_MONTHS = 600;
-  const targetMonth = Math.min(monthsUntil, MAX_MONTHS);
+  // Project balances at targetMonth, accounting for all prior lump sums
+  const { balanceMap, simOrder } = projectBalancesAt(startingBalances, monthsUntil, extra, priorLumps);
 
-  for (let month = 1; month <= targetMonth; month++) {
-    let extraLeft = extra;
-    // Accrue interest and apply min payments
-    for (let i = 0; i < sorted4sim.length; i++) {
-      const d = sorted4sim[i];
-      if (d.bal <= 0) continue;
-      const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
-      const interest = d.bal * (safeApr / 100 / 12);
-      d.bal += interest;
-      const minPay = Math.min(d.bal, Math.max(d.minPayment || 25, interest + 1));
-      d.bal = Math.max(0, d.bal - minPay);
-    }
-    // Apply extra to focus debt
-    for (let i = 0; i < sorted4sim.length; i++) {
-      const d = sorted4sim[i];
-      if (d.bal <= 0 || extraLeft <= 0) continue;
-      const pay = Math.min(d.bal, extraLeft);
-      d.bal -= pay;
-      extraLeft -= pay;
-      d.bal = Math.max(0, d.bal);
-    }
-  }
-
-  // Now sorted4sim[i].bal is the projected balance at targetMonth for each debt
-  const projected = sorted4sim.map(function(d) {
-    return { debtId: d.id, debtName: d.name, projBal: Math.max(0, d.bal), apr: d.apr };
+  // Build projected list from simulation order (already strategy-sorted)
+  const projected = simOrder.map(function(d) {
+    return {
+      debtId: d.id,
+      debtName: activeDebts.find(function(x){ return x.id === d.id; }).name,
+      projBal: balanceMap[d.id] || 0,
+      apr: d.apr
+    };
   }).filter(function(d) { return d.projBal > 0; });
 
-  // If all debts are paid off by that date, still allow allocation against current balances
+  // Fallback: if everything is paid off by that date, allocate against current balances
   const allocationBase = projected.length > 0 ? projected : activeDebts.map(function(d) {
     return { debtId: d.id, debtName: d.name, projBal: d.balance, apr: d.apr };
   });
 
-  // Allocate the lump sum following the strategy order (already sorted above)
+  // Allocate the lump sum in strategy order
   const allocations = [];
   let remaining = totalAmount;
   for (let i = 0; i < allocationBase.length && remaining > 0; i++) {

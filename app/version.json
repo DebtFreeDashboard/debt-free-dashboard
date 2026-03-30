@@ -1,5 +1,5 @@
 {
-  "version": "1.0.7",
+  "version": "1.0.8",
   "releaseDate": "2026-03-30",
-  "notes": "Fixed strategy-based lump sum allocation using per-debt balance projection"
+  "notes": "Chain-aware lump sum allocation \u2014 each lump sum projects from where previous ones left off"
 }
