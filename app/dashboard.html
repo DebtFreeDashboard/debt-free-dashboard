@@ -1472,7 +1472,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.4';
+const APP_VERSION = '1.1.5';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1992,64 +1992,77 @@ function recalculate() {
 //  WHAT IF
 // ═══════════════════════════════════════════
 function updateWhatIf() {
-  const sliderExtra = parseInt(document.getElementById('wi-extra').value) || 0;
-  const lump        = parseInt(document.getElementById('wi-lump').value)  || 0;
+  const wiExtraEl = document.getElementById('wi-extra');
+  const wiLumpEl  = document.getElementById('wi-lump');
+  if (!wiExtraEl || !wiLumpEl) return;
+
+  const sliderExtra = parseInt(wiExtraEl.value) || 0;
+  const lump        = parseInt(wiLumpEl.value)  || 0;
+
   document.getElementById('wi-extra-label').textContent = sliderExtra > 0 ? '+' + fmt(sliderExtra) + '/mo' : '$0/mo';
   document.getElementById('wi-lump-label').textContent  = fmt(lump);
 
-  const activeDebts = debts.filter(d=>d.balance>0);
+  const activeDebts = debts.filter(function(d) { return d.balance > 0; });
   if (!activeDebts.length) {
-    ['wi-time-saved','wi-int-saved','wi-freedom','wi-total-int','wi-new-date','wi-months-left'].forEach(id=>{
+    ['wi-time-saved','wi-int-saved','wi-freedom','wi-total-int','wi-new-date','wi-months-left'].forEach(function(id) {
       document.getElementById(id).textContent = '—';
     });
     return;
   }
 
-  // Baseline = user's current plan (Dashboard extra payment)
-  // Scenario = baseline + what the slider adds on top
   const dashboardExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
-  // Baseline = current plan including all planned lump sums
-  const baseline = simulate(activeDebts.map(d=>({...d})), dashboardExtra, 0, strategy, lumpSums);
+  // Baseline: current plan with all planned lump sums, no slider additions
+  const baselineDebts = activeDebts.map(function(d) { return Object.assign({}, d); });
+  const baseline = simulate(baselineDebts, dashboardExtra, 0, strategy, lumpSums);
 
-  // Scenario = baseline + extra monthly + optional immediate windfall
-  // Build scenario lump sums: existing lumpSums + windfall as immediate (today) lump if set
-  const scenarioLumps = lump > 0
-    ? lumpSums.concat([{ id: -1, debtId: null, amount: lump, date: new Date().toISOString().split('T')[0] }])
-    : lumpSums;
-  const scenario = simulate(activeDebts.map(d=>({...d})), scenarioExtra, 0, strategy, scenarioLumps);
+  // Scenario: adds slider extra monthly + windfall lump sum on top of existing plan
+  const scenarioDebts = activeDebts.map(function(d) { return Object.assign({}, d); });
+  var scenarioLumps = lumpSums.slice(); // copy array
+  if (lump > 0) {
+    // Add windfall as an immediate planned lump — applies at month 1
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    scenarioLumps = scenarioLumps.concat([{
+      id: -1,
+      debtId: null,
+      amount: lump,
+      date: tomorrow.toISOString().split('T')[0]
+    }]);
+  }
+  const scenario = simulate(scenarioDebts, scenarioExtra, 0, strategy, scenarioLumps);
 
+  // Calculate differences
   const monthsSaved = baseline.months - scenario.months;
   const intSaved    = baseline.totalInterest - scenario.totalInterest;
 
-  const baseDate = new Date();
+  // Build date strings
+  var baseDate = new Date();
   baseDate.setMonth(baseDate.getMonth() + baseline.months);
-  const baseDateStr = baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  var baseDateStr = baseDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
 
-  if (sliderExtra === 0 && lump === 0) {
-    // Sliders at zero — show baseline plan (matches Dashboard exactly)
-    document.getElementById('wi-freedom').textContent     = baseDateStr;
-    document.getElementById('wi-months-left').textContent = baseline.months + ' months remaining';
-    document.getElementById('wi-time-saved').textContent  = '0 mo';
-    document.getElementById('wi-int-saved').textContent   = fmt(0);
-    document.getElementById('wi-total-int').textContent   = fmt(baseline.totalInterest);
-    document.getElementById('wi-new-date').textContent    = 'Move the sliders to model a scenario';
-  } else {
-    // Sliders active — show what the scenario changes vs the baseline plan
-    const freeDate = new Date();
-    freeDate.setMonth(freeDate.getMonth() + scenario.months);
-    document.getElementById('wi-freedom').textContent     = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
-    document.getElementById('wi-months-left').textContent = scenario.months + ' months remaining';
-    document.getElementById('wi-time-saved').textContent  = monthsSaved > 0 ? monthsSaved + ' mo' : '0 mo';
-    document.getElementById('wi-int-saved').textContent   = fmt(Math.max(0, intSaved));
-    document.getElementById('wi-total-int').textContent   = fmt(scenario.totalInterest);
-    document.getElementById('wi-new-date').textContent    = 'vs. your plan with lump sums (' + baseDateStr + ')';
+  var scenDate = new Date();
+  scenDate.setMonth(scenDate.getMonth() + scenario.months);
+  var scenDateStr = scenDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
+
+  // Always update all fields based on current state
+  document.getElementById('wi-total-int').textContent   = fmt(scenario.totalInterest);
+  document.getElementById('wi-int-saved').textContent   = fmt(Math.max(0, intSaved));
+  document.getElementById('wi-freedom').textContent     = (sliderExtra === 0 && lump === 0) ? baseDateStr : scenDateStr;
+  document.getElementById('wi-months-left').textContent = ((sliderExtra === 0 && lump === 0) ? baseline.months : scenario.months) + ' months remaining';
+  document.getElementById('wi-time-saved').textContent  = (monthsSaved > 0) ? monthsSaved + ' mo' : '0 mo';
+  document.getElementById('wi-new-date').textContent    = (sliderExtra === 0 && lump === 0)
+    ? 'Move the sliders above to model a scenario'
+    : 'vs. your current plan (' + baseDateStr + ')';
+
+  // Populate windfall debt select
+  var ws = document.getElementById('wi-windfall-debt');
+  if (ws) {
+    ws.innerHTML = activeDebts.map(function(d) {
+      return '<option value="' + d.id + '">' + d.name + '</option>';
+    }).join('');
   }
-
-  // populate windfall debt select
-  const ws = document.getElementById('wi-windfall-debt');
-  ws.innerHTML = activeDebts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
 }
 
 // ═══════════════════════════════════════════

@@ -1,5 +1,5 @@
 {
-  "version": "1.1.4",
+  "version": "1.1.5",
   "releaseDate": "2026-03-30",
-  "notes": "Fixed What If sliders not changing Freedom Date and Months Saved when lump sums present"
+  "notes": "Fixed What If sliders - complete rewrite of updateWhatIf for reliability"
 }
