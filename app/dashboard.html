@@ -1430,9 +1430,9 @@ function fmt(n) {
 
 function fmtDec(n) { return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
-function totalBalance() { return debts.filter(d=>d.balance>0).reduce((a,d)=>a+d.balance,0); }
+function totalBalance() { return debts.filter(d=>d.balance>0).reduce((a,d)=>a+(isNaN(d.balance)?0:d.balance),0); }
 
-function totalOriginal() { return debts.reduce((a,d)=>a+d.originalBalance,0); }
+function totalOriginal() { return debts.reduce((a,d)=>a+(isNaN(d.originalBalance) ? 0 : d.originalBalance),0); }
 
 function totalPaid() { return payments.reduce((a,p)=>a+p.amount,0); }
 
@@ -1476,17 +1476,30 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy) {
   // Sanitize debts before simulating — clamp APR and ensure minimum payment covers interest
   let balances = debtList.map(d => {
     const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
-    const safeBalance = Math.max(0, d.balance - (lumpSum || 0) / debtList.length);
+    const safeBalance = Math.max(0, d.balance);
     const monthlyRate = safeApr / 100 / 12;
     const minInterest = safeBalance * monthlyRate;
-    // Ensure minimum payment is at least $1 more than monthly interest to guarantee payoff
-    const safeMinPayment = Math.max((d.minPayment || 25), minInterest + 1);
+    const rawMin = d.minPayment || 25;
+    // Only boost min payment if it literally cannot cover interest (would loop forever)
+    const safeMinPayment = rawMin <= minInterest ? minInterest + 0.01 : rawMin;
     return { ...d, apr: safeApr, bal: safeBalance, minPayment: safeMinPayment };
   });
 
   // Sort by strategy
   if (strat === 'avalanche') balances.sort((a,b) => b.apr - a.apr);
   else if (strat === 'snowball') balances.sort((a,b) => a.bal - b.bal);
+
+  // Apply lump sum to focus debt (first in sorted order) not spread across all debts
+  if (lumpSum && lumpSum > 0 && balances.length > 0) {
+    let remaining = lumpSum;
+    for (let d of balances) {
+      if (d.bal <= 0) continue;
+      const applied = Math.min(d.bal, remaining);
+      d.bal = Math.max(0, d.bal - applied);
+      remaining -= applied;
+      if (remaining <= 0) break;
+    }
+  }
 
   let month = 0;
   let totalInterest = 0;
@@ -2190,10 +2203,13 @@ function renderStrategy() {
         const currentDate = new Date();
         currentDate.setMonth(currentDate.getMonth() + month - 1);
         effectiveApr = currentDate < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
+        effectiveApr = (!isNaN(effectiveApr) && effectiveApr >= 0 && effectiveApr <= 100) ? effectiveApr : 0;
       }
       const interest = d.bal * (effectiveApr / 100 / 12);
       d.bal += interest;
-      const payment = Math.min(d.bal, d.minPayment || 25);
+      const minInt = d.bal * (effectiveApr / 100 / 12);
+      const safeMin = (d.minPayment || 25) <= minInt ? minInt + 0.01 : (d.minPayment || 25);
+      const payment = Math.min(d.bal, safeMin);
       d.bal -= payment;
       d.bal = Math.max(0, d.bal);
     }
@@ -2214,12 +2230,49 @@ function renderStrategy() {
     }
   }
 
+  // Calculate per-debt interest by tracking interest accrued per debt during cascade
+  let simBalances2 = sorted.map(d => ({ ...d, bal: d.balance, paidOffMonth: null, interestPaid: 0 }));
+  let month2 = 0;
+  while (simBalances2.some(d => d.bal > 0.01) && month2 < MAX_MONTHS) {
+    month2++;
+    let extraLeft2 = extra;
+    for (let d of simBalances2) {
+      if (d.bal <= 0) continue;
+      let effectiveApr2 = d.apr;
+      if (d.promoEnd) {
+        const promoEndDate2 = new Date(d.promoEnd);
+        const currentDate2 = new Date();
+        currentDate2.setMonth(currentDate2.getMonth() + month2 - 1);
+        effectiveApr2 = currentDate2 < promoEndDate2 ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
+        effectiveApr2 = (!isNaN(effectiveApr2) && effectiveApr2 >= 0 && effectiveApr2 <= 100) ? effectiveApr2 : 0;
+      }
+      const interest2 = d.bal * (effectiveApr2 / 100 / 12);
+      d.interestPaid += interest2;
+      d.bal += interest2;
+      const payment2 = Math.min(d.bal, d.minPayment || 25);
+      d.bal -= payment2;
+      d.bal = Math.max(0, d.bal);
+    }
+    for (let d of simBalances2) {
+      if (d.bal <= 0) continue;
+      if (extraLeft2 <= 0) break;
+      const payment2 = Math.min(d.bal, extraLeft2);
+      d.bal -= payment2;
+      extraLeft2 -= payment2;
+      d.bal = Math.max(0, d.bal);
+    }
+    for (let d of simBalances2) {
+      if (d.paidOffMonth === null && d.bal <= 0.01) d.paidOffMonth = month2;
+    }
+  }
+
   tbody.innerHTML = sorted.map((d, i) => {
     const sb = simBalances.find(x => x.id === d.id);
+    const sb2 = simBalances2.find(x => x.id === d.id);
     const payoffMonth = sb && sb.paidOffMonth ? sb.paidOffMonth : month;
     const date = new Date();
     date.setMonth(date.getMonth() + payoffMonth);
-    const indivRes = simulate([{...d}], i === 0 ? extra : 0, 0, 'avalanche');
+    const debtInterest = sb2 ? sb2.interestPaid : 0;
 
     return `<tr>
       <td><span class="order-num">${i+1}</span></td>
@@ -2230,7 +2283,7 @@ function renderStrategy() {
       <td>${fmtDec(d.balance)}</td>
       <td style="color:${d.apr > 20 ? 'var(--accent3)' : d.apr > 10 ? 'var(--accent4)' : 'var(--text-muted)'}">${d.apr}%</td>
       <td>${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}</td>
-      <td style="color:var(--accent3)">${fmt(indivRes.totalInterest)}</td>
+      <td style="color:var(--accent3)">${fmt(debtInterest)}</td>
     </tr>`;
   }).join('');
 }
