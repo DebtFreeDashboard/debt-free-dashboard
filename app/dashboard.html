@@ -2460,7 +2460,7 @@ function importData(event) {
       if (msg) msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>Restored ' + debts.length + ' debts and ' + payments.length + ' payments successfully.</span></div>';
     } catch(err) {
       const msg = document.getElementById('backup-msg');
-      if (msg) msg.innerHTML = '<div class="alert warning" style="display:flex;gap:8px;align-items:center;"><span>⚠️</span><span>Could not read backup file. Make sure it's a valid DebtFree export.</span></div>';
+      if (msg) msg.innerHTML = '<div class="alert warning" style="display:flex;gap:8px;align-items:center;"><span>⚠️</span><span>Could not read backup file. Make sure it is a valid DebtFree export.</span></div>';
     }
   };
   reader.readAsText(file);
