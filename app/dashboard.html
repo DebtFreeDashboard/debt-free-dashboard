@@ -750,6 +750,50 @@
   }
 
   .range-wrap { padding: 8px 0; }
+
+  /* Styled range slider — works natively, looks custom */
+  input[type=range].wi-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    margin: 14px 0 6px;
+    cursor: pointer;
+  }
+  input[type=range].wi-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 0 3px rgba(0,229,176,0.25);
+    transition: box-shadow 0.15s;
+  }
+  input[type=range].wi-slider::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 5px rgba(0,229,176,0.35);
+  }
+  input[type=range].wi-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 0 3px rgba(0,229,176,0.25);
+  }
+  input[type=range].wi-slider.lump::-webkit-slider-thumb {
+    background: var(--accent4);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.25);
+  }
+  input[type=range].wi-slider.lump::-moz-range-thumb {
+    background: var(--accent4);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.25);
+  }
   .range-label {
     display: flex;
     justify-content: space-between;
@@ -1355,9 +1399,8 @@
           <span>Additional Monthly Payment (on top of your current plan)</span>
           <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
         </div>
-        <input type="range" id="wi-extra" min="0" max="2000" step="25" value="0"
-          style="width:100%;margin:12px 0 4px;touch-action:pan-y;-webkit-appearance:auto;" />
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);">
+        <input type="range" id="wi-extra" class="wi-slider" min="0" max="2000" step="25" value="0" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:2px;">
           <span>$0</span><span>$500</span><span>$1,000</span><span>$1,500</span><span>$2,000</span>
         </div>
       </div>
@@ -1367,9 +1410,8 @@
           <span>Lump Sum Paydown</span>
           <span style="color:var(--accent4); font-weight:500" id="wi-lump-label">$0</span>
         </div>
-        <input type="range" id="wi-lump" min="0" max="20000" step="250" value="0"
-          style="width:100%;margin:12px 0 4px;touch-action:pan-y;-webkit-appearance:auto;" />
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);">
+        <input type="range" id="wi-lump" class="wi-slider lump" min="0" max="20000" step="250" value="0" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:2px;">
           <span>$0</span><span>$5k</span><span>$10k</span><span>$15k</span><span>$20k</span>
         </div>
       </div>
@@ -1480,7 +1522,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.2.3';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2026,20 +2068,33 @@ function clampWiLump() {
 function resetWiInputs() {
   var ex = document.getElementById('wi-extra');
   var lp = document.getElementById('wi-lump');
-  if (ex) ex.value = 0;
-  if (lp) lp.value = 0;
+  if (ex) { ex.value = 0; updateSliderFill('wi-extra', 'var(--accent)'); }
+  if (lp) { lp.value = 0; updateSliderFill('wi-lump', 'var(--accent4)'); }
+}
+
+function updateSliderFill(id, color) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  var pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.background = 'linear-gradient(to right, ' + color + ' ' + pct + '%, var(--border) ' + pct + '%)';
 }
 
 function initWiSliders() {
-  // Attach all relevant events for cross-browser + iPad compatibility
-  var ids = ['wi-extra', 'wi-lump'];
-  ids.forEach(function(id) {
-    var el = document.getElementById(id);
+  var configs = [
+    { id: 'wi-extra', color: 'var(--accent)' },
+    { id: 'wi-lump',  color: 'var(--accent4)' }
+  ];
+  configs.forEach(function(cfg) {
+    var el = document.getElementById(cfg.id);
     if (!el) return;
-    // All these events cover every browser/device combination
-    el.addEventListener('input',     function() { updateWhatIf(); });
-    el.addEventListener('change',    function() { updateWhatIf(); });
-    el.addEventListener('touchend',  function() { updateWhatIf(); });
+    function onUpdate() {
+      updateSliderFill(cfg.id, cfg.color);
+      updateWhatIf();
+    }
+    el.addEventListener('input',   onUpdate);
+    el.addEventListener('change',  onUpdate);
+    el.addEventListener('touchend', onUpdate);
+    updateSliderFill(cfg.id, cfg.color); // set initial state
   });
 }
 
@@ -2108,10 +2163,12 @@ function updateWhatIf() {
     'wi-int-saved': fmt(Math.max(0, intSaved)),
     'wi-freedom':   (sliderExtra === 0 && lump === 0) ? baseDateStr : scenDateStr,
     'wi-months-left': ((sliderExtra === 0 && lump === 0) ? baseline.months : scenario.months) + ' months remaining',
-    'wi-time-saved': (monthsSaved > 0) ? monthsSaved + ' mo' : '0 mo',
+    'wi-time-saved': (monthsSaved > 0) ? monthsSaved + ' mo' : (sliderExtra > 0 || lump > 0) ? '0 mo' : '—',
     'wi-new-date':  (sliderExtra === 0 && lump === 0)
       ? 'Move the sliders above to model a scenario'
-      : 'vs. your current plan (' + baseDateStr + ')'
+      : monthsSaved <= 0 && (sliderExtra > 0 || lump > 0)
+        ? 'Lump sum already covers payoff — extra reduces interest only'
+        : 'vs. your current plan (' + baseDateStr + ')'
   };
   Object.keys(wiFields).forEach(function(id) {
     var el = document.getElementById(id);
