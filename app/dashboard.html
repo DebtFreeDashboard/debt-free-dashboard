@@ -12,7 +12,7 @@
 <link rel="manifest" href="/debt-free-dashboard/app/manifest.json">
 <link rel="apple-touch-icon" href="/debt-free-dashboard/assets/icons/icon-192.png">
 <link rel="icon" href="/debt-free-dashboard/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
-<title>DebtFree — Command Center</title>
+<title>DebtFree — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -1003,7 +1003,7 @@
 
   <!-- ══════════════════════ DASHBOARD ══════════════════════ -->
   <div class="section active" id="section-dashboard">
-    <div class="page-title">Debt Command Center</div>
+    <div class="page-title">Your Payoff Command Center</div>
     <div class="page-subtitle">Track every debt. Celebrate every dollar. Own your freedom date.</div>
 
     <!-- Stats -->
@@ -1380,7 +1380,7 @@
           <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px">total savings</div>
         </div>
         <div class="whatif-result">
-          <div class="label">New Freedom Date</div>
+          <div class="label">Freedom Date</div>
           <div class="value" id="wi-freedom" style="font-size:1.1rem; color:var(--text)">—</div>
           <div style="font-size:0.72rem; color:var(--text-muted); margin-top:4px" id="wi-months-left">months remaining</div>
         </div>
@@ -2010,8 +2010,10 @@ function updateWhatIf() {
   const dashboardExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
-  const baseline = simulate(activeDebts.map(d=>({...d})), dashboardExtra, 0, strategy);
-  const scenario  = simulate(activeDebts.map(d=>({...d})), scenarioExtra, lump, strategy);
+  // Both baseline and scenario include planned lump sums — they are part of the real plan
+  // The scenario adds the What If slider on top of that existing plan
+  const baseline = simulate(activeDebts.map(d=>({...d})), dashboardExtra, 0, strategy, lumpSums);
+  const scenario  = simulate(activeDebts.map(d=>({...d})), scenarioExtra, lump, strategy, lumpSums);
 
   const monthsSaved = baseline.months - scenario.months;
   const intSaved    = baseline.totalInterest - scenario.totalInterest;
@@ -2027,7 +2029,16 @@ function updateWhatIf() {
 
   const baseDate = new Date();
   baseDate.setMonth(baseDate.getMonth() + baseline.months);
-  document.getElementById('wi-new-date').textContent = 'vs. your current plan (' + baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'}) + ')';
+  // Show baseline date clearly — this includes lump sums and should match Dashboard
+  const baseDateStr = baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  document.getElementById('wi-new-date').textContent = sliderExtra > 0 || lump > 0
+    ? 'vs. your plan with lump sums (' + baseDateStr + ')'
+    : 'your plan including lump sums';
+  // When sliders are at 0, freedom date = baseline = dashboard. Make that explicit.
+  if (sliderExtra === 0 && lump === 0) {
+    document.getElementById('wi-freedom').textContent = baseDateStr;
+    document.getElementById('wi-months-left').textContent = baseline.months + ' months remaining';
+  }
 
   // populate windfall debt select
   const ws = document.getElementById('wi-windfall-debt');
@@ -2535,6 +2546,12 @@ function render() {
   renderMilestones();
   populateDebtSelects();
   populateLumpDebtSelect();
+  // Keep What If in sync — only update if sliders are at zero to avoid disrupting active scenario
+  const wiExtra = document.getElementById('wi-extra');
+  const wiLump  = document.getElementById('wi-lump');
+  if (wiExtra && wiLump && parseInt(wiExtra.value) === 0 && parseInt(wiLump.value) === 0) {
+    updateWhatIf();
+  }
 }
 
 function renderMonthlySummary() {
