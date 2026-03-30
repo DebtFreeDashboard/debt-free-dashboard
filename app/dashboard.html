@@ -1406,12 +1406,12 @@ let payoffChart = null;
 let nextId = 1;
 
 const MILESTONES_DEF = [
-  { id: 'first_debt',   icon: '🎯', name: 'First Debt Added',      desc: 'You\'ve committed. The journey starts now.', check: () => debts.length >= 1 },
+  { id: 'first_debt',   icon: '🎯', name: 'First Debt Added',      desc: 'You have committed. The journey starts now.', check: () => debts.length >= 1 },
   { id: 'first_payment',icon: '💸', name: 'First Payment Logged',  desc: 'Money moving in the right direction.',        check: () => payments.length >= 1 },
   { id: 'paid_500',     icon: '💪', name: '$500 Paid Off',         desc: 'Five hundred dollars closer to freedom.',     check: () => totalPaid() >= 500 },
-  { id: 'paid_1k',      icon: '🏆', name: '$1,000 Paid Off',       desc: 'Four digits down. You\'re unstoppable.',      check: () => totalPaid() >= 1000 },
+  { id: 'paid_1k',      icon: '🏆', name: '$1,000 Paid Off',       desc: 'Four digits down. You are unstoppable.',      check: () => totalPaid() >= 1000 },
   { id: 'paid_5k',      icon: '🚀', name: '$5,000 Paid Off',       desc: 'Five thousand dollars of freedom earned.',    check: () => totalPaid() >= 5000 },
-  { id: 'paid_10k',     icon: '💎', name: '$10,000 Paid Off',      desc: 'You\'ve crossed the five-figure threshold.',  check: () => totalPaid() >= 10000 },
+  { id: 'paid_10k',     icon: '💎', name: '$10,000 Paid Off',      desc: 'You have crossed the five-figure threshold.',  check: () => totalPaid() >= 10000 },
   { id: 'one_debt_free',icon: '✅', name: 'First Debt Eliminated', desc: 'One down. Feel that weight lift.',            check: () => debts.filter(d => d.balance <= 0).length >= 1 || payments.filter(p=>p.eliminated).length >= 1 },
   { id: 'halfway',      icon: '🌙', name: 'Halfway There',         desc: 'More behind you than ahead of you.',          check: () => progressPct() >= 50 },
   { id: 'final_stretch',icon: '🏁', name: 'Final Stretch',        desc: 'Under 25% left to go. Almost there!',         check: () => progressPct() >= 75 },
@@ -2361,64 +2361,71 @@ function populateDebtSelects() {
 async function checkForUpdates() {
   const btn = document.getElementById('update-btn');
   const msg = document.getElementById('backup-msg');
-  
+  if (!btn || !msg) return;
+
   btn.disabled = true;
   btn.textContent = 'Checking...';
   msg.innerHTML = '';
 
   try {
-    // Fetch version.json from server with cache-busting
     const res = await fetch('/app/version.json?t=' + Date.now());
-    if (!res.ok) throw new Error('Could not reach server');
+    if (!res.ok) throw new Error('Server error');
     const data = await res.json();
     const serverVersion = data.version;
 
     if (serverVersion === APP_VERSION) {
-      // Already up to date
-      msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>You have the latest version (v' + APP_VERSION + '). No update needed.</span></div>';
+      showBackupMsg('ok', 'You have the latest version (v' + APP_VERSION + '). No update needed.');
       btn.disabled = false;
-      btn.textContent = '⟳ Check for Updates';
+      btn.textContent = 'Check for Updates';
       return;
     }
 
-    // Update available — save data to pending restore key, then reload
-    msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>🔄</span><span>Update found (v' + serverVersion + ')! Saving your data and updating now...</span></div>';
-    
-    // Save ALL user data to pending restore
+    showBackupMsg('ok', 'Update found (v' + serverVersion + ')! Saving your data and updating now...');
+
     const backup = {
       version: serverVersion,
-      debts,
-      payments,
-      strategy,
+      debts: debts,
+      payments: payments,
+      strategy: strategy,
       extraMonthly: parseFloat(document.getElementById('extra-payment').value) || 0,
-      nextId
+      nextId: nextId
     };
     localStorage.setItem('debtfree_pending_restore', JSON.stringify(backup));
 
-    // Force reload the dashboard bypassing cache
-    setTimeout(() => {
+    setTimeout(function() {
       window.location.href = '/app/dashboard.html?v=' + serverVersion;
     }, 1500);
 
   } catch(err) {
-    msg.innerHTML = '<div class="alert warning" style="display:flex;gap:8px;align-items:center;"><span>⚠️</span><span>Could not check for updates. Make sure you're connected to the internet.</span></div>';
+    showBackupMsg('warn', 'Could not check for updates. Make sure you are connected to the internet.');
     btn.disabled = false;
-    btn.textContent = '⟳ Check for Updates';
+    btn.textContent = 'Check for Updates';
   }
 }
 
 // ═══════════════════════════════════════════
 //  EXPORT / IMPORT
 // ═══════════════════════════════════════════
+function showBackupMsg(type, text) {
+  const msg = document.getElementById('backup-msg');
+  if (!msg) return;
+  const el = document.createElement('div');
+  el.className = type === 'ok' ? 'alert' : 'alert warning';
+  el.style.cssText = 'display:flex;gap:8px;align-items:center;';
+  el.innerHTML = (type === 'ok' ? '<span>&#10003;</span>' : '<span>&#9888;</span>') + '<span>' + text + '</span>';
+  msg.innerHTML = '';
+  msg.appendChild(el);
+}
+
 function exportData() {
   const data = {
     version: 1,
     exportDate: new Date().toISOString(),
-    debts,
-    payments,
-    strategy,
-    extraMonthly,
-    nextId
+    debts: debts,
+    payments: payments,
+    strategy: strategy,
+    extraMonthly: extraMonthly,
+    nextId: nextId
   };
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -2430,8 +2437,7 @@ function exportData() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  const msg = document.getElementById('backup-msg');
-  if (msg) msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>Backup exported successfully. Save this file somewhere safe.</span></div>';
+  showBackupMsg('ok', 'Backup exported. Save this file somewhere safe.');
 }
 
 function importData(event) {
@@ -2442,32 +2448,26 @@ function importData(event) {
     try {
       const data = JSON.parse(e.target.result);
       if (!data.debts || !Array.isArray(data.debts)) {
-        throw new Error('Invalid backup file');
+        throw new Error('Invalid file');
       }
-      // Restore all data
       debts = data.debts || [];
       payments = data.payments || [];
       strategy = data.strategy || 'avalanche';
       extraMonthly = data.extraMonthly || 0;
-      nextId = data.nextId || (debts.length ? Math.max(...debts.map(d => d.id)) + 1 : 1);
-      // Update UI
+      nextId = data.nextId || (debts.length ? Math.max(...debts.map(function(d){ return d.id; })) + 1 : 1);
       document.getElementById('extra-payment').value = extraMonthly || '';
       document.getElementById('strategy-select').value = strategy;
       selectStrategy(strategy);
       save();
       render();
-      const msg = document.getElementById('backup-msg');
-      if (msg) msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>Restored ' + debts.length + ' debts and ' + payments.length + ' payments successfully.</span></div>';
+      showBackupMsg('ok', 'Restored ' + debts.length + ' debts and ' + payments.length + ' payments successfully.');
     } catch(err) {
-      const msg = document.getElementById('backup-msg');
-      if (msg) msg.innerHTML = '<div class="alert warning" style="display:flex;gap:8px;align-items:center;"><span>⚠️</span><span>Could not read backup file. Make sure it is a valid DebtFree export.</span></div>';
+      showBackupMsg('warn', 'Could not read backup file. Make sure it is a valid DebtFree export.');
     }
   };
   reader.readAsText(file);
-  // Reset file input so same file can be re-imported if needed
   event.target.value = '';
 }
-
 function save() {
   try {
     localStorage.setItem('debtfree_debts', JSON.stringify(debts));
@@ -2494,10 +2494,8 @@ function load() {
         document.getElementById('extra-payment').value = extraMonthly || '';
         document.getElementById('strategy-select').value = strategy;
         // Show success message after render
-        setTimeout(() => {
-          const msg = document.getElementById('backup-msg');
-          if (msg) msg.innerHTML = '<div class="alert" style="display:flex;gap:8px;align-items:center;"><span>✅</span><span>Update complete! Your data was restored automatically — ' + debts.length + ' debts and ' + payments.length + ' payments.</span></div>';
-          // Save restored data to normal localStorage keys
+        setTimeout(function() {
+          showBackupMsg('ok', 'Update complete! Your data was restored — ' + debts.length + ' debts and ' + payments.length + ' payments.');
           save();
         }, 500);
         return; // Skip normal load — data already restored
