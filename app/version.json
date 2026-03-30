@@ -1,5 +1,5 @@
 {
-  "version": "1.1.2",
+  "version": "1.1.3",
   "releaseDate": "2026-03-30",
-  "notes": "What If freedom date now stays in sync with Dashboard lump sums"
+  "notes": "Fixed What If sliders not updating freedom date and time saved when lump sums present"
 }

@@ -1472,7 +1472,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.2';
+const APP_VERSION = '1.1.3';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2018,26 +2018,28 @@ function updateWhatIf() {
   const monthsSaved = baseline.months - scenario.months;
   const intSaved    = baseline.totalInterest - scenario.totalInterest;
 
-  document.getElementById('wi-time-saved').textContent  = monthsSaved > 0 ? monthsSaved + ' mo' : '0 mo';
-  document.getElementById('wi-int-saved').textContent   = fmt(Math.max(0, intSaved));
-  document.getElementById('wi-total-int').textContent   = fmt(scenario.totalInterest);
-  document.getElementById('wi-months-left').textContent = scenario.months + ' months remaining';
-
-  const freeDate = new Date();
-  freeDate.setMonth(freeDate.getMonth() + scenario.months);
-  document.getElementById('wi-freedom').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
-
   const baseDate = new Date();
   baseDate.setMonth(baseDate.getMonth() + baseline.months);
-  // Show baseline date clearly — this includes lump sums and should match Dashboard
   const baseDateStr = baseDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
-  document.getElementById('wi-new-date').textContent = sliderExtra > 0 || lump > 0
-    ? 'vs. your plan with lump sums (' + baseDateStr + ')'
-    : 'your plan including lump sums';
-  // When sliders are at 0, freedom date = baseline = dashboard. Make that explicit.
+
   if (sliderExtra === 0 && lump === 0) {
-    document.getElementById('wi-freedom').textContent = baseDateStr;
+    // Sliders at zero — show baseline plan (matches Dashboard exactly)
+    document.getElementById('wi-freedom').textContent     = baseDateStr;
     document.getElementById('wi-months-left').textContent = baseline.months + ' months remaining';
+    document.getElementById('wi-time-saved').textContent  = '0 mo';
+    document.getElementById('wi-int-saved').textContent   = fmt(0);
+    document.getElementById('wi-total-int').textContent   = fmt(baseline.totalInterest);
+    document.getElementById('wi-new-date').textContent    = 'Move the sliders to model a scenario';
+  } else {
+    // Sliders active — show what the scenario changes vs the baseline plan
+    const freeDate = new Date();
+    freeDate.setMonth(freeDate.getMonth() + scenario.months);
+    document.getElementById('wi-freedom').textContent     = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
+    document.getElementById('wi-months-left').textContent = scenario.months + ' months remaining';
+    document.getElementById('wi-time-saved').textContent  = monthsSaved > 0 ? monthsSaved + ' mo' : '0 mo';
+    document.getElementById('wi-int-saved').textContent   = fmt(Math.max(0, intSaved));
+    document.getElementById('wi-total-int').textContent   = fmt(scenario.totalInterest);
+    document.getElementById('wi-new-date').textContent    = 'vs. your plan with lump sums (' + baseDateStr + ')';
   }
 
   // populate windfall debt select
