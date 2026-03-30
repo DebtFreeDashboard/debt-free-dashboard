@@ -515,6 +515,38 @@
     height: 220px;
   }
 
+  /* ─── CUSTOM SLIDERS (iOS Safari compatible) ─── */
+  .custom-slider-track {
+    position: relative;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    margin: 12px 0 4px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .custom-slider-fill {
+    position: absolute;
+    left: 0; top: 0; height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    pointer-events: none;
+    transition: width 0.05s;
+  }
+  .custom-slider-thumb {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 22px; height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(0,229,176,0.3);
+    pointer-events: none;
+    transition: left 0.05s;
+  }
+
   /* ─── WHAT IF ─── */
   .whatif-grid {
     display: grid;
@@ -1355,15 +1387,29 @@
           <span>Additional Monthly Payment (on top of your current plan)</span>
           <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
         </div>
-        <input type="range" id="wi-extra" min="0" max="2000" step="25" value="0" oninput="updateWhatIf()" onchange="updateWhatIf()" />
+        <div class="custom-slider-track" id="wi-extra-track" onclick="sliderClick(event,'wi-extra',0,2000,25)">
+          <div class="custom-slider-fill" id="wi-extra-fill" style="width:0%"></div>
+          <div class="custom-slider-thumb" id="wi-extra-thumb" style="left:0%"></div>
+        </div>
+        <input type="hidden" id="wi-extra" value="0" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
+          <span>$0</span><span>$500</span><span>$1,000</span><span>$1,500</span><span>$2,000</span>
+        </div>
       </div>
 
-      <div class="range-wrap" style="margin-top:12px">
+      <div class="range-wrap" style="margin-top:16px">
         <div class="range-label">
           <span>Lump Sum Paydown</span>
           <span style="color:var(--accent4); font-weight:500" id="wi-lump-label">$0</span>
         </div>
-        <input type="range" id="wi-lump" min="0" max="20000" step="250" value="0" oninput="updateWhatIf()" onchange="updateWhatIf()" />
+        <div class="custom-slider-track" id="wi-lump-track" onclick="sliderClick(event,'wi-lump',0,20000,250)">
+          <div class="custom-slider-fill" id="wi-lump-fill" style="width:0%;background:var(--accent4)"></div>
+          <div class="custom-slider-thumb" id="wi-lump-thumb" style="left:0%;background:var(--accent4);box-shadow:0 0 0 3px rgba(201,168,76,0.3)"></div>
+        </div>
+        <input type="hidden" id="wi-lump" value="0" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:4px;">
+          <span>$0</span><span>$5k</span><span>$10k</span><span>$15k</span><span>$20k</span>
+        </div>
       </div>
 
       <div class="divider"></div>
@@ -1472,7 +1518,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.7';
+const APP_VERSION = '1.1.8';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1508,9 +1554,9 @@ function showSection(id) {
     }
   });
   if (id === 'whatif') {
-    // Reset sliders to 0 so the tab always starts from a clean state
-    document.getElementById('wi-extra').value = 0;
-    document.getElementById('wi-lump').value  = 0;
+    // Reset custom sliders to 0
+    setSliderValue('wi-extra', 0, 2000, 25, 0);
+    setSliderValue('wi-lump', 0, 20000, 250, 0);
     updateWhatIf();
   }
   if (id === 'milestones') renderMilestones();
@@ -1986,6 +2032,61 @@ function recalculate() {
   strategy = document.getElementById('strategy-select').value;
   save();
   render();
+}
+
+// ═══════════════════════════════════════════
+//  CUSTOM SLIDER LOGIC (iOS Safari compatible)
+// ═══════════════════════════════════════════
+function setSliderValue(id, min, max, step, pct) {
+  var raw = min + (pct / 100) * (max - min);
+  var stepped = Math.round(raw / step) * step;
+  var clamped = Math.max(min, Math.min(max, stepped));
+  var finalPct = ((clamped - min) / (max - min)) * 100;
+
+  document.getElementById(id).value = clamped;
+  document.getElementById(id + '-fill').style.width = finalPct + '%';
+  document.getElementById(id + '-thumb').style.left = finalPct + '%';
+  updateWhatIf();
+}
+
+function sliderClick(e, id, min, max, step) {
+  var track = document.getElementById(id + '-track');
+  var rect = track.getBoundingClientRect();
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  var pct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+  setSliderValue(id, min, max, step, pct);
+}
+
+function initSliderDrag(id, min, max, step) {
+  var track = document.getElementById(id + '-track');
+  if (!track) return;
+
+  function handleMove(e) {
+    e.preventDefault();
+    var rect = track.getBoundingClientRect();
+    var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    var pct = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+    setSliderValue(id, min, max, step, pct);
+  }
+
+  // Mouse events (desktop)
+  track.addEventListener('mousedown', function(e) {
+    handleMove(e);
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', function() {
+      document.removeEventListener('mousemove', handleMove);
+    }, { once: true });
+  });
+
+  // Touch events (iOS Safari, Android)
+  track.addEventListener('touchstart', function(e) {
+    handleMove(e);
+  }, { passive: false });
+
+  track.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    handleMove(e);
+  }, { passive: false });
 }
 
 // ═══════════════════════════════════════════
@@ -3266,20 +3367,12 @@ const versionEl = document.getElementById('current-version');
 if (versionEl) versionEl.textContent = APP_VERSION;
 load();
 
-// iOS Safari fix: attach multiple event types to range sliders
-// Safari does not reliably fire oninput on range inputs
-(function() {
-  var sliders = ['wi-extra', 'wi-lump'];
-  sliders.forEach(function(id) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    ['input', 'change', 'touchend', 'touchmove'].forEach(function(evt) {
-      el.addEventListener(evt, function() { updateWhatIf(); }, { passive: true });
-    });
-  });
-})();
 // Process any payments or lump sums that became due today
 if (processDuePayments()) render();
+
+// Initialize custom sliders
+initSliderDrag('wi-extra', 0, 2000, 25);
+initSliderDrag('wi-lump', 0, 20000, 250);
 // Check again once per day if app stays open
 setInterval(function() {
   if (processDuePayments()) render();

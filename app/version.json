@@ -1,5 +1,5 @@
 {
-  "version": "1.1.7",
+  "version": "1.1.8",
   "releaseDate": "2026-03-30",
-  "notes": "Fixed What If sliders on iOS Safari - added touch and change event listeners"
+  "notes": "Replaced native range sliders with custom touch-friendly sliders for iOS Safari"
 }
