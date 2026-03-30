@@ -1173,9 +1173,44 @@
         </div>
       </div>
     </div>
+    <!-- Planned Lump Sums -->
+    <div class="card" id="lump-sum-card" style="display:none">
+      <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
+      <div id="lump-sum-list"></div>
+      <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <button id="lump-mode-auto" onclick="setLumpMode('auto')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--accent);color:#0a0a0f;font-weight:700;letter-spacing:0.05em;">&#9654; Strategy Decides</button>
+        <button id="lump-mode-manual" onclick="setLumpMode('manual')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--card2);color:var(--text-muted);letter-spacing:0.05em;">&#9776; I Choose Debt</button>
+      </div>
+      <div id="lump-debt-field" style="display:none;margin-bottom:12px;">
+        <div class="form-field">
+          <label>Debt Account</label>
+          <select id="lump-debt-select"></select>
+        </div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr auto;margin-top:4px;">
+        <div class="form-field">
+          <label>Amount ($)</label>
+          <input type="number" id="lump-amount" placeholder="5000" min="1" step="100" />
+        </div>
+        <div class="form-field">
+          <label>Expected Date</label>
+          <input type="date" id="lump-date" />
+        </div>
+        <div class="form-field" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" onclick="addLumpSum()">Add</button>
+        </div>
+      </div>
+      <div id="lump-auto-hint" style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">The system will allocate this amount across your debts following your current strategy.</div>
+    </div>
+
     <!-- Payment Log -->
     <div class="card" id="payment-log-card" style="display:none">
       <div class="card-title"><div class="dot"></div> Payment Log</div>
+      <div id="payment-log-future-warn" class="alert warning" style="display:none;margin-bottom:12px;gap:8px;align-items:center;">
+        <span>&#9888;</span><span>Future-dated payment saved but will not affect your current balance or calculations until that date arrives. Use Planned Lump Sums above to model future payments in your payoff simulation.</span>
+      </div>
       <div class="payment-log" id="payment-log">
         <div class="empty-state" style="padding:20px"><p>Payments recorded here.</p></div>
       </div>
@@ -1414,9 +1449,11 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.0.3';
+const APP_VERSION = '1.0.6';
 let debts = [];
 let editingPaymentId = null;
+let lumpSums = []; // Planned future lump sum payments
+let editingLumpSumId = null;
 let payments = [];
 let strategy = 'avalanche';
 let extraMonthly = 0;
@@ -1506,9 +1543,21 @@ function badgeLabel(type) {
 // ═══════════════════════════════════════════
 //  PAYOFF SIMULATION
 // ═══════════════════════════════════════════
-function simulate(debtList, extraPerMonth, lumpSum, customStrategy) {
+function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps) {
   if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [] };
   const strat = customStrategy || strategy;
+  // Build a map of month-index -> lump sum payments to apply (from plannedLumps array)
+  const today = new Date();
+  const lumpByMonth = {};
+  if (plannedLumps && plannedLumps.length) {
+    plannedLumps.forEach(function(l) {
+      const lDate = new Date(l.date);
+      const diffMs = lDate - today;
+      const diffMonths = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24 * 30.44)));
+      if (!lumpByMonth[diffMonths]) lumpByMonth[diffMonths] = [];
+      lumpByMonth[diffMonths].push({ debtId: l.debtId, amount: l.amount });
+    });
+  }
 
   // Sanitize debts before simulating — clamp APR and ensure minimum payment covers interest
   let balances = debtList.map(d => {
@@ -1578,6 +1627,25 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy) {
       d.bal -= payment;
       extra -= payment;
       d.bal = Math.max(0, d.bal);
+    }
+
+    // Apply any planned lump sums due this month
+    if (lumpByMonth[month]) {
+      lumpByMonth[month].forEach(function(lump) {
+        const target = balances.find(function(b) { return b.id === lump.debtId; });
+        if (target && target.bal > 0) {
+          target.bal = Math.max(0, target.bal - lump.amount);
+        } else if (!target) {
+          // Debt not specified or already paid — apply to focus debt
+          for (let d of balances) {
+            if (d.bal <= 0) continue;
+            const pay = Math.min(d.bal, lump.amount);
+            d.bal -= pay;
+            d.bal = Math.max(0, d.bal);
+            break;
+          }
+        }
+      });
     }
 
     totalInterest += monthInterest;
@@ -1839,12 +1907,30 @@ function logPayment() {
 
   if (isNaN(amount) || amount <= 0) { alert('Enter a valid payment amount.'); return; }
 
-  const d = debts.find(x=>x.id===debtId);
+  const d = debts.find(function(x) { return x.id === debtId; });
   if (!d) return;
 
-  const actualPayment = Math.min(amount, d.balance); // cap at remaining balance
+  // Check if date is in the future
+  const today = new Date().toISOString().split('T')[0];
+  const isFuture = date > today;
+
+  if (isFuture) {
+    // Show warning but do NOT reduce balance — mark as pending
+    payments.push({ id: Date.now(), debtId: debtId, debtName: d.name, amount: amount, date: date, eliminated: false, pending: true });
+    document.getElementById('log-amount').value = '';
+    // Show warning in payment log area
+    const warn = document.getElementById('payment-log-future-warn');
+    if (warn) {
+      warn.style.display = 'flex';
+      setTimeout(function() { warn.style.display = 'none'; }, 6000);
+    }
+    save(); render();
+    return;
+  }
+
+  const actualPayment = Math.min(amount, d.balance);
   d.balance = Math.max(0, d.balance - actualPayment);
-  payments.push({ id: Date.now(), debtId, debtName: d.name, amount: actualPayment, date, eliminated: d.balance <= 0 });
+  payments.push({ id: Date.now(), debtId: debtId, debtName: d.name, amount: actualPayment, date: date, eliminated: d.balance <= 0 });
 
   document.getElementById('log-amount').value = '';
   save(); render();
@@ -1923,6 +2009,264 @@ function updateWhatIf() {
   // populate windfall debt select
   const ws = document.getElementById('wi-windfall-debt');
   ws.innerHTML = activeDebts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════
+//  PLANNED LUMP SUMS
+// ═══════════════════════════════════════════
+// Auto-convert: apply any pending Payment Log entries and lump sums whose date has arrived
+function processDuePayments() {
+  const today = new Date().toISOString().split('T')[0];
+  let changed = false;
+
+  // Process pending Payment Log entries that are now due
+  payments.forEach(function(p) {
+    if (p.pending && p.date <= today) {
+      const d = debts.find(function(x) { return x.id === p.debtId; });
+      if (d && d.balance > 0) {
+        const actual = Math.min(p.amount, d.balance);
+        d.balance = Math.max(0, d.balance - actual);
+        p.amount = actual;
+        p.eliminated = d.balance <= 0;
+        p.pending = false;
+        changed = true;
+      } else {
+        // Debt already paid off — just un-pend the entry
+        p.pending = false;
+        changed = true;
+      }
+    }
+  });
+
+  // Process Planned Lump Sums that are now due — convert to real payments
+  const stillFuture = [];
+  lumpSums.forEach(function(l) {
+    if (l.date <= today) {
+      const d = debts.find(function(x) { return x.id === l.debtId; });
+      if (d && d.balance > 0) {
+        const actual = Math.min(l.amount, d.balance);
+        d.balance = Math.max(0, d.balance - actual);
+        payments.push({
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          debtId: l.debtId,
+          debtName: l.debtName,
+          amount: actual,
+          date: l.date,
+          eliminated: d.balance <= 0,
+          note: 'Lump Sum'
+        });
+        changed = true;
+      }
+      // Either way, remove from lump sums — it has been processed
+    } else {
+      stillFuture.push(l);
+    }
+  });
+  lumpSums = stillFuture;
+
+  if (changed) { save(); }
+  return changed;
+}
+
+// Track current lump sum entry mode
+let lumpMode = 'auto'; // 'auto' or 'manual'
+
+function setLumpMode(mode) {
+  lumpMode = mode;
+  const autoBtn = document.getElementById('lump-mode-auto');
+  const manualBtn = document.getElementById('lump-mode-manual');
+  const debtField = document.getElementById('lump-debt-field');
+  const hint = document.getElementById('lump-auto-hint');
+
+  if (mode === 'auto') {
+    if (autoBtn) { autoBtn.style.background = 'var(--accent)'; autoBtn.style.color = '#0a0a0f'; autoBtn.style.fontWeight = '700'; }
+    if (manualBtn) { manualBtn.style.background = 'var(--card2)'; manualBtn.style.color = 'var(--text-muted)'; manualBtn.style.fontWeight = '400'; }
+    if (debtField) debtField.style.display = 'none';
+    if (hint) hint.textContent = 'The system will allocate this amount across your debts following your current strategy.';
+  } else {
+    if (manualBtn) { manualBtn.style.background = 'var(--accent)'; manualBtn.style.color = '#0a0a0f'; manualBtn.style.fontWeight = '700'; }
+    if (autoBtn) { autoBtn.style.background = 'var(--card2)'; autoBtn.style.color = 'var(--text-muted)'; autoBtn.style.fontWeight = '400'; }
+    if (debtField) debtField.style.display = 'block';
+    if (hint) hint.textContent = 'Payment will be applied to the selected debt account only.';
+  }
+}
+
+// Calculate how a lump sum would be distributed by strategy at a future date
+// Returns array of { debtId, debtName, amount } allocations
+function calculateLumpAllocation(totalAmount, targetDate) {
+  const today = new Date();
+  const lDate = new Date(targetDate);
+  const monthsUntil = Math.max(1, Math.round((lDate - today) / (1000 * 60 * 60 * 24 * 30.44)));
+
+  // Project balances at the target date using simulate monthly data
+  const activeDebts = debts.filter(function(d) { return d.balance > 0; });
+  if (!activeDebts.length) return [];
+
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const res = simulate(activeDebts.map(function(d) { return {...d}; }), extra, 0, strategy, []);
+  const monthData = res.monthlyData[Math.min(monthsUntil - 1, res.monthlyData.length - 1)];
+
+  // Get projected remaining balances at that month
+  // We use the simulation order to determine which debts still have balances
+  const projected = activeDebts.map(function(d) {
+    // Find this debt in the simulation order
+    const simDebt = res.order.find(function(o) { return o.id === d.id; });
+    const projBal = simDebt ? Math.max(0, simDebt.bal) : d.balance;
+    return { debtId: d.id, debtName: d.name, projBal: projBal, apr: d.apr };
+  }).filter(function(d) { return d.projBal > 0; });
+
+  if (!projected.length) return [];
+
+  // Sort by strategy to determine payoff order
+  const sorted = [...projected];
+  if (strategy === 'avalanche') {
+    sorted.sort(function(a, b) { return b.apr - a.apr; });
+  } else if (strategy === 'snowball') {
+    sorted.sort(function(a, b) { return a.projBal - b.projBal; });
+  }
+  // hybrid: keep insertion order
+
+  // Allocate the lump sum following the strategy order
+  const allocations = [];
+  let remaining = totalAmount;
+  for (let i = 0; i < sorted.length && remaining > 0; i++) {
+    const pay = Math.min(remaining, sorted[i].projBal);
+    allocations.push({ debtId: sorted[i].debtId, debtName: sorted[i].debtName, amount: pay });
+    remaining -= pay;
+  }
+  return allocations;
+}
+
+function addLumpSum() {
+  const amount = parseFloat(document.getElementById('lump-amount').value);
+  const date = document.getElementById('lump-date').value;
+
+  if (isNaN(amount) || amount <= 0) { alert('Enter a valid amount.'); return; }
+  if (!date) { alert('Enter the expected payment date.'); return; }
+
+  const today = new Date().toISOString().split('T')[0];
+  if (date <= today) {
+    alert('Planned lump sums must be future dates. To record a completed payment, use the Payment Log below.');
+    return;
+  }
+
+  if (lumpMode === 'manual') {
+    // Manual mode — assign to specific debt
+    const debtId = parseInt(document.getElementById('lump-debt-select').value);
+    const d = debts.find(function(x) { return x.id === debtId; });
+    if (!d) return;
+    lumpSums.push({ id: Date.now(), debtId: debtId, debtName: d.name, amount: amount, date: date, mode: 'manual' });
+  } else {
+    // Auto mode — calculate allocation and store as one entry per debt
+    const allocations = calculateLumpAllocation(amount, date);
+    if (!allocations.length) { alert('No active debts to allocate to.'); return; }
+    const baseId = Date.now();
+    allocations.forEach(function(alloc, i) {
+      lumpSums.push({
+        id: baseId + i,
+        debtId: alloc.debtId,
+        debtName: alloc.debtName,
+        amount: alloc.amount,
+        date: date,
+        mode: 'auto',
+        groupId: baseId // links allocations from same lump sum together
+      });
+    });
+  }
+
+  document.getElementById('lump-amount').value = '';
+  document.getElementById('lump-date').value = '';
+  editingLumpSumId = null;
+  save(); render();
+}
+
+function deleteLumpSum(id) {
+  lumpSums = lumpSums.filter(function(l) { return l.id !== id; });
+  if (editingLumpSumId === id) editingLumpSumId = null;
+  save(); render();
+}
+
+function startEditLumpSum(id) {
+  editingLumpSumId = id;
+  renderLumpSumList();
+}
+
+function cancelEditLumpSum() {
+  editingLumpSumId = null;
+  renderLumpSumList();
+}
+
+function saveEditLumpSum(id) {
+  const l = lumpSums.find(function(x) { return x.id === id; });
+  if (!l) return;
+
+  const newDate = document.getElementById('edit-lump-date-' + id).value;
+  const newAmount = parseFloat(document.getElementById('edit-lump-amount-' + id).value);
+
+  if (!newDate || isNaN(newAmount) || newAmount <= 0) {
+    alert('Please enter a valid date and amount.');
+    return;
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  if (newDate <= today) {
+    alert('Date must be in the future. To record a completed payment, delete this entry and use the Payment Log.');
+    return;
+  }
+
+  l.date = newDate;
+  l.amount = newAmount;
+  editingLumpSumId = null;
+  save(); render();
+}
+
+function renderLumpSumList() {
+  const card = document.getElementById('lump-sum-card');
+  if (!card) return;
+  card.style.display = debts.filter(function(d) { return d.balance > 0; }).length ? 'block' : 'none';
+
+  const list = document.getElementById('lump-sum-list');
+  if (!list) return;
+
+  if (!lumpSums.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:12px 0 4px"><p>No planned lump sums yet. Add bonus payments or tax refunds to see how they affect your Freedom Date.</p></div>';
+    return;
+  }
+
+  const sorted = [...lumpSums].sort(function(a, b) {
+    return a.date.localeCompare(b.date) || (a.groupId || a.id) - (b.groupId || b.id);
+  });
+  list.innerHTML = sorted.map(function(l) {
+    const modeTag = l.mode === 'auto'
+      ? '<span class="tag" style="margin-left:4px;font-size:0.6rem;background:rgba(0,229,176,0.12);color:var(--accent);border:1px solid rgba(0,229,176,0.3);">strategy</span>'
+      : '<span class="tag tag-accent" style="margin-left:4px;font-size:0.6rem;">manual</span>';
+
+    if (editingLumpSumId === l.id) {
+      return '<div class="payment-entry" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;align-items:center;">' +
+        '<input type="date" id="edit-lump-date-' + l.id + '" value="' + l.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:140px;" />' +
+        '<span class="payment-debt">' + l.debtName + modeTag + '</span>' +
+        '<input type="number" id="edit-lump-amount-' + l.id + '" value="' + l.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
+        '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;" onclick="saveEditLumpSum(' + l.id + ')">Save</button>' +
+        '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;" onclick="cancelEditLumpSum()">Cancel</button>' +
+        '</div>';
+    }
+    return '<div class="payment-entry" style="margin-bottom:6px;">' +
+      '<span class="payment-date">' + l.date + '</span>' +
+      '<span class="payment-debt">' + l.debtName + modeTag + '</span>' +
+      '<span class="payment-amount" style="color:var(--accent);">-' + fmtDec(l.amount) + '</span>' +
+      '<button class="btn-delete-payment" style="font-size:0.68rem;padding:3px 8px;margin-left:4px;" onclick="startEditLumpSum(' + l.id + ')" title="Edit">Edit</button>' +
+      '<button class="btn-delete-payment" onclick="deleteLumpSum(' + l.id + ')" title="Remove">✕</button>' +
+      '</div>';
+  }).join('');
+}
+
+function populateLumpDebtSelect() {
+  const sel = document.getElementById('lump-debt-select');
+  if (!sel) return;
+  const active = debts.filter(function(d) { return d.balance > 0; });
+  sel.innerHTML = active.map(function(d) {
+    return '<option value="' + d.id + '">' + d.name + ' (' + fmtDec(d.balance) + ')</option>';
+  }).join('');
 }
 
 // ═══════════════════════════════════════════
@@ -2033,10 +2377,12 @@ function render() {
   renderStats();
   renderDebtList();
   renderMonthlySummary();
+  renderLumpSumList();
   renderChart();
   renderPaymentLog();
   renderMilestones();
   populateDebtSelects();
+  populateLumpDebtSelect();
 }
 
 function renderMonthlySummary() {
@@ -2068,8 +2414,8 @@ function renderStats() {
   document.getElementById('stat-interest').textContent = fmtDec(interest);
 
   if (activeDebts.length) {
-    const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy);
-    const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy);
+    const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, lumpSums);
+    const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy, []);
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
@@ -2176,7 +2522,7 @@ function renderChart() {
   if (!activeDebts.length) return;
 
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy);
+  const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, lumpSums);
   const labels = res.monthlyData.map(m => 'Mo '+m.month);
   const data = res.monthlyData.map(m => m.remaining);
 
@@ -2233,6 +2579,7 @@ function renderPaymentLog() {
     const noteTag = p.note ? '<span class="tag tag-accent" style="margin-left:4px">' + p.note + '</span>' : '';
     const elimTag = p.eliminated ? ' 🎉' : '';
     const editingThis = editingPaymentId === p.id;
+    const isPending = !!p.pending;
     if (editingThis) {
       return '<div class="payment-entry" style="flex-wrap:wrap;gap:8px;align-items:center;">' +
         '<input type="date" id="edit-pay-date" value="' + p.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:130px;" />' +
@@ -2242,12 +2589,14 @@ function renderPaymentLog() {
         '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;" onclick="cancelEditPayment()">Cancel</button>' +
         '</div>';
     }
-    return '<div class="payment-entry">' +
+    const pendingTag = isPending ? '<span class="tag tag-muted" style="margin-left:4px;font-size:0.62rem;">pending</span>' : '';
+    const amtStyle = isPending ? 'color:var(--text-muted);text-decoration:line-through;' : '';
+    return '<div class="payment-entry" style="' + (isPending ? 'opacity:0.65;' : '') + '">' +
       '<span class="payment-date">' + p.date + '</span>' +
-      '<span class="payment-debt">' + p.debtName + noteTag + elimTag + '</span>' +
-      '<span class="payment-amount">-' + fmtDec(p.amount) + '</span>' +
+      '<span class="payment-debt">' + p.debtName + noteTag + pendingTag + elimTag + '</span>' +
+      '<span class="payment-amount" style="' + amtStyle + '">-' + fmtDec(p.amount) + '</span>' +
       '<button class="btn-delete-payment" style="font-size:0.68rem;padding:3px 8px;margin-left:4px;" onclick="startEditPayment(' + p.id + ')" title="Edit payment">Edit</button>' +
-      '<button class="btn-delete-payment" onclick="deletePayment(' + p.id + ')" title="Delete and restore balance">✕</button>' +
+      '<button class="btn-delete-payment" onclick="deletePayment(' + p.id + ')" title="Delete">✕</button>' +
       '</div>';
   }).join('');
 }
@@ -2258,9 +2607,9 @@ function renderStrategy() {
 
   // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
   if (activeDebts.length) {
-    const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche');
-    const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball');
-    const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche');
+    const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', lumpSums);
+    const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', lumpSums);
+    const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', []);
 
     document.getElementById('cmp-av-months').textContent = av.months;
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
@@ -2483,6 +2832,7 @@ async function checkForUpdates() {
       version: serverVersion,
       debts: debts,
       payments: payments,
+      lumpSums: lumpSums,
       strategy: strategy,
       extraMonthly: parseFloat(document.getElementById('extra-payment').value) || 0,
       nextId: nextId
@@ -2520,6 +2870,7 @@ function exportData() {
     exportDate: new Date().toISOString(),
     debts: debts,
     payments: payments,
+    lumpSums: lumpSums,
     strategy: strategy,
     extraMonthly: extraMonthly,
     nextId: nextId
@@ -2549,6 +2900,7 @@ function importData(event) {
       }
       debts = data.debts || [];
       payments = data.payments || [];
+      lumpSums = data.lumpSums || [];
       strategy = data.strategy || 'avalanche';
       extraMonthly = data.extraMonthly || 0;
       nextId = data.nextId || (debts.length ? Math.max(...debts.map(function(d){ return d.id; })) + 1 : 1);
@@ -2572,6 +2924,7 @@ function save() {
     localStorage.setItem('debtfree_strategy', strategy);
     localStorage.setItem('debtfree_extra', extraMonthly);
     localStorage.setItem('debtfree_nextid', nextId);
+    localStorage.setItem('debtfree_lumpsums', JSON.stringify(lumpSums));
   } catch(e) {}
 }
 
@@ -2585,6 +2938,7 @@ function load() {
       if (data.debts && Array.isArray(data.debts)) {
         debts = data.debts;
         payments = data.payments || [];
+        lumpSums = data.lumpSums || [];
         strategy = data.strategy || 'avalanche';
         extraMonthly = data.extraMonthly || 0;
         nextId = data.nextId || (debts.length ? Math.max(...debts.map(d => d.id)) + 1 : 1);
@@ -2630,6 +2984,8 @@ function load() {
     if (e) { extraMonthly = parseFloat(e); document.getElementById('extra-payment').value = extraMonthly || ''; }
     if (n) nextId = parseInt(n);
     if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
+    const ls = localStorage.getItem('debtfree_lumpsums');
+    if (ls) { try { lumpSums = JSON.parse(ls); } catch(e) { lumpSums = []; } }
   } catch(e) {}
 }
 
@@ -2720,6 +3076,12 @@ document.getElementById('log-date').value = new Date().toISOString().split('T')[
 const versionEl = document.getElementById('current-version');
 if (versionEl) versionEl.textContent = APP_VERSION;
 load();
+// Process any payments or lump sums that became due today
+if (processDuePayments()) render();
+// Check again once per day if app stays open
+setInterval(function() {
+  if (processDuePayments()) render();
+}, 1000 * 60 * 60 * 24);
 // Restore hybrid body class if strategy was saved as hybrid
 if (strategy === 'hybrid') document.body.classList.add('hybrid-mode');
 // Close modal on Escape
