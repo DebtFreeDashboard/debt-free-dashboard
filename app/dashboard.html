@@ -661,14 +661,18 @@
     border-radius: 4px;
     padding: 3px 8px;
     cursor: pointer;
-    transition: all 0.2s;
     flex-shrink: 0;
-    opacity: 0;
+    opacity: 0.35;
     transition: opacity 0.2s, color 0.2s, border-color 0.2s;
   }
 
   .payment-entry:hover .btn-delete-payment { opacity: 1; }
   .btn-delete-payment:hover { color: var(--accent3); border-color: rgba(255,107,107,0.4); }
+
+  /* Always fully visible on touch/mobile — no hover state available */
+  @media (hover: none) {
+    .btn-delete-payment { opacity: 1; }
+  }
 
   /* ─── EXTRAS ─── */
   .divider {
@@ -1443,13 +1447,32 @@
     </div>
   </div>
 
+  <!-- Debt Free Celebration Modal -->
+  <div id="debt-free-modal" class="modal-overlay hidden" onclick="closeDebtFreeModal(event)">
+    <div class="modal" style="max-width:480px;text-align:center;padding:40px 32px;">
+      <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
+      <div style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent);margin-bottom:8px;">All Debts Paid Off!</div>
+      <div id="debt-free-date" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);letter-spacing:0.06em;margin-bottom:20px;"></div>
+      <p id="debt-free-msg" style="font-size:0.9rem;line-height:1.6;color:var(--text);margin-bottom:20px;"></p>
+      <div id="debt-free-leftover" style="background:var(--card2);border-radius:12px;padding:16px;margin-bottom:24px;display:none;">
+        <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Remaining from Lump Sum</div>
+        <div id="debt-free-leftover-amount" style="font-family:var(--font-serif);font-size:2rem;font-weight:900;color:var(--accent);">$0</div>
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">after all debts are cleared</div>
+      </div>
+      <div id="debt-free-breakdown" style="text-align:left;margin-bottom:24px;font-size:0.82rem;"></div>
+      <button class="btn btn-primary" onclick="closeDebtFreeModal()" style="width:100%;padding:14px;">
+        Close
+      </button>
+    </div>
+  </div>
+
 </div><!-- /app -->
 
 <script>
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.0.8';
+const APP_VERSION = '1.1.0';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2201,7 +2224,7 @@ function calculateLumpAllocation(totalAmount, targetDate) {
     allocations.push({ debtId: allocationBase[i].debtId, debtName: allocationBase[i].debtName, amount: Math.round(pay * 100) / 100 });
     remaining -= pay;
   }
-  return allocations;
+  return { allocations: allocations, leftover: Math.max(0, Math.round(remaining * 100) / 100) };
 }
 
 function addLumpSum() {
@@ -2225,10 +2248,10 @@ function addLumpSum() {
     lumpSums.push({ id: Date.now(), debtId: debtId, debtName: d.name, amount: amount, date: date, mode: 'manual' });
   } else {
     // Auto mode — calculate allocation and store as one entry per debt
-    const allocations = calculateLumpAllocation(amount, date);
-    if (!allocations.length) { alert('No active debts to allocate to.'); return; }
+    const result = calculateLumpAllocation(amount, date);
+    if (!result.allocations.length) { alert('No active debts to allocate to.'); return; }
     const baseId = Date.now();
-    allocations.forEach(function(alloc, i) {
+    result.allocations.forEach(function(alloc, i) {
       lumpSums.push({
         id: baseId + i,
         debtId: alloc.debtId,
@@ -2236,9 +2259,14 @@ function addLumpSum() {
         amount: alloc.amount,
         date: date,
         mode: 'auto',
-        groupId: baseId // links allocations from same lump sum together
+        groupId: baseId
       });
     });
+
+    // Check if all debts are paid off by this lump sum
+    if (result.leftover > 0) {
+      showDebtFreeModal(date, result.leftover, result.allocations);
+    }
   }
 
   document.getElementById('lump-amount').value = '';
@@ -2251,6 +2279,63 @@ function deleteLumpSum(id) {
   lumpSums = lumpSums.filter(function(l) { return l.id !== id; });
   if (editingLumpSumId === id) editingLumpSumId = null;
   save(); render();
+}
+
+function showDebtFreeModal(date, leftover, allocations) {
+  const modal = document.getElementById('debt-free-modal');
+  if (!modal) return;
+
+  // Format the date nicely
+  const d = new Date(date + 'T00:00:00');
+  const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  document.getElementById('debt-free-date').textContent = 'Expected payoff: ' + dateStr;
+
+  // Main message
+  const totalDebt = debts.reduce(function(a, d) { return a + d.balance; }, 0);
+  document.getElementById('debt-free-msg').textContent =
+    'Based on your planned lump sum payments and monthly strategy, all ' +
+    debts.length + ' of your debts are projected to be completely paid off by ' +
+    dateStr + '. This is a massive milestone. You did the work to get here.';
+
+  // Leftover amount
+  const leftoverEl = document.getElementById('debt-free-leftover');
+  const leftoverAmtEl = document.getElementById('debt-free-leftover-amount');
+  if (leftover > 0) {
+    leftoverEl.style.display = 'block';
+    leftoverAmtEl.textContent = fmt(leftover);
+  } else {
+    leftoverEl.style.display = 'none';
+  }
+
+  // Breakdown of how the lump sum was applied
+  const breakdown = document.getElementById('debt-free-breakdown');
+  if (allocations && allocations.length) {
+    breakdown.innerHTML =
+      '<div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">How this lump sum is applied</div>' +
+      allocations.map(function(a) {
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">' +
+          '<span style="color:var(--text);">' + a.debtName + '</span>' +
+          '<span style="font-family:var(--font-mono);color:var(--accent);">-' + fmtDec(a.amount) + '</span>' +
+          '</div>';
+      }).join('') +
+      (leftover > 0
+        ? '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;margin-top:4px;">' +
+          '<span style="color:var(--text-muted);">Remaining (all debts cleared)</span>' +
+          '<span style="font-family:var(--font-mono);color:var(--accent2);">+' + fmtDec(leftover) + '</span>' +
+          '</div>'
+        : '');
+  } else {
+    breakdown.innerHTML = '';
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeDebtFreeModal(e) {
+  const modal = document.getElementById('debt-free-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
 }
 
 function startEditLumpSum(id) {
@@ -2313,8 +2398,8 @@ function renderLumpSumList() {
         '<input type="date" id="edit-lump-date-' + l.id + '" value="' + l.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:140px;" />' +
         '<span class="payment-debt">' + l.debtName + modeTag + '</span>' +
         '<input type="number" id="edit-lump-amount-' + l.id + '" value="' + l.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
-        '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;" onclick="saveEditLumpSum(' + l.id + ')">Save</button>' +
-        '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;" onclick="cancelEditLumpSum()">Cancel</button>' +
+        '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;opacity:1;" onclick="saveEditLumpSum(' + l.id + ')">Save</button>' +
+        '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;opacity:1;" onclick="cancelEditLumpSum()">Cancel</button>' +
         '</div>';
     }
     return '<div class="payment-entry" style="margin-bottom:6px;">' +
@@ -2652,8 +2737,8 @@ function renderPaymentLog() {
         '<input type="date" id="edit-pay-date" value="' + p.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:130px;" />' +
         '<span class="payment-debt">' + p.debtName + noteTag + elimTag + '</span>' +
         '<input type="number" id="edit-pay-amount" value="' + p.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
-        '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;" onclick="saveEditPayment(' + p.id + ')">Save</button>' +
-        '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;" onclick="cancelEditPayment()">Cancel</button>' +
+        '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;opacity:1;" onclick="saveEditPayment(' + p.id + ')">Save</button>' +
+        '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;opacity:1;" onclick="cancelEditPayment()">Cancel</button>' +
         '</div>';
     }
     const pendingTag = isPending ? '<span class="tag tag-muted" style="margin-left:4px;font-size:0.62rem;">pending</span>' : '';
@@ -3153,7 +3238,11 @@ setInterval(function() {
 if (strategy === 'hybrid') document.body.classList.add('hybrid-mode');
 // Close modal on Escape
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.getElementById('edit-modal').classList.add('hidden');
+  if (e.key === 'Escape') {
+    document.getElementById('edit-modal').classList.add('hidden');
+    const dfModal = document.getElementById('debt-free-modal');
+    if (dfModal) dfModal.classList.add('hidden');
+  }
 });
 render();
 </script>
