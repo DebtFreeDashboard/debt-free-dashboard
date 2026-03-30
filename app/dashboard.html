@@ -1449,7 +1449,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.0.6';
+const APP_VERSION = '1.0.7';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2098,40 +2098,64 @@ function calculateLumpAllocation(totalAmount, targetDate) {
   const lDate = new Date(targetDate);
   const monthsUntil = Math.max(1, Math.round((lDate - today) / (1000 * 60 * 60 * 24 * 30.44)));
 
-  // Project balances at the target date using simulate monthly data
   const activeDebts = debts.filter(function(d) { return d.balance > 0; });
   if (!activeDebts.length) return [];
 
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const res = simulate(activeDebts.map(function(d) { return {...d}; }), extra, 0, strategy, []);
-  const monthData = res.monthlyData[Math.min(monthsUntil - 1, res.monthlyData.length - 1)];
 
-  // Get projected remaining balances at that month
-  // We use the simulation order to determine which debts still have balances
-  const projected = activeDebts.map(function(d) {
-    // Find this debt in the simulation order
-    const simDebt = res.order.find(function(o) { return o.id === d.id; });
-    const projBal = simDebt ? Math.max(0, simDebt.bal) : d.balance;
-    return { debtId: d.id, debtName: d.name, projBal: projBal, apr: d.apr };
+  // Run simulation per-debt to get each debt's projected balance at the target month
+  // We simulate each debt independently with its share of extra payment to get individual projections
+  // Better: run full simulation and track each debt's balance month by month
+  const debtCopies = activeDebts.map(function(d) { return {...d, bal: d.balance}; });
+
+  // Sort copies by strategy
+  const sorted4sim = [...debtCopies];
+  if (strategy === 'avalanche') sorted4sim.sort(function(a,b){ return b.apr - a.apr; });
+  else if (strategy === 'snowball') sorted4sim.sort(function(a,b){ return a.bal - b.bal; });
+
+  // Run the simulation month by month up to monthsUntil, tracking each debt's balance
+  const MAX_MONTHS = 600;
+  const targetMonth = Math.min(monthsUntil, MAX_MONTHS);
+
+  for (let month = 1; month <= targetMonth; month++) {
+    let extraLeft = extra;
+    // Accrue interest and apply min payments
+    for (let i = 0; i < sorted4sim.length; i++) {
+      const d = sorted4sim[i];
+      if (d.bal <= 0) continue;
+      const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
+      const interest = d.bal * (safeApr / 100 / 12);
+      d.bal += interest;
+      const minPay = Math.min(d.bal, Math.max(d.minPayment || 25, interest + 1));
+      d.bal = Math.max(0, d.bal - minPay);
+    }
+    // Apply extra to focus debt
+    for (let i = 0; i < sorted4sim.length; i++) {
+      const d = sorted4sim[i];
+      if (d.bal <= 0 || extraLeft <= 0) continue;
+      const pay = Math.min(d.bal, extraLeft);
+      d.bal -= pay;
+      extraLeft -= pay;
+      d.bal = Math.max(0, d.bal);
+    }
+  }
+
+  // Now sorted4sim[i].bal is the projected balance at targetMonth for each debt
+  const projected = sorted4sim.map(function(d) {
+    return { debtId: d.id, debtName: d.name, projBal: Math.max(0, d.bal), apr: d.apr };
   }).filter(function(d) { return d.projBal > 0; });
 
-  if (!projected.length) return [];
+  // If all debts are paid off by that date, still allow allocation against current balances
+  const allocationBase = projected.length > 0 ? projected : activeDebts.map(function(d) {
+    return { debtId: d.id, debtName: d.name, projBal: d.balance, apr: d.apr };
+  });
 
-  // Sort by strategy to determine payoff order
-  const sorted = [...projected];
-  if (strategy === 'avalanche') {
-    sorted.sort(function(a, b) { return b.apr - a.apr; });
-  } else if (strategy === 'snowball') {
-    sorted.sort(function(a, b) { return a.projBal - b.projBal; });
-  }
-  // hybrid: keep insertion order
-
-  // Allocate the lump sum following the strategy order
+  // Allocate the lump sum following the strategy order (already sorted above)
   const allocations = [];
   let remaining = totalAmount;
-  for (let i = 0; i < sorted.length && remaining > 0; i++) {
-    const pay = Math.min(remaining, sorted[i].projBal);
-    allocations.push({ debtId: sorted[i].debtId, debtName: sorted[i].debtName, amount: pay });
+  for (let i = 0; i < allocationBase.length && remaining > 0; i++) {
+    const pay = Math.min(remaining, allocationBase[i].projBal);
+    allocations.push({ debtId: allocationBase[i].debtId, debtName: allocationBase[i].debtName, amount: Math.round(pay * 100) / 100 });
     remaining -= pay;
   }
   return allocations;
