@@ -1472,7 +1472,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.3';
+const APP_VERSION = '1.1.4';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2010,10 +2010,15 @@ function updateWhatIf() {
   const dashboardExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
-  // Both baseline and scenario include planned lump sums — they are part of the real plan
-  // The scenario adds the What If slider on top of that existing plan
+  // Baseline = current plan including all planned lump sums
   const baseline = simulate(activeDebts.map(d=>({...d})), dashboardExtra, 0, strategy, lumpSums);
-  const scenario  = simulate(activeDebts.map(d=>({...d})), scenarioExtra, lump, strategy, lumpSums);
+
+  // Scenario = baseline + extra monthly + optional immediate windfall
+  // Build scenario lump sums: existing lumpSums + windfall as immediate (today) lump if set
+  const scenarioLumps = lump > 0
+    ? lumpSums.concat([{ id: -1, debtId: null, amount: lump, date: new Date().toISOString().split('T')[0] }])
+    : lumpSums;
+  const scenario = simulate(activeDebts.map(d=>({...d})), scenarioExtra, 0, strategy, scenarioLumps);
 
   const monthsSaved = baseline.months - scenario.months;
   const intSaved    = baseline.totalInterest - scenario.totalInterest;
