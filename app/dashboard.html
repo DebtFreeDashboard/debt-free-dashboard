@@ -1411,6 +1411,7 @@
       <div id="windfall-result" style="margin-top:12px"></div>
     </div>
 
+    <div id="wi-debug" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-muted);padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:6px;margin-bottom:12px;word-break:break-all;"></div>
     <div class="cta-bar">
       <h3>Every dollar extra matters.</h3>
       <p>Putting just $100 more per month toward your debt can shave years off your payoff date and save thousands in interest.</p>
@@ -1472,7 +1473,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.1.5';
+const APP_VERSION = '1.1.6';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2055,6 +2056,15 @@ function updateWhatIf() {
   document.getElementById('wi-new-date').textContent    = (sliderExtra === 0 && lump === 0)
     ? 'Move the sliders above to model a scenario'
     : 'vs. your current plan (' + baseDateStr + ')';
+
+  // Debug output — shows raw simulation results
+  var dbg = document.getElementById('wi-debug');
+  if (dbg) {
+    dbg.textContent = 'BASE: ' + baseline.months + 'mo / $' + Math.round(baseline.totalInterest) +
+      ' | SCEN: ' + scenario.months + 'mo / $' + Math.round(scenario.totalInterest) +
+      ' | extra=' + scenarioExtra + ' lump=' + lump +
+      ' | debts=' + activeDebts.length + ' lumpsums=' + lumpSums.length;
+  }
 
   // Populate windfall debt select
   var ws = document.getElementById('wi-windfall-debt');
