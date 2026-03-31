@@ -2212,7 +2212,14 @@ function updateWhatIf() {
     timeSavedDisplay = '0 mo';
     freedomDisplay   = scenDateStr;
     monthsLeftDisplay = scenario.months + ' months remaining';
-    newDateDisplay   = 'Interest savings only vs. your current plan (' + baseDateStr + ')';
+    // Only show "covers payoff" if the total lump sum + planned payments
+    // genuinely exceed total remaining debt — otherwise just say no months saved
+    var totalRemaining = activeDebts.reduce(function(a, d) { return a + d.balance; }, 0);
+    var plannedTotal = lumpSums.reduce(function(a, l) { return a + l.amount; }, 0);
+    var lumpCoversAll = (lump + plannedTotal) >= totalRemaining;
+    newDateDisplay = lumpCoversAll
+      ? 'Lump sum covers payoff — extra reduces interest only (' + baseDateStr + ')'
+      : 'No months saved — extra reduces interest (' + baseDateStr + ')';
   } else {
     timeSavedDisplay = '—';
     freedomDisplay   = baseDateStr;
@@ -2227,21 +2234,23 @@ function updateWhatIf() {
     'wi-freedom':     (sliderExtra === 0 && lump === 0) ? baseDateStr : freedomDisplay,
     'wi-months-left': (sliderExtra === 0 && lump === 0) ? baseline.months + ' months remaining' : monthsLeftDisplay,
     'wi-time-saved':  (sliderExtra === 0 && lump === 0) ? '—' : timeSavedDisplay,
-    'wi-new-date':    (sliderExtra === 0 && lump === 0) ? 'Move the sliders above to model a scenario' : newDateDisplay
+    'wi-new-date':    (sliderExtra === 0 && lump === 0) ? 'Move the sliders to model a scenario' : newDateDisplay
   };
   // Update color of Freedom Date to celebrate debt-free state
   var freedomEl = document.getElementById('wi-freedom');
   if (freedomEl) {
     freedomEl.style.color = (debtFreeNow || monthsSaved >= baseline.months)
-      ? 'var(--accent)'   // lime green — debt free!
-      : 'var(--text)';    // normal white
+      ? 'var(--accent)'
+      : 'var(--text)';
   }
+
+  // Update all display fields with repaint force for Safari
+  Object.keys(wiFields).forEach(function(id) {
     var el = document.getElementById(id);
     if (!el) return;
     el.textContent = wiFields[id];
-    // Force repaint for Safari/iPad — toggle a style to bust render cache
     el.style.webkitTransform = 'translateZ(0)';
-    el.offsetHeight; // trigger reflow
+    el.offsetHeight;
     el.style.webkitTransform = '';
   });
 
