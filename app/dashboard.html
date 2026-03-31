@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.2.6';
+const APP_VERSION = '1.2.7';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2212,14 +2212,18 @@ function updateWhatIf() {
     timeSavedDisplay = '0 mo';
     freedomDisplay   = scenDateStr;
     monthsLeftDisplay = scenario.months + ' months remaining';
-    // Only show "covers payoff" if the total lump sum + planned payments
-    // genuinely exceed total remaining debt — otherwise just say no months saved
-    var totalRemaining = activeDebts.reduce(function(a, d) { return a + d.balance; }, 0);
-    var plannedTotal = lumpSums.reduce(function(a, l) { return a + l.amount; }, 0);
-    var lumpCoversAll = (lump + plannedTotal) >= totalRemaining;
+    // Show "covers payoff" only when the planned lump sums (without this slider)
+    // already pay everything off — meaning the slider can only help with interest.
+    // We know this is true when baseline.months equals scenario.months AND
+    // the planned lump sums account for the full payoff (baseline already includes them).
+    // Simplest accurate check: does baseline already pay off within a month
+    // of scenario? If so, planned lumps are doing the work, slider just saves interest.
+    var lumpCoversAll = (baseline.months - scenario.months) === 0 && lumpSums.length > 0 &&
+      lumpSums.reduce(function(a, l) { return a + l.amount; }, 0) >=
+      activeDebts.reduce(function(a, d) { return a + d.balance; }, 0);
     newDateDisplay = lumpCoversAll
-      ? 'Lump sum covers payoff — extra reduces interest only (' + baseDateStr + ')'
-      : 'No months saved — extra reduces interest (' + baseDateStr + ')';
+      ? 'Planned lump sums cover payoff — slider reduces interest only (' + baseDateStr + ')'
+      : 'No months saved at this amount — extra reduces interest (' + baseDateStr + ')';
   } else {
     timeSavedDisplay = '—';
     freedomDisplay   = baseDateStr;
