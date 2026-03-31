@@ -2166,21 +2166,11 @@ function updateWhatIf() {
   const baselineDebts = JSON.parse(JSON.stringify(activeDebts));
   const baseline = simulate(baselineDebts, dashboardExtra, 0, strategy, lumpSums);
 
-  // Scenario: adds slider extra monthly + windfall lump sum on top of existing plan
+  // Scenario: adds slider extra monthly + What If lump sum applied immediately
+  // Pass lump directly as lumpSum parameter (not via plannedLumps) so it reduces
+  // balances before the simulation loop starts — this is what correctly moves months
   const scenarioDebts = JSON.parse(JSON.stringify(activeDebts));
-  var scenarioLumps = lumpSums.slice(); // copy array
-  if (lump > 0) {
-    // Add windfall as an immediate planned lump — applies at month 1
-    var tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    scenarioLumps = scenarioLumps.concat([{
-      id: -1,
-      debtId: null,
-      amount: lump,
-      date: tomorrow.toISOString().split('T')[0]
-    }]);
-  }
-  const scenario = simulate(scenarioDebts, scenarioExtra, 0, strategy, scenarioLumps);
+  const scenario = simulate(scenarioDebts, scenarioExtra, lump, strategy, lumpSums);
 
   // Calculate differences
   const monthsSaved = baseline.months - scenario.months;
@@ -2195,20 +2185,57 @@ function updateWhatIf() {
   scenDate.setMonth(scenDate.getMonth() + scenario.months);
   var scenDateStr = scenDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
 
+  // Check if scenario pays off all debt immediately or very quickly
+  const debtFreeNow = scenario.months === 0;
+  const debtFreeSoon = scenario.months > 0 && scenario.months <= 1;
+
+  // Build display values handling debt-free edge cases
+  var timeSavedDisplay, freedomDisplay, monthsLeftDisplay, newDateDisplay;
+
+  if (debtFreeNow) {
+    timeSavedDisplay = baseline.months + ' mo';
+    freedomDisplay   = 'Debt Free! 🎉';
+    monthsLeftDisplay = 'All debt paid off';
+    newDateDisplay   = 'vs. your current plan (' + baseDateStr + ')';
+  } else if (monthsSaved >= baseline.months) {
+    // Scenario wipes debt so fast it rounds to same as debt free
+    timeSavedDisplay = baseline.months + ' mo';
+    freedomDisplay   = 'Debt Free! 🎉';
+    monthsLeftDisplay = 'All debt paid off';
+    newDateDisplay   = 'vs. your current plan (' + baseDateStr + ')';
+  } else if (monthsSaved > 0) {
+    timeSavedDisplay = monthsSaved + ' mo';
+    freedomDisplay   = scenDateStr;
+    monthsLeftDisplay = scenario.months + ' months remaining';
+    newDateDisplay   = 'vs. your current plan (' + baseDateStr + ')';
+  } else if (sliderExtra > 0 || lump > 0) {
+    timeSavedDisplay = '0 mo';
+    freedomDisplay   = scenDateStr;
+    monthsLeftDisplay = scenario.months + ' months remaining';
+    newDateDisplay   = 'Interest savings only vs. your current plan (' + baseDateStr + ')';
+  } else {
+    timeSavedDisplay = '—';
+    freedomDisplay   = baseDateStr;
+    monthsLeftDisplay = baseline.months + ' months remaining';
+    newDateDisplay   = 'Move the sliders above to model a scenario';
+  }
+
   // Update all fields
   var wiFields = {
-    'wi-total-int': fmt(scenario.totalInterest),
-    'wi-int-saved': fmt(Math.max(0, intSaved)),
-    'wi-freedom':   (sliderExtra === 0 && lump === 0) ? baseDateStr : scenDateStr,
-    'wi-months-left': ((sliderExtra === 0 && lump === 0) ? baseline.months : scenario.months) + ' months remaining',
-    'wi-time-saved': (monthsSaved > 0) ? monthsSaved + ' mo' : (sliderExtra > 0 || lump > 0) ? '0 mo' : '—',
-    'wi-new-date':  (sliderExtra === 0 && lump === 0)
-      ? 'Move the sliders above to model a scenario'
-      : monthsSaved <= 0 && (sliderExtra > 0 || lump > 0)
-        ? 'Lump sum already covers payoff — extra reduces interest only'
-        : 'vs. your current plan (' + baseDateStr + ')'
+    'wi-total-int':   fmt(scenario.totalInterest),
+    'wi-int-saved':   fmt(Math.max(0, intSaved)),
+    'wi-freedom':     (sliderExtra === 0 && lump === 0) ? baseDateStr : freedomDisplay,
+    'wi-months-left': (sliderExtra === 0 && lump === 0) ? baseline.months + ' months remaining' : monthsLeftDisplay,
+    'wi-time-saved':  (sliderExtra === 0 && lump === 0) ? '—' : timeSavedDisplay,
+    'wi-new-date':    (sliderExtra === 0 && lump === 0) ? 'Move the sliders above to model a scenario' : newDateDisplay
   };
-  Object.keys(wiFields).forEach(function(id) {
+  // Update color of Freedom Date to celebrate debt-free state
+  var freedomEl = document.getElementById('wi-freedom');
+  if (freedomEl) {
+    freedomEl.style.color = (debtFreeNow || monthsSaved >= baseline.months)
+      ? 'var(--accent)'   // lime green — debt free!
+      : 'var(--text)';    // normal white
+  }
     var el = document.getElementById(id);
     if (!el) return;
     el.textContent = wiFields[id];
