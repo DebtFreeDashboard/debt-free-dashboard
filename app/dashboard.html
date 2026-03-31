@@ -65,18 +65,21 @@
   }
 
   /* ─── HEADER ─── */
+  .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
+  }
+
   header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
-    padding-top: max(20px, calc(env(safe-area-inset-top) + 10px));
+    padding: 14px 24px;
+    padding-top: max(14px, calc(env(safe-area-inset-top) + 8px));
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: rgba(10,10,15,0.92);
-    backdrop-filter: blur(20px);
-    z-index: 100;
   }
 
   .logo {
@@ -102,10 +105,28 @@
     50% { box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,229,176,0.3); }
   }
 
-  .header-right {
+
+
+  /* ─── TAB NAV BAR ─── */
+  .tab-nav {
+    border-bottom: 1px solid var(--border);
+    /* Scrolls independently — content below is unaffected */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+  }
+
+  .tab-nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+  .tab-nav-inner {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 4px;
+    padding: 10px 16px;
+    /* Prevent inner from shrinking — ensures scroll works */
+    width: max-content;
+    min-width: 100%;
   }
 
   .nav-tab {
@@ -114,12 +135,14 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
-    padding: 6px 14px;
+    padding: 6px 16px;
     border-radius: 20px;
     cursor: pointer;
     border: 1px solid transparent;
     transition: all 0.2s;
     background: none;
+    white-space: nowrap; /* Prevent tabs from wrapping */
+    flex-shrink: 0;
   }
 
   .nav-tab.active, .nav-tab:hover {
@@ -1030,18 +1053,23 @@
 </head>
 <body>
 
+<div class="sticky-top">
 <header>
   <div class="logo">
     <div class="logo-dot"></div>
     DebtFree
   </div>
-  <div class="header-right">
+</header>
+
+<nav class="tab-nav">
+  <div class="tab-nav-inner">
     <button class="nav-tab active" onclick="showSection('dashboard')">Dashboard</button>
     <button class="nav-tab" onclick="showSection('strategy')">Strategy</button>
     <button class="nav-tab" onclick="showSection('whatif')">What If</button>
     <button class="nav-tab" onclick="showSection('milestones')">Wins</button>
   </div>
-</header>
+</nav>
+</div><!-- /sticky-top -->
 
 <div class="app">
 
@@ -1522,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.2.3';
+const APP_VERSION = '1.2.4';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments

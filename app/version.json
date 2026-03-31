@@ -1,5 +1,5 @@
 {
-  "version": "1.2.3",
+  "version": "1.2.4",
   "releaseDate": "2026-03-30",
-  "notes": "Styled What If sliders with colored fill track and custom thumb"
+  "notes": "Nav tabs now scroll independently from page content on mobile"
 }
