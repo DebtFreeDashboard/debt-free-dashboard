@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.2.4';
+const APP_VERSION = '1.2.5';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1733,15 +1733,25 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       lumpByMonth[month].forEach(function(lump) {
         const target = balances.find(function(b) { return b.id === lump.debtId; });
         if (target && target.bal > 0) {
-          target.bal = Math.max(0, target.bal - lump.amount);
+          // Apply to specific debt — cascade any excess to next debts in strategy order
+          var lumpRemaining = lump.amount;
+          var startIdx = balances.indexOf(target);
+          if (startIdx < 0) startIdx = 0;
+          // Pay target first, then cascade remainder through remaining debts
+          for (var li = startIdx; li < balances.length && lumpRemaining > 0; li++) {
+            if (balances[li].bal <= 0) continue;
+            var lPay = Math.min(balances[li].bal, lumpRemaining);
+            balances[li].bal = Math.max(0, balances[li].bal - lPay);
+            lumpRemaining -= lPay;
+          }
         } else if (!target) {
-          // Debt not specified or already paid — apply to focus debt
-          for (let d of balances) {
-            if (d.bal <= 0) continue;
-            const pay = Math.min(d.bal, lump.amount);
-            d.bal -= pay;
-            d.bal = Math.max(0, d.bal);
-            break;
+          // No specific debt — cascade through all debts in strategy order
+          var lumpRemaining = lump.amount;
+          for (var li = 0; li < balances.length && lumpRemaining > 0; li++) {
+            if (balances[li].bal <= 0) continue;
+            var lPay = Math.min(balances[li].bal, lumpRemaining);
+            balances[li].bal = Math.max(0, balances[li].bal - lPay);
+            lumpRemaining -= lPay;
           }
         }
       });
@@ -2350,8 +2360,17 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
     if (lumpByMonth[month]) {
       lumpByMonth[month].forEach(function(lump) {
         const target = sim.find(function(b) { return b.id === lump.debtId; });
-        if (target && target.bal > 0) {
-          target.bal = Math.max(0, target.bal - lump.amount);
+        if (target) {
+          // Cascade from target through remaining debts
+          var lumpRem = lump.amount;
+          var si = sim.indexOf(target);
+          if (si < 0) si = 0;
+          for (var pi = si; pi < sim.length && lumpRem > 0; pi++) {
+            if (sim[pi].bal <= 0) continue;
+            var lp2 = Math.min(sim[pi].bal, lumpRem);
+            sim[pi].bal = Math.max(0, sim[pi].bal - lp2);
+            lumpRem -= lp2;
+          }
         }
       });
     }

@@ -1,5 +1,5 @@
 {
-  "version": "1.2.4",
-  "releaseDate": "2026-03-30",
-  "notes": "Nav tabs now scroll independently from page content on mobile"
+  "version": "1.2.5",
+  "releaseDate": "2026-03-31",
+  "notes": "Fixed lump sum cascade bug \u2014 excess amount now flows through all debts in strategy order"
 }
