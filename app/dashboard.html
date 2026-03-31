@@ -1440,7 +1440,7 @@
         </div>
         <input type="range" id="wi-lump" class="wi-slider lump" min="0" max="20000" step="250" value="0" />
         <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:2px;">
-          <span>$0</span><span>$5k</span><span>$10k</span><span>$15k</span><span>$20k</span>
+          <span>$0</span><span>$5k</span><span>$10k</span><span>$15k</span><span id="wi-lump-max-label">$20k</span>
         </div>
       </div>
 
@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.2.7';
+const APP_VERSION = '1.2.8';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1671,8 +1671,17 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   });
 
   // Sort by strategy
-  if (strat === 'avalanche') balances.sort((a,b) => b.apr - a.apr);
-  else if (strat === 'snowball') balances.sort((a,b) => a.bal - b.bal);
+  // For Avalanche: use realApr (post-promo rate) so 0% promo cards with high post-promo
+  // APRs sort correctly — a 0% promo card that becomes 26.99% should be high priority
+  if (strat === 'avalanche') {
+    balances.sort(function(a, b) {
+      var aprA = (a.realApr && a.realApr > 0) ? a.realApr : a.apr;
+      var aprB = (b.realApr && b.realApr > 0) ? b.realApr : b.apr;
+      return aprB - aprA;
+    });
+  } else if (strat === 'snowball') {
+    balances.sort((a,b) => a.bal - b.bal);
+  }
 
   // Apply lump sum to focus debt (first in sorted order) not spread across all debts
   if (lumpSum && lumpSum > 0 && balances.length > 0) {
@@ -2107,7 +2116,18 @@ function resetWiInputs() {
   var ex = document.getElementById('wi-extra');
   var lp = document.getElementById('wi-lump');
   if (ex) { ex.value = 0; updateSliderFill('wi-extra', 'var(--accent)'); }
-  if (lp) { lp.value = 0; updateSliderFill('wi-lump', 'var(--accent4)'); }
+  if (lp) {
+    // Set lump slider max to total remaining debt so full payoff is reachable
+    var totalBal = debts.filter(function(d){ return d.balance > 0; })
+                        .reduce(function(a, d){ return a + d.balance; }, 0);
+    var sliderMax = Math.ceil(Math.max(20000, totalBal) / 1000) * 1000;
+    lp.max = sliderMax;
+    lp.value = 0;
+    updateSliderFill('wi-lump', 'var(--accent4)');
+    // Update tick labels to match new max
+    var maxLabel = document.getElementById('wi-lump-max-label');
+    if (maxLabel) maxLabel.textContent = '$' + (sliderMax >= 1000 ? Math.round(sliderMax/1000) + 'k' : sliderMax);
+  }
 }
 
 function updateSliderFill(id, color) {

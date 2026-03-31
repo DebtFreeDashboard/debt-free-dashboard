@@ -1,5 +1,5 @@
 {
-  "version": "1.2.7",
+  "version": "1.2.8",
   "releaseDate": "2026-03-31",
-  "notes": "Fixed What If lump covers payoff message triggering incorrectly when planned lump sums are large"
+  "notes": "Fixed Avalanche sort using realApr for promo cards; dynamic lump slider max"
 }
