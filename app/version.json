@@ -1,5 +1,5 @@
 {
-  "version": "1.2.8",
+  "version": "1.2.9",
   "releaseDate": "2026-03-31",
-  "notes": "Fixed Avalanche sort using realApr for promo cards; dynamic lump slider max"
+  "notes": "Dynamic lump slider tick labels match slider max"
 }
