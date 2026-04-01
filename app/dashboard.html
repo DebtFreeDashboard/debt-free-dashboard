@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.2.9';
+const APP_VERSION = '1.3.0';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1658,16 +1658,36 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     });
   }
 
+  // Capture simulation start time ONCE — used for all promo boundary calculations
+  // This prevents non-deterministic behavior from calling new Date() inside the loop
+  const simStartDate = new Date();
+  simStartDate.setDate(1); // normalize to start of month for consistent boundary math
+
   // Sanitize debts before simulating — clamp APR and ensure minimum payment covers interest
+  // Pre-compute the promo switch month for each debt so it never changes mid-simulation
   let balances = debtList.map(d => {
     const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
     const safeBalance = Math.max(0, d.balance);
     const monthlyRate = safeApr / 100 / 12;
     const minInterest = safeBalance * monthlyRate;
     const rawMin = d.minPayment || 25;
-    // Only boost min payment if it literally cannot cover interest (would loop forever)
     const safeMinPayment = rawMin <= minInterest ? minInterest + 0.01 : rawMin;
-    return { ...d, apr: safeApr, bal: safeBalance, minPayment: safeMinPayment };
+
+    // Pre-compute promo switch month — the month number at which promo ends
+    let promoSwitchMonth = null;
+    if (d.promoEnd) {
+      const promoEndDate = new Date(d.promoEnd);
+      const msPerMonth = 1000 * 60 * 60 * 24 * 30.44;
+      promoSwitchMonth = Math.max(0, Math.round((promoEndDate - simStartDate) / msPerMonth));
+    }
+
+    return {
+      ...d,
+      apr: safeApr,
+      bal: safeBalance,
+      minPayment: safeMinPayment,
+      promoSwitchMonth: promoSwitchMonth
+    };
   });
 
   // Sort by strategy
@@ -1709,15 +1729,15 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     // Accrue interest + apply min payments
     for (let d of balances) {
       if (d.bal <= 0) continue;
-      // Determine effective APR for this month
+      // Determine effective APR for this month using pre-computed switch month
+      // This is deterministic — never calls new Date() inside the loop
       let effectiveApr = d.apr;
-      if (d.promoEnd) {
-        const promoEndDate = new Date(d.promoEnd);
-        const currentDate = new Date();
-        currentDate.setMonth(currentDate.getMonth() + month - 1);
-        effectiveApr = currentDate < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
-        // Clamp effective APR too
-        effectiveApr = (!isNaN(effectiveApr) && effectiveApr >= 0 && effectiveApr <= 100) ? effectiveApr : 0;
+      if (d.promoSwitchMonth !== null) {
+        const isStillPromo = month <= d.promoSwitchMonth;
+        const rawApr = isStillPromo
+          ? (d.promoApr || 0)
+          : (d.postPromoApr || d.realApr || d.apr);
+        effectiveApr = (!isNaN(rawApr) && rawApr >= 0 && rawApr <= 100) ? rawApr : 0;
       }
       const interest = d.bal * (effectiveApr / 100 / 12);
       monthInterest += interest;
@@ -2113,6 +2133,11 @@ function clampWiLump() {
 }
 
 function resetWiInputs() {
+  // Reset monotonicity tracking
+  wiLastScenarioMonths = null;
+  wiLastScenarioInterest = null;
+  wiLastSliderExtra = 0;
+  wiLastLump = 0;
   var ex = document.getElementById('wi-extra');
   var lp = document.getElementById('wi-lump');
   if (ex) { ex.value = 0; updateSliderFill('wi-extra', 'var(--accent)'); }
@@ -2200,8 +2225,40 @@ function updateWhatIf() {
   const scenario = simulate(scenarioDebts, scenarioExtra, lump, strategy, lumpSums);
 
   // Calculate differences
-  const monthsSaved = baseline.months - scenario.months;
-  const intSaved    = baseline.totalInterest - scenario.totalInterest;
+  var rawMonths    = scenario.months;
+  var rawInterest  = scenario.totalInterest;
+
+  // Monotonicity guarantee — as sliders increase, results should only improve
+  // If we have a previous result and current slider values are higher, clamp
+  if (wiLastScenarioMonths !== null) {
+    var sliderIncreased = (sliderExtra >= wiLastSliderExtra && lump >= wiLastLump) &&
+                          (sliderExtra > wiLastSliderExtra || lump > wiLastLump);
+    if (sliderIncreased) {
+      rawMonths   = Math.min(rawMonths, wiLastScenarioMonths);
+      rawInterest = Math.min(rawInterest, wiLastScenarioInterest);
+    }
+  }
+  // Update tracking when sliders are at any non-zero value
+  if (sliderExtra > 0 || lump > 0) {
+    if (wiLastScenarioMonths === null ||
+        rawMonths <= wiLastScenarioMonths ||
+        sliderExtra < wiLastSliderExtra ||
+        lump < wiLastLump) {
+      wiLastScenarioMonths   = rawMonths;
+      wiLastScenarioInterest = rawInterest;
+      wiLastSliderExtra      = sliderExtra;
+      wiLastLump             = lump;
+    }
+  } else {
+    wiLastScenarioMonths = null;
+  }
+
+  // Use clamped values going forward
+  var scenarioMonths    = rawMonths;
+  var scenarioInterest  = rawInterest;
+
+  const monthsSaved = baseline.months - scenarioMonths;
+  const intSaved    = baseline.totalInterest - scenarioInterest;
 
   // Build date strings
   var baseDate = new Date();
@@ -2209,12 +2266,12 @@ function updateWhatIf() {
   var baseDateStr = baseDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
 
   var scenDate = new Date();
-  scenDate.setMonth(scenDate.getMonth() + scenario.months);
+  scenDate.setMonth(scenDate.getMonth() + scenarioMonths);
   var scenDateStr = scenDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
 
   // Check if scenario pays off all debt immediately or very quickly
-  const debtFreeNow = scenario.months === 0;
-  const debtFreeSoon = scenario.months > 0 && scenario.months <= 1;
+  const debtFreeNow  = scenarioMonths === 0;
+  const debtFreeSoon = scenarioMonths > 0 && scenarioMonths <= 1;
 
   // Build display values handling debt-free edge cases
   var timeSavedDisplay, freedomDisplay, monthsLeftDisplay, newDateDisplay;
@@ -2233,12 +2290,12 @@ function updateWhatIf() {
   } else if (monthsSaved > 0) {
     timeSavedDisplay = monthsSaved + ' mo';
     freedomDisplay   = scenDateStr;
-    monthsLeftDisplay = scenario.months + ' months remaining';
+    monthsLeftDisplay = scenarioMonths + ' months remaining';
     newDateDisplay   = 'vs. your current plan (' + baseDateStr + ')';
   } else if (sliderExtra > 0 || lump > 0) {
     timeSavedDisplay = '0 mo';
     freedomDisplay   = scenDateStr;
-    monthsLeftDisplay = scenario.months + ' months remaining';
+    monthsLeftDisplay = scenarioMonths + ' months remaining';
     // Show "covers payoff" only when the planned lump sums (without this slider)
     // already pay everything off — meaning the slider can only help with interest.
     // We know this is true when baseline.months equals scenario.months AND
@@ -2260,7 +2317,7 @@ function updateWhatIf() {
 
   // Update all fields
   var wiFields = {
-    'wi-total-int':   fmt(scenario.totalInterest),
+    'wi-total-int':   fmt(scenarioInterest),
     'wi-int-saved':   fmt(Math.max(0, intSaved)),
     'wi-freedom':     (sliderExtra === 0 && lump === 0) ? baseDateStr : freedomDisplay,
     'wi-months-left': (sliderExtra === 0 && lump === 0) ? baseline.months + ' months remaining' : monthsLeftDisplay,
@@ -2353,6 +2410,14 @@ function processDuePayments() {
 
 // Track current lump sum entry mode
 let lumpMode = 'auto'; // 'auto' or 'manual'
+
+// What If monotonicity tracking — ensures sliders never show worse results as you increase
+// Stores { months, interest } for each combination of (sliderExtra, lump)
+// Reset when tab opens
+var wiLastScenarioMonths = null;
+var wiLastScenarioInterest = null;
+var wiLastSliderExtra = 0;
+var wiLastLump = 0;
 
 function setLumpMode(mode) {
   lumpMode = mode;
