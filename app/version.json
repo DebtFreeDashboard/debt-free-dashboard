@@ -1,5 +1,5 @@
 {
-  "version": "1.3.1",
+  "version": "1.3.2",
   "releaseDate": "2026-04-02",
-  "notes": "Fixed stale sessionStorage backup overriding imported data after PWA reinstall"
+  "notes": "Fixed sessionStorage stale backup overriding imported data on iOS PWA reinstall; fixed What If lump sum non-monotonic results with 0% promo debts"
 }

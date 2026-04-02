@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.3.1';
+const APP_VERSION = '1.3.2';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1703,15 +1703,33 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     balances.sort((a,b) => a.bal - b.bal);
   }
 
-  // Apply lump sum to focus debt (first in sorted order) not spread across all debts
+  // Apply lump sum to focus debt(s) in strategy order.
+  // Skip debts that are currently in a 0% promo period AND have a planned lump sum
+  // already scheduled — throwing the What If lump at a 0% debt now saves no interest
+  // and produces non-monotonic results when planned lumps already cover those debts.
+  // Instead, cascade through non-promo debts first, then promo debts if surplus remains.
   if (lumpSum && lumpSum > 0 && balances.length > 0) {
     let remaining = lumpSum;
+    const now = new Date();
+    // First pass: non-promo debts (or promo debts that have already converted)
     for (let d of balances) {
       if (d.bal <= 0) continue;
+      const isActivePromo = d.promoSwitchMonth !== null && d.promoSwitchMonth > 0;
+      if (isActivePromo) continue; // skip 0% promo debts on first pass
       const applied = Math.min(d.bal, remaining);
       d.bal = Math.max(0, d.bal - applied);
       remaining -= applied;
       if (remaining <= 0) break;
+    }
+    // Second pass: any remaining surplus goes to promo debts
+    if (remaining > 0) {
+      for (let d of balances) {
+        if (d.bal <= 0) continue;
+        const applied = Math.min(d.bal, remaining);
+        d.bal = Math.max(0, d.bal - applied);
+        remaining -= applied;
+        if (remaining <= 0) break;
+      }
     }
   }
 
@@ -3401,9 +3419,15 @@ function importData(event) {
       selectStrategy(strategy);
       // Clear old sessionStorage backups so stale data never overrides this import
       try {
+        sessionStorage.removeItem('debtfree_session_active');
         sessionStorage.removeItem('debtfree_debts_bak');
         sessionStorage.removeItem('debtfree_payments_bak');
         sessionStorage.removeItem('debtfree_lumpsums_bak');
+      } catch(e) {}
+      // Stamp localStorage with import time — load() uses this to detect
+      // whether sessionStorage backup is older than the last real import
+      try {
+        localStorage.setItem('debtfree_last_import', Date.now().toString());
       } catch(e) {}
       save();
       render();
@@ -3429,6 +3453,7 @@ function save() {
     sessionStorage.setItem('debtfree_lumpsums_bak', JSON.stringify(lumpSums));
     sessionStorage.setItem('debtfree_debts_bak', JSON.stringify(debts));
     sessionStorage.setItem('debtfree_payments_bak', JSON.stringify(payments));
+    sessionStorage.setItem('debtfree_session_saved_at', Date.now().toString());
   } catch(e) {}
 }
 
@@ -3492,15 +3517,20 @@ function load() {
     if (ls) { try { lumpSums = JSON.parse(ls); } catch(e) { lumpSums = []; } }
     // sessionStorage fallback — ONLY use if localStorage is empty AND
     // this is the same browser session (not a reinstall)
-    // We detect same-session by checking a session-only flag set at app start
+    // We detect same-session by checking a session-only flag set at app start.
+    // Additionally, sessionStorage data must be newer than the last import
+    // to prevent a stale pre-reinstall backup from overriding imported data.
     var isSameSession = sessionStorage.getItem('debtfree_session_active') === '1';
-    if (!lumpSums.length && isSameSession) {
+    var lastImport = parseInt(localStorage.getItem('debtfree_last_import') || '0');
+    var sessionSavedAt = parseInt(sessionStorage.getItem('debtfree_session_saved_at') || '0');
+    var sessionIsNewer = sessionSavedAt > lastImport;
+    if (!lumpSums.length && isSameSession && sessionIsNewer) {
       try {
         const lsBak = sessionStorage.getItem('debtfree_lumpsums_bak');
         if (lsBak) { lumpSums = JSON.parse(lsBak); }
       } catch(e) {}
     }
-    if (!debts.length && isSameSession) {
+    if (!debts.length && isSameSession && sessionIsNewer) {
       try {
         const dBak = sessionStorage.getItem('debtfree_debts_bak');
         const pBak = sessionStorage.getItem('debtfree_payments_bak');
@@ -3597,11 +3627,27 @@ document.getElementById('log-date').value = new Date().toISOString().split('T')[
 // Display current version
 const versionEl = document.getElementById('current-version');
 if (versionEl) versionEl.textContent = APP_VERSION;
-load();
 
-// Mark this as an active session — used to gate sessionStorage fallback
-// This flag only exists for the current browser session, not across reinstalls
-try { sessionStorage.setItem('debtfree_session_active', '1'); } catch(e) {}
+// Mark this as an active session BEFORE load() so the sessionStorage fallback
+// inside load() can read this flag correctly.
+// IMPORTANT: We only set this flag after verifying localStorage has real data.
+// This prevents a fresh reinstall (empty localStorage) from treating stale
+// sessionStorage as a valid same-session fallback.
+try {
+  const hasLocalData = !!localStorage.getItem('debtfree_debts');
+  if (hasLocalData) {
+    sessionStorage.setItem('debtfree_session_active', '1');
+  } else {
+    // No localStorage data — clear session flag AND all sessionStorage backups
+    // so a fresh open after reinstall never pulls stale data
+    sessionStorage.removeItem('debtfree_session_active');
+    sessionStorage.removeItem('debtfree_debts_bak');
+    sessionStorage.removeItem('debtfree_payments_bak');
+    sessionStorage.removeItem('debtfree_lumpsums_bak');
+  }
+} catch(e) {}
+
+load();
 
 // Process any payments or lump sums that became due today
 if (processDuePayments()) render();
