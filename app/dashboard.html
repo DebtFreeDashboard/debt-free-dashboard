@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.3.2';
+const APP_VERSION = '1.3.3';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -3417,17 +3417,26 @@ function importData(event) {
       document.getElementById('extra-payment').value = extraMonthly || '';
       document.getElementById('strategy-select').value = strategy;
       selectStrategy(strategy);
-      // Clear old sessionStorage backups so stale data never overrides this import
+      // Write a device-local import timestamp to BOTH storages.
+      // sessionStorage is iCloud-proof — Safari never syncs it across devices.
+      // localStorage IS synced by iCloud across devices on the same Apple ID,
+      // so we use the sessionStorage timestamp as the authority check in load().
+      const importedAt = Date.now().toString();
       try {
-        sessionStorage.removeItem('debtfree_session_active');
-        sessionStorage.removeItem('debtfree_debts_bak');
-        sessionStorage.removeItem('debtfree_payments_bak');
-        sessionStorage.removeItem('debtfree_lumpsums_bak');
+        // Mark sessionStorage with the import time and full data snapshot.
+        // This is the canonical source for this device until the user imports again.
+        sessionStorage.setItem('debtfree_session_active', '1');
+        sessionStorage.setItem('debtfree_imported_at', importedAt);
+        sessionStorage.setItem('debtfree_session_saved_at', importedAt);
+        sessionStorage.setItem('debtfree_debts_bak', JSON.stringify(debts));
+        sessionStorage.setItem('debtfree_payments_bak', JSON.stringify(payments));
+        sessionStorage.setItem('debtfree_lumpsums_bak', JSON.stringify(lumpSums));
       } catch(e) {}
-      // Stamp localStorage with import time — load() uses this to detect
-      // whether sessionStorage backup is older than the last real import
+      // Also stamp localStorage so load() can detect an iCloud overwrite:
+      // if localStorage's import stamp doesn't match sessionStorage's,
+      // iCloud has synced older data in — prefer sessionStorage instead.
       try {
-        localStorage.setItem('debtfree_last_import', Date.now().toString());
+        localStorage.setItem('debtfree_last_import', importedAt);
       } catch(e) {}
       save();
       render();
@@ -3515,27 +3524,43 @@ function load() {
     if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
     const ls = localStorage.getItem('debtfree_lumpsums');
     if (ls) { try { lumpSums = JSON.parse(ls); } catch(e) { lumpSums = []; } }
-    // sessionStorage fallback — ONLY use if localStorage is empty AND
-    // this is the same browser session (not a reinstall)
-    // We detect same-session by checking a session-only flag set at app start.
-    // Additionally, sessionStorage data must be newer than the last import
-    // to prevent a stale pre-reinstall backup from overriding imported data.
-    var isSameSession = sessionStorage.getItem('debtfree_session_active') === '1';
-    var lastImport = parseInt(localStorage.getItem('debtfree_last_import') || '0');
-    var sessionSavedAt = parseInt(sessionStorage.getItem('debtfree_session_saved_at') || '0');
-    var sessionIsNewer = sessionSavedAt > lastImport;
-    if (!lumpSums.length && isSameSession && sessionIsNewer) {
+
+    // ── iCloud-sync defense ──
+    // localStorage IS synced by iCloud across devices sharing the same Apple ID.
+    // sessionStorage is NEVER synced — it is strictly device-local.
+    //
+    // Strategy: after an import, we stamp both storages with the same timestamp.
+    // If iCloud later overwrites localStorage with older data from another device,
+    // the localStorage timestamp will no longer match the sessionStorage timestamp.
+    // We detect this mismatch and prefer sessionStorage — the one source iCloud
+    // cannot touch.
+    //
+    // sessionStorage fallback also covers the original use case: recovering data
+    // within the same browser session if localStorage was cleared unexpectedly.
+    var isSameSession    = sessionStorage.getItem('debtfree_session_active') === '1';
+    var lsImportStamp    = localStorage.getItem('debtfree_last_import') || '0';
+    var ssImportStamp    = sessionStorage.getItem('debtfree_imported_at') || '0';
+    var sessionSavedAt   = sessionStorage.getItem('debtfree_session_saved_at') || '0';
+
+    // sessionStorage wins if:
+    //   (a) we are in the same session AND
+    //   (b) either the import stamps match (same device, no iCloud interference)
+    //       OR sessionStorage was saved more recently than localStorage's stamp
+    //       (iCloud sync has overwritten localStorage with stale data)
+    var ssIsAuthoritative = isSameSession && (
+      ssImportStamp === lsImportStamp ||       // same device, stamps match
+      sessionSavedAt > lsImportStamp           // sessionStorage is newer → iCloud overwrote localStorage
+    );
+
+    if (ssIsAuthoritative) {
       try {
+        const dBak  = sessionStorage.getItem('debtfree_debts_bak');
+        const pBak  = sessionStorage.getItem('debtfree_payments_bak');
         const lsBak = sessionStorage.getItem('debtfree_lumpsums_bak');
-        if (lsBak) { lumpSums = JSON.parse(lsBak); }
-      } catch(e) {}
-    }
-    if (!debts.length && isSameSession && sessionIsNewer) {
-      try {
-        const dBak = sessionStorage.getItem('debtfree_debts_bak');
-        const pBak = sessionStorage.getItem('debtfree_payments_bak');
-        if (dBak) debts = JSON.parse(dBak);
-        if (pBak) payments = JSON.parse(pBak);
+        // Only override localStorage data if sessionStorage actually has something
+        if (dBak)  debts    = JSON.parse(dBak);
+        if (pBak)  payments = JSON.parse(pBak);
+        if (lsBak) lumpSums = JSON.parse(lsBak);
       } catch(e) {}
     }
   } catch(e) {}
