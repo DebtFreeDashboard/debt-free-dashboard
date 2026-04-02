@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
-  "releaseDate": "2026-03-31",
-  "notes": "Fixed non-monotonic slider behavior \u2014 Freedom Date and Interest now always improve as sliders increase"
+  "version": "1.2.9",
+  "releaseDate": "2026-04-02",
+  "notes": "Fixed stale sessionStorage backup overriding imported data after PWA reinstall"
 }

@@ -3399,6 +3399,12 @@ function importData(event) {
       document.getElementById('extra-payment').value = extraMonthly || '';
       document.getElementById('strategy-select').value = strategy;
       selectStrategy(strategy);
+      // Clear old sessionStorage backups so stale data never overrides this import
+      try {
+        sessionStorage.removeItem('debtfree_debts_bak');
+        sessionStorage.removeItem('debtfree_payments_bak');
+        sessionStorage.removeItem('debtfree_lumpsums_bak');
+      } catch(e) {}
       save();
       render();
       showBackupMsg('ok', 'Restored ' + debts.length + ' debts and ' + payments.length + ' payments successfully.');
@@ -3484,15 +3490,17 @@ function load() {
     if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
     const ls = localStorage.getItem('debtfree_lumpsums');
     if (ls) { try { lumpSums = JSON.parse(ls); } catch(e) { lumpSums = []; } }
-    // If localStorage was cleared by iOS, try sessionStorage backup
-    if (!lumpSums.length) {
+    // sessionStorage fallback — ONLY use if localStorage is empty AND
+    // this is the same browser session (not a reinstall)
+    // We detect same-session by checking a session-only flag set at app start
+    var isSameSession = sessionStorage.getItem('debtfree_session_active') === '1';
+    if (!lumpSums.length && isSameSession) {
       try {
         const lsBak = sessionStorage.getItem('debtfree_lumpsums_bak');
         if (lsBak) { lumpSums = JSON.parse(lsBak); }
       } catch(e) {}
     }
-    // Also restore debts/payments from sessionStorage if localStorage was wiped
-    if (!debts.length) {
+    if (!debts.length && isSameSession) {
       try {
         const dBak = sessionStorage.getItem('debtfree_debts_bak');
         const pBak = sessionStorage.getItem('debtfree_payments_bak');
@@ -3590,6 +3598,10 @@ document.getElementById('log-date').value = new Date().toISOString().split('T')[
 const versionEl = document.getElementById('current-version');
 if (versionEl) versionEl.textContent = APP_VERSION;
 load();
+
+// Mark this as an active session — used to gate sessionStorage fallback
+// This flag only exists for the current browser session, not across reinstalls
+try { sessionStorage.setItem('debtfree_session_active', '1'); } catch(e) {}
 
 // Process any payments or lump sums that became due today
 if (processDuePayments()) render();
