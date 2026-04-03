@@ -1,5 +1,5 @@
 {
-  "version": "1.3.4",
+  "version": "1.3.5",
   "releaseDate": "2026-04-03",
-  "notes": "Fixed future payments counting toward overall progress; fixed close/reopen data revert on iOS"
+  "notes": "Fixed planned lump sums disappearing on close/reopen; simplified storage logic"
 }
