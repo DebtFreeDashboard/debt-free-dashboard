@@ -1,5 +1,5 @@
 {
-  "version": "1.3.3",
-  "releaseDate": "2026-04-02",
-  "notes": "Network-first SW for HTML; iCloud localStorage sync defense; What If lump sum monotonicity fix"
+  "version": "1.3.4",
+  "releaseDate": "2026-04-03",
+  "notes": "Fixed future payments counting toward overall progress; fixed close/reopen data revert on iOS"
 }
