@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.3.5';
+const APP_VERSION = '1.3.6';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1572,6 +1572,21 @@ const MILESTONES_DEF = [
   { id: 'halfway',      icon: '🌙', name: 'Halfway There',         desc: 'More behind you than ahead of you.',          check: () => progressPct() >= 50 },
   { id: 'final_stretch',icon: '🏁', name: 'Final Stretch',        desc: 'Under 25% left to go. Almost there!',         check: () => progressPct() >= 75 },
 ];
+
+// ═══════════════════════════════════════════
+//  DATE HELPER — always use LOCAL date, never UTC
+//  new Date().toISOString() returns UTC which can be
+//  a different calendar date than the user's local time.
+//  This caused lump sums dated "tomorrow" to appear as
+//  "today" in UTC and get consumed by processDuePayments().
+// ═══════════════════════════════════════════
+function localDateStr(d) {
+  const dt = d || new Date();
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth() + 1).padStart(2, '0');
+  const day = String(dt.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
 
 // ═══════════════════════════════════════════
 //  NAVIGATION
@@ -1938,7 +1953,8 @@ function openEditModal(id) {
   document.getElementById('edit-name').value    = d.name;
   document.getElementById('edit-type').value    = d.type;
   document.getElementById('edit-balance').value = d.balance.toFixed(2);
-  document.getElementById('edit-apr').value     = d.apr;
+  // Show realApr (the post-promo / regular rate) not d.apr which is 0 for promo debts
+  document.getElementById('edit-apr').value     = d.realApr || d.apr;
   document.getElementById('edit-min').value     = d.minPayment;
 
   // Promo fields
@@ -1973,7 +1989,7 @@ function toggleEditPromoFields() {
     const d = new Date();
     d.setMonth(d.getMonth() + 12);
     if (!document.getElementById('edit-promo-end').value) {
-      document.getElementById('edit-promo-end').value = d.toISOString().split('T')[0];
+      document.getElementById('edit-promo-end').value = localDateStr(d);
     }
     updateEditFeePreview();
   }
@@ -2040,6 +2056,7 @@ function saveEditDebt() {
   d.balance        = finalBalance;
   d.apr            = hasPromo ? promoApr : apr;
   d.realApr        = apr;
+  d.regularApr     = apr;
   d.minPayment     = min;
   d.hasPromo       = hasPromo;
   d.promoApr       = hasPromo ? promoApr : null;
@@ -2059,7 +2076,7 @@ function saveEditDebt() {
 function logPayment() {
   const debtId = parseInt(document.getElementById('log-debt-select').value);
   const amount = parseFloat(document.getElementById('log-amount').value);
-  const date = document.getElementById('log-date').value || new Date().toISOString().split('T')[0];
+  const date = document.getElementById('log-date').value || localDateStr();
 
   if (isNaN(amount) || amount <= 0) { alert('Enter a valid payment amount.'); return; }
 
@@ -2067,7 +2084,7 @@ function logPayment() {
   if (!d) return;
 
   // Check if date is in the future
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   const isFuture = date > today;
 
   if (isFuture) {
@@ -2374,7 +2391,7 @@ function updateWhatIf() {
 // ═══════════════════════════════════════════
 // Auto-convert: apply any pending Payment Log entries and lump sums whose date has arrived
 function processDuePayments() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   let changed = false;
 
   // Process pending Payment Log entries that are now due
@@ -2397,9 +2414,13 @@ function processDuePayments() {
   });
 
   // Process Planned Lump Sums that are now due — convert to real payments
+  // Only reassign lumpSums array if something actually changed —
+  // avoids silently clobbering the array on every open with no-op.
   const stillFuture = [];
+  let lumpChanged = false;
   lumpSums.forEach(function(l) {
     if (l.date <= today) {
+      lumpChanged = true;
       const d = debts.find(function(x) { return x.id === l.debtId; });
       if (d && d.balance > 0) {
         const actual = Math.min(l.amount, d.balance);
@@ -2420,7 +2441,7 @@ function processDuePayments() {
       stillFuture.push(l);
     }
   });
-  lumpSums = stillFuture;
+  if (lumpChanged) lumpSums = stillFuture;
 
   if (changed) { save(); }
   return changed;
@@ -2481,8 +2502,13 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
   // Deep copy starting balances
   const sim = startingBalances.map(function(d) { return {...d}; });
 
-  // Sort by strategy
-  if (strategy === 'avalanche') sim.sort(function(a,b){ return b.apr - a.apr; });
+  // Sort by strategy — use realApr for avalanche, same as main simulate()
+  // so promo debts sort by their post-promo rate, not their current 0% rate
+  if (strategy === 'avalanche') sim.sort(function(a,b){
+    var aprA = (a.realApr && a.realApr > 0) ? a.realApr : a.apr;
+    var aprB = (b.realApr && b.realApr > 0) ? b.realApr : b.apr;
+    return aprB - aprA;
+  });
   else if (strategy === 'snowball') sim.sort(function(a,b){ return a.bal - b.bal; });
 
   for (let month = 1; month <= targetMonth; month++) {
@@ -2547,7 +2573,7 @@ function calculateLumpAllocation(totalAmount, targetDate) {
   const priorLumps = lumpSums.filter(function(l) { return l.date < targetDate; });
 
   const startingBalances = activeDebts.map(function(d) {
-    return { id: d.id, name: d.name, bal: d.balance, apr: d.apr, minPayment: d.minPayment };
+    return { id: d.id, name: d.name, bal: d.balance, apr: d.apr, realApr: d.realApr || d.apr, minPayment: d.minPayment };
   });
 
   // Project balances at targetMonth, accounting for all prior lump sums
@@ -2586,7 +2612,7 @@ function addLumpSum() {
   if (isNaN(amount) || amount <= 0) { alert('Enter a valid amount.'); return; }
   if (!date) { alert('Enter the expected payment date.'); return; }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   if (date <= today) {
     alert('Planned lump sums must be future dates. To record a completed payment, use the Payment Log below.');
     return;
@@ -2712,7 +2738,7 @@ function saveEditLumpSum(id) {
     return;
   }
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   if (newDate <= today) {
     alert('Date must be in the future. To record a completed payment, delete this entry and use the Payment Log.');
     return;
@@ -2802,11 +2828,12 @@ function saveEditPayment(paymentId) {
   p.date = newDate;
   p.amount = newAmount;
 
-  // Recalculate balance for this debt from scratch using all its payments
+  // Recalculate balance for this debt from scratch using all NON-PENDING payments.
+  // Pending payments haven't been applied to the balance yet so must be excluded.
   const d = debts.find(function(x) { return x.id === p.debtId; });
   if (d) {
     const totalPaidOnDebt = payments
-      .filter(function(x) { return x.debtId === p.debtId; })
+      .filter(function(x) { return x.debtId === p.debtId && !x.pending; })
       .reduce(function(sum, x) { return sum + x.amount; }, 0);
     d.balance = Math.max(0, d.originalBalance - totalPaidOnDebt);
     p.eliminated = d.balance <= 0;
@@ -2830,11 +2857,13 @@ function deletePayment(paymentId) {
   payments.splice(idx, 1);
 
   // Recalculate this debt's balance by replaying all remaining
-  // payments for it against the original balance
+  // NON-PENDING payments for it against the original balance.
+  // Pending payments haven't been applied to the balance yet,
+  // so including them would incorrectly over-reduce it.
   const d = debts.find(x => x.id === p.debtId);
   if (d) {
     const totalPaidOnDebt = payments
-      .filter(x => x.debtId === p.debtId)
+      .filter(x => x.debtId === p.debtId && !x.pending)
       .reduce((sum, x) => sum + x.amount, 0);
     d.balance = Math.max(0, d.originalBalance - totalPaidOnDebt);
   }
@@ -2855,7 +2884,7 @@ function applyWindfall() {
   const saved = old - d.balance;
   const paymentId = Date.now();
 
-  payments.push({ id: paymentId, debtId, debtName: d.name, amount: saved, date: new Date().toISOString().split('T')[0], eliminated: d.balance <= 0, note: 'Windfall' });
+  payments.push({ id: paymentId, debtId, debtName: d.name, amount: saved, date: localDateStr(), eliminated: d.balance <= 0, note: 'Windfall' });
 
   document.getElementById('windfall-result').innerHTML = `
     <div class="alert" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
@@ -3390,7 +3419,7 @@ function exportData() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'debtfree-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.download = 'debtfree-backup-' + localDateStr() + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -3543,7 +3572,7 @@ function togglePromoFields() {
     // Set default promo end date to 12 months from now
     const d = new Date();
     d.setMonth(d.getMonth() + 12);
-    document.getElementById('debt-promo-end').value = d.toISOString().split('T')[0];
+    document.getElementById('debt-promo-end').value = localDateStr(d);
     updateFeePreview();
   }
 }
@@ -3615,7 +3644,7 @@ function initDragDrop() {
 // ═══════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════
-document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
+document.getElementById('log-date').value = localDateStr();
 // Display current version
 const versionEl = document.getElementById('current-version');
 if (versionEl) versionEl.textContent = APP_VERSION;
