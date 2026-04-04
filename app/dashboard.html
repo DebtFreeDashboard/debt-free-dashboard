@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.3.7';
+const APP_VERSION = '1.3.8';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1683,10 +1683,15 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   let balances = debtList.map(d => {
     const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
     const safeBalance = Math.max(0, d.balance);
-    const monthlyRate = safeApr / 100 / 12;
-    const minInterest = safeBalance * monthlyRate;
+
+    // Use worst-case APR for safeMinPayment — for promo debts that's postPromoApr.
+    // This prevents runaway interest after conversion when the stored minPayment
+    // is too low to cover post-promo monthly interest (causes the $10M cap to fire).
+    const worstApr = (d.hasPromo && d.postPromoApr && !isNaN(d.postPromoApr) && d.postPromoApr > safeApr)
+      ? d.postPromoApr : safeApr;
+    const worstMinInterest = safeBalance * (worstApr / 100 / 12);
     const rawMin = d.minPayment || 25;
-    const safeMinPayment = rawMin <= minInterest ? minInterest + 0.01 : rawMin;
+    const safeMinPayment = rawMin <= worstMinInterest ? worstMinInterest + 1 : rawMin;
 
     // Pre-compute promo switch month — the month number at which promo ends
     let promoSwitchMonth = null;
@@ -2955,10 +2960,6 @@ function renderStats() {
   if (activeDebts.length) {
     const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, lumpSums);
     const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy, []);
-    // Diagnostic — remove after debugging
-    console.log('[DebtFree] renderStats res:', res.months, res.totalInterest);
-    console.log('[DebtFree] renderStats minRes:', minRes.months, minRes.totalInterest);
-    console.log('[DebtFree] activeDebts:', activeDebts.map(d=>({name:d.name, balance:d.balance, apr:d.apr, min:d.minPayment})));
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
@@ -3153,10 +3154,6 @@ function renderStrategy() {
     const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', lumpSums);
     const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', lumpSums);
     const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', []);
-    // Diagnostic — remove after debugging
-    console.log('[DebtFree] renderStrategy mn result:', mn);
-    console.log('[DebtFree] activeDebts for mn:', activeDebts.map(d=>({name:d.name, balance:d.balance, apr:d.apr, realApr:d.realApr, minPayment:d.minPayment, promoEnd:d.promoEnd})));
-
     document.getElementById('cmp-av-months').textContent = av.months;
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
     document.getElementById('cmp-sb-months').textContent = sb.months;
