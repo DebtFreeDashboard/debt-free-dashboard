@@ -1,5 +1,5 @@
 {
-  "version": "1.3.6",
+  "version": "1.3.7",
   "releaseDate": "2026-04-03",
-  "notes": "Fixed lump sums disappearing due to timezone bug; fixed processDuePayments clobbering array on every open; fixed pending payment balance replay; fixed edit modal APR for promo debts; fixed lump sum allocation sort order"
+  "notes": "Fixed planned lump sums being wiped on every app open — selectStrategy was calling save() before lumpSums loaded from localStorage"
 }

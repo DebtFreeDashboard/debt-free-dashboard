@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.3.6';
+const APP_VERSION = '1.3.7';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -3539,9 +3539,14 @@ function load() {
     if (s) strategy = s;
     if (e) { extraMonthly = parseFloat(e); document.getElementById('extra-payment').value = extraMonthly || ''; }
     if (n) nextId = parseInt(n);
-    if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
+    // ── Load lumpSums BEFORE calling selectStrategy ──
+    // selectStrategy() calls save() which writes lumpSums to localStorage.
+    // If lumpSums hasn't been loaded yet when selectStrategy fires, save()
+    // overwrites localStorage with an empty array — wiping all planned lump sums.
     const ls = localStorage.getItem('debtfree_lumpsums');
     if (ls) { try { lumpSums = JSON.parse(ls); } catch(e) { lumpSums = []; } }
+    // Now safe to call selectStrategy — lumpSums is populated before any save() fires
+    if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
 
     // ── sessionStorage safety net (same-session only) ──
     // If localStorage came back empty for debts (e.g. iOS cleared it mid-session),
