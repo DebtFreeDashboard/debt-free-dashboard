@@ -655,7 +655,96 @@
     overflow: hidden;
   }
 
-  @media(max-width:700px) { .pricing-grid { grid-template-columns: 1fr !important; } }
+  /* ─── PRICING GRID (was inline, now classed) ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media(max-width:700px) {
+    .pricing-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .pricing-card {
+      padding: 36px 24px;
+    }
+  }
+
+  /* ─── NAV BUY GROUP ─── */
+  .nav-buy-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .nav-cta-starter {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  .nav-cta-pro {
+    background: var(--gold);
+    color: var(--ink);
+  }
+
+  .nav-cta-pro:hover {
+    background: var(--gold2);
+    color: var(--ink);
+  }
+
+  @media(max-width:700px) {
+    .price-tag { display: none; }
+    .nav-buy-group { gap: 6px; }
+    .nav-cta { font-size: 0.75rem; padding: 8px 12px; }
+  }
+
+  /* ─── MOBILE STICKY BUY BAR ─── */
+  .sticky-buy-bar {
+    display: none;
+  }
+
+  @media(max-width:600px) {
+    .sticky-buy-bar {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: var(--ink);
+      border-top: 1px solid rgba(201,168,76,0.3);
+      padding: 12px 16px;
+      gap: 10px;
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
+    }
+
+    .sticky-buy-bar a {
+      flex: 1;
+      text-align: center;
+      padding: 14px 10px;
+      border-radius: 6px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      letter-spacing: 0.01em;
+    }
+
+    .sticky-buy-bar .bar-starter {
+      background: var(--cream);
+      color: var(--ink);
+    }
+
+    .sticky-buy-bar .bar-pro {
+      background: var(--gold);
+      color: #1a1208;
+    }
+
+    body { padding-bottom: 80px; }
+  }
 
   .pricing-card::before {
     content: '';
@@ -871,8 +960,11 @@
   <img src="assets/logo/debtfree-logo-primary-dark.svg" 
        alt="DebtFree Dashboard" 
        style="height:36px; width:auto;">
-  <span class="price-tag">One-time · $49</span>
-  <a href="#pricing" class="nav-cta">See Pricing →</a>
+  <span class="price-tag">One-time · No subscription</span>
+  <div class="nav-buy-group">
+    <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="nav-cta nav-cta-starter">Starter — $49 →</a>
+    <a href="YOUR_GUMROAD_PRO_LINK" class="nav-cta nav-cta-pro">Pro — $97 →</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -880,15 +972,14 @@
   <div style="max-width:1100px; margin:0 auto; width:100%">
     <div class="hero-kicker">Personal Finance Tool · Interactive Dashboard</div>
     <h1 class="hero-headline">Stop Guessing.<br>Start <em>Destroying</em><br>Your Debt.</h1>
-    <p class="hero-sub">The interactive payoff dashboard that shows you exactly when you'll be free — and the fastest path to get there. Track every debt, model every scenario, and update your plan as your life changes. No subscriptions. No bank access. Just a plan that works.</p>
+    <p class="hero-sub">The interactive payoff dashboard that shows you exactly when you'll be free — and the fastest path to get there. Track every debt, model every scenario, and update your plan as your life changes. One-time purchase from $49. No subscriptions. No bank access. Just a plan that works.</p>
     <div class="hero-actions">
-      <a href="#pricing" class="btn-primary-lg">
-        See Pricing <span class="arrow">→</span>
+      <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-primary-lg">
+        Get Starter — $49 <span class="arrow">→</span>
       </a>
-      <div class="hero-price">
-        <strong>$49</strong>
-        one-time purchase · yours forever
-      </div>
+      <a href="YOUR_GUMROAD_PRO_LINK" class="btn-primary-lg" style="background:var(--gold);border-color:var(--gold);color:var(--ink);">
+        Get Pro — $97 <span class="arrow">→</span>
+      </a>
     </div>
     <div class="hero-stats">
       <div class="hero-stat-item">
@@ -1166,7 +1257,7 @@
     </div>
     <h2 class="section-title" style="color:var(--cream); text-align:center">Two tiers.<br>One freedom date.</h2>
 
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; max-width:900px; margin:40px auto 0; align-items:start;">
+    <div class="pricing-grid" style="max-width:900px; margin:40px auto 0; align-items:start;">
 
       <!-- STARTER -->
       <div class="pricing-card" style="position:relative;">
@@ -1291,6 +1382,12 @@
     <p style="color:rgba(255,255,255,0.3); font-size:0.78rem; margin-top:16px">One-time · No subscription · 30-day guarantee</p>
   </div>
 </section>
+
+<!-- MOBILE STICKY BUY BAR — visible only on small screens -->
+<div class="sticky-buy-bar">
+  <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="bar-starter">Starter — $49 →</a>
+  <a href="YOUR_GUMROAD_PRO_LINK" class="bar-pro">Pro — $97 →</a>
+</div>
 
 <footer>
   <span class="footer-logo">DebtFree</span>
