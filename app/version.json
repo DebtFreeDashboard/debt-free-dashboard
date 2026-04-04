@@ -1,5 +1,5 @@
 {
-  "version": "1.3.7",
-  "releaseDate": "2026-04-03",
-  "notes": "Fixed planned lump sums being wiped on every app open — selectStrategy was calling save() before lumpSums loaded from localStorage"
+  "version": "1.3.8-diag",
+  "releaseDate": "2026-04-04",
+  "notes": "Diagnostic build — console logging to identify Interest Saved zero bug"
 }

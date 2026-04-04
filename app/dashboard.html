@@ -2955,6 +2955,10 @@ function renderStats() {
   if (activeDebts.length) {
     const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, lumpSums);
     const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy, []);
+    // Diagnostic — remove after debugging
+    console.log('[DebtFree] renderStats res:', res.months, res.totalInterest);
+    console.log('[DebtFree] renderStats minRes:', minRes.months, minRes.totalInterest);
+    console.log('[DebtFree] activeDebts:', activeDebts.map(d=>({name:d.name, balance:d.balance, apr:d.apr, min:d.minPayment})));
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
@@ -3149,6 +3153,9 @@ function renderStrategy() {
     const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', lumpSums);
     const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', lumpSums);
     const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', []);
+    // Diagnostic — remove after debugging
+    console.log('[DebtFree] renderStrategy mn result:', mn);
+    console.log('[DebtFree] activeDebts for mn:', activeDebts.map(d=>({name:d.name, balance:d.balance, apr:d.apr, realApr:d.realApr, minPayment:d.minPayment, promoEnd:d.promoEnd})));
 
     document.getElementById('cmp-av-months').textContent = av.months;
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
