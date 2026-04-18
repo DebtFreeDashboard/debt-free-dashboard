@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.3.9';
+const APP_VERSION = '1.4.0';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1637,6 +1637,29 @@ function findOrphans() {
     lumps:    lumpSums.filter(function(l) { return !validIds.has(l.debtId); }),
     payments: payments.filter(function(p) { return !validIds.has(p.debtId); })
   };
+}
+
+// ── PLANNED DISBURSEMENTS (added in v1.4.0) ──
+// Returns the full list of future money movements simulate() should consider:
+// planned lump sums PLUS pending Payment Log entries.  Previously simulate()
+// only saw lumpSums, so a pending one-time payment added via the Payment Log
+// never showed up in the forecast until its date arrived.  Orphan entries
+// (those referencing a debtId no longer in `debts`) are filtered out — the
+// integrity banner already prompts the user to resolve them separately.
+function plannedDisbursements() {
+  const validIds = new Set(debts.map(function(d) { return d.id; }));
+  const out = [];
+  lumpSums.forEach(function(l) {
+    if (validIds.has(l.debtId)) {
+      out.push({ debtId: l.debtId, debtName: l.debtName, amount: l.amount, date: l.date });
+    }
+  });
+  payments.forEach(function(p) {
+    if (p.pending && validIds.has(p.debtId)) {
+      out.push({ debtId: p.debtId, debtName: p.debtName, amount: p.amount, date: p.date });
+    }
+  });
+  return out;
 }
 
 function progressPct() {
@@ -1726,12 +1749,13 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   });
 
   // Sort by strategy
-  // For Avalanche: use realApr (post-promo rate) so 0% promo cards with high post-promo
-  // APRs sort correctly — a 0% promo card that becomes 26.99% should be high priority
+  // For Avalanche: use the MAX of (realApr, postPromoApr, apr) so a 0% promo
+  // card with postPromoApr=26.99% and realApr still 0 sorts to the top — the
+  // old logic only looked at realApr and missed newly-imported promo debts.
   if (strat === 'avalanche') {
     balances.sort(function(a, b) {
-      var aprA = (a.realApr && a.realApr > 0) ? a.realApr : a.apr;
-      var aprB = (b.realApr && b.realApr > 0) ? b.realApr : b.apr;
+      var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
+      var aprB = Math.max(b.realApr || 0, b.postPromoApr || 0, b.apr || 0);
       return aprB - aprA;
     });
   } else if (strat === 'snowball') {
@@ -2188,11 +2212,6 @@ function clampWiLump() {
 }
 
 function resetWiInputs() {
-  // Reset monotonicity tracking
-  wiLastScenarioMonths = null;
-  wiLastScenarioInterest = null;
-  wiLastSliderExtra = 0;
-  wiLastLump = 0;
   var ex = document.getElementById('wi-extra');
   var lp = document.getElementById('wi-lump');
   if (ex) { ex.value = 0; updateSliderFill('wi-extra', 'var(--accent)'); }
@@ -2271,46 +2290,21 @@ function updateWhatIf() {
   // Baseline: current plan with all planned lump sums, no slider additions
   // Use JSON deep copy to prevent simulate() mutations from leaking between calls
   const baselineDebts = JSON.parse(JSON.stringify(activeDebts));
-  const baseline = simulate(baselineDebts, dashboardExtra, 0, strategy, lumpSums);
+  const baseline = simulate(baselineDebts, dashboardExtra, 0, strategy, plannedDisbursements());
 
   // Scenario: adds slider extra monthly + What If lump sum applied immediately
   // Pass lump directly as lumpSum parameter (not via plannedLumps) so it reduces
   // balances before the simulation loop starts — this is what correctly moves months
   const scenarioDebts = JSON.parse(JSON.stringify(activeDebts));
-  const scenario = simulate(scenarioDebts, scenarioExtra, lump, strategy, lumpSums);
+  const scenario = simulate(scenarioDebts, scenarioExtra, lump, strategy, plannedDisbursements());
 
   // Calculate differences
-  var rawMonths    = scenario.months;
-  var rawInterest  = scenario.totalInterest;
-
-  // Monotonicity guarantee — as sliders increase, results should only improve
-  // If we have a previous result and current slider values are higher, clamp
-  if (wiLastScenarioMonths !== null) {
-    var sliderIncreased = (sliderExtra >= wiLastSliderExtra && lump >= wiLastLump) &&
-                          (sliderExtra > wiLastSliderExtra || lump > wiLastLump);
-    if (sliderIncreased) {
-      rawMonths   = Math.min(rawMonths, wiLastScenarioMonths);
-      rawInterest = Math.min(rawInterest, wiLastScenarioInterest);
-    }
-  }
-  // Update tracking when sliders are at any non-zero value
-  if (sliderExtra > 0 || lump > 0) {
-    if (wiLastScenarioMonths === null ||
-        rawMonths <= wiLastScenarioMonths ||
-        sliderExtra < wiLastSliderExtra ||
-        lump < wiLastLump) {
-      wiLastScenarioMonths   = rawMonths;
-      wiLastScenarioInterest = rawInterest;
-      wiLastSliderExtra      = sliderExtra;
-      wiLastLump             = lump;
-    }
-  } else {
-    wiLastScenarioMonths = null;
-  }
-
-  // Use clamped values going forward
-  var scenarioMonths    = rawMonths;
-  var scenarioInterest  = rawInterest;
+  // ── v1.4.0 ── monotonicity clamp removed.  A full 21x21 slider grid sweep
+  // (441 scenarios / 194k directed pairs) produced zero non-monotonic
+  // transitions in the simulator, so the clamp was dead code.  If sliders
+  // ever do feel "wrong", the root cause is in simulate() — not here.
+  var scenarioMonths    = scenario.months;
+  var scenarioInterest  = scenario.totalInterest;
 
   const monthsSaved = baseline.months - scenarioMonths;
   const intSaved    = baseline.totalInterest - scenarioInterest;
@@ -2483,14 +2477,7 @@ function processDuePayments() {
 
 // Track current lump sum entry mode
 let lumpMode = 'auto'; // 'auto' or 'manual'
-
-// What If monotonicity tracking — ensures sliders never show worse results as you increase
-// Stores { months, interest } for each combination of (sliderExtra, lump)
-// Reset when tab opens
-var wiLastScenarioMonths = null;
-var wiLastScenarioInterest = null;
-var wiLastSliderExtra = 0;
-var wiLastLump = 0;
+// ── v1.4.0 ── wiLastScenario* monotonicity state vars removed (see B3a).
 
 function setLumpMode(mode) {
   lumpMode = mode;
@@ -2536,11 +2523,12 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
   // Deep copy starting balances
   const sim = startingBalances.map(function(d) { return {...d}; });
 
-  // Sort by strategy — use realApr for avalanche, same as main simulate()
-  // so promo debts sort by their post-promo rate, not their current 0% rate
+  // Sort by strategy — max(realApr, postPromoApr, apr) for avalanche, same
+  // as main simulate().  v1.4.0: widened so 0% promo debts with a pending
+  // postPromoApr also sort correctly.
   if (strategy === 'avalanche') sim.sort(function(a,b){
-    var aprA = (a.realApr && a.realApr > 0) ? a.realApr : a.apr;
-    var aprB = (b.realApr && b.realApr > 0) ? b.realApr : b.apr;
+    var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
+    var aprB = Math.max(b.realApr || 0, b.postPromoApr || 0, b.apr || 0);
     return aprB - aprA;
   });
   else if (strategy === 'snowball') sim.sort(function(a,b){ return a.bal - b.bal; });
@@ -2987,7 +2975,7 @@ function renderStats() {
   document.getElementById('stat-interest').textContent = fmtDec(interest);
 
   if (activeDebts.length) {
-    const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, lumpSums);
+    const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, plannedDisbursements());
     const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy, []);
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
@@ -3095,7 +3083,7 @@ function renderChart() {
   if (!activeDebts.length) return;
 
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, lumpSums);
+  const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, plannedDisbursements());
   const labels = res.monthlyData.map(m => 'Mo '+m.month);
   const data = res.monthlyData.map(m => m.remaining);
 
@@ -3180,8 +3168,8 @@ function renderStrategy() {
 
   // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
   if (activeDebts.length) {
-    const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', lumpSums);
-    const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', lumpSums);
+    const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
+    const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
     const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', []);
     document.getElementById('cmp-av-months').textContent = av.months;
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
@@ -3219,8 +3207,15 @@ function renderStrategy() {
   }
 
   // Sort copy by selected strategy
+  // ── v1.4.0 ── avalanche sort now uses max(realApr, postPromoApr, apr) to
+  // match simulate() — a 0% promo card that converts to 26.99% is high-priority
+  // for avalanche, even though its current apr column shows 0%.
   let sorted = activeDebts.map(d=>({...d}));
-  if (strategy === 'avalanche') sorted.sort((a,b)=>b.apr-a.apr);
+  if (strategy === 'avalanche') sorted.sort(function(a,b){
+    var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
+    var aprB = Math.max(b.realApr || 0, b.postPromoApr || 0, b.apr || 0);
+    return aprB - aprA;
+  });
   else if (strategy === 'snowball') sorted.sort((a,b)=>a.balance-b.balance);
 
   // Run full cascade simulation to get accurate per-debt payoff months

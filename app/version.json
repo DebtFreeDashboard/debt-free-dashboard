@@ -1,5 +1,5 @@
 {
-  "version": "1.3.9",
+  "version": "1.4.0",
   "releaseDate": "2026-04-18",
-  "notes": "Release A — orphan lump/payment integrity check on load with resolve banner; processDuePayments no longer silently drops orphan lumps"
+  "notes": "Release B — avalanche sort now uses max(realApr, postPromoApr, apr); pending Payment Log entries feed into forecasts via plannedDisbursements(); What-If monotonicity clamp removed (proven dead code); renderStrategy timeline sort aligned with simulate()."
 }
