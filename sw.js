@@ -1,4 +1,4 @@
-const CACHE_NAME = 'debtfree-v4';
+const CACHE_NAME = 'debtfree-v5';
 const CACHE_ASSETS = [
   '/app/',
   '/app/index.html',
