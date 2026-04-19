@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.4.0';
+const APP_VERSION = '1.5.0';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1696,25 +1696,30 @@ function badgeLabel(type) {
 //  PAYOFF SIMULATION
 // ═══════════════════════════════════════════
 function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps) {
-  if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [] };
+  if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [], perDebt: [], diverged: false };
   const strat = customStrategy || strategy;
-  // Build a map of month-index -> lump sum payments to apply (from plannedLumps array)
-  const today = new Date();
+
+  // Capture simulation start time ONCE — used for all promo boundary calculations
+  // AND for lump-date-to-month math.  Normalized to start of month so a lump
+  // scheduled for later this month lands in month 1, not month 0.
+  const simStartDate = new Date();
+  simStartDate.setDate(1);
+
+  // Build a map of month-index -> lump sum payments to apply (from plannedLumps)
+  // ── v1.5.0 ── uses calendar-month arithmetic (year/month delta) rather than
+  // Math.round(diffDays / 30.44) so a lump due 45 days out doesn't flip between
+  // month 1 and month 2 depending on what day of the month it is today.
   const lumpByMonth = {};
   if (plannedLumps && plannedLumps.length) {
     plannedLumps.forEach(function(l) {
       const lDate = new Date(l.date);
-      const diffMs = lDate - today;
-      const diffMonths = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24 * 30.44)));
+      const diffMonths = Math.max(1,
+        (lDate.getFullYear() - simStartDate.getFullYear()) * 12 +
+        (lDate.getMonth() - simStartDate.getMonth()));
       if (!lumpByMonth[diffMonths]) lumpByMonth[diffMonths] = [];
       lumpByMonth[diffMonths].push({ debtId: l.debtId, amount: l.amount });
     });
   }
-
-  // Capture simulation start time ONCE — used for all promo boundary calculations
-  // This prevents non-deterministic behavior from calling new Date() inside the loop
-  const simStartDate = new Date();
-  simStartDate.setDate(1); // normalize to start of month for consistent boundary math
 
   // Sanitize debts before simulating — clamp APR and ensure minimum payment covers interest
   // Pre-compute the promo switch month for each debt so it never changes mid-simulation
@@ -1744,7 +1749,10 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       apr: safeApr,
       bal: safeBalance,
       minPayment: safeMinPayment,
-      promoSwitchMonth: promoSwitchMonth
+      promoSwitchMonth: promoSwitchMonth,
+      // v1.5.0 — per-debt tracking so renderStrategy can drop its inline loops
+      paidOffMonth: null,
+      interestPaid: 0
     };
   });
 
@@ -1818,6 +1826,7 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       }
       const interest = d.bal * (effectiveApr / 100 / 12);
       monthInterest += interest;
+      d.interestPaid += interest;              // v1.5.0 — per-debt tracking
       d.bal += interest;
       const payment = Math.min(d.bal, d.minPayment || 25);
       d.bal -= payment;
@@ -1863,16 +1872,40 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       });
     }
 
+    // v1.5.0 — record the month each debt crosses to zero (1-indexed)
+    for (let d of balances) {
+      if (d.paidOffMonth === null && d.bal <= 0.01) d.paidOffMonth = month;
+    }
+
     totalInterest += monthInterest;
     monthlyData.push({ month, remaining: balances.reduce((a,d)=>a+d.bal,0), interest: monthInterest });
   }
 
-  // If we hit the interest cap something went wrong — return safe zeros
-  if (totalInterest >= MAX_INTEREST) {
-    return { months: 0, totalInterest: 0, order: balances, monthlyData: [] };
+  // v1.5.0 — perDebt payload for Strategy timeline (and any future consumer).
+  // Keyed by id so callers can do perDebt.find(p => p.id === d.id).
+  const perDebt = balances.map(function(b) {
+    return { id: b.id, paidOffMonth: b.paidOffMonth, interestPaid: b.interestPaid };
+  });
+
+  // v1.5.0 — if either safety cap fired, surface it instead of returning zeros.
+  // Callers that need to be defensive can check `diverged`; legacy callers that
+  // just use months/totalInterest still see real numbers (so a bug no longer
+  // silently zeros out your Freedom Date).
+  const hitInterestCap = totalInterest >= MAX_INTEREST;
+  const hitMonthCap    = month >= MAX_MONTHS && balances.some(function(d){ return d.bal > 0.01; });
+  if (hitInterestCap || hitMonthCap) {
+    if (typeof console !== 'undefined') {
+      console.warn('[simulate] diverged — ' +
+        (hitInterestCap ? 'hit $' + MAX_INTEREST + ' interest cap' : 'hit ' + MAX_MONTHS + '-month cap') +
+        ' with balances still above zero:',
+        balances.filter(function(d){return d.bal > 0.01;}).map(function(d){
+          return d.name + ' $' + d.bal.toFixed(2);
+        }));
+    }
+    return { months: month, totalInterest, order: balances, monthlyData, perDebt, diverged: true };
   }
 
-  return { months: month, totalInterest, order: balances, monthlyData };
+  return { months: month, totalInterest, order: balances, monthlyData, perDebt, diverged: false };
 }
 
 function simulateStrategyResult(debtList, extra, strat) {
@@ -2345,15 +2378,14 @@ function updateWhatIf() {
     timeSavedDisplay = '0 mo';
     freedomDisplay   = scenDateStr;
     monthsLeftDisplay = scenarioMonths + ' months remaining';
-    // Show "covers payoff" only when the planned lump sums (without this slider)
-    // already pay everything off — meaning the slider can only help with interest.
-    // We know this is true when baseline.months equals scenario.months AND
-    // the planned lump sums account for the full payoff (baseline already includes them).
-    // Simplest accurate check: does baseline already pay off within a month
-    // of scenario? If so, planned lumps are doing the work, slider just saves interest.
-    var lumpCoversAll = (baseline.months - scenario.months) === 0 && lumpSums.length > 0 &&
-      lumpSums.reduce(function(a, l) { return a + l.amount; }, 0) >=
-      activeDebts.reduce(function(a, d) { return a + d.balance; }, 0);
+    // ── v1.5.0 ── Simplified.  The previous sum-of-lumps vs sum-of-balances
+    // check ignored which debt each lump targeted (a $10k lump on a $1k card
+    // plus a $9k card balance would falsely pass) and ignored future interest
+    // accrual.  The baseline simulation already answers the question correctly:
+    // if adding a What-If slider on top produced zero additional months saved,
+    // planned disbursements are already carrying the payoff.
+    var lumpCoversAll = (baseline.months - scenario.months) === 0 &&
+                       plannedDisbursements().length > 0;
     newDateDisplay = lumpCoversAll
       ? 'Planned lump sums cover payoff — slider reduces interest only (' + baseDateStr + ')'
       : 'No months saved at this amount — extra reduces interest (' + baseDateStr + ')';
@@ -2506,13 +2538,16 @@ function setLumpMode(mode) {
 // Returns a map of { debtId -> projectedBalance } at targetMonth.
 function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) {
   // Build a map of month -> [{debtId, amount}] for previously scheduled lumps
+  // v1.5.0 — calendar-accurate month math (matches simulate())
   const today = new Date();
+  const todayNormalized = new Date(today.getFullYear(), today.getMonth(), 1);
   const lumpByMonth = {};
   if (previousLumps && previousLumps.length) {
     previousLumps.forEach(function(l) {
       const lDate = new Date(l.date);
-      const diffMs = lDate - today;
-      const mth = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24 * 30.44)));
+      const mth = Math.max(1,
+        (lDate.getFullYear() - todayNormalized.getFullYear()) * 12 +
+        (lDate.getMonth() - todayNormalized.getMonth()));
       if (mth <= targetMonth) {
         if (!lumpByMonth[mth]) lumpByMonth[mth] = [];
         lumpByMonth[mth].push({ debtId: l.debtId, amount: l.amount });
@@ -2583,7 +2618,11 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
 function calculateLumpAllocation(totalAmount, targetDate) {
   const today = new Date();
   const lDate = new Date(targetDate);
-  const monthsUntil = Math.max(1, Math.round((lDate - today) / (1000 * 60 * 60 * 24 * 30.44)));
+  // v1.5.0 — calendar-accurate month delta
+  const todayNorm = new Date(today.getFullYear(), today.getMonth(), 1);
+  const monthsUntil = Math.max(1,
+    (lDate.getFullYear() - todayNorm.getFullYear()) * 12 +
+    (lDate.getMonth() - todayNorm.getMonth()));
 
   const activeDebts = debts.filter(function(d) { return d.balance > 0; });
   if (!activeDebts.length) return [];
@@ -3206,10 +3245,9 @@ function renderStrategy() {
     return;
   }
 
-  // Sort copy by selected strategy
-  // ── v1.4.0 ── avalanche sort now uses max(realApr, postPromoApr, apr) to
-  // match simulate() — a 0% promo card that converts to 26.99% is high-priority
-  // for avalanche, even though its current apr column shows 0%.
+  // Sort copy by selected strategy (display order).  The actual simulation
+  // order comes from simulate() internally — this sort just controls how the
+  // rows appear in the table.  v1.5.0: no more parallel inline simulation.
   let sorted = activeDebts.map(d=>({...d}));
   if (strategy === 'avalanche') sorted.sort(function(a,b){
     var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
@@ -3218,93 +3256,25 @@ function renderStrategy() {
   });
   else if (strategy === 'snowball') sorted.sort((a,b)=>a.balance-b.balance);
 
-  // Run full cascade simulation to get accurate per-debt payoff months
-  let simBalances = sorted.map(d => ({ ...d, bal: d.balance, paidOffMonth: null }));
-  let month = 0;
-  const MAX_MONTHS = 600;
-
-  while (simBalances.some(d => d.bal > 0.01) && month < MAX_MONTHS) {
-    month++;
-    let extraLeft = extra;
-
-    for (let d of simBalances) {
-      if (d.bal <= 0) continue;
-      let effectiveApr = d.apr;
-      if (d.promoEnd) {
-        const promoEndDate = new Date(d.promoEnd);
-        const currentDate = new Date();
-        currentDate.setMonth(currentDate.getMonth() + month - 1);
-        effectiveApr = currentDate < promoEndDate ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
-        effectiveApr = (!isNaN(effectiveApr) && effectiveApr >= 0 && effectiveApr <= 100) ? effectiveApr : 0;
-      }
-      const interest = d.bal * (effectiveApr / 100 / 12);
-      d.bal += interest;
-      const minInt = d.bal * (effectiveApr / 100 / 12);
-      const safeMin = (d.minPayment || 25) <= minInt ? minInt + 0.01 : (d.minPayment || 25);
-      const payment = Math.min(d.bal, safeMin);
-      d.bal -= payment;
-      d.bal = Math.max(0, d.bal);
-    }
-
-    for (let d of simBalances) {
-      if (d.bal <= 0) continue;
-      if (extraLeft <= 0) break;
-      const payment = Math.min(d.bal, extraLeft);
-      d.bal -= payment;
-      extraLeft -= payment;
-      d.bal = Math.max(0, d.bal);
-    }
-
-    for (let d of simBalances) {
-      if (d.paidOffMonth === null && d.bal <= 0.01) {
-        d.paidOffMonth = month;
-      }
-    }
-  }
-
-  // Calculate per-debt interest by tracking interest accrued per debt during cascade
-  let simBalances2 = sorted.map(d => ({ ...d, bal: d.balance, paidOffMonth: null, interestPaid: 0 }));
-  let month2 = 0;
-  while (simBalances2.some(d => d.bal > 0.01) && month2 < MAX_MONTHS) {
-    month2++;
-    let extraLeft2 = extra;
-    for (let d of simBalances2) {
-      if (d.bal <= 0) continue;
-      let effectiveApr2 = d.apr;
-      if (d.promoEnd) {
-        const promoEndDate2 = new Date(d.promoEnd);
-        const currentDate2 = new Date();
-        currentDate2.setMonth(currentDate2.getMonth() + month2 - 1);
-        effectiveApr2 = currentDate2 < promoEndDate2 ? (d.promoApr || 0) : (d.postPromoApr || d.realApr || d.apr);
-        effectiveApr2 = (!isNaN(effectiveApr2) && effectiveApr2 >= 0 && effectiveApr2 <= 100) ? effectiveApr2 : 0;
-      }
-      const interest2 = d.bal * (effectiveApr2 / 100 / 12);
-      d.interestPaid += interest2;
-      d.bal += interest2;
-      const payment2 = Math.min(d.bal, d.minPayment || 25);
-      d.bal -= payment2;
-      d.bal = Math.max(0, d.bal);
-    }
-    for (let d of simBalances2) {
-      if (d.bal <= 0) continue;
-      if (extraLeft2 <= 0) break;
-      const payment2 = Math.min(d.bal, extraLeft2);
-      d.bal -= payment2;
-      extraLeft2 -= payment2;
-      d.bal = Math.max(0, d.bal);
-    }
-    for (let d of simBalances2) {
-      if (d.paidOffMonth === null && d.bal <= 0.01) d.paidOffMonth = month2;
-    }
-  }
+  // ── v1.5.0 ── Single simulate() call replaces the two inline cascade
+  // loops that used to live here.  Knock-on benefits beyond code reduction:
+  //   • Timeline now honors planned lump sums + pending Payment Log entries
+  //     (inline loops ignored both — Freedom Date column drifted from the
+  //      Dashboard / What-If numbers).
+  //   • safeMinPayment kicks in, preventing infinite-payoff projections when
+  //     a stored minPayment is below monthly post-promo interest.
+  //   • Max-APR avalanche sort + calendar-accurate lump math (B1, C4).
+  const stratResult = simulate(sorted, extra, 0, strategy, plannedDisbursements());
+  const perDebtMap = {};
+  (stratResult.perDebt || []).forEach(function(p) { perDebtMap[p.id] = p; });
+  const overallMonths = stratResult.months || 1;
 
   tbody.innerHTML = sorted.map((d, i) => {
-    const sb = simBalances.find(x => x.id === d.id);
-    const sb2 = simBalances2.find(x => x.id === d.id);
-    const payoffMonth = sb && sb.paidOffMonth ? sb.paidOffMonth : month;
+    const pd = perDebtMap[d.id];
+    const payoffMonth = (pd && pd.paidOffMonth) ? pd.paidOffMonth : overallMonths;
     const date = new Date();
     date.setMonth(date.getMonth() + payoffMonth);
-    const debtInterest = sb2 ? sb2.interestPaid : 0;
+    const debtInterest = pd ? pd.interestPaid : 0;
 
     return `<tr>
       <td><span class="order-num">${i+1}</span></td>

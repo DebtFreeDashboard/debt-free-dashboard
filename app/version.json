@@ -1,5 +1,5 @@
 {
-  "version": "1.4.0",
+  "version": "1.5.0",
   "releaseDate": "2026-04-18",
-  "notes": "Release B — avalanche sort now uses max(realApr, postPromoApr, apr); pending Payment Log entries feed into forecasts via plannedDisbursements(); What-If monotonicity clamp removed (proven dead code); renderStrategy timeline sort aligned with simulate()."
+  "notes": "Release C — simulate() now returns per-debt payoff data; Strategy timeline consolidated into a single simulate() call (honors planned lumps + pending payments, uses safeMinPayment); What-If lumpCoversAll check simplified; simulate() caps no longer return silent zeros (diverged flag + console.warn); lump-date month math now calendar-accurate."
 }
