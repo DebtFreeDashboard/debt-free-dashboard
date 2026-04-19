@@ -1,5 +1,11 @@
 {
-  "version": "1.5.0",
-  "releaseDate": "2026-04-18",
-  "notes": "Release C — simulate() now returns per-debt payoff data; Strategy timeline consolidated into a single simulate() call (honors planned lumps + pending payments, uses safeMinPayment); What-If lumpCoversAll check simplified; simulate() caps no longer return silent zeros (diverged flag + console.warn); lump-date month math now calendar-accurate."
+  "version": "1.6.0",
+  "releaseDate": "2026-04-19",
+  "releaseName": "Release D — Data Integrity",
+  "notes": [
+    "sanitizeDebts() helper shared by load() and importData() — old-format backups now backfill postPromoApr/promoApr/promoEnd/hasPromo/transferFee/type cleanly.",
+    "importData() no longer skips sanitization — imported JSON goes through the same pipeline as load().",
+    "save() surfaces storage errors (including QuotaExceededError) instead of silently dropping writes.",
+    "projectBalancesAt() rewritten for parity with simulate() — promo-APR handling, safeMinPayment, MAX_MONTHS cap. Lump-allocation preview now matches the main simulator."
+  ]
 }

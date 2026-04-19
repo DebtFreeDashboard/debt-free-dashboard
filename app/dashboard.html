@@ -1550,7 +1550,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.6.0';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -2537,10 +2537,14 @@ function setLumpMode(mode) {
 // applying previousLumps at the correct months along the way.
 // Returns a map of { debtId -> projectedBalance } at targetMonth.
 function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) {
-  // Build a map of month -> [{debtId, amount}] for previously scheduled lumps
-  // v1.5.0 — calendar-accurate month math (matches simulate())
+  // v1.6.0 — parity with simulate(): promo-APR handling, safeMinPayment,
+  // MAX_MONTHS cap.  The previous version used d.apr across the whole
+  // horizon and a naive min-payment rule, so the lump-allocation preview
+  // could drift from the main simulator on promo-debt scenarios.
   const today = new Date();
   const todayNormalized = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  // Build a map of month -> [{debtId, amount}] for previously scheduled lumps
   const lumpByMonth = {};
   if (previousLumps && previousLumps.length) {
     previousLumps.forEach(function(l) {
@@ -2555,12 +2559,37 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
     });
   }
 
-  // Deep copy starting balances
-  const sim = startingBalances.map(function(d) { return {...d}; });
+  // Pre-compute per-debt safeMinPayment + promoSwitchMonth (mirrors simulate())
+  const sim = startingBalances.map(function(d) {
+    const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
+    const safeBal = Math.max(0, d.bal || 0);
+    const worstApr = (d.hasPromo && d.postPromoApr && !isNaN(d.postPromoApr) && d.postPromoApr > safeApr)
+      ? d.postPromoApr : safeApr;
+    const worstMinInterest = safeBal * (worstApr / 100 / 12);
+    const rawMin = d.minPayment || 25;
+    const safeMinPayment = rawMin <= worstMinInterest ? worstMinInterest + 1 : rawMin;
+    let promoSwitchMonth = null;
+    if (d.promoEnd) {
+      const pEnd = new Date(d.promoEnd);
+      promoSwitchMonth = Math.max(0,
+        (pEnd.getFullYear() - todayNormalized.getFullYear()) * 12 +
+        (pEnd.getMonth() - todayNormalized.getMonth()));
+    }
+    return {
+      id: d.id,
+      name: d.name,
+      bal: safeBal,
+      apr: safeApr,
+      realApr: d.realApr || safeApr,
+      postPromoApr: d.postPromoApr || null,
+      promoApr: d.promoApr || null,
+      hasPromo: d.hasPromo === true,
+      minPayment: safeMinPayment,
+      promoSwitchMonth: promoSwitchMonth
+    };
+  });
 
-  // Sort by strategy — max(realApr, postPromoApr, apr) for avalanche, same
-  // as main simulate().  v1.4.0: widened so 0% promo debts with a pending
-  // postPromoApr also sort correctly.
+  // Sort by strategy — max(realApr, postPromoApr, apr) for avalanche
   if (strategy === 'avalanche') sim.sort(function(a,b){
     var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
     var aprB = Math.max(b.realApr || 0, b.postPromoApr || 0, b.apr || 0);
@@ -2568,16 +2597,26 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
   });
   else if (strategy === 'snowball') sim.sort(function(a,b){ return a.bal - b.bal; });
 
-  for (let month = 1; month <= targetMonth; month++) {
-    // Accrue interest and apply min payments
+  const MAX_MONTHS = 600;
+  const cap = Math.min(targetMonth, MAX_MONTHS);
+  for (let month = 1; month <= cap; month++) {
     let extraLeft = extra;
+    // Accrue interest and apply min payments
     for (let i = 0; i < sim.length; i++) {
       const d = sim[i];
       if (d.bal <= 0) continue;
-      const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
-      const interest = d.bal * (safeApr / 100 / 12);
+      // Effective APR: promo vs post-promo (mirrors simulate())
+      let effectiveApr = d.apr;
+      if (d.promoSwitchMonth !== null) {
+        const isStillPromo = month <= d.promoSwitchMonth;
+        const rawApr = isStillPromo
+          ? (d.promoApr || 0)
+          : (d.postPromoApr || d.realApr || d.apr);
+        effectiveApr = (!isNaN(rawApr) && rawApr >= 0 && rawApr <= 100) ? rawApr : 0;
+      }
+      const interest = d.bal * (effectiveApr / 100 / 12);
       d.bal += interest;
-      const minPay = Math.min(d.bal, Math.max(d.minPayment || 25, interest + 1));
+      const minPay = Math.min(d.bal, d.minPayment || 25);
       d.bal = Math.max(0, d.bal - minPay);
     }
     // Apply extra to focus debt
@@ -2594,7 +2633,6 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
       lumpByMonth[month].forEach(function(lump) {
         const target = sim.find(function(b) { return b.id === lump.debtId; });
         if (target) {
-          // Cascade from target through remaining debts
           var lumpRem = lump.amount;
           var si = sim.indexOf(target);
           if (si < 0) si = 0;
@@ -2633,8 +2671,17 @@ function calculateLumpAllocation(totalAmount, targetDate) {
   // that occur BEFORE this new lump sum's date
   const priorLumps = lumpSums.filter(function(l) { return l.date < targetDate; });
 
+  // v1.6.0 — forward promo fields so projectBalancesAt() can honor them
   const startingBalances = activeDebts.map(function(d) {
-    return { id: d.id, name: d.name, bal: d.balance, apr: d.apr, realApr: d.realApr || d.apr, minPayment: d.minPayment };
+    return {
+      id: d.id, name: d.name, bal: d.balance,
+      apr: d.apr, realApr: d.realApr || d.apr,
+      minPayment: d.minPayment,
+      hasPromo: d.hasPromo,
+      promoApr: d.promoApr,
+      postPromoApr: d.postPromoApr,
+      promoEnd: d.promoEnd
+    };
   });
 
   // Project balances at targetMonth, accounting for all prior lump sums
@@ -3435,7 +3482,11 @@ function importData(event) {
       if (!data.debts || !Array.isArray(data.debts)) {
         throw new Error('Invalid file');
       }
-      debts = data.debts || [];
+      // v1.6.0 — run imported debts through the same sanitization
+      // pipeline load() uses.  Without this, old-format backups came in with
+      // missing postPromoApr/hasPromo/type fields and silently corrupted the
+      // store on the next save().
+      debts = sanitizeDebts(data.debts || []);
       payments = data.payments || [];
       lumpSums = data.lumpSums || [];
       strategy = data.strategy || 'avalanche';
@@ -3464,6 +3515,42 @@ function importData(event) {
   reader.readAsText(file);
   event.target.value = '';
 }
+// v1.6.0 — Shared sanitization helper used by load() and importData().
+// Backfills fields that old backups may be missing (postPromoApr, promoApr,
+// promoEnd, hasPromo, transferFee, type), clamps numerics to legal ranges,
+// and clears promo fields when hasPromo is false/undefined so downstream
+// strategy/simulate code can trust the shape.
+function sanitizeDebts(parsed) {
+  if (!Array.isArray(parsed)) return [];
+  return parsed.map(function(debt) {
+    var bal     = isNaN(debt.balance) ? 0 : Math.max(0, debt.balance);
+    var origBal = (isNaN(debt.originalBalance) || debt.originalBalance <= 0) ? bal : debt.originalBalance;
+    var apr     = (!isNaN(debt.apr) && debt.apr >= 0 && debt.apr <= 100) ? debt.apr : 0;
+    var realApr = (!isNaN(debt.realApr) && debt.realApr >= 0 && debt.realApr <= 100) ? debt.realApr : apr;
+    var minPay  = (isNaN(debt.minPayment) || debt.minPayment <= 0) ? 25 : debt.minPayment;
+    var postPromoApr = (!isNaN(debt.postPromoApr) && debt.postPromoApr >= 0 && debt.postPromoApr <= 100) ? debt.postPromoApr : null;
+    var promoApr     = (!isNaN(debt.promoApr) && debt.promoApr >= 0 && debt.promoApr <= 100) ? debt.promoApr : null;
+    var transferFee  = (!isNaN(debt.transferFee) && debt.transferFee >= 0) ? debt.transferFee : 0;
+    var hasPromo = debt.hasPromo === true;
+    var promoEnd = debt.promoEnd || null;
+    if (!hasPromo) { promoApr = null; postPromoApr = null; promoEnd = null; }
+    var type = debt.type || 'other';
+    return Object.assign({}, debt, {
+      balance: bal,
+      originalBalance: origBal,
+      apr: apr,
+      realApr: realApr,
+      minPayment: minPay,
+      postPromoApr: postPromoApr,
+      promoApr: promoApr,
+      promoEnd: promoEnd,
+      hasPromo: hasPromo,
+      transferFee: transferFee,
+      type: type
+    });
+  });
+}
+
 function save() {
   try {
     localStorage.setItem('debtfree_debts', JSON.stringify(debts));
@@ -3472,7 +3559,16 @@ function save() {
     localStorage.setItem('debtfree_extra', extraMonthly);
     localStorage.setItem('debtfree_nextid', nextId);
     localStorage.setItem('debtfree_lumpsums', JSON.stringify(lumpSums));
-  } catch(e) {}
+  } catch(e) {
+    // v1.6.0 — surface storage errors instead of silently dropping the write
+    console.error('DebtFree save() failed:', e);
+    var isQuota = !!(e && (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014));
+    try {
+      showBackupMsg('warn', isQuota
+        ? 'Storage full — your latest edit could not be saved. Please export a backup and clear old payment history.'
+        : 'Could not save changes locally. ' + (e && e.message ? e.message : ''));
+    } catch(_) {}
+  }
   // Redundant backup in sessionStorage for iOS PWA resilience
   try {
     sessionStorage.setItem('debtfree_lumpsums_bak', JSON.stringify(lumpSums));
@@ -3490,7 +3586,8 @@ function load() {
       localStorage.removeItem('debtfree_pending_restore');
       const data = JSON.parse(pending);
       if (data.debts && Array.isArray(data.debts)) {
-        debts = data.debts;
+        // v1.6.0 — sanitize on restore too
+        debts = sanitizeDebts(data.debts);
         payments = data.payments || [];
         lumpSums = data.lumpSums || [];
         strategy = data.strategy || 'avalanche';
@@ -3514,20 +3611,9 @@ function load() {
     const e = localStorage.getItem('debtfree_extra');
     const n = localStorage.getItem('debtfree_nextid');
     if (d) {
-      const parsed = JSON.parse(d);
-      // Sanitize loaded debts — fix missing fields from older saved data
-      debts = parsed.map(debt => ({
-        ...debt,
-        balance: isNaN(debt.balance) ? 0 : Math.max(0, debt.balance),
-        originalBalance: isNaN(debt.originalBalance) || debt.originalBalance <= 0 
-          ? (isNaN(debt.balance) ? 0 : Math.max(0, debt.balance)) 
-          : debt.originalBalance,
-        apr: (!isNaN(debt.apr) && debt.apr >= 0 && debt.apr <= 100) ? debt.apr : 0,
-        realApr: (!isNaN(debt.realApr) && debt.realApr >= 0 && debt.realApr <= 100) 
-          ? debt.realApr 
-          : ((!isNaN(debt.apr) && debt.apr >= 0 && debt.apr <= 100) ? debt.apr : 0),
-        minPayment: isNaN(debt.minPayment) || debt.minPayment <= 0 ? 25 : debt.minPayment,
-      }));
+      // v1.6.0 — use shared sanitizeDebts() helper (now also backfills
+      // postPromoApr/promoApr/promoEnd/hasPromo/transferFee/type).
+      debts = sanitizeDebts(JSON.parse(d));
     }
     if (p) {
       const parsedP = JSON.parse(p);
