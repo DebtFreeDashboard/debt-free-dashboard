@@ -1133,7 +1133,7 @@
         </div>
         <div class="form-field">
           <label>Type</label>
-          <select id="debt-type">
+          <select id="debt-type" onchange="onDebtTypeChange('add')">
             <option value="cc">Credit Card</option>
             <option value="student">Student Loan</option>
             <option value="auto">Auto Loan</option>
@@ -1197,6 +1197,35 @@
         <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;line-height:1.5;">
           The transfer fee will be added to your balance. After the promo end date, the post-promo APR kicks in automatically in all calculations.
         </div>
+      </div>
+
+      <!-- v1.7.0 — installment-loan controls.  Shown automatically for
+           non-credit-card types; mortgages default to excluded from strategy. -->
+      <div id="installment-fields" style="display:none; margin-top:12px;">
+        <div style="display:flex; align-items:center; gap:10px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <input type="checkbox" id="debt-include-strategy" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
+          <label for="debt-include-strategy" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
+            Include in payoff strategy
+          </label>
+          <span id="debt-include-hint" style="font-size:0.7rem;color:var(--text-muted);margin-left:auto;"></span>
+        </div>
+        <details style="margin-top:10px; padding:12px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
+          <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
+          <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
+            <div class="form-field">
+              <label>Original Principal ($)</label>
+              <input type="number" id="debt-orig-principal" min="0" step="1" placeholder="25000" />
+            </div>
+            <div class="form-field">
+              <label>Term (months)</label>
+              <input type="number" id="debt-term-months" min="1" max="600" step="1" placeholder="72" />
+            </div>
+            <div class="form-field">
+              <label>Origination Date</label>
+              <input type="date" id="debt-orig-date" />
+            </div>
+          </div>
+        </details>
       </div>
 
       <button class="btn btn-primary btn-full" onclick="addDebt()">+ Add Debt</button>
@@ -1550,7 +1579,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.6.0';
+const APP_VERSION = '1.7.0';
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -1951,6 +1980,19 @@ function addDebt() {
     }
   }
 
+  // v1.7.0 — installment fields
+  var loanType = inferLoanType(type);
+  var includeEl = document.getElementById('debt-include-strategy');
+  var includeInStrategy = includeEl ? includeEl.checked : shouldIncludeInStrategy(type);
+  var origPrincEl = document.getElementById('debt-orig-principal');
+  var termEl      = document.getElementById('debt-term-months');
+  var origDateEl  = document.getElementById('debt-orig-date');
+  var origPrincipal  = origPrincEl && origPrincEl.value ? parseFloat(origPrincEl.value) : null;
+  var termMonths     = termEl && termEl.value ? parseInt(termEl.value, 10) : null;
+  var originationDate = origDateEl && origDateEl.value ? origDateEl.value : null;
+  if (origPrincipal !== null && (isNaN(origPrincipal) || origPrincipal <= 0)) origPrincipal = null;
+  if (termMonths !== null && (isNaN(termMonths) || termMonths <= 0 || termMonths > 600)) termMonths = null;
+
   debts.push({
     id: nextId++, name, type,
     balance: finalBalance,
@@ -1963,7 +2005,12 @@ function addDebt() {
     promoEnd: hasPromo ? promoEnd : null,
     postPromoApr: hasPromo ? postPromoApr : null,
     transferFee: hasPromo ? transferFee : 0,
-    hasPromo
+    hasPromo,
+    loanType: loanType,
+    includeInStrategy: includeInStrategy,
+    origPrincipal: origPrincipal,
+    termMonths: termMonths,
+    originationDate: originationDate
   });
 
   // Reset form
@@ -1978,6 +2025,10 @@ function addDebt() {
   document.getElementById('debt-transfer-fee').value = '';
   document.getElementById('promo-fields').style.display = 'none';
   document.getElementById('promo-fee-preview').innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>';
+  // v1.7.0 — reset installment fields
+  var _op = document.getElementById('debt-orig-principal'); if (_op) _op.value = '';
+  var _tm = document.getElementById('debt-term-months');    if (_tm) _tm.value = '';
+  var _od = document.getElementById('debt-orig-date');      if (_od) _od.value = '';
 
   save();
   render();
@@ -2048,6 +2099,18 @@ function openEditModal(id) {
       : '';
     updateEditFeePreview();
   }
+
+  // v1.7.0 — populate installment fields
+  var editInc = document.getElementById('edit-include-strategy');
+  if (editInc) editInc.checked = (d.includeInStrategy !== false);
+  var editOP = document.getElementById('edit-orig-principal');
+  var editTM = document.getElementById('edit-term-months');
+  var editOD = document.getElementById('edit-orig-date');
+  if (editOP) editOP.value = (d.origPrincipal != null) ? d.origPrincipal : '';
+  if (editTM) editTM.value = (d.termMonths != null) ? d.termMonths : '';
+  if (editOD) editOD.value = d.originationDate || '';
+  // Trigger the type-change handler to show/hide the block appropriately
+  onDebtTypeChange('edit');
 
   document.getElementById('edit-modal').classList.remove('hidden');
   document.getElementById('edit-name').focus();
@@ -2141,6 +2204,19 @@ function saveEditDebt() {
   d.postPromoApr   = hasPromo ? postPromoApr : null;
   d.transferFee    = hasPromo ? transferFee : 0;
   if (!hasPromo) d.originalApr = apr;
+
+  // v1.7.0 — installment fields
+  d.loanType = inferLoanType(type);
+  var editIncEl = document.getElementById('edit-include-strategy');
+  d.includeInStrategy = editIncEl ? editIncEl.checked : shouldIncludeInStrategy(type);
+  var _eop = document.getElementById('edit-orig-principal');
+  var _etm = document.getElementById('edit-term-months');
+  var _eod = document.getElementById('edit-orig-date');
+  var _op  = (_eop && _eop.value) ? parseFloat(_eop.value) : null;
+  var _tm  = (_etm && _etm.value) ? parseInt(_etm.value, 10) : null;
+  d.origPrincipal   = (_op !== null && !isNaN(_op) && _op > 0) ? _op : null;
+  d.termMonths      = (_tm !== null && !isNaN(_tm) && _tm > 0 && _tm <= 600) ? _tm : null;
+  d.originationDate = (_eod && _eod.value) ? _eod.value : null;
 
   document.getElementById('edit-modal').classList.add('hidden');
   editingId = null;
@@ -2309,7 +2385,8 @@ function updateWhatIf() {
   document.getElementById('wi-extra-label').textContent = sliderExtra > 0 ? '+' + fmt(sliderExtra) + '/mo' : '$0/mo';
   document.getElementById('wi-lump-label').textContent  = fmt(lump);
 
-  const activeDebts = debts.filter(function(d) { return d.balance > 0; });
+  // v1.7.0 — What-If reflects the payoff plan, so excluded debts skip
+  const activeDebts = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
   if (!activeDebts.length) {
     ['wi-time-saved','wi-int-saved','wi-freedom','wi-total-int','wi-new-date','wi-months-left'].forEach(function(id) {
       document.getElementById(id).textContent = '—';
@@ -2662,7 +2739,8 @@ function calculateLumpAllocation(totalAmount, targetDate) {
     (lDate.getFullYear() - todayNorm.getFullYear()) * 12 +
     (lDate.getMonth() - todayNorm.getMonth()));
 
-  const activeDebts = debts.filter(function(d) { return d.balance > 0; });
+  // v1.7.0 — lump sums only cascade through debts in the payoff plan
+  const activeDebts = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
   if (!activeDebts.length) return [];
 
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
@@ -3124,11 +3202,16 @@ function renderDebtList() {
       ? `<div class="debt-stat"><span class="debt-stat-label">Transfer Fee</span><span class="debt-stat-val" style="color:var(--accent4)">${fmtDec(d.transferFee)}</span></div>`
       : '';
 
+    // v1.7.0 — excluded-from-strategy badge (mortgage-by-default)
+    const excludedBadge = (d.includeInStrategy === false)
+      ? `<span class="tag tag-muted" style="margin-left:6px;font-size:0.58rem;">not in payoff plan</span>`
+      : '';
+
     return `
     <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
-      <div class="debt-name">${d.name} ${isZero ? '✅' : ''}${promoBadge}</div>
+      <div class="debt-name">${d.name} ${isZero ? '✅' : ''}${promoBadge}${excludedBadge}</div>
       <div class="debt-stats">
         <div class="debt-stat">
           <span class="debt-stat-label">Balance</span>
@@ -3164,7 +3247,10 @@ function renderDebtList() {
 }
 
 function renderChart() {
-  const activeDebts = debts.filter(d=>d.balance>0);
+  // v1.7.0 — payoff timeline reflects the strategy, so excluded debts
+  // (mortgages by default) are skipped.  They still appear on the Dashboard
+  // debt list and in the Total Debt number — just not in this chart.
+  const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
   document.getElementById('chart-card').style.display = activeDebts.length ? 'block' : 'none';
   if (!activeDebts.length) return;
 
@@ -3249,7 +3335,8 @@ function renderPaymentLog() {
 }
 
 function renderStrategy() {
-  const activeDebts = debts.filter(d=>d.balance>0);
+  // v1.7.0 — strategy tab only considers debts in the payoff plan
+  const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
 
   // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
@@ -3316,12 +3403,33 @@ function renderStrategy() {
   (stratResult.perDebt || []).forEach(function(p) { perDebtMap[p.id] = p; });
   const overallMonths = stratResult.months || 1;
 
+  // v1.7.0 — also run a no-extras sim so installment loans can show
+  // their natural scheduled payoff date alongside the with-extras date.
+  const schedResult = simulate(sorted.map(function(d){ return {...d}; }), 0, 0, strategy, []);
+  const schedPerDebt = {};
+  (schedResult.perDebt || []).forEach(function(p) { schedPerDebt[p.id] = p; });
+  const schedMonths = schedResult.months || 1;
+
   tbody.innerHTML = sorted.map((d, i) => {
     const pd = perDebtMap[d.id];
     const payoffMonth = (pd && pd.paidOffMonth) ? pd.paidOffMonth : overallMonths;
     const date = new Date();
     date.setMonth(date.getMonth() + payoffMonth);
     const debtInterest = pd ? pd.interestPaid : 0;
+
+    // Scheduled (no-extras) payoff — shown for installment loans only, and
+    // only when it differs materially from the with-extras date.
+    var schedCell = '';
+    if (d.loanType === 'installment') {
+      const spd = schedPerDebt[d.id];
+      const schedMonth = (spd && spd.paidOffMonth) ? spd.paidOffMonth : schedMonths;
+      if (schedMonth > payoffMonth + 1) {
+        const sDate = new Date();
+        sDate.setMonth(sDate.getMonth() + schedMonth);
+        schedCell = '<div style="font-size:0.65rem;color:var(--text-dim);margin-top:2px;">scheduled: ' +
+          sDate.toLocaleDateString('en-US',{month:'short',year:'numeric'}) + '</div>';
+      }
+    }
 
     return `<tr>
       <td><span class="order-num">${i+1}</span></td>
@@ -3331,7 +3439,7 @@ function renderStrategy() {
       </td>
       <td>${fmtDec(d.balance)}</td>
       <td style="color:${d.apr > 20 ? 'var(--accent3)' : d.apr > 10 ? 'var(--accent4)' : 'var(--text-muted)'}">${d.apr}%</td>
-      <td>${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}</td>
+      <td>${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}${schedCell}</td>
       <td style="color:var(--accent3)">${fmt(debtInterest)}</td>
     </tr>`;
   }).join('');
@@ -3520,6 +3628,53 @@ function importData(event) {
 // promoEnd, hasPromo, transferFee, type), clamps numerics to legal ranges,
 // and clears promo fields when hasPromo is false/undefined so downstream
 // strategy/simulate code can trust the shape.
+// v1.7.0 — installment-loan helpers.  The inference rules below match
+// sanitizeDebts() so UI defaults stay in sync with what load()/importData()
+// backfill for missing fields.
+function inferLoanType(type) {
+  return (type === 'cc' || type === 'other') ? 'revolving' : 'installment';
+}
+function shouldIncludeInStrategy(type) {
+  return type !== 'mortgage';
+}
+function onDebtTypeChange(mode) {
+  var prefix = (mode === 'edit') ? 'edit' : 'debt';
+  var typeEl = document.getElementById(prefix + '-type');
+  if (!typeEl) return;
+  var type = typeEl.value;
+  var loanType = inferLoanType(type);
+  var isInstallment = loanType === 'installment';
+  // Show/hide the installment block
+  var fieldsId = (mode === 'edit') ? 'edit-installment-fields' : 'installment-fields';
+  var fields = document.getElementById(fieldsId);
+  if (fields) fields.style.display = isInstallment ? 'block' : 'none';
+  // Auto-configure include-in-strategy checkbox based on type
+  var includeId = (mode === 'edit') ? 'edit-include-strategy' : 'debt-include-strategy';
+  var includeEl = document.getElementById(includeId);
+  if (includeEl) includeEl.checked = shouldIncludeInStrategy(type);
+  // Hint text
+  var hintId = (mode === 'edit') ? 'edit-include-hint' : 'debt-include-hint';
+  var hint = document.getElementById(hintId);
+  if (hint) {
+    hint.textContent = type === 'mortgage'
+      ? 'Mortgages are excluded by default — check to include'
+      : (isInstallment ? 'Fixed-term loan — scheduled payment' : '');
+  }
+  // Relabel the min-payment field for installment loans
+  var minLabel = document.querySelector('label[for="' + prefix + '-min"]');
+  if (!minLabel) {
+    // Label may not use "for" attribute — find by parent + text
+    var minEl = document.getElementById(prefix + '-min');
+    if (minEl && minEl.parentElement) {
+      var candidate = minEl.parentElement.querySelector('label');
+      if (candidate) minLabel = candidate;
+    }
+  }
+  if (minLabel) {
+    minLabel.textContent = isInstallment ? 'Scheduled Payment ($)' : 'Min Payment ($)';
+  }
+}
+
 function sanitizeDebts(parsed) {
   if (!Array.isArray(parsed)) return [];
   return parsed.map(function(debt) {
@@ -3535,6 +3690,25 @@ function sanitizeDebts(parsed) {
     var promoEnd = debt.promoEnd || null;
     if (!hasPromo) { promoApr = null; postPromoApr = null; promoEnd = null; }
     var type = debt.type || 'other';
+
+    // v1.7.0 — installment loan fields.
+    //   loanType: 'revolving' (credit card) vs 'installment' (auto, student,
+    //     personal, mortgage).  Auto-derived from `type` when missing.
+    //   includeInStrategy: whether this debt participates in the payoff
+    //     strategy ordering.  Defaults true for everything except mortgages,
+    //     which default false (Dave Ramsey's Baby Step 6 model).
+    //   origPrincipal / termMonths / originationDate: optional amortization
+    //     inputs for display only (not used in the simulator yet).
+    var loanType = (debt.loanType === 'revolving' || debt.loanType === 'installment')
+      ? debt.loanType
+      : (type === 'cc' || type === 'other' ? 'revolving' : 'installment');
+    var includeInStrategy = (typeof debt.includeInStrategy === 'boolean')
+      ? debt.includeInStrategy
+      : (type !== 'mortgage');
+    var origPrincipal = (!isNaN(debt.origPrincipal) && debt.origPrincipal > 0) ? debt.origPrincipal : null;
+    var termMonths    = (!isNaN(debt.termMonths) && debt.termMonths > 0 && debt.termMonths <= 600) ? Math.round(debt.termMonths) : null;
+    var originationDate = debt.originationDate || null;
+
     return Object.assign({}, debt, {
       balance: bal,
       originalBalance: origBal,
@@ -3546,7 +3720,12 @@ function sanitizeDebts(parsed) {
       promoEnd: promoEnd,
       hasPromo: hasPromo,
       transferFee: transferFee,
-      type: type
+      type: type,
+      loanType: loanType,
+      includeInStrategy: includeInStrategy,
+      origPrincipal: origPrincipal,
+      termMonths: termMonths,
+      originationDate: originationDate
     });
   });
 }
@@ -3915,7 +4094,7 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
       </div>
       <div class="form-field" style="grid-column:1/-1">
         <label>Type</label>
-        <select id="edit-type">
+        <select id="edit-type" onchange="onDebtTypeChange('edit')">
           <option value="cc">Credit Card</option>
           <option value="student">Student Loan</option>
           <option value="auto">Auto Loan</option>
@@ -3976,6 +4155,34 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
       <div style="margin-top:10px;font-size:0.75rem;color:var(--text-muted);line-height:1.5;">
         The transfer fee will be added to your balance. After the promo end date, the post-promo APR kicks in automatically in all calculations.
       </div>
+    </div>
+
+    <!-- v1.7.0 — installment-loan controls in edit modal -->
+    <div id="edit-installment-fields" style="display:none; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:10px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
+        <input type="checkbox" id="edit-include-strategy" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
+        <label for="edit-include-strategy" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
+          Include in payoff strategy
+        </label>
+        <span id="edit-include-hint" style="font-size:0.7rem;color:var(--text-muted);margin-left:auto;"></span>
+      </div>
+      <details style="margin-top:10px; padding:12px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
+        <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
+        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
+          <div class="form-field">
+            <label>Original Principal ($)</label>
+            <input type="number" id="edit-orig-principal" min="0" step="1" />
+          </div>
+          <div class="form-field">
+            <label>Term (months)</label>
+            <input type="number" id="edit-term-months" min="1" max="600" step="1" />
+          </div>
+          <div class="form-field">
+            <label>Origination Date</label>
+            <input type="date" id="edit-orig-date" />
+          </div>
+        </div>
+      </details>
     </div>
 
     <div class="modal-actions">

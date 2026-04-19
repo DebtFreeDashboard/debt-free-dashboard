@@ -1,11 +1,12 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "releaseDate": "2026-04-19",
-  "releaseName": "Release D — Data Integrity",
+  "releaseName": "Release E — Installment Loans",
   "notes": [
-    "sanitizeDebts() helper shared by load() and importData() — old-format backups now backfill postPromoApr/promoApr/promoEnd/hasPromo/transferFee/type cleanly.",
-    "importData() no longer skips sanitization — imported JSON goes through the same pipeline as load().",
-    "save() surfaces storage errors (including QuotaExceededError) instead of silently dropping writes.",
-    "projectBalancesAt() rewritten for parity with simulate() — promo-APR handling, safeMinPayment, MAX_MONTHS cap. Lump-allocation preview now matches the main simulator."
+    "Installment loan support: cars, student loans, personal loans, and mortgages are now first-class debts with loanType ('revolving' vs 'installment'), origPrincipal, termMonths, and originationDate fields.",
+    "Mortgages are excluded from the payoff plan by default (Dave Ramsey Baby Step 6 model). A per-debt 'Include in payoff strategy' checkbox lets users opt in; non-mortgage installment loans are included by default.",
+    "Strategy, What-If, Chart, and lump-sum allocation now all filter by includeInStrategy so excluded mortgages skip the plan. The Dashboard debt list, Total Debt, and Wins progress remain inclusive so the mortgage is still visible and still counts toward total debt reduction.",
+    "Strategy tab shows a 'scheduled: MMM YYYY' sub-line under installment-loan payoff dates when extra payments materially accelerate payoff.",
+    "Old backups (without the new fields) import cleanly: sanitizeDebts() backfills sensible defaults based on the existing 'type' field."
   ]
 }
