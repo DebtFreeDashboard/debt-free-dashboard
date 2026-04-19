@@ -1344,6 +1344,7 @@
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
         <button id="update-btn" class="btn btn-primary" onclick="checkForUpdates()" style="flex:2;min-width:180px;">&#10231; Check for Updates</button>
+        <button class="btn btn-ghost" onclick="openWhatsNewModal()" style="flex:1;min-width:140px;">&#9733; What&#8217;s New</button>
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <button class="btn btn-ghost" onclick="exportData()" style="flex:1;min-width:140px;">&#11015; Export Backup</button>
@@ -1554,6 +1555,20 @@
     </div>
   </div>
 
+  <!-- What's New Modal (v1.7.0) -->
+  <div id="whatsnew-modal" class="modal-overlay hidden" onclick="closeWhatsNewModal(event)">
+    <div class="modal" style="max-width:560px;max-height:85vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
+        <div style="font-family:var(--font-serif);font-size:1.5rem;font-weight:900;color:var(--accent);">What’s New</div>
+        <button aria-label="Close" onclick="closeWhatsNewModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.6rem;line-height:1;cursor:pointer;padding:4px 8px;">×</button>
+      </div>
+      <div id="whatsnew-content"></div>
+      <div style="text-align:right;margin-top:18px;">
+        <button class="btn btn-primary" onclick="closeWhatsNewModal()">Got it</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Debt Free Celebration Modal -->
   <div id="debt-free-modal" class="modal-overlay hidden" onclick="closeDebtFreeModal(event)">
     <div class="modal" style="max-width:480px;text-align:center;padding:40px 32px;">
@@ -1580,6 +1595,119 @@
 //  STATE
 // ═══════════════════════════════════════════
 const APP_VERSION = '1.7.0';
+
+// v1.7.0 -- Release notes shown in the What's New modal.
+// NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
+// and any user-facing bug fixes in `fixes`. If a release is bug-fixes only,
+// leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
+// leave `fixes` empty (the modal will say "Stability and bug fixes").
+const RELEASE_NOTES = [
+  {
+    version: '1.7.0',
+    date: 'April 19, 2026',
+    name: 'Installment Loans',
+    whatsNew: [
+      'Installment loans — auto, student, personal, and mortgage — are now first-class debts with their own dedicated controls.',
+      'Mortgages are excluded from your payoff plan by default, so your timeline focuses on the debts you are actively crushing. They still show on the Dashboard and count toward Total Debt — flip the "Include in payoff strategy" checkbox on any debt to change this.',
+      'The Strategy tab shows a scheduled payoff date under installment loans when extra payments speed them up — so you can see exactly how much time your payments are saving.',
+      'Optional amortization fields on installment loans: original principal, loan term, and origination date (under the Advanced section of the Add/Edit forms).',
+      'What’s New popups like this one. You can re-open release notes anytime from the Backup & Restore section.'
+    ],
+    fixes: []
+  }
+];
+
+function semverCompare(a, b) {
+  var pa = String(a || '0').split('.').map(function(n){ return parseInt(n, 10) || 0; });
+  var pb = String(b || '0').split('.').map(function(n){ return parseInt(n, 10) || 0; });
+  for (var i = 0; i < 3; i++) {
+    var da = pa[i] || 0, db = pb[i] || 0;
+    if (da > db) return 1;
+    if (da < db) return -1;
+  }
+  return 0;
+}
+
+function renderWhatsNewEntries(entries) {
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function section(label, items) {
+    if (!items || !items.length) return '';
+    return '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin:14px 0 8px;">' + label + '</div>' +
+      '<ul style="margin:0;padding-left:20px;font-size:0.88rem;line-height:1.6;color:var(--text);">' +
+      items.map(function(x){ return '<li style="margin-bottom:6px;">' + esc(x) + '</li>'; }).join('') +
+      '</ul>';
+  }
+  return entries.map(function(e) {
+    var whatsNewBlock = section('New & Improved', e.whatsNew);
+    var fixesBlock    = section('Bug Fixes', e.fixes);
+    // If this release has nothing in either bucket, render a gentle default line
+    var fallback = (!whatsNewBlock && !fixesBlock)
+      ? '<div style="font-size:0.88rem;color:var(--text-muted);margin-top:10px;">Stability and bug fixes.</div>'
+      : '';
+    // If whatsNew is empty but fixes exist, the "Bug Fixes" heading already
+    // carries the message; no extra line needed.
+    return '<div style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:14px;">' +
+      '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">' +
+        '<span style="font-family:var(--font-serif);font-size:1.15rem;font-weight:900;color:var(--accent);">v' + esc(e.version) + '</span>' +
+        (e.name ? '<span style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);">' + esc(e.name) + '</span>' : '') +
+        '<span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-dim);margin-left:auto;">' + esc(e.date) + '</span>' +
+      '</div>' +
+      whatsNewBlock + fixesBlock + fallback +
+    '</div>';
+  }).join('');
+}
+
+function showWhatsNewModal(entries, markSeen) {
+  var content = document.getElementById('whatsnew-content');
+  var modal   = document.getElementById('whatsnew-modal');
+  if (!content || !modal || !entries || !entries.length) return;
+  content.innerHTML = renderWhatsNewEntries(entries);
+  modal.classList.remove('hidden');
+  if (markSeen) {
+    try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
+  }
+}
+
+function closeWhatsNewModal(evt) {
+  // Clicking inside the modal body: ignore (evt.target !== overlay). A direct
+  // Got-it click passes no event, so this short-circuit doesn't trigger.
+  if (evt && evt.currentTarget && evt.target !== evt.currentTarget) return;
+  var modal = document.getElementById('whatsnew-modal');
+  if (modal) modal.classList.add('hidden');
+  // Record this version as seen even if they dismissed via overlay/escape
+  try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
+}
+
+function openWhatsNewModal() {
+  // Re-open from Settings button: show the full history (newest first),
+  // without resetting lastSeenVersion.
+  var all = RELEASE_NOTES.slice().sort(function(a, b){ return semverCompare(b.version, a.version); });
+  showWhatsNewModal(all, /*markSeen*/ false);
+}
+
+function checkAndShowWhatsNew() {
+  try {
+    var lastSeen = null;
+    try { lastSeen = localStorage.getItem('debtfree_last_seen_version'); } catch(e) { lastSeen = null; }
+    // Brand-new user (no lastSeen AND no debts yet): silently seed and skip
+    // the popup so the very first launch isn't cluttered with release notes.
+    var hasDebts = Array.isArray(debts) && debts.length > 0;
+    if (!lastSeen && !hasDebts) {
+      try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
+      return;
+    }
+    var baseline = lastSeen || '0.0.0';
+    var unseen = RELEASE_NOTES.filter(function(e){
+      return semverCompare(e.version, baseline) > 0;
+    });
+    if (!unseen.length) return;
+    unseen.sort(function(a, b){ return semverCompare(b.version, a.version); });
+    showWhatsNewModal(unseen, /*markSeen*/ true);
+  } catch(e) {
+    // Never let release notes crash the app
+  }
+}
+
 let debts = [];
 let editingPaymentId = null;
 let lumpSums = []; // Planned future lump sum payments
@@ -4025,9 +4153,13 @@ document.addEventListener('keydown', e => {
     document.getElementById('edit-modal').classList.add('hidden');
     const dfModal = document.getElementById('debt-free-modal');
     if (dfModal) dfModal.classList.add('hidden');
+    const wnModal = document.getElementById('whatsnew-modal');
+    if (wnModal) wnModal.classList.add('hidden');
   }
 });
 render();
+// v1.7.0 -- Show release notes if this is a new version for this user
+checkAndShowWhatsNew();
 </script>
 <script>
 // ── SERVICE WORKER REGISTRATION ──
