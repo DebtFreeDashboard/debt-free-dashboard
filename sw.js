@@ -2,7 +2,7 @@
 // v1.7.0 (Release E — Installment Loans)
 // Bump CACHE_NAME when you want installed PWA clients to re-fetch cached assets.
 
-const CACHE_NAME = 'debtfree-v9';
+const CACHE_NAME = 'debtfree-v10';
 const CORE_ASSETS = [
   './',
   './dashboard.html',
