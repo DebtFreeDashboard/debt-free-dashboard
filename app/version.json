@@ -1,13 +1,9 @@
 {
-  "version": "1.7.0",
+  "version": "1.7.1",
   "releaseDate": "2026-04-19",
-  "releaseName": "Release E — Installment Loans",
+  "releaseName": "Release Notes",
   "notes": [
-    "Installment loan support: cars, student loans, personal loans, and mortgages are now first-class debts with loanType ('revolving' vs 'installment'), origPrincipal, termMonths, and originationDate fields.",
-    "Mortgages are excluded from the payoff plan by default (Dave Ramsey Baby Step 6 model). A per-debt 'Include in payoff strategy' checkbox lets users opt in; non-mortgage installment loans are included by default.",
-    "Strategy, What-If, Chart, and lump-sum allocation now all filter by includeInStrategy so excluded mortgages skip the plan. The Dashboard debt list, Total Debt, and Wins progress remain inclusive so the mortgage is still visible and still counts toward total debt reduction.",
-    "Strategy tab shows a 'scheduled: MMM YYYY' sub-line under installment-loan payoff dates when extra payments materially accelerate payoff.",
-    "Old backups (without the new fields) import cleanly: sanitizeDebts() backfills sensible defaults based on the existing 'type' field.",
-    "What's New popups: release notes appear automatically when you upgrade to a new version, with a re-open button in the Backup & Restore section so you can revisit anytime. Brand-new users don't see the popup until their next upgrade."
+    "What's New popups: release notes now appear automatically when you upgrade to a new version, so you can see what changed without digging for a changelog.",
+    "A ★ What's New button in the Backup & Restore section lets you re-open release notes anytime, including past versions."
   ]
 }

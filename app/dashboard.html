@@ -1555,7 +1555,7 @@
     </div>
   </div>
 
-  <!-- What's New Modal (v1.7.0) -->
+  <!-- What's New Modal (v1.7.1) -->
   <div id="whatsnew-modal" class="modal-overlay hidden" onclick="closeWhatsNewModal(event)">
     <div class="modal" style="max-width:560px;max-height:85vh;overflow-y:auto;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
@@ -1594,14 +1594,24 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.7.1';
 
-// v1.7.0 -- Release notes shown in the What's New modal.
+// v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
 // and any user-facing bug fixes in `fixes`. If a release is bug-fixes only,
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.7.1',
+    date: 'April 19, 2026',
+    name: 'Release Notes',
+    whatsNew: [
+      'What’s New popups: release notes now appear automatically when you upgrade to a new version, so you can see what changed without digging for a changelog.',
+      'A ★ What’s New button in the Backup & Restore section lets you re-open release notes anytime, including past versions.'
+    ],
+    fixes: []
+  },
   {
     version: '1.7.0',
     date: 'April 19, 2026',
@@ -1610,8 +1620,7 @@ const RELEASE_NOTES = [
       'Installment loans — auto, student, personal, and mortgage — are now first-class debts with their own dedicated controls.',
       'Mortgages are excluded from your payoff plan by default, so your timeline focuses on the debts you are actively crushing. They still show on the Dashboard and count toward Total Debt — flip the "Include in payoff strategy" checkbox on any debt to change this.',
       'The Strategy tab shows a scheduled payoff date under installment loans when extra payments speed them up — so you can see exactly how much time your payments are saving.',
-      'Optional amortization fields on installment loans: original principal, loan term, and origination date (under the Advanced section of the Add/Edit forms).',
-      'What’s New popups like this one. You can re-open release notes anytime from the Backup & Restore section.'
+      'Optional amortization fields on installment loans: original principal, loan term, and origination date (under the Advanced section of the Add/Edit forms).'
     ],
     fixes: []
   }
@@ -1640,12 +1649,9 @@ function renderWhatsNewEntries(entries) {
   return entries.map(function(e) {
     var whatsNewBlock = section('New & Improved', e.whatsNew);
     var fixesBlock    = section('Bug Fixes', e.fixes);
-    // If this release has nothing in either bucket, render a gentle default line
     var fallback = (!whatsNewBlock && !fixesBlock)
       ? '<div style="font-size:0.88rem;color:var(--text-muted);margin-top:10px;">Stability and bug fixes.</div>'
       : '';
-    // If whatsNew is empty but fixes exist, the "Bug Fixes" heading already
-    // carries the message; no extra line needed.
     return '<div style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:14px;">' +
       '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">' +
         '<span style="font-family:var(--font-serif);font-size:1.15rem;font-weight:900;color:var(--accent);">v' + esc(e.version) + '</span>' +
@@ -1669,18 +1675,13 @@ function showWhatsNewModal(entries, markSeen) {
 }
 
 function closeWhatsNewModal(evt) {
-  // Clicking inside the modal body: ignore (evt.target !== overlay). A direct
-  // Got-it click passes no event, so this short-circuit doesn't trigger.
   if (evt && evt.currentTarget && evt.target !== evt.currentTarget) return;
   var modal = document.getElementById('whatsnew-modal');
   if (modal) modal.classList.add('hidden');
-  // Record this version as seen even if they dismissed via overlay/escape
   try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
 }
 
 function openWhatsNewModal() {
-  // Re-open from Settings button: show the full history (newest first),
-  // without resetting lastSeenVersion.
   var all = RELEASE_NOTES.slice().sort(function(a, b){ return semverCompare(b.version, a.version); });
   showWhatsNewModal(all, /*markSeen*/ false);
 }
@@ -1689,8 +1690,6 @@ function checkAndShowWhatsNew() {
   try {
     var lastSeen = null;
     try { lastSeen = localStorage.getItem('debtfree_last_seen_version'); } catch(e) { lastSeen = null; }
-    // Brand-new user (no lastSeen AND no debts yet): silently seed and skip
-    // the popup so the very first launch isn't cluttered with release notes.
     var hasDebts = Array.isArray(debts) && debts.length > 0;
     if (!lastSeen && !hasDebts) {
       try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
@@ -1704,7 +1703,7 @@ function checkAndShowWhatsNew() {
     unseen.sort(function(a, b){ return semverCompare(b.version, a.version); });
     showWhatsNewModal(unseen, /*markSeen*/ true);
   } catch(e) {
-    // Never let release notes crash the app
+    // never let release notes crash the app
   }
 }
 
@@ -4158,7 +4157,7 @@ document.addEventListener('keydown', e => {
   }
 });
 render();
-// v1.7.0 -- Show release notes if this is a new version for this user
+// v1.7.1 -- show release notes if this is a new version for this user
 checkAndShowWhatsNew();
 </script>
 <script>
