@@ -48,6 +48,77 @@
     z-index: 9999;
   }
 
+  /* ─── LAUNCH STRIP (v1.7 announcement) ─── */
+  .launch-strip {
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold2) 100%);
+    color: var(--ink);
+    text-align: center;
+    padding: 10px 20px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid rgba(14,14,14,0.15);
+    position: relative;
+    z-index: 101;
+  }
+  .launch-strip a {
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .launch-strip a:hover { text-decoration: underline; }
+  .launch-strip .strip-tag {
+    background: var(--ink);
+    color: var(--gold);
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    margin-right: 10px;
+  }
+  @media(max-width:600px) {
+    .launch-strip { font-size: 0.7rem; padding: 8px 12px; }
+    .launch-strip .strip-tag { font-size: 0.58rem; padding: 2px 6px; margin-right: 6px; }
+  }
+
+  /* ─── FEATURE NEW BADGE ─── */
+  .feature-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .feature-badge-new {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    background: var(--gold);
+    color: var(--ink);
+    padding: 3px 7px;
+    border-radius: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  /* ─── HERO REASSURANCE MICRO-LINE ─── */
+  .hero-reassure {
+    margin-top: 14px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    animation: fadeIn 0.6s ease 0.35s both;
+  }
+  .hero-reassure span::before {
+    content: '✓ ';
+    color: var(--green);
+    font-weight: 700;
+  }
+
   /* ─── NAV ─── */
   nav {
     display: flex;
@@ -596,14 +667,6 @@
     margin-bottom: 12px;
   }
 
-  /* ─── WHAT'S INCLUDED ─── */
-  .included-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 40px;
-  }
-
   .included-item {
     display: flex;
     align-items: flex-start;
@@ -955,6 +1018,12 @@
 </head>
 <body>
 
+<!-- LAUNCH STRIP (v1.7) -->
+<div class="launch-strip">
+  <span class="strip-tag">Just Launched</span>
+  v1.7 now handles <strong>auto loans, student loans &amp; mortgages</strong> — not just credit cards. <a href="#features">See what’s new →</a>
+</div>
+
 <!-- NAV -->
 <nav>
   <img src="assets/logo/debtfree-logo-primary-dark.svg" 
@@ -969,13 +1038,18 @@
 <!-- HERO -->
 <section class="hero">
   <div style="max-width:1100px; margin:0 auto; width:100%">
-    <div class="hero-kicker">Debt Elimination Tool · Interactive Dashboard</div>
-    <h1 class="hero-headline">Stop Guessing.<br>Start <em>Destroying</em><br>Your Debt.</h1>
-    <p class="hero-sub">See your exact debt-free date in 60 seconds. One-time $29 - no subscription ever. Tax Day Sale pricing — ends Sunday April 19th.</p>
+    <div class="hero-kicker">v1.7 · Now with installment loan support</div>
+    <h1 class="hero-headline">See your real<br>debt-free date.<br><em>Then reach it.</em></h1>
+    <p class="hero-sub">Credit cards, auto loans, student loans, even your mortgage — one payoff plan. Crystal-clear math in 60 seconds. <strong style="color:var(--ink)">$29 one-time.</strong> No subscription, ever.</p>
     <div class="hero-actions">
       <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-primary-lg">
         Get Instant Access — $29 <span class="arrow">→</span>
       </a>
+    </div>
+    <div class="hero-reassure">
+      <span>Instant download</span>
+      <span>Works offline</span>
+      <span>30-day money-back guarantee</span>
     </div>
     <div class="hero-stats">
       <div class="hero-stat-item">
@@ -993,35 +1067,6 @@
       <div class="hero-stat-item">
         <span class="hero-stat-num">100%</span>
         <span class="hero-stat-label">private — data stays on your device</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- PAIN -->
-<section class="pain-section">
-  <div style="max-width:1100px; margin:0 auto">
-    <div class="section-label" style="color:rgba(201,168,76,0.9)">
-      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
-      Sound familiar?
-    </div>
-    <h2 class="section-title" style="color:var(--cream)">You earn good money.<br><em style="color:var(--gold)">So why is the debt still there?</em></h2>
-    <div class="pain-grid">
-      <div class="pain-item">
-        <div class="pain-num">01</div>
-        <div class="pain-text">You make more than enough — but the balances barely <em>move</em> month to month.</div>
-      </div>
-      <div class="pain-item">
-        <div class="pain-num">02</div>
-        <div class="pain-text">You've paid thousands in minimum payments with nothing to show for it except <em>more interest.</em></div>
-      </div>
-      <div class="pain-item">
-        <div class="pain-num">03</div>
-        <div class="pain-text">You don't even know your <em>real payoff date</em> — and you're afraid to find out.</div>
-      </div>
-      <div class="pain-item">
-        <div class="pain-num">04</div>
-        <div class="pain-text">Every debt tool either wants a monthly fee or <em>sells your data</em> to lenders.</div>
       </div>
     </div>
   </div>
@@ -1076,12 +1121,46 @@
   </div>
 </section>
 
+<!-- PAIN -->
+<section class="pain-section">
+  <div style="max-width:1100px; margin:0 auto">
+    <div class="section-label" style="color:rgba(201,168,76,0.9)">
+      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+      Sound familiar?
+    </div>
+    <h2 class="section-title" style="color:var(--cream)">You earn good money.<br><em style="color:var(--gold)">So why is the debt still there?</em></h2>
+    <div class="pain-grid">
+      <div class="pain-item">
+        <div class="pain-num">01</div>
+        <div class="pain-text">You make more than enough — but the balances barely <em>move</em> month to month.</div>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">02</div>
+        <div class="pain-text">You've paid thousands in minimum payments with nothing to show for it except <em>more interest.</em></div>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">03</div>
+        <div class="pain-text">You don't even know your <em>real payoff date</em> — and you're afraid to find out.</div>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">04</div>
+        <div class="pain-text">Every debt tool either wants a monthly fee or <em>sells your data</em> to lenders.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FEATURES -->
-<section class="section" style="background:var(--cream2)">
+<section class="section" id="features" style="background:var(--cream2)">
   <div class="section-inner">
     <div class="section-label">Everything included</div>
     <h2 class="section-title">Built for people who are<br>serious about getting out.</h2>
     <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🏦</span>
+        <div class="feature-name">Installment Loans <span class="feature-badge-new">New</span></div>
+        <div class="feature-desc">Auto, student, personal, and mortgage loans are first-class debts — alongside your credit cards. Mortgages stay out of your payoff plan by default so the timeline focuses on what you’re actively crushing. Flip a checkbox to change it.</div>
+      </div>
       <div class="feature-card">
         <span class="feature-icon">🏔️</span>
         <div class="feature-name">3 Payoff Strategies</div>
@@ -1133,15 +1212,11 @@
 
 <!-- THE MATH -->
 <section class="math-section">
-  <div class="section-inner">
+  <div class="section-inner" style="max-width:640px">
     <div class="section-label">The math doesn't lie</div>
-    <h2 class="section-title">Here's what $29 could<br>actually be worth to you.</h2>
-    <div class="math-grid">
-      <div>
-        <p class="section-body">The average American with credit card debt pays over $1,000 per year in interest alone. Knowing the right strategy — and sticking to it — can save you years of payments and thousands of dollars.<br><br>This dashboard makes that strategy crystal clear.</p>
-        <br>
-        <p class="section-body" style="font-family:var(--font-serif); font-style:italic; font-size:1.1rem; color:var(--ink)">The $29 you spend today could save you $4,000+ in interest over the next two years.</p>
-      </div>
+    <h2 class="section-title" style="text-align:center">What $29 is actually<br>worth to you.</h2>
+    <p class="section-body" style="text-align:center; margin:20px auto 40px; max-width:540px">Knowing the right strategy — and sticking to it — saves years of payments and thousands in interest. Here's what it looks like on $24,000 of debt:</p>
+    <div class="math-grid" style="grid-template-columns:1fr">
       <div class="math-scenario">
         <h3>Example: $24,000 in debt at 22% APR</h3>
         <div class="math-row">
@@ -1192,52 +1267,6 @@
         <div class="proof-stars">★★★★★</div>
         <p class="proof-quote">No login, no subscription, no selling my data. Just a beautiful tool that keeps me accountable. I open it every payday.</p>
         <div class="proof-author">— Alicia K., Operations Lead</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- WHAT'S INCLUDED -->
-<section class="section" style="background:var(--cream2); padding-top:0">
-  <div class="section-inner">
-    <div class="section-label">Everything you get</div>
-    <h2 class="section-title">One file. Total control.</h2>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:40px">
-      <div class="included-list">
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>Interactive Dashboard (HTML file)</strong><span>Works on any device — phone, tablet, laptop. No app install needed.</span></div>
-        </div>
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>All 3 Payoff Strategies + Drag-to-Reorder</strong><span>Avalanche, Snowball & Hybrid with live comparison. Hybrid lets you set your own order.</span></div>
-        </div>
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>Promotional APR Tracking</strong><span>0% balance transfer support with auto rate-switching when your promo expires.</span></div>
-        </div>
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>Full Debt Editing</strong><span>Edit every field on every debt at any time — including all promo fields.</span></div>
-        </div>
-      </div>
-      <div class="included-list">
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>Payment Logger with Undo</strong><span>Log payments, delete any entry out of order — balance recalculates from scratch every time.</span></div>
-        </div>
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>What If Modeler + Windfall Planner</strong><span>Model additional payments on top of your plan. Apply and undo windfalls instantly.</span></div>
-        </div>
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>9 Milestone Badges</strong><span>Unlock automatically as you crush your debt — from first payment to debt eliminated.</span></div>
-        </div>
-        <div class="included-item">
-          <div class="included-check">✓</div>
-          <div class="included-text"><strong>100% Private — Data Stays Local</strong><span>No account, no server, no cloud. Your numbers never leave your device.</span></div>
-        </div>
       </div>
     </div>
   </div>
