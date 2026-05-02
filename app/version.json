@@ -1,9 +1,9 @@
 {
-  "version": "1.8.0",
+  "version": "1.9.0",
   "releaseDate": "2026-05-02",
-  "releaseName": "Smart Avalanche",
+  "releaseName": "Why this card?",
   "notes": [
-    "Avalanche strategy now considers your scheduled lump sums when ranking debts. Cards already on track to be paid off before their promo expires drop to the bottom; cards bleeding interest right now rise to the top.",
-    "Behavior is unchanged if you have no scheduled lump sums or no promo cards \u2014 classic avalanche still works the way it always did."
+    "The Strategy tab now shows a one-line explanation under each debt name telling you why it ranks where it does \u2014 so the order isn't a black box.",
+    "Reasons adapt to the strategy you've picked: Avalanche shows the projected interest impact, Snowball calls out small-balance quick wins, and Hybrid acknowledges your custom order."
   ]
 }

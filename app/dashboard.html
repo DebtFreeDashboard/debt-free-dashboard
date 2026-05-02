@@ -1594,7 +1594,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.9.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1602,6 +1602,16 @@ const APP_VERSION = '1.8.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.9.0',
+    date: 'May 2, 2026',
+    name: 'Why this card?',
+    whatsNew: [
+      'The Strategy tab now shows a one-line explanation under each debt name telling you why it ranks where it does. Things like "Bleeding ~$115/mo at 15.49% APR" or "Lump sum clears this before promo ends Mar 2027" \u2014 so the order isn\u2019t a black box.',
+      'Reasons adapt to the strategy you\u2019ve picked: Avalanche shows the projected interest impact, Snowball calls out the small-balance quick wins, and Hybrid acknowledges your custom order.'
+    ],
+    fixes: []
+  },
   {
     version: '1.8.0',
     date: 'May 2, 2026',
@@ -3624,6 +3634,71 @@ function renderPaymentLog() {
   }).join('');
 }
 
+// v1.9.0 — explainStrategyRank
+// Returns a short human-readable string explaining why a debt is at its rank
+// under the current strategy. Used by renderStrategy to render timeline rows.
+function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, totalDebts) {
+  const today = simStartDate || new Date();
+
+  if (strategy === 'snowball') {
+    if (rank === 1) return 'Smallest balance \u2014 quick win first';
+    if (rank === totalDebts) return 'Largest balance \u2014 final boss';
+    return 'Next smallest after the one above';
+  }
+
+  if (strategy === 'hybrid') {
+    return 'Custom order \u2014 position ' + rank;
+  }
+
+  // Avalanche — base reasoning on passive interest cost over the horizon
+  const allActive = debts.filter(function(x){ return x.balance > 0 && x.includeInStrategy !== false; });
+  const horizon = estimatePassiveHorizon(allActive, today);
+  const cost = computePassiveInterestCost(d, horizon, plannedLumps, today);
+
+  // Tagged lump sums for this debt
+  const myLumps = (plannedLumps || []).filter(function(l){ return l.debtId === d.id; });
+  const totalLumpAmt = myLumps.reduce(function(a, l){ return a + l.amount; }, 0);
+
+  // Format helpers
+  function shortDate(dateStr) {
+    if (!dateStr) return '';
+    const dt = new Date(dateStr);
+    return dt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  }
+  function nearestLumpDate() {
+    if (!myLumps.length) return '';
+    const sorted = myLumps.slice().sort(function(a, b){ return a.date < b.date ? -1 : 1; });
+    return shortDate(sorted[0].date);
+  }
+
+  // Non-promo cards
+  if (!d.hasPromo || !d.promoEnd) {
+    if (cost > 0.01) {
+      const apr = d.apr || 0;
+      const monthlyInt = d.balance * apr / 100 / 12;
+      return 'Bleeding ~$' + Math.round(monthlyInt) + '/mo at ' + apr.toFixed(2) + '% APR';
+    }
+    return (d.apr || 0).toFixed(2) + '% APR \u2014 cleared by minimums in horizon';
+  }
+
+  // Promo cards — branch on lump coverage and projected cost
+  const promoEndStr = shortDate(d.promoEnd);
+  const postApr = (d.postPromoApr || d.realApr || 0).toFixed(2);
+
+  if (cost <= 0.01) {
+    if (totalLumpAmt > 0) {
+      return 'Lump sum on ' + nearestLumpDate() + ' clears this before promo ends';
+    }
+    return '0% promo through ' + promoEndStr + ' \u2014 no projected interest yet';
+  }
+
+  // Has projected cost despite being a promo card — lumps don't fully cover
+  if (totalLumpAmt > 0) {
+    return '~$' + Math.round(cost) + ' projected interest after promo ends ' + promoEndStr;
+  }
+  return '0% until ' + promoEndStr + ', then ' + postApr + '% \u2014 pay before then';
+}
+
 function renderStrategy() {
   // v1.7.0 — strategy tab only considers debts in the payoff plan
   const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
@@ -3700,12 +3775,20 @@ function renderStrategy() {
   (schedResult.perDebt || []).forEach(function(p) { schedPerDebt[p.id] = p; });
   const schedMonths = schedResult.months || 1;
 
+  // v1.9.0 — pre-compute rank explanations once per render
+  const _now = new Date();
+  const _lumps = plannedDisbursements();
+  const _reasons = sorted.map(function(d, i) {
+    return explainStrategyRank(d, strategy, _lumps, _now, i + 1, sorted.length);
+  });
+
   tbody.innerHTML = sorted.map((d, i) => {
     const pd = perDebtMap[d.id];
     const payoffMonth = (pd && pd.paidOffMonth) ? pd.paidOffMonth : overallMonths;
     const date = new Date();
     date.setMonth(date.getMonth() + payoffMonth);
     const debtInterest = pd ? pd.interestPaid : 0;
+    const reason = _reasons[i];
 
     // Scheduled (no-extras) payoff — shown for installment loans only, and
     // only when it differs materially from the with-extras date.
@@ -3721,11 +3804,19 @@ function renderStrategy() {
       }
     }
 
+    // v1.9.0 — rank-reason subtitle under debt name
+    var reasonCell = reason
+      ? '<div style="font-size:0.7rem;color:var(--text-dim);margin-top:6px;font-family:var(--font-mono);line-height:1.3">' +
+        reason.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
+        '</div>'
+      : '';
+
     return `<tr>
       <td><span class="order-num">${i+1}</span></td>
       <td>
         <div style="font-weight:600">${d.name}</div>
         <span class="debt-type-badge ${badgeClass(d.type)}" style="margin-top:3px;display:inline-block">${badgeLabel(d.type)}</span>
+        ${reasonCell}
       </td>
       <td>${fmtDec(d.balance)}</td>
       <td style="color:${d.apr > 20 ? 'var(--accent3)' : d.apr > 10 ? 'var(--accent4)' : 'var(--text-muted)'}">${d.apr}%</td>
