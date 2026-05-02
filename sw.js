@@ -1,8 +1,8 @@
 // DebtFree Dashboard — Service Worker
-// v1.9.1 (Strategy table cleanup)
+// v1.10.0 (Smart Lump Sum Redistribution)
 // Bump CACHE_NAME when you want installed PWA clients to re-fetch cached assets.
 
-const CACHE_NAME = 'debtfree-v18';
+const CACHE_NAME = 'debtfree-v19';
 const CORE_ASSETS = [
   './',
   './dashboard.html',
