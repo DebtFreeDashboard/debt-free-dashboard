@@ -1415,6 +1415,18 @@
       </div>
     </div>
 
+    <!-- v1.10.0 — Lump redistribution banner -->
+    <div id="lump-redist-banner" class="alert warning" style="display:none; margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:10px">
+      <div style="display:flex; align-items:flex-start; gap:8px;">
+        <span>⚠️</span>
+        <span id="lump-redist-text"></span>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-self:stretch; justify-content:flex-end;">
+        <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
+        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-redist-action" onclick="applyRedistribution()">Re-distribute</button>
+      </div>
+    </div>
+
     <!-- Payoff order -->
     <div class="card">
       <div class="card-title"><div class="dot"></div> Payoff Order &amp; Timeline</div>
@@ -1594,7 +1606,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.9.1';
+const APP_VERSION = '1.10.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1602,6 +1614,16 @@ const APP_VERSION = '1.9.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.10.0',
+    date: 'May 2, 2026',
+    name: 'Smart Lump Sum Redistribution',
+    whatsNew: [
+      'When your auto-distributed lump sums fall out of sync with your current strategy or debts, the Strategy tab now shows a banner with a one-click button to redistribute the same totals across your current setup. Manual lumps are never touched.',
+      'Useful any time you switch strategies, add or remove a debt, or pay one off ahead of schedule \u2014 the lump amounts that were auto-calculated based on the old picture will catch up to the new one.'
+    ],
+    fixes: []
+  },
   {
     version: '1.9.1',
     date: 'May 2, 2026',
@@ -3644,6 +3666,125 @@ function renderPaymentLog() {
   }).join('');
 }
 
+// v1.10.0 — Lump sum redistribution helpers
+//
+// lumpsNeedRedistribution: returns array of { groupId, date, total,
+// currentAllocs, newAllocs, deltaSum } for auto-mode lump groups whose
+// per-debt allocations would differ from what calculateLumpAllocation()
+// would produce now under the current strategy + debt set. Returns []
+// in hybrid mode (auto-allocator doesn't apply there) and when there are
+// no auto groups.
+function lumpsNeedRedistribution() {
+  if (strategy !== 'avalanche' && strategy !== 'snowball') return [];
+  // Group auto-mode lumps by groupId
+  const autoGroups = {};
+  lumpSums.forEach(function(l) {
+    if (l.mode !== 'auto' || !l.groupId) return;
+    if (!autoGroups[l.groupId]) autoGroups[l.groupId] = { date: l.date, items: [] };
+    autoGroups[l.groupId].items.push(l);
+  });
+  const stale = [];
+  Object.keys(autoGroups).forEach(function(gid) {
+    const g = autoGroups[gid];
+    const total = g.items.reduce(function(a, l) { return a + l.amount; }, 0);
+    const result = calculateLumpAllocation(total, g.date);
+    if (!result || !result.allocations || !result.allocations.length) return;
+    const currentMap = {};
+    g.items.forEach(function(l) { currentMap[l.debtId] = l.amount; });
+    const newMap = {};
+    result.allocations.forEach(function(a) { newMap[a.debtId] = a.amount; });
+    const allIds = {};
+    Object.keys(currentMap).forEach(function(k){ allIds[k] = true; });
+    Object.keys(newMap).forEach(function(k){ allIds[k] = true; });
+    let deltaSum = 0;
+    let differs = false;
+    Object.keys(allIds).forEach(function(id) {
+      const diff = Math.abs((currentMap[id] || 0) - (newMap[id] || 0));
+      deltaSum += diff;
+      if (diff > 1) differs = true;
+    });
+    if (differs) {
+      stale.push({
+        groupId: gid,
+        date: g.date,
+        total: total,
+        currentAllocs: g.items.slice(),
+        newAllocs: result.allocations.slice(),
+        deltaSum: deltaSum
+      });
+    }
+  });
+  // Sort by date ascending so banner messaging is chronological
+  stale.sort(function(a, b) { return a.date < b.date ? -1 : 1; });
+  return stale;
+}
+
+// redistributeAutoLumps: iteratively apply current-strategy allocations to
+// each stale auto group, oldest date first so later groups\u2019 calculations
+// account for earlier groups\u2019 redistributed amounts.
+function redistributeAutoLumps() {
+  if (strategy !== 'avalanche' && strategy !== 'snowball') return false;
+  // Snapshot current auto groups by groupId, sorted by date asc
+  const autoGroups = {};
+  lumpSums.forEach(function(l) {
+    if (l.mode !== 'auto' || !l.groupId) return;
+    if (!autoGroups[l.groupId]) autoGroups[l.groupId] = { date: l.date, items: [] };
+    autoGroups[l.groupId].items.push(l);
+  });
+  const groupIds = Object.keys(autoGroups).sort(function(a, b) {
+    return autoGroups[a].date < autoGroups[b].date ? -1 : 1;
+  });
+  let changed = false;
+  groupIds.forEach(function(gid) {
+    const g = autoGroups[gid];
+    const total = g.items.reduce(function(a, l) { return a + l.amount; }, 0);
+    const result = calculateLumpAllocation(total, g.date);
+    if (!result || !result.allocations || !result.allocations.length) return;
+    // Skip if identical (no-op)
+    const currentMap = {};
+    g.items.forEach(function(l) { currentMap[l.debtId] = l.amount; });
+    const newMap = {};
+    result.allocations.forEach(function(a) { newMap[a.debtId] = a.amount; });
+    let differs = false;
+    const allIds = {};
+    Object.keys(currentMap).forEach(function(k){ allIds[k] = true; });
+    Object.keys(newMap).forEach(function(k){ allIds[k] = true; });
+    Object.keys(allIds).forEach(function(id) {
+      if (Math.abs((currentMap[id] || 0) - (newMap[id] || 0)) > 1) differs = true;
+    });
+    if (!differs) return;
+    // Replace this group\u2019s entries with fresh allocations under same groupId
+    lumpSums = lumpSums.filter(function(l) { return l.groupId !== gid; });
+    const baseId = Date.now() + Math.floor(Math.random() * 1000);
+    result.allocations.forEach(function(alloc, i) {
+      lumpSums.push({
+        id: baseId + i,
+        debtId: alloc.debtId,
+        debtName: alloc.debtName,
+        amount: alloc.amount,
+        date: g.date,
+        mode: 'auto',
+        groupId: gid
+      });
+    });
+    changed = true;
+  });
+  if (changed) {
+    save();
+    render();
+  }
+  return changed;
+}
+
+// Banner dismissal — session-only flag so the user can hide the prompt
+// after explicitly choosing "Keep as-is" without it reappearing every render.
+let _redistDismissed = false;
+function dismissRedistBanner() { _redistDismissed = true; renderStrategy(); }
+function applyRedistribution() {
+  _redistDismissed = false;
+  redistributeAutoLumps();
+}
+
 // v1.9.1 — explainStrategyRank
 // Returns a short human-readable string explaining why a debt is at its rank
 // under the current strategy. Used by renderStrategy to render timeline rows.
@@ -3768,6 +3909,34 @@ function renderStrategy() {
     document.querySelectorAll('.comparison-card').forEach(c => c.classList.remove('best'));
     if (best === 'Avalanche') document.querySelectorAll('.comparison-card')[0].classList.add('best');
     else document.querySelectorAll('.comparison-card')[1].classList.add('best');
+  }
+
+  // v1.10.0 — show or hide the lump redistribution banner
+  const _redistBanner = document.getElementById('lump-redist-banner');
+  if (_redistBanner) {
+    if (_redistDismissed) {
+      _redistBanner.style.display = 'none';
+    } else {
+      const _stale = lumpsNeedRedistribution();
+      if (_stale.length > 0) {
+        const _stratLabel = strategy.charAt(0).toUpperCase() + strategy.slice(1);
+        const _dates = _stale.map(function(s) {
+          const d = new Date(s.date);
+          return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }).join(' and ');
+        const _txtEl = document.getElementById('lump-redist-text');
+        if (_txtEl) {
+          _txtEl.innerHTML = 'Your auto-distributed lump sums for <strong>' + _dates +
+            '</strong> no longer match your current ' + _stratLabel + ' strategy. ' +
+            'Re-distribute keeps the same totals but reallocates per-debt amounts to fit your current debts.';
+        }
+        const _actionBtn = document.getElementById('lump-redist-action');
+        if (_actionBtn) _actionBtn.textContent = 'Re-distribute under ' + _stratLabel;
+        _redistBanner.style.display = 'flex';
+      } else {
+        _redistBanner.style.display = 'none';
+      }
+    }
   }
 
   // Timeline
