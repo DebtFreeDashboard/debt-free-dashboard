@@ -1,8 +1,8 @@
 // DebtFree Dashboard — Service Worker
-// v1.8.0 (Smart Avalanche)
+// v1.9.0 (Why this card?)
 // Bump CACHE_NAME when you want installed PWA clients to re-fetch cached assets.
 
-const CACHE_NAME = 'debtfree-v16';
+const CACHE_NAME = 'debtfree-v17';
 const CORE_ASSETS = [
   './',
   './dashboard.html',
