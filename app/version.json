@@ -1,9 +1,9 @@
 {
-  "version": "1.10.0",
+  "version": "1.10.1",
   "releaseDate": "2026-05-02",
-  "releaseName": "Smart Lump Sum Redistribution",
+  "releaseName": "Redistribution banner fixes",
   "notes": [
-    "When your auto-distributed lump sums fall out of sync with your current strategy or debts, the Strategy tab now shows a banner with a one-click button to redistribute the same totals across your current setup.",
-    "Manual lump sums are never touched. Useful any time you switch strategies, add or remove a debt, or pay one off ahead of schedule."
+    "After clicking Re-distribute, the Strategy tab now updates immediately to hide the banner. Previously the banner stayed visible until you navigated away and back.",
+    "The banner reappears when meaningful state changes (strategy switch, debt added/removed/edited, payment logged or deleted) make your auto-lump allocations stale again."
   ]
 }

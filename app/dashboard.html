@@ -1606,7 +1606,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.10.0';
+const APP_VERSION = '1.10.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1614,6 +1614,16 @@ const APP_VERSION = '1.10.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.10.1',
+    date: 'May 2, 2026',
+    name: 'Redistribution banner fixes',
+    whatsNew: [],
+    fixes: [
+      'After clicking Re-distribute, the Strategy tab now updates immediately to hide the banner. Previously the banner stayed visible until you navigated away and back.',
+      'The banner reappears when meaningful state changes (strategy switch, debt added/removed/edited, payment logged or deleted) make your auto-lump allocations stale again. Previously, clicking Keep as-is silenced it for the rest of the session.'
+    ]
+  },
   {
     version: '1.10.0',
     date: 'May 2, 2026',
@@ -2312,6 +2322,7 @@ function addDebt() {
   var _tm = document.getElementById('debt-term-months');    if (_tm) _tm.value = '';
   var _od = document.getElementById('debt-orig-date');      if (_od) _od.value = '';
 
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save();
   render();
 }
@@ -2321,6 +2332,7 @@ function addDebt() {
 // ═══════════════════════════════════════════
 function removeDebt(id) {
   debts = debts.filter(d => d.id !== id);
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save(); render();
 }
 
@@ -2545,6 +2557,7 @@ function saveEditDebt() {
 
   document.getElementById('edit-modal').classList.add('hidden');
   editingId = null;
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save(); render();
 }
 
@@ -2584,6 +2597,7 @@ function logPayment() {
   payments.push({ id: Date.now(), debtId: debtId, debtName: d.name, amount: actualPayment, date: date, eliminated: d.balance <= 0 });
 
   document.getElementById('log-amount').value = '';
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save(); render();
 }
 
@@ -2605,6 +2619,9 @@ function selectStrategy(s) {
     document.body.classList.remove('hybrid-mode');
     debts.sort((a, b) => a.id - b.id);
   }
+
+  // v1.10.1 — strategy change can make auto-lumps stale; let banner re-evaluate
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
 
   save(); renderStrategy(); recalculate();
 }
@@ -3386,6 +3403,7 @@ function deletePayment(paymentId) {
     d.balance = Math.max(0, d.originalBalance - totalPaidOnDebt);
   }
 
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save(); render();
 }
 
@@ -3778,11 +3796,18 @@ function redistributeAutoLumps() {
 
 // Banner dismissal — session-only flag so the user can hide the prompt
 // after explicitly choosing "Keep as-is" without it reappearing every render.
+// v1.10.1 — meaningful state changes (strategy / debt / payment / lump
+// edits) reset this flag via _resetRedistDismiss() so a stale banner can
+// re-appear when conditions warrant.
 let _redistDismissed = false;
+function _resetRedistDismiss() { _redistDismissed = false; }
 function dismissRedistBanner() { _redistDismissed = true; renderStrategy(); }
 function applyRedistribution() {
   _redistDismissed = false;
   redistributeAutoLumps();
+  // v1.10.1 — render() only refreshes Dashboard sections; explicitly fire
+  // renderStrategy so the banner DOM updates while the user is on Strategy.
+  renderStrategy();
 }
 
 // v1.9.1 — explainStrategyRank
