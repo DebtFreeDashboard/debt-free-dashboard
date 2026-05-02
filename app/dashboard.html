@@ -1594,7 +1594,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.7.2';
+const APP_VERSION = '1.8.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1602,6 +1602,16 @@ const APP_VERSION = '1.7.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.8.0',
+    date: 'May 2, 2026',
+    name: 'Smart Avalanche',
+    whatsNew: [
+      'Avalanche strategy now considers your scheduled lump sums when ranking debts. Previously, the engine prioritized 0% promo cards based on their future post-promo rate — even if you had lump sums scheduled to clear them before the promo ends. Now it ranks debts by how much interest each one would actually cost you if you didn\u2019t apply any extras. Cards already on track to be paid off before their promo expires drop to the bottom; cards bleeding interest right now rise to the top.',
+      'Behavior is unchanged if you have no scheduled lump sums or no promo cards \u2014 classic avalanche still works the way it always did. The new logic only kicks in when there\u2019s real future-state info worth using.'
+    ],
+    fixes: []
+  },
   {
     version: '1.7.2',
     date: 'May 1, 2026',
@@ -1860,6 +1870,101 @@ function badgeLabel(type) {
 // ═══════════════════════════════════════════
 //  PAYOFF SIMULATION
 // ═══════════════════════════════════════════
+// v1.8.0 — Smart Avalanche helpers
+//
+// computePassiveInterestCost simulates one debt forward through `horizonMonths`
+// applying ONLY minimum payments + scheduled lump sums targeted at it, and
+// returns the dollar amount of interest accrued. Promo APR -> post-promo APR
+// switch is honored. This is the sort key used by the avalanche strategy.
+function computePassiveInterestCost(d, horizonMonths, plannedLumps, simStartDate) {
+  let bal = Math.max(0, d.balance || 0);
+  if (bal <= 0) return 0;
+  let interestAccrued = 0;
+
+  // Pre-compute promo switch month (mirrors simulate())
+  let promoSwitchMonth = null;
+  if (d.promoEnd) {
+    const pEnd = new Date(d.promoEnd);
+    promoSwitchMonth = Math.max(0,
+      (pEnd.getFullYear() - simStartDate.getFullYear()) * 12 +
+      (pEnd.getMonth() - simStartDate.getMonth()));
+  }
+
+  // safeMinPayment to prevent runaway interest in passive sim
+  const worstApr = (d.hasPromo && d.postPromoApr && !isNaN(d.postPromoApr) && d.postPromoApr > (d.apr || 0))
+    ? d.postPromoApr : (d.apr || 0);
+  const worstMinInterest = bal * (worstApr / 100 / 12);
+  const rawMin = d.minPayment || 25;
+  const safeMin = rawMin <= worstMinInterest ? worstMinInterest + 1 : rawMin;
+
+  // Build lump-by-month map for THIS debt only
+  const lumpByMonth = {};
+  if (plannedLumps && plannedLumps.length) {
+    plannedLumps.forEach(function(l) {
+      if (l.debtId !== d.id) return;
+      const lDate = new Date(l.date);
+      const m = Math.max(1,
+        (lDate.getFullYear() - simStartDate.getFullYear()) * 12 +
+        (lDate.getMonth() - simStartDate.getMonth()));
+      lumpByMonth[m] = (lumpByMonth[m] || 0) + l.amount;
+    });
+  }
+
+  for (let month = 1; month <= horizonMonths && bal > 0.01; month++) {
+    let effectiveApr = d.apr || 0;
+    if (promoSwitchMonth !== null) {
+      const isStillPromo = month <= promoSwitchMonth;
+      const rawApr = isStillPromo
+        ? (d.promoApr || 0)
+        : (d.postPromoApr || d.realApr || d.apr || 0);
+      effectiveApr = (!isNaN(rawApr) && rawApr >= 0 && rawApr <= 100) ? rawApr : 0;
+    }
+    const interest = bal * (effectiveApr / 100 / 12);
+    interestAccrued += interest;
+    bal += interest;
+    bal = Math.max(0, bal - safeMin);
+    if (lumpByMonth[month]) bal = Math.max(0, bal - lumpByMonth[month]);
+  }
+  return interestAccrued;
+}
+
+// estimatePassiveHorizon — pick a horizon long enough that all promo periods
+// + a year of post-promo bleed get counted, capped at a reasonable limit.
+function estimatePassiveHorizon(activeDebts, simStartDate) {
+  let latestPromoMonth = 0;
+  activeDebts.forEach(function(d) {
+    if (!d.promoEnd) return;
+    const pEnd = new Date(d.promoEnd);
+    const m = (pEnd.getFullYear() - simStartDate.getFullYear()) * 12 +
+              (pEnd.getMonth() - simStartDate.getMonth());
+    if (m > latestPromoMonth) latestPromoMonth = m;
+  });
+  // 24-month floor; latest promo + 12 month ceiling; 60-month hard cap
+  return Math.max(24, Math.min(60, latestPromoMonth + 12));
+}
+
+// avalancheSort — sort debt list by passive interest cost descending.
+// Used by simulate(), projectBalancesAt(), and renderStrategy() so the
+// three views stay in agreement on debt priority.
+function avalancheSort(debtList, plannedLumps, simStartDate) {
+  if (!simStartDate) {
+    simStartDate = new Date();
+    simStartDate.setDate(1);
+  }
+  const horizon = estimatePassiveHorizon(debtList, simStartDate);
+  const costs = new Map();
+  debtList.forEach(function(d) {
+    costs.set(d.id, computePassiveInterestCost(d, horizon, plannedLumps, simStartDate));
+  });
+  debtList.sort(function(a, b) {
+    const ca = costs.get(a.id) || 0;
+    const cb = costs.get(b.id) || 0;
+    if (Math.abs(cb - ca) > 0.01) return cb - ca;
+    // Tiebreaker: balance descending so two zero-cost cards have a deterministic order
+    return (b.balance || b.bal || 0) - (a.balance || a.bal || 0);
+  });
+}
+
 function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps) {
   if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [], perDebt: [], diverged: false };
   const strat = customStrategy || strategy;
@@ -1926,11 +2031,10 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   // card with postPromoApr=26.99% and realApr still 0 sorts to the top — the
   // old logic only looked at realApr and missed newly-imported promo debts.
   if (strat === 'avalanche') {
-    balances.sort(function(a, b) {
-      var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
-      var aprB = Math.max(b.realApr || 0, b.postPromoApr || 0, b.apr || 0);
-      return aprB - aprA;
-    });
+    // v1.8.0 — Smart Avalanche: sort by passive interest cost descending.
+    // Each debt's "cost" is the interest it would accrue from today through
+    // the planning horizon if we apply only minimums + scheduled lump sums.
+    avalancheSort(balances, plannedLumps, simStartDate);
   } else if (strat === 'snowball') {
     balances.sort((a,b) => a.bal - b.bal);
   }
@@ -2231,7 +2335,7 @@ function openEditModal(id) {
     document.getElementById('edit-promo-end').value       = d.promoEnd || '';
     document.getElementById('edit-post-promo-apr').value  = d.postPromoApr || '';
     var _feeRateValue = d.transferFee > 0
-      ? ((d.transferFee / d.originalBalance) * 100).toFixed(1)
+      ? ((d.transferFee / d.originalBalance) * 100).toFixed(2)
       : '';
     var _feeEl = document.getElementById('edit-transfer-fee');
     _feeEl.value = _feeRateValue;
@@ -2287,12 +2391,25 @@ function toggleEditPromoFields() {
 
 function updateEditFeePreview() {
   const balance = parseFloat(document.getElementById('edit-balance').value) || 0;
-  const fee     = parseFloat(document.getElementById('edit-transfer-fee').value) || 0;
-  const feeAmt  = balance * (fee / 100);
+  const feeEl   = document.getElementById('edit-transfer-fee');
+  const fee     = parseFloat(feeEl.value) || 0;
   const preview = document.getElementById('edit-promo-fee-preview');
   if (!preview) return;
-  if (balance > 0 && fee > 0) {
-    preview.innerHTML = `<span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent4);">Fee: ${fmtDec(feeAmt)} → New balance: ${fmtDec(balance + feeAmt)}</span>`;
+  // v1.7.2 — mirror saveEditDebt: only show "fee will be added" when the fee
+  // will actually be re-applied (fresh promo or user edited the fee%). For
+  // existing promo with unchanged fee, the stored fee is preserved on save
+  // and the preview should reflect that — the previous version made every
+  // save look like it would inflate the balance.
+  const origFeeRate    = parseFloat(feeEl.dataset.originalRate || '0');
+  const origHasPromo   = feeEl.dataset.originalHasPromo === 'true';
+  const feeRateChanged = Math.abs(fee - origFeeRate) > 0.01;
+  const willApplyFee   = !origHasPromo || feeRateChanged;
+
+  if (balance > 0 && fee > 0 && willApplyFee) {
+    const feeAmt = balance * (fee / 100);
+    preview.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent4);">Fee: ' + fmtDec(feeAmt) + ' &rarr; New balance: ' + fmtDec(balance + feeAmt) + '</span>';
+  } else if (balance > 0 && fee > 0 && !willApplyFee) {
+    preview.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Original transfer fee already applied. Change the fee % to recompute.</span>';
   } else {
     preview.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>';
   }
@@ -2832,13 +2949,20 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
     };
   });
 
-  // Sort by strategy — max(realApr, postPromoApr, apr) for avalanche
-  if (strategy === 'avalanche') sim.sort(function(a,b){
-    var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
-    var aprB = Math.max(b.realApr || 0, b.postPromoApr || 0, b.apr || 0);
-    return aprB - aprA;
-  });
-  else if (strategy === 'snowball') sim.sort(function(a,b){ return a.bal - b.bal; });
+  // Sort by strategy. v1.8.0 — Smart Avalanche uses passive interest cost.
+  // For projectBalancesAt's purposes we hand it the same `previousLumps` that
+  // were filtered to be < targetDate (matches what's actually scheduled).
+  if (strategy === 'avalanche') {
+    // sim items hold .bal not .balance — synthesize a balance field for the
+    // helper without mutating the sim entries permanently.
+    var _avShim = sim.map(function(s){ return Object.assign({}, s, {balance: s.bal}); });
+    avalancheSort(_avShim, previousLumps || [], todayNormalized);
+    var _orderById = {};
+    _avShim.forEach(function(s, i){ _orderById[s.id] = i; });
+    sim.sort(function(a, b){ return (_orderById[a.id] || 0) - (_orderById[b.id] || 0); });
+  } else if (strategy === 'snowball') {
+    sim.sort(function(a, b){ return a.bal - b.bal; });
+  }
 
   const MAX_MONTHS = 600;
   const cap = Math.min(targetMonth, MAX_MONTHS);
@@ -3549,12 +3673,12 @@ function renderStrategy() {
   // order comes from simulate() internally — this sort just controls how the
   // rows appear in the table.  v1.5.0: no more parallel inline simulation.
   let sorted = activeDebts.map(d=>({...d}));
-  if (strategy === 'avalanche') sorted.sort(function(a,b){
-    var aprA = Math.max(a.realApr || 0, a.postPromoApr || 0, a.apr || 0);
-    var aprB = Math.max(b.realApr || 0, b.postPromoApr || 0, b.apr || 0);
-    return aprB - aprA;
-  });
-  else if (strategy === 'snowball') sorted.sort((a,b)=>a.balance-b.balance);
+  if (strategy === 'avalanche') {
+    // v1.8.0 — Smart Avalanche display order matches simulate()'s priority
+    avalancheSort(sorted, plannedDisbursements(), null);
+  } else if (strategy === 'snowball') {
+    sorted.sort((a,b)=>a.balance-b.balance);
+  }
 
   // ── v1.5.0 ── Single simulate() call replaces the two inline cascade
   // loops that used to live here.  Knock-on benefits beyond code reduction:

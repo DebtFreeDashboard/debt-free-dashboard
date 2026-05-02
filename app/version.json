@@ -1,8 +1,9 @@
 {
-  "version": "1.7.2",
-  "releaseDate": "2026-05-01",
-  "releaseName": "Edit Modal Fee Fix",
+  "version": "1.8.0",
+  "releaseDate": "2026-05-02",
+  "releaseName": "Smart Avalanche",
   "notes": [
-    "Editing a balance-transfer card no longer silently re-adds the transfer fee on save. Previously, opening the edit modal and saving (even without changing anything) would inflate the balance by the fee amount, throwing off your payoff math. The fee is now preserved as a historical record and only recomputed if you toggle the promo checkbox on or change the fee % field."
+    "Avalanche strategy now considers your scheduled lump sums when ranking debts. Cards already on track to be paid off before their promo expires drop to the bottom; cards bleeding interest right now rise to the top.",
+    "Behavior is unchanged if you have no scheduled lump sums or no promo cards \u2014 classic avalanche still works the way it always did."
   ]
 }
