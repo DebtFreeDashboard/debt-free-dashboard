@@ -2,7 +2,7 @@
 // v1.7.2 (Edit Modal Fee Fix)
 // Bump CACHE_NAME when you want installed PWA clients to re-fetch cached assets.
 
-const CACHE_NAME = 'debtfree-v13';
+const CACHE_NAME = 'debtfree-v14';
 const CORE_ASSETS = [
   './',
   './dashboard.html',

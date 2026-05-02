@@ -2,13 +2,16 @@
   "name": "DebtFree Dashboard",
   "short_name": "DebtFree",
   "description": "Your interactive debt payoff command center. Know your freedom date.",
-  "start_url": "/app/",
-  "scope": "/app/",
+  "start_url": "/debt-free-dashboard/app/",
+  "scope": "/debt-free-dashboard/app/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
-  "categories": ["finance", "productivity"],
+  "categories": [
+    "finance",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/assets/icons/icon-192.png",
