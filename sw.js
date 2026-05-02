@@ -1,76 +1,71 @@
-const CACHE_NAME = 'debtfree-v4';
-const CACHE_ASSETS = [
-  '/app/',
-  '/app/index.html',
-  '/app/dashboard.html',
+// DebtFree Dashboard — Service Worker
+// v1.7.2 (Edit Modal Fee Fix)
+// Bump CACHE_NAME when you want installed PWA clients to re-fetch cached assets.
+
+const CACHE_NAME = 'debtfree-v13';
+const CORE_ASSETS = [
+  './',
+  './dashboard.html',
+  './manifest.json'
 ];
 
-self.addEventListener('install', event => {
+self.addEventListener('install', function(event) {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(CACHE_ASSETS).catch(err => {
-        console.warn('Some assets failed to cache:', err);
+    caches.open(CACHE_NAME).then(function(cache) {
+      return cache.addAll(CORE_ASSETS).catch(function() {
+        return cache.add('./dashboard.html').catch(function(){});
       });
     })
   );
   self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
+self.addEventListener('activate', function(event) {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
-    )
+    caches.keys().then(function(names) {
+      return Promise.all(names.map(function(name) {
+        if (name !== CACHE_NAME) return caches.delete(name);
+      }));
+    }).then(function() {
+      return self.clients.claim();
+    })
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
+self.addEventListener('fetch', function(event) {
+  const req = event.request;
+  if (req.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
-  const isHTML = event.request.destination === 'document' ||
-                 url.pathname.endsWith('.html') ||
-                 url.pathname.endsWith('/');
+  const url = new URL(req.url);
+  const isHTML = req.mode === 'navigate' ||
+                 (req.headers.get('accept') || '').includes('text/html') ||
+                 url.pathname.endsWith('.html');
 
   if (isHTML) {
-    // ── Network-first for HTML ──
-    // Always try to fetch the freshest version from the server.
-    // Fall back to cache only if offline.
     event.respondWith(
-      fetch(event.request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'opaque') {
-          return response;
-        }
-        // Update the cache with the fresh copy
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return response;
-      }).catch(() => {
-        // Offline fallback — serve cached HTML
-        return caches.match(event.request).then(cached => {
-          return cached || caches.match('/app/index.html');
+      fetch(req).then(function(resp) {
+        const copy = resp.clone();
+        caches.open(CACHE_NAME).then(function(c) { c.put(req, copy); });
+        return resp;
+      }).catch(function() {
+        return caches.match(req).then(function(r) {
+          return r || caches.match('./dashboard.html');
         });
       })
     );
-  } else {
-    // ── Cache-first for all other assets ──
-    // Fonts, scripts, icons etc. are versioned/stable — serve from cache,
-    // fetch and cache on miss.
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        if (cached) return cached;
-        return fetch(event.request).then(response => {
-          if (!response || response.status !== 200 || response.type === 'opaque') {
-            return response;
-          }
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          return response;
-        }).catch(() => null);
-      })
-    );
+    return;
   }
+
+  event.respondWith(
+    caches.match(req).then(function(cached) {
+      if (cached) return cached;
+      return fetch(req).then(function(resp) {
+        if (resp && resp.status === 200 && resp.type !== 'opaque') {
+          const copy = resp.clone();
+          caches.open(CACHE_NAME).then(function(c) { c.put(req, copy); });
+        }
+        return resp;
+      });
+    })
+  );
 });
