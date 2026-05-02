@@ -1,9 +1,9 @@
 {
-  "version": "1.9.0",
+  "version": "1.9.1",
   "releaseDate": "2026-05-02",
-  "releaseName": "Why this card?",
+  "releaseName": "Strategy table cleanup",
   "notes": [
-    "The Strategy tab now shows a one-line explanation under each debt name telling you why it ranks where it does \u2014 so the order isn't a black box.",
-    "Reasons adapt to the strategy you've picked: Avalanche shows the projected interest impact, Snowball calls out small-balance quick wins, and Hybrid acknowledges your custom order."
+    "On the Strategy tab, the row order now matches the Interest Paid column. Previously a card cleared by your plan ($0 interest) could rank above cards actually accruing interest, which was confusing.",
+    "Per-card explanations no longer contradict the row they sit in. A card showing $0 interest will say \"Lump sum clears this\" or \"Cleared by your plan\" instead of citing a hypothetical projected interest amount."
   ]
 }

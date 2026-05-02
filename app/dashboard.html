@@ -1594,7 +1594,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1602,6 +1602,16 @@ const APP_VERSION = '1.9.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.9.1',
+    date: 'May 2, 2026',
+    name: 'Strategy table cleanup',
+    whatsNew: [],
+    fixes: [
+      'On the Strategy tab, the row order now matches the Interest Paid column. Previously a card cleared by your plan ($0 interest) could rank above cards actually accruing interest, which was confusing. The simulation engine still optimizes the same way; only the display order changed.',
+      'Per-card explanations no longer contradict the row they sit in. A card showing $0 interest will say "Lump sum clears this" or "Cleared by your plan" instead of citing a hypothetical projected interest amount.'
+    ]
+  },
   {
     version: '1.9.0',
     date: 'May 2, 2026',
@@ -3634,10 +3644,16 @@ function renderPaymentLog() {
   }).join('');
 }
 
-// v1.9.0 — explainStrategyRank
+// v1.9.1 — explainStrategyRank
 // Returns a short human-readable string explaining why a debt is at its rank
 // under the current strategy. Used by renderStrategy to render timeline rows.
-function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, totalDebts) {
+//
+// v1.9.1 change: the function now takes `actualInterest` (interest the debt
+// will accrue under the current plan, from the simulation result). When
+// actualInterest is essentially $0 the explanation reflects HOW the plan
+// clears the card — no more "$X projected interest" sitting next to "$0"
+// in the same row.
+function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, totalDebts, actualInterest) {
   const today = simStartDate || new Date();
 
   if (strategy === 'snowball') {
@@ -3650,16 +3666,10 @@ function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, tota
     return 'Custom order \u2014 position ' + rank;
   }
 
-  // Avalanche — base reasoning on passive interest cost over the horizon
-  const allActive = debts.filter(function(x){ return x.balance > 0 && x.includeInStrategy !== false; });
-  const horizon = estimatePassiveHorizon(allActive, today);
-  const cost = computePassiveInterestCost(d, horizon, plannedLumps, today);
-
-  // Tagged lump sums for this debt
+  // Avalanche — branch on whether the plan actually has this card bleeding
   const myLumps = (plannedLumps || []).filter(function(l){ return l.debtId === d.id; });
   const totalLumpAmt = myLumps.reduce(function(a, l){ return a + l.amount; }, 0);
 
-  // Format helpers
   function shortDate(dateStr) {
     if (!dateStr) return '';
     const dt = new Date(dateStr);
@@ -3671,29 +3681,52 @@ function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, tota
     return shortDate(sorted[0].date);
   }
 
-  // Non-promo cards
+  const ai = (typeof actualInterest === 'number') ? actualInterest : -1;
+  const isCleared = (ai >= 0 && ai <= 0.01);
+
+  // CLEARED BY PLAN: explanation matches the $0 in the row
+  if (isCleared) {
+    const promoEndStr = d.promoEnd ? shortDate(d.promoEnd) : '';
+    const lumpCoversMost = (d.balance > 0) && (totalLumpAmt >= d.balance * 0.5);
+
+    if (d.hasPromo && d.promoEnd) {
+      if (lumpCoversMost) {
+        return 'Lump sum on ' + nearestLumpDate() + ' clears this before promo ends';
+      }
+      if (totalLumpAmt > 0) {
+        return 'Cleared by your plan before promo ends ' + promoEndStr;
+      }
+      return 'Cleared by cascade \u2014 promo ends ' + promoEndStr;
+    }
+    // Non-promo, $0 actual
+    if (lumpCoversMost) {
+      return 'Lump sum on ' + nearestLumpDate() + ' clears this';
+    }
+    if (totalLumpAmt > 0) {
+      return 'Cleared by your plan';
+    }
+    return 'Cleared by minimums + extras in your plan';
+  }
+
+  // BLEEDING UNDER CURRENT PLAN: actual interest > 0 (or unknown)
+  // Use passive cost over horizon as the framing for promo cards' future
+  // post-promo bleed; for non-promo cards, the current monthly bleed.
+  const allActive = debts.filter(function(x){ return x.balance > 0 && x.includeInStrategy !== false; });
+  const horizon = estimatePassiveHorizon(allActive, today);
+  const cost = computePassiveInterestCost(d, horizon, plannedLumps, today);
+
   if (!d.hasPromo || !d.promoEnd) {
-    if (cost > 0.01) {
-      const apr = d.apr || 0;
-      const monthlyInt = d.balance * apr / 100 / 12;
+    const apr = d.apr || 0;
+    const monthlyInt = d.balance * apr / 100 / 12;
+    if (monthlyInt > 0.01) {
       return 'Bleeding ~$' + Math.round(monthlyInt) + '/mo at ' + apr.toFixed(2) + '% APR';
     }
-    return (d.apr || 0).toFixed(2) + '% APR \u2014 cleared by minimums in horizon';
+    return apr.toFixed(2) + '% APR';
   }
 
-  // Promo cards — branch on lump coverage and projected cost
   const promoEndStr = shortDate(d.promoEnd);
   const postApr = (d.postPromoApr || d.realApr || 0).toFixed(2);
-
-  if (cost <= 0.01) {
-    if (totalLumpAmt > 0) {
-      return 'Lump sum on ' + nearestLumpDate() + ' clears this before promo ends';
-    }
-    return '0% promo through ' + promoEndStr + ' \u2014 no projected interest yet';
-  }
-
-  // Has projected cost despite being a promo card — lumps don't fully cover
-  if (totalLumpAmt > 0) {
+  if (cost > 0.01 && totalLumpAmt > 0) {
     return '~$' + Math.round(cost) + ' projected interest after promo ends ' + promoEndStr;
   }
   return '0% until ' + promoEndStr + ', then ' + postApr + '% \u2014 pay before then';
@@ -3775,11 +3808,31 @@ function renderStrategy() {
   (schedResult.perDebt || []).forEach(function(p) { schedPerDebt[p.id] = p; });
   const schedMonths = schedResult.months || 1;
 
-  // v1.9.0 — pre-compute rank explanations once per render
+  // v1.9.1 — re-sort display by ACTUAL interest descending so the row order
+  // matches the Interest Paid column. Tiebreaker is passive interest cost
+  // descending, which preserves "exposure if plan changes" as a quiet
+  // secondary signal among the $0-actual cards. The simulation engine's
+  // internal sort (passive cost) is still the optimal allocation strategy.
   const _now = new Date();
   const _lumps = plannedDisbursements();
+  if (strategy === 'avalanche') {
+    const _h = estimatePassiveHorizon(sorted, _now);
+    const _passiveMap = {};
+    sorted.forEach(function(d) {
+      _passiveMap[d.id] = computePassiveInterestCost(d, _h, _lumps, _now);
+    });
+    sorted.sort(function(a, b) {
+      const ai = (perDebtMap[a.id] || {}).interestPaid || 0;
+      const bi = (perDebtMap[b.id] || {}).interestPaid || 0;
+      if (Math.abs(ai - bi) > 0.01) return bi - ai;
+      return (_passiveMap[b.id] || 0) - (_passiveMap[a.id] || 0);
+    });
+  }
+
+  // Pre-compute rank explanations once per render (now with actualInterest)
   const _reasons = sorted.map(function(d, i) {
-    return explainStrategyRank(d, strategy, _lumps, _now, i + 1, sorted.length);
+    const _ai = (perDebtMap[d.id] || {}).interestPaid || 0;
+    return explainStrategyRank(d, strategy, _lumps, _now, i + 1, sorted.length, _ai);
   });
 
   tbody.innerHTML = sorted.map((d, i) => {
