@@ -1,9 +1,5 @@
 {
-  "version": "1.7.1",
-  "releaseDate": "2026-04-19",
-  "releaseName": "Release Notes",
-  "notes": [
-    "What's New popups: release notes now appear automatically when you upgrade to a new version, so you can see what changed without digging for a changelog.",
-    "A ★ What's New button in the Backup & Restore section lets you re-open release notes anytime, including past versions."
-  ]
+  "version": "1.3.8",
+  "releaseDate": "2026-04-04",
+  "notes": "Fixed Interest Saved showing $0 — min payment safety check now uses worst-case post-promo APR"
 }
