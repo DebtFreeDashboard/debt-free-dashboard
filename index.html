@@ -1015,6 +1015,23 @@
   gtag('js', new Date());
   gtag('config', 'G-NCP56TD9BG');
 </script>
+<script>
+  // DebtFree Dashboard — outbound click tracking
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a[href*="gumroad.com"]').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        var ctaLabel = this.dataset.ctaLabel || this.innerText.trim().slice(0, 60) || 'unknown';
+        if (typeof gtag === 'function') {
+          gtag('event', 'gumroad_click', {
+            'cta_label': ctaLabel,
+            'cta_location': this.dataset.ctaLocation || 'unspecified',
+            'destination': this.href
+          });
+        }
+      });
+    });
+  });
+</script>
 </head>
 <body>
 
@@ -1031,7 +1048,11 @@
        style="height:36px; width:auto;">
   <span class="price-tag">One-time · No subscription</span>
   <div class="nav-buy-group">
-    <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="nav-cta">Get Instant Access — $29 →</a>
+    <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+   class="nav-cta"
+   data-cta-label="nav-primary"
+   data-cta-location="nav">
+  Get Instant Access — $29 →</a>
   </div>
 </nav>
 
@@ -1042,8 +1063,12 @@
     <h1 class="hero-headline">See your real<br>debt-free date.<br><em>Then reach it.</em></h1>
     <p class="hero-sub">Credit cards, auto loans, student loans, even your mortgage — one payoff plan. Crystal-clear math in 60 seconds. <strong style="color:var(--ink)">$29 one-time.</strong> No subscription, ever.</p>
     <div class="hero-actions">
-      <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-primary-lg">
-        Get Instant Access — $29 <span class="arrow">→</span>
+      <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+   class="btn-buy"
+   data-cta-label="hero-primary"
+   data-cta-location="hero">
+  Get Instant Access — $29 →
+<span class="arrow">→</span>
       </a>
     </div>
     <div class="hero-reassure">
@@ -1306,7 +1331,12 @@
           <div class="pricing-item">100% private — data stays local</div>
           <div class="pricing-item">Free lifetime updates</div>
         </div>
-        <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-buy">Get Instant Access — $29 →</a>
+        <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+   class="btn-buy"
+   data-cta-label="pricing-card"
+   data-cta-location="pricing-section">
+  Get Instant Access — $29 →
+</a>
         <div class="guarantee">🛡️ 30-day money-back guarantee</div>
       </div>
 
@@ -1380,7 +1410,13 @@
 
 <!-- MOBILE STICKY BUY BAR — visible only on small screens -->
 <div class="sticky-buy-bar">
-  <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="bar-starter">Get Instant Access — $29 →</a>
+ <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+   class="bar-starter"
+   data-cta-label="sticky-mobile"
+   data-cta-location="sticky-bar">
+  Get Instant Access — $29 →
+</a>
+
 </div>
 
 <footer>
