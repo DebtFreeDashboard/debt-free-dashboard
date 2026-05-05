@@ -1008,7 +1008,7 @@
     footer { padding: 28px 20px; }
   }
 </style>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-530235892"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -1031,6 +1031,41 @@
       });
     });
   });
+</script>
+  <script>
+  // Scroll depth tracking — 25/50/75/100
+  (function() {
+    var thresholds = [25, 50, 75, 100];
+    var fired = {};
+    function maxScrollPct() {
+      var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      var docHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+      );
+      var winHeight = window.innerHeight;
+      var pct = Math.round(((scrollTop + winHeight) / docHeight) * 100);
+      return Math.min(pct, 100);
+    }
+    function onScroll() {
+      var pct = maxScrollPct();
+      thresholds.forEach(function(t) {
+        if (pct >= t && !fired[t]) {
+          fired[t] = true;
+          if (typeof gtag === 'function') {
+            gtag('event', 'scroll_depth', { 'depth': t });
+          }
+        }
+      });
+    }
+    var ticking = false;
+    window.addEventListener('scroll', function() {
+      if (!ticking) {
+        window.requestAnimationFrame(function() { onScroll(); ticking = false; });
+        ticking = true;
+      }
+    }, { passive: true });
+  })();
 </script>
 </head>
 <body>
