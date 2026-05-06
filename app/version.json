@@ -1,7 +1,7 @@
 {
-  "version": "1.10.1",
-  "releaseDate": "2026-05-02",
-  "releaseName": "Redistribution banner fixes",
+  "version": "1.10.2",
+  "releaseDate": "2026-05-06",
+  "releaseName": "Redistribution dislay fix",
   "notes": [
     "After clicking Re-distribute, the Strategy tab now updates immediately to hide the banner. Previously the banner stayed visible until you navigated away and back.",
     "The banner reappears when meaningful state changes (strategy switch, debt added/removed/edited, payment logged or deleted) make your auto-lump allocations stale again."
