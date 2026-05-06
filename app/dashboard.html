@@ -1484,6 +1484,9 @@
         <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:2px;">
           <span>$0</span><span id="wi-lump-t1"></span><span id="wi-lump-t2"></span><span id="wi-lump-t3"></span><span id="wi-lump-t4"></span>
         </div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:6px;font-style:italic;">
+          Applied today, on top of any planned lump sums you’ve scheduled.
+        </div>
       </div>
 
       <div class="divider"></div>
@@ -3771,8 +3774,13 @@ function redistributeAutoLumps() {
       if (Math.abs((currentMap[id] || 0) - (newMap[id] || 0)) > 1) differs = true;
     });
     if (!differs) return;
-    // Replace this group\u2019s entries with fresh allocations under same groupId
-    lumpSums = lumpSums.filter(function(l) { return l.groupId !== gid; });
+    // Replace this group's entries with fresh allocations under the same numeric
+    // groupId. Coerce gid (string from Object.keys) to a number so the filter
+    // below actually matches existing entries (addLumpSum stores groupId as Date.now()).
+    // Loose equality on the filter is a belt-and-suspenders guard for any legacy
+    // entries that ended up stringified from earlier buggy redistributes.
+    const gidNum = Number(gid);
+    lumpSums = lumpSums.filter(function(l) { return l.groupId != gidNum; });
     const baseId = Date.now() + Math.floor(Math.random() * 1000);
     result.allocations.forEach(function(alloc, i) {
       lumpSums.push({
@@ -3782,7 +3790,7 @@ function redistributeAutoLumps() {
         amount: alloc.amount,
         date: g.date,
         mode: 'auto',
-        groupId: gid
+        groupId: gidNum
       });
     });
     changed = true;
