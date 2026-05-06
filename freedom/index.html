@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Redirecting — DebtFree Dashboard ($10 off applied)</title>
+<link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Outfit:wght@400;500;600&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+
+<!-- Same GA4 property as the main site, so this hit shows up in the same reports -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-NCP56TD9BG');
+</script>
+
+<style>
+  :root {
+    --ink: #0e0e0e;
+    --cream: #f5f0e8;
+    --gold: #c9a84c;
+    --green: #1a6b4a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .card {
+    max-width: 460px;
+    text-align: center;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(26,107,74,0.08);
+    border: 1px solid rgba(26,107,74,0.2);
+    color: var(--green);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 22px;
+  }
+  .badge::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    display: inline-block;
+  }
+  h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 2.2rem;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 14px;
+  }
+  h1 em {
+    color: var(--gold);
+    font-style: italic;
+  }
+  p {
+    color: rgba(14,14,14,0.7);
+    line-height: 1.55;
+    margin-bottom: 28px;
+    font-size: 0.95rem;
+  }
+  .spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(14,14,14,0.1);
+    border-top-color: var(--ink);
+    border-radius: 50%;
+    margin: 0 auto 22px;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fallback {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 14px 28px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .fallback:hover {
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateY(-1px);
+  }
+  .fine {
+    margin-top: 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(14,14,14,0.4);
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="badge">$10 off applied · Code FREEDOM10</div>
+  <div class="spinner" id="spinner"></div>
+  <h1>Sending you to <em>checkout</em>…</h1>
+  <p>You're getting the dashboard at <strong>$19</strong> instead of $29 — $10 off as a thank-you for following along.</p>
+  <a id="manual-link"
+     href="https://debtfreedashboard.gumroad.com/l/prfzv?offer_code=FREEDOM10"
+     class="fallback">
+    Continue to checkout →
+  </a>
+  <div class="fine">If you aren't redirected automatically, tap the button above.</div>
+</div>
+
+<noscript>
+  <meta http-equiv="refresh" content="0;url=https://debtfreedashboard.gumroad.com/l/prfzv?offer_code=FREEDOM10">
+</noscript>
+
+<script>
+  (function() {
+    // Build destination — preserve any UTM params the visitor arrived with so
+    // Gumroad's referrer/UTM picks up the original source (instagram, tiktok, etc.)
+    var base = 'https://debtfreedashboard.gumroad.com/l/prfzv';
+    var params = new URLSearchParams(window.location.search);
+    // Always force the offer code, regardless of what was passed in
+    params.set('offer_code', 'FREEDOM10');
+    var dest = base + '?' + params.toString();
+
+    // Update the manual fallback link so it carries UTMs too
+    var manual = document.getElementById('manual-link');
+    if (manual) manual.href = dest;
+
+    // Fire the gumroad_click event for GA4 attribution before redirecting
+    if (typeof gtag === 'function') {
+      gtag('event', 'gumroad_click', {
+        'cta_label': 'freedom-redirect',
+        'cta_location': '/freedom',
+        'destination': dest
+      });
+    }
+
+    // Short delay so GA4 has time to send the beacon and the user sees the
+    // "$10 off applied" reassurance flash by — feels intentional, not jarring.
+    setTimeout(function() {
+      window.location.replace(dest);
+    }, 1200);
+  })();
+</script>
+
+</body>
+</html>
