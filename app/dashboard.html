@@ -1609,7 +1609,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.10.1';
+const APP_VERSION = '1.10.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1617,6 +1617,16 @@ const APP_VERSION = '1.10.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.10.2',
+    date: 'May 6, 2026',
+    name: 'Fix duplicate auto-lumps after redistribute',
+    whatsNew: [],
+    fixes: [
+      'Redistribute Auto Lump Sum fix to remove previous Strategy distributions',
+      'New User Experience clarifier under the What If lump slider'
+    ]
+  },
   {
     version: '1.10.1',
     date: 'May 2, 2026',
