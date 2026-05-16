@@ -1,9 +1,9 @@
 {
-  "version": "1.10.2",
-  "releaseDate": "2026-05-06",
-  "releaseName": "Redistribution dislay fix",
+  "version": "1.10.3",
+  "releaseDate": "2026-05-16",
+  "releaseName": "Cross-tab consistency fixes",
   "notes": [
-    "Redistribute Auto Lump Sum fix to remove previous Strategy distributions",
-      "New User Experience clarifier under the What If lump slider"
+    "Dashboard \"Freedom Date\" and \"Months Away\" now exclude debts you've marked as not in your payoff plan (mortgages by default), matching how Strategy, What If, and the payoff chart already behaved. Previously the Dashboard headline could show a later date than the rest of the app.",
+    "Promo APR end-of-period now uses calendar-month math everywhere in the simulator. Previously, the promo switch month was computed with a 30.44-day approximation that could drift by a month depending on when you ran the app, occasionally causing promo and lump-sum events to fall on the wrong month relative to each other."
   ]
 }

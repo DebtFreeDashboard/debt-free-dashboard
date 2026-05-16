@@ -1609,7 +1609,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.10.2';
+const APP_VERSION = '1.10.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1617,6 +1617,16 @@ const APP_VERSION = '1.10.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.10.3',
+    date: 'May 16, 2026',
+    name: 'Cross-tab consistency fixes',
+    whatsNew: [],
+    fixes: [
+      'Dashboard "Freedom Date" and "Months Away" now exclude debts you\u2019ve marked as not in your payoff plan (mortgages by default), matching how Strategy, What If, and the payoff chart already behaved. Previously the Dashboard headline could show a later date than the rest of the app.',
+      'Promo APR end-of-period now uses calendar-month math everywhere in the simulator. Previously, the promo switch month was computed with a 30.44-day approximation that could drift by a month depending on when you ran the app, occasionally causing promo and lump-sum events to fall on the wrong month relative to each other.'
+    ]
+  },
   {
     version: '1.10.2',
     date: 'May 6, 2026',
@@ -2071,12 +2081,19 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     const rawMin = d.minPayment || 25;
     const safeMinPayment = rawMin <= worstMinInterest ? worstMinInterest + 1 : rawMin;
 
-    // Pre-compute promo switch month — the month number at which promo ends
+    // Pre-compute promo switch month — the month number at which promo ends.
+    // v1.10.3 — switched from 30.44-day approximation to calendar-month delta
+    // (getFullYear/getMonth) for parity with the lump-sum scheduling above and
+    // with projectBalancesAt(). The old approximation could drift by a month
+    // depending on what day of the year the simulation ran, occasionally
+    // causing the promo APR switch and a planned lump to land in different
+    // months than each other.
     let promoSwitchMonth = null;
     if (d.promoEnd) {
       const promoEndDate = new Date(d.promoEnd);
-      const msPerMonth = 1000 * 60 * 60 * 24 * 30.44;
-      promoSwitchMonth = Math.max(0, Math.round((promoEndDate - simStartDate) / msPerMonth));
+      promoSwitchMonth = Math.max(0,
+        (promoEndDate.getFullYear() - simStartDate.getFullYear()) * 12 +
+        (promoEndDate.getMonth() - simStartDate.getMonth()));
     }
 
     return {
@@ -2647,33 +2664,15 @@ function recalculate() {
 }
 
 // ═══════════════════════════════════════════
-//  WHAT IF STEPPER CONTROLS
+//  WHAT IF — SLIDER HELPERS
 // ═══════════════════════════════════════════
-function stepWiExtra(delta) {
-  var el = document.getElementById('wi-extra');
-  var val = Math.max(0, Math.min(2000, (parseInt(el.value) || 0) + delta));
-  el.value = val;
-  updateWhatIf();
-}
-
-function stepWiLump(delta) {
-  var el = document.getElementById('wi-lump');
-  var val = Math.max(0, Math.min(20000, (parseInt(el.value) || 0) + delta));
-  el.value = val;
-  updateWhatIf();
-}
-
-function clampWiExtra() {
-  var el = document.getElementById('wi-extra');
-  var val = parseInt(el.value) || 0;
-  el.value = Math.max(0, Math.min(2000, val));
-}
-
-function clampWiLump() {
-  var el = document.getElementById('wi-lump');
-  var val = parseInt(el.value) || 0;
-  el.value = Math.max(0, Math.min(20000, val));
-}
+// v1.10.3 — removed stepWiExtra / stepWiLump / clampWiExtra / clampWiLump.
+// These four functions had no call sites in the HTML (the What If panel uses
+// pure range sliders, no +/- buttons or number input boxes), and their
+// hard-coded $2k / $20k caps contradicted resetWiInputs()\u2019s dynamic max
+// (which sizes the lump slider to total remaining debt). Kept here as a note
+// so future work doesn\u2019t reintroduce the cap by wiring up to a removed
+// function.
 
 function resetWiInputs() {
   var ex = document.getElementById('wi-extra');
@@ -3496,7 +3495,10 @@ function renderStats() {
   const total = totalBalance();
   const interest = monthlyInterest();
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const activeDebts = debts.filter(d=>d.balance>0);
+  // v1.10.3 — Freedom Date / Months Away now respect the payoff plan, so
+  // excluded debts (mortgages by default) don't inflate the Dashboard
+  // headline. Total Debt and monthly interest still reflect ALL debts.
+  const activeDebts = debts.filter(d => d.balance > 0 && d.includeInStrategy !== false);
 
   document.getElementById('stat-total').textContent = fmt(total);
   document.getElementById('stat-interest').textContent = fmtDec(interest);
