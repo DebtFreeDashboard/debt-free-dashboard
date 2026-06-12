@@ -1,9 +1,11 @@
 {
-  "version": "1.10.3",
+  "version": "1.12.0",
   "releaseDate": "2026-05-16",
-  "releaseName": "Cross-tab consistency fixes",
+  "releaseName": "True snowball rollover - your numbers just got better",
   "notes": [
-    "Dashboard \"Freedom Date\" and \"Months Away\" now exclude debts you've marked as not in your payoff plan (mortgages by default), matching how Strategy, What If, and the payoff chart already behaved. Previously the Dashboard headline could show a later date than the rest of the app.",
-    "Promo APR end-of-period now uses calendar-month math everywhere in the simulator. Previously, the promo switch month was computed with a 30.44-day approximation that could drift by a month depending on when you ran the app, occasionally causing promo and lump-sum events to fall on the wrong month relative to each other."
+    "Your projections now roll over freed-up minimum payments. When a debt is paid off, its minimum payment now automatically redirects to your next debt in the simulation - and keeps stacking as each debt falls. If you have more than one debt, your Freedom Date just moved EARLIER and your Interest Saved just went UP. Nothing about your data changed - the projection simply reflects the plan you were already following.",
+    "The Min Payments Only comparison intentionally does NOT roll over freed minimums - it models doing nothing differently, which is what makes the comparison meaningful.",
+    "The scheduled payoff date under installment loans still reflects each loan's own contractual schedule, unaffected by rollover.",
+    "In the month a debt is paid off, the unused remainder of its final minimum payment now cascades to your next debt instead of disappearing from the simulation."
   ]
 }

@@ -1353,6 +1353,15 @@
           <input type="file" accept=".json" onchange="importData(event)" style="display:none;" />
         </label>
       </div>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="accrual-toggle" onchange="toggleInterestAccrual(this.checked)" style="margin-top:3px;" />
+          <span>
+            <span style="font-size:0.85rem;font-weight:600;">Estimated interest</span><br/>
+            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Automatically add estimated monthly interest to your balances on the 1st of each month, so tracked numbers stay close to your real statements. Promo 0% periods are respected. Your statement is always the source of truth — you can correct any balance in the edit screen.</span>
+          </span>
+        </label>
+      </div>
       <div style="margin-top:8px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
       <div id="backup-msg" style="margin-top:12px;"></div>
     </div>
@@ -1609,7 +1618,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.10.3';
+const APP_VERSION = '1.12.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1617,6 +1626,29 @@ const APP_VERSION = '1.10.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.12.0',
+    date: 'May 16, 2026',
+    name: 'True snowball rollover — your numbers just got better',
+    whatsNew: [
+      'Your projections now roll over freed-up minimum payments. When a debt is paid off, its minimum payment now automatically redirects to your next debt in the simulation — and keeps stacking as each debt falls. This is the core mechanic of the snowball and avalanche methods, and it was missing from the math until now. If you have more than one debt, your Freedom Date just moved EARLIER and your Interest Saved just went UP. Nothing about your data changed — the projection simply reflects the plan you were already following.',
+      'The "Min Payments Only" comparison intentionally does NOT roll over freed minimums — it models doing nothing differently, which is what makes the comparison meaningful.',
+      'The "scheduled" payoff date under installment loans still reflects each loan\u2019s own contractual schedule, unaffected by rollover.'
+    ],
+    fixes: [
+      'In the month a debt is paid off, the unused remainder of its final minimum payment now cascades to your next debt instead of disappearing from the simulation.'
+    ]
+  },
+  {
+    version: '1.11.0',
+    date: 'May 16, 2026',
+    name: 'Optional automatic interest tracking',
+    whatsNew: [
+      'Estimated interest: the dashboard can now automatically add estimated monthly interest to your balances, so your tracked numbers stay closer to your real statements. Find the toggle in Backup & Restore. Interest is added once per month per debt on the 1st, appears as its own line in your Payment Log, and promo 0% periods are respected. Off by default for existing users.',
+      'Manual balance corrections are now recorded as adjustment entries, so they are no longer lost if you later edit or delete an old payment.'
+    ],
+    fixes: []
+  },
   {
     version: '1.10.3',
     date: 'May 16, 2026',
@@ -1810,6 +1842,10 @@ let strategy = 'avalanche';
 let extraMonthly = 0;
 let payoffChart = null;
 let nextId = 1;
+// v1.11.0 — interest auto-accrual ledger
+let accruals = [];               // { id, debtId, debtName, month:"YYYY-MM", amount, apr, date }
+let adjustments = [];            // { id, debtId, amount(signed), date, note }
+let interestAccrualEnabled = false; // default OFF for existing users; load() turns ON for brand-new users
 
 const MILESTONES_DEF = [
   { id: 'first_debt',   icon: '🎯', name: 'First Debt Added',      desc: 'You have committed. The journey starts now.', check: () => debts.length >= 1 },
@@ -2040,7 +2076,13 @@ function avalancheSort(debtList, plannedLumps, simStartDate) {
   });
 }
 
-function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps) {
+// v1.12.0 — opts.rollover (default TRUE): when a debt is paid off, its
+// minimum payment joins the monthly surplus and cascades in strategy order —
+// the core mechanic of the snowball/avalanche method. Pass
+// { rollover: false } ONLY for the "min payments only" baseline, which models
+// the do-nothing counterfactual where freed minimums are pocketed.
+function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps, opts) {
+  const doRollover = !opts || opts.rollover !== false;
   if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [], perDebt: [], diverged: false };
   const strat = customStrategy || strategy;
 
@@ -2159,8 +2201,17 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
 
   while (balances.some(d=>d.bal>0.01) && month < MAX_MONTHS && totalInterest < MAX_INTEREST) {
     month++;
-    let extra = extraPerMonth;
     let monthInterest = 0;
+
+    // v1.12.0 — snowball rollover. The monthly surplus starts with the
+    // user's extra payment; with rollover on, the minimum payments of every
+    // already-paid-off debt are added to it (stacking as more debts die).
+    let surplus = extraPerMonth;
+    if (doRollover) {
+      for (let d of balances) {
+        if (d.bal <= 0) surplus += (d.minPayment || 25);
+      }
+    }
 
     // Accrue interest + apply min payments
     for (let d of balances) {
@@ -2179,18 +2230,22 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       monthInterest += interest;
       d.interestPaid += interest;              // v1.5.0 — per-debt tracking
       d.bal += interest;
-      const payment = Math.min(d.bal, d.minPayment || 25);
+      const minDue = d.minPayment || 25;
+      const payment = Math.min(d.bal, minDue);
       d.bal -= payment;
       d.bal = Math.max(0, d.bal);
+      // v1.12.0 — same-month overflow: in the month a debt dies, the unused
+      // remainder of its final minimum payment cascades instead of vanishing
+      if (doRollover && payment < minDue) surplus += (minDue - payment);
     }
 
-    // Apply extra to focus debt
+    // Apply surplus (extra + rolled-over minimums + overflow) in strategy order
     for (let d of balances) {
       if (d.bal <= 0) continue;
-      if (extra <= 0) break;
-      const payment = Math.min(d.bal, extra);
+      if (surplus <= 0) break;
+      const payment = Math.min(d.bal, surplus);
       d.bal -= payment;
-      extra -= payment;
+      surplus -= payment;
       d.bal = Math.max(0, d.bal);
     }
 
@@ -2259,10 +2314,10 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   return { months: month, totalInterest, order: balances, monthlyData, perDebt, diverged: false };
 }
 
-function simulateStrategyResult(debtList, extra, strat) {
-  if (!debtList.length) return { months: 0, totalInterest: 0 };
-  return simulate(debtList.filter(d=>d.balance>0), extra, 0, strat);
-}
+// v1.12.0 — removed simulateStrategyResult(): zero call sites (superseded by
+// the inline comparison in renderStrategy). Removed so future work doesn't
+// wire up a wrapper that bypasses the rollover-semantics decisions made at
+// each real call site.
 
 // ═══════════════════════════════════════════
 //  ADD DEBT
@@ -2334,6 +2389,23 @@ function addDebt() {
     termMonths: termMonths,
     originationDate: originationDate
   });
+
+  // v1.11.0 — anchor entry: the balance the user just entered is current as
+  // of today (their statement already includes interest to date). A $0
+  // accrual for the joining month prevents the engine from adding this
+  // month's interest on top of an already-current number.
+  if (interestAccrualEnabled) {
+    const _now = new Date();
+    accruals.push({
+      id: nextId++,
+      debtId: debts[debts.length - 1].id,
+      debtName: name,
+      month: monthKeyOf(_now),
+      amount: 0,
+      apr: 0,
+      date: localDateStr()
+    });
+  }
 
   // Reset form
   document.getElementById('debt-name').value = '';
@@ -2584,6 +2656,32 @@ function saveEditDebt() {
   d.origPrincipal   = (_op !== null && !isNaN(_op) && _op > 0) ? _op : null;
   d.termMonths      = (_tm !== null && !isNaN(_tm) && _tm > 0 && _tm <= 600) ? _tm : null;
   d.originationDate = (_eod && _eod.value) ? _eod.value : null;
+
+  // v1.11.0 — Reconciliation: if the saved balance doesn't match what the
+  // ledger (originalBalance + accruals + adjustments − payments) would
+  // produce, record the difference as an adjustment entry. This makes manual
+  // statement corrections permanent — previously they were silently wiped the
+  // next time any payment on this debt was edited or deleted.
+  (function reconcileBalance() {
+    const paid = payments
+      .filter(function(p) { return p.debtId === d.id && !p.pending; })
+      .reduce(function(s, p) { return s + p.amount; }, 0);
+    const accrued = accruedInterestFor(d.id);
+    const adjusted = adjustments
+      .filter(function(a) { return a.debtId === d.id; })
+      .reduce(function(s, a) { return s + a.amount; }, 0);
+    const ledgerBal = Math.max(0, round2(d.originalBalance + accrued + adjusted - paid));
+    const delta = round2(d.balance - ledgerBal);
+    if (Math.abs(delta) >= 0.01) {
+      adjustments.push({
+        id: nextId++,
+        debtId: d.id,
+        amount: delta,
+        date: localDateStr(),
+        note: 'Manual balance correction'
+      });
+    }
+  })();
 
   document.getElementById('edit-modal').classList.add('hidden');
   editingId = null;
@@ -2866,6 +2964,141 @@ function updateWhatIf() {
 // ═══════════════════════════════════════════
 //  PLANNED LUMP SUMS
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  v1.11.0 — ESTIMATED INTEREST AUTO-ACCRUAL
+// ═══════════════════════════════════════════
+// Ledger identity (the single source of truth for a debt's balance):
+//   balance = originalBalance + Σaccruals + Σadjustments − Σ(non-pending payments)
+// Accruals are first-class entries keyed by (debtId, "YYYY-MM") so a month can
+// never be applied twice — this is the guard against the double-accrual class
+// of bug (accruing at payment time double-counts when a user makes multiple
+// payments in one month).
+
+function round2(n) { return Math.round(n * 100) / 100; }
+
+function monthKeyOf(dt) {
+  return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+}
+
+// Rate (annual %) to use when accruing a given calendar month for a debt.
+// Mirrors simulate()'s promo semantics: promo rate applies to months strictly
+// BEFORE the promo-end month (calendar-month delta, same math as the v1.10.3
+// promoSwitchMonth fix); the promo-end month itself uses the post-promo rate.
+function accrualRateFor(d, monthDate) {
+  if (d.hasPromo && d.promoEnd) {
+    const pe = new Date(d.promoEnd);
+    const delta = (pe.getFullYear() - monthDate.getFullYear()) * 12 +
+                  (pe.getMonth() - monthDate.getMonth());
+    if (delta > 0) return d.promoApr || 0;
+    if (d.postPromoApr != null && !isNaN(d.postPromoApr)) return d.postPromoApr;
+  }
+  if (d.realApr != null && !isNaN(d.realApr)) return d.realApr;
+  if (d.regularApr != null && !isNaN(d.regularApr)) return d.regularApr;
+  return d.apr || 0;
+}
+
+// Total estimated interest accrued to date for one debt.
+function accruedInterestFor(debtId) {
+  return accruals.filter(function(a) { return a.debtId === debtId; })
+                 .reduce(function(s, a) { return s + a.amount; }, 0);
+}
+
+// Rebuild a debt's balance from the full ledger. Replaces the three scattered
+// `originalBalance − Σpayments` replays that silently wiped accruals and
+// manual corrections.
+function recomputeBalance(debtId) {
+  const d = debts.find(function(x) { return x.id === debtId; });
+  if (!d) return;
+  const paid = payments
+    .filter(function(p) { return p.debtId === debtId && !p.pending; })
+    .reduce(function(s, p) { return s + p.amount; }, 0);
+  const accrued = accruedInterestFor(debtId);
+  const adjusted = adjustments
+    .filter(function(a) { return a.debtId === debtId; })
+    .reduce(function(s, a) { return s + a.amount; }, 0);
+  d.balance = Math.max(0, round2(d.originalBalance + accrued + adjusted - paid));
+}
+
+// Run once per app load (and daily while open). For each debt with a balance,
+// accrue every month from the month after its last accrual entry up to the
+// current month. A debt with no entries accrues only the current month — its
+// entered balance is assumed current as of when it was added (addDebt also
+// writes a $0 anchor entry for the joining month so it is never back-accrued).
+// $0 entries ARE recorded for 0%-promo months so the catch-up pointer always
+// advances. Returns true if anything was added; saves internally when so.
+function processInterestAccrual() {
+  if (!interestAccrualEnabled) return false;
+  const now = new Date();
+  const curKey = monthKeyOf(now);
+  let changed = false;
+  debts.forEach(function(d) {
+    if (d.balance <= 0) return;
+    // Find this debt's latest accrued month
+    let lastKey = null;
+    accruals.forEach(function(a) {
+      if (a.debtId === d.id && (!lastKey || a.month > lastKey)) lastKey = a.month;
+    });
+    // Build list of month-start dates needing accrual
+    const months = [];
+    if (!lastKey) {
+      months.push(new Date(now.getFullYear(), now.getMonth(), 1));
+    } else if (lastKey < curKey) {
+      const parts = lastKey.split('-');
+      let cursor = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1 + 1, 1);
+      while (monthKeyOf(cursor) <= curKey) {
+        months.push(new Date(cursor.getFullYear(), cursor.getMonth(), 1));
+        cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+      }
+    }
+    months.forEach(function(mDate) {
+      const mKey = monthKeyOf(mDate);
+      // Idempotency guard — never two entries for one (debt, month)
+      const exists = accruals.some(function(a) { return a.debtId === d.id && a.month === mKey; });
+      if (exists) return;
+      const rate = accrualRateFor(d, mDate);
+      const amount = rate > 0 ? round2(d.balance * rate / 100 / 12) : 0;
+      accruals.push({
+        id: nextId++,
+        debtId: d.id,
+        debtName: d.name,
+        month: mKey,
+        amount: amount,
+        apr: rate,
+        date: mKey + '-01'
+      });
+      if (amount > 0) {
+        d.balance = round2(d.balance + amount);
+        changed = true;
+      }
+    });
+  });
+  if (changed) save();
+  return changed;
+}
+
+// Settings toggle handler. On first enable, immediately accrue the current
+// month and summarize what was added so the feature is never silent.
+function toggleInterestAccrual(on) {
+  interestAccrualEnabled = !!on;
+  if (interestAccrualEnabled) {
+    const before = accruals.length;
+    const beforeTotal = accruals.reduce(function(s, a) { return s + a.amount; }, 0);
+    processInterestAccrual();
+    const added = accruals.reduce(function(s, a) { return s + a.amount; }, 0) - beforeTotal;
+    const count = accruals.length - before;
+    if (count > 0 && added > 0) {
+      showBackupMsg('ok', 'Estimated interest enabled — added ' + fmtDec(added) + ' across ' + count + ' account' + (count !== 1 ? 's' : '') + ' for this month.');
+    } else {
+      showBackupMsg('ok', 'Estimated interest enabled. Interest will be added on the 1st of each month.');
+    }
+  } else {
+    // Per spec: turning OFF stops future accruals but keeps history — the
+    // interest already added was real; removing it would falsify the ledger.
+    showBackupMsg('ok', 'Estimated interest disabled. Past interest entries are kept; no new interest will be added.');
+  }
+  save(); render();
+}
+
 // Auto-convert: apply any pending Payment Log entries and lump sums whose date has arrived
 function processDuePayments() {
   const today = localDateStr();
@@ -3375,14 +3608,13 @@ function saveEditPayment(paymentId) {
   p.date = newDate;
   p.amount = newAmount;
 
-  // Recalculate balance for this debt from scratch using all NON-PENDING payments.
-  // Pending payments haven't been applied to the balance yet so must be excluded.
+  // Recalculate balance for this debt from the full ledger.
+  // v1.11.0 — uses recomputeBalance() so interest accruals and manual
+  // adjustments survive payment edits (previously originalBalance − payments
+  // silently wiped them).
   const d = debts.find(function(x) { return x.id === p.debtId; });
   if (d) {
-    const totalPaidOnDebt = payments
-      .filter(function(x) { return x.debtId === p.debtId && !x.pending; })
-      .reduce(function(sum, x) { return sum + x.amount; }, 0);
-    d.balance = Math.max(0, d.originalBalance - totalPaidOnDebt);
+    recomputeBalance(d.id);
     p.eliminated = d.balance <= 0;
   }
 
@@ -3403,16 +3635,13 @@ function deletePayment(paymentId) {
   // Remove the payment first
   payments.splice(idx, 1);
 
-  // Recalculate this debt's balance by replaying all remaining
-  // NON-PENDING payments for it against the original balance.
-  // Pending payments haven't been applied to the balance yet,
-  // so including them would incorrectly over-reduce it.
+  // Recalculate this debt's balance from the full ledger.
+  // v1.11.0 — recomputeBalance() includes accruals and adjustments, so
+  // deleting an old payment no longer wipes accrued interest or manual
+  // balance corrections.
   const d = debts.find(x => x.id === p.debtId);
   if (d) {
-    const totalPaidOnDebt = payments
-      .filter(x => x.debtId === p.debtId && !x.pending)
-      .reduce((sum, x) => sum + x.amount, 0);
-    d.balance = Math.max(0, d.originalBalance - totalPaidOnDebt);
+    recomputeBalance(d.id);
   }
 
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
@@ -3505,7 +3734,10 @@ function renderStats() {
 
   if (activeDebts.length) {
     const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, plannedDisbursements());
-    const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy, []);
+    // v1.12.0 — baseline is the do-nothing counterfactual: no extra, no
+    // lumps, and NO rollover of freed minimums (a person not following a
+    // plan pockets them). The plan leg above rolls minimums by default.
+    const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy, [], { rollover: false });
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
@@ -3567,6 +3799,12 @@ function renderDebtList() {
       ? `<div class="debt-stat"><span class="debt-stat-label">Transfer Fee</span><span class="debt-stat-val" style="color:var(--accent4)">${fmtDec(d.transferFee)}</span></div>`
       : '';
 
+    // v1.11.0 — estimated interest accrued to date (only when nonzero)
+    const _accruedTotal = accruedInterestFor(d.id);
+    const accruedInfo = _accruedTotal > 0
+      ? `<div class="debt-stat"><span class="debt-stat-label">Est. Interest Added</span><span class="debt-stat-val" style="color:var(--warning, #d99a3d)">${fmtDec(_accruedTotal)}</span></div>`
+      : '';
+
     // v1.7.0 — excluded-from-strategy badge (mortgage-by-default)
     const excludedBadge = (d.includeInStrategy === false)
       ? `<span class="tag tag-muted" style="margin-left:6px;font-size:0.58rem;">not in payoff plan</span>`
@@ -3594,6 +3832,7 @@ function renderDebtList() {
         </div>
         ${promoInfo}
         ${transferFeeInfo}
+        ${accruedInfo}
       </div>
       <button class="btn btn-ghost" style="font-size:0.72rem;padding:6px 12px;" onclick="openEditModal(${d.id})">Edit</button>
       <button class="btn btn-danger" onclick="removeDebt(${d.id})">✕</button>
@@ -3669,11 +3908,33 @@ function renderChart() {
 
 function renderPaymentLog() {
   const log = document.getElementById('payment-log');
-  if (!payments.length) {
+  // v1.11.0 — interleave estimated-interest accrual rows ($0 anchor entries
+  // hidden) with payments, newest first. Stable sort by date string keeps
+  // same-date entries in insertion order.
+  const visibleAccruals = accruals.filter(function(a) { return a.amount > 0; });
+  if (!payments.length && !visibleAccruals.length) {
     log.innerHTML = '<div class="empty-state" style="padding:20px"><p>Payments will appear here once logged.</p></div>';
     return;
   }
-  log.innerHTML = [...payments].reverse().map(function(p) {
+  const rows = payments.map(function(p, i) { return { kind: 'pay', date: p.date, seq: i, p: p }; })
+    .concat(visibleAccruals.map(function(a, i) { return { kind: 'accrual', date: a.date, seq: i, a: a }; }));
+  rows.sort(function(x, y) {
+    if (x.date !== y.date) return x.date < y.date ? -1 : 1;
+    if (x.kind !== y.kind) return x.kind === 'accrual' ? -1 : 1; // interest lands before same-day payments
+    return x.seq - y.seq;
+  });
+  rows.reverse();
+  log.innerHTML = rows.map(function(row) {
+    if (row.kind === 'accrual') {
+      const a = row.a;
+      return '<div class="payment-entry" style="opacity:0.85;">' +
+        '<span class="payment-date">' + a.date + '</span>' +
+        '<span class="payment-debt">' + a.debtName +
+          '<span class="tag tag-muted" style="margin-left:4px;font-size:0.62rem;">Estimated interest · ' + a.apr + '%</span></span>' +
+        '<span class="payment-amount" style="color:var(--warning, #d99a3d);">+' + fmtDec(a.amount) + '</span>' +
+        '</div>';
+    }
+    const p = row.p;
     const noteTag = p.note ? '<span class="tag tag-accent" style="margin-left:4px">' + p.note + '</span>' : '';
     const elimTag = p.eliminated ? ' 🎉' : '';
     const editingThis = editingPaymentId === p.id;
@@ -3927,7 +4188,8 @@ function renderStrategy() {
   if (activeDebts.length) {
     const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
     const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
-    const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', []);
+    // v1.12.0 — min-only column is the do-nothing baseline: no rollover
+    const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', [], { rollover: false });
     document.getElementById('cmp-av-months').textContent = av.months;
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
     document.getElementById('cmp-sb-months').textContent = sb.months;
@@ -3938,10 +4200,14 @@ function renderStrategy() {
     const best = av.totalInterest <= sb.totalInterest ? 'Avalanche' : 'Snowball';
     const savings = Math.abs(av.totalInterest - sb.totalInterest);
 
-    // Show nudge if no extra payment set, otherwise show best strategy alert
+    // v1.12.0 — with rollover, strategies can genuinely differ even at $0
+    // extra (rolled minimums cascade in strategy order). Show the "set an
+    // extra payment" nudge only when the results actually ARE identical;
+    // otherwise show which strategy wins.
     const noExtraAlert = document.getElementById('no-extra-alert');
     const bestAlert = document.getElementById('best-strategy-alert');
-    if (extra <= 0) {
+    const resultsIdentical = av.months === sb.months && savings < 0.01;
+    if (extra <= 0 && resultsIdentical) {
       noExtraAlert.style.display = 'flex';
       bestAlert.style.display = 'none';
     } else {
@@ -4017,7 +4283,9 @@ function renderStrategy() {
 
   // v1.7.0 — also run a no-extras sim so installment loans can show
   // their natural scheduled payoff date alongside the with-extras date.
-  const schedResult = simulate(sorted.map(function(d){ return {...d}; }), 0, 0, strategy, []);
+  // v1.12.0 — scheduled payoff is the contractual baseline (each loan on its
+  // own schedule); freed minimums from other debts must not accelerate it
+  const schedResult = simulate(sorted.map(function(d){ return {...d}; }), 0, 0, strategy, [], { rollover: false });
   const schedPerDebt = {};
   (schedResult.perDebt || []).forEach(function(p) { schedPerDebt[p.id] = p; });
   const schedMonths = schedResult.months || 1;
@@ -4175,7 +4443,10 @@ async function checkForUpdates() {
       lumpSums: lumpSums,
       strategy: strategy,
       extraMonthly: parseFloat(document.getElementById('extra-payment').value) || 0,
-      nextId: nextId
+      nextId: nextId,
+      accruals: accruals,
+      adjustments: adjustments,
+      interestAccrualEnabled: interestAccrualEnabled
     };
     localStorage.setItem('debtfree_pending_restore', JSON.stringify(backup));
 
@@ -4206,14 +4477,17 @@ function showBackupMsg(type, text) {
 
 function exportData() {
   const data = {
-    version: 1,
+    version: 2,   // v1.11.0 — v2 adds accruals/adjustments/interestAccrualEnabled
     exportDate: new Date().toISOString(),
     debts: debts,
     payments: payments,
     lumpSums: lumpSums,
     strategy: strategy,
     extraMonthly: extraMonthly,
-    nextId: nextId
+    nextId: nextId,
+    accruals: accruals,
+    adjustments: adjustments,
+    interestAccrualEnabled: interestAccrualEnabled
   };
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -4248,6 +4522,20 @@ function importData(event) {
       strategy = data.strategy || 'avalanche';
       extraMonthly = data.extraMonthly || 0;
       nextId = data.nextId || (debts.length ? Math.max(...debts.map(function(d){ return d.id; })) + 1 : 1);
+      // v1.11.0 — v2 backups carry the accrual ledger; v1 backups get empty
+      // defaults and the toggle off. Entries are sanitized (numeric amounts;
+      // accruals also need a month key). Import replaces arrays wholesale, so
+      // the (debtId, month) idempotency key makes cross-device double-accrual
+      // impossible.
+      accruals = (data.accruals || []).filter(function(a) {
+        return a && !isNaN(a.amount) && a.debtId != null && typeof a.month === 'string';
+      });
+      adjustments = (data.adjustments || []).filter(function(a) {
+        return a && !isNaN(a.amount) && a.debtId != null;
+      });
+      interestAccrualEnabled = !!data.interestAccrualEnabled;
+      var _impToggle = document.getElementById('accrual-toggle');
+      if (_impToggle) _impToggle.checked = interestAccrualEnabled;
       document.getElementById('extra-payment').value = extraMonthly || '';
       document.getElementById('strategy-select').value = strategy;
       selectStrategy(strategy);
@@ -4386,6 +4674,10 @@ function save() {
     localStorage.setItem('debtfree_extra', extraMonthly);
     localStorage.setItem('debtfree_nextid', nextId);
     localStorage.setItem('debtfree_lumpsums', JSON.stringify(lumpSums));
+    // v1.11.0 — accrual ledger + setting
+    localStorage.setItem('debtfree_accruals', JSON.stringify(accruals));
+    localStorage.setItem('debtfree_adjustments', JSON.stringify(adjustments));
+    localStorage.setItem('debtfree_accrual_enabled', interestAccrualEnabled ? '1' : '0');
   } catch(e) {
     // v1.6.0 — surface storage errors instead of silently dropping the write
     console.error('DebtFree save() failed:', e);
@@ -4420,6 +4712,10 @@ function load() {
         strategy = data.strategy || 'avalanche';
         extraMonthly = data.extraMonthly || 0;
         nextId = data.nextId || (debts.length ? Math.max(...debts.map(d => d.id)) + 1 : 1);
+        // v1.11.0 — restore accrual ledger across updates
+        accruals = data.accruals || [];
+        adjustments = data.adjustments || [];
+        interestAccrualEnabled = !!data.interestAccrualEnabled;
         document.getElementById('extra-payment').value = extraMonthly || '';
         document.getElementById('strategy-select').value = strategy;
         // Show success message after render
@@ -4437,6 +4733,18 @@ function load() {
     const s = localStorage.getItem('debtfree_strategy');
     const e = localStorage.getItem('debtfree_extra');
     const n = localStorage.getItem('debtfree_nextid');
+    // v1.11.0 — accrual ledger + setting.
+    // Default rule: existing users (stored data present, no setting saved
+    // yet) stay OFF — balances silently growing after an update would be
+    // alarming. Brand-new users (no stored debts key at all) default ON.
+    const accFlag = localStorage.getItem('debtfree_accrual_enabled');
+    if (accFlag !== null) {
+      interestAccrualEnabled = accFlag === '1';
+    } else {
+      interestAccrualEnabled = (d === null);
+    }
+    try { accruals = JSON.parse(localStorage.getItem('debtfree_accruals')) || []; } catch(_) { accruals = []; }
+    try { adjustments = JSON.parse(localStorage.getItem('debtfree_adjustments')) || []; } catch(_) { adjustments = []; }
     if (d) {
       // v1.6.0 — use shared sanitizeDebts() helper (now also backfills
       // postPromoApr/promoApr/promoEnd/hasPromo/transferFee/type).
@@ -4653,8 +4961,17 @@ try {
 
 load();
 
-// Process any payments or lump sums that became due today
-if (processDuePayments()) render();
+// v1.11.0 — reflect persisted accrual setting in the settings toggle
+(function() {
+  var t = document.getElementById('accrual-toggle');
+  if (t) t.checked = interestAccrualEnabled;
+})();
+
+// Process any payments or lump sums that became due today, then accrue
+// estimated interest for any month boundaries crossed since last open
+var _bootDue = processDuePayments();
+var _bootAcc = processInterestAccrual();
+if (_bootDue || _bootAcc) render();
 
 // Integrity check — surface any orphan lumps/payments before they cause confusion
 showOrphanBanner();
@@ -4663,7 +4980,9 @@ showOrphanBanner();
 initWiSliders();
 // Check again once per day if app stays open
 setInterval(function() {
-  if (processDuePayments()) render();
+  var _due = processDuePayments();
+  var _acc = processInterestAccrual();
+  if (_due || _acc) render();
 }, 1000 * 60 * 60 * 24);
 // Restore hybrid body class if strategy was saved as hybrid
 if (strategy === 'hybrid') document.body.classList.add('hybrid-mode');
