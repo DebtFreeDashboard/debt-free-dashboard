@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DebtFree">
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" content="#f4f4f7">
 <link rel="manifest" href="/app/manifest.json">
 <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
 <link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
@@ -19,8 +19,8 @@
 
   body {
     font-family: 'DM Sans', sans-serif;
-    background: #0a0a0f;
-    color: #f0f0f8;
+    background: #f4f4f7;
+    color: #1a1a2a;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -43,19 +43,19 @@
   .logo-pip {
     width: 10px; height: 10px;
     border-radius: 50%;
-    background: #c8f135;
-    box-shadow: 0 0 12px #c8f135;
+    background: #00a884;
+    box-shadow: 0 0 12px #00a884;
     animation: pulse 2s ease-in-out infinite;
   }
 
   @keyframes pulse {
-    0%,100% { box-shadow: 0 0 8px #c8f135; }
-    50% { box-shadow: 0 0 20px #c8f135, 0 0 40px rgba(200,241,53,0.3); }
+    0%,100% { box-shadow: 0 0 8px #00a884; }
+    50% { box-shadow: 0 0 20px #00a884, 0 0 40px rgba(0,168,132,0.3); }
   }
 
   .card {
-    background: #12121a;
-    border: 1px solid rgba(255,255,255,0.08);
+    background: #ffffff;
+    border: 1px solid rgba(10,10,30,0.10);
     border-radius: 20px;
     padding: 32px;
     width: 100%;
@@ -73,7 +73,7 @@
 
   .card-sub {
     font-size: 0.85rem;
-    color: #6b6b8a;
+    color: #5a5a72;
     font-weight: 300;
     margin-bottom: 24px;
     line-height: 1.55;
@@ -83,7 +83,7 @@
   .tabs {
     display: flex;
     gap: 4px;
-    background: #1a1a26;
+    background: #f0f0f4;
     border-radius: 10px;
     padding: 4px;
     margin-bottom: 24px;
@@ -98,7 +98,7 @@
     font-size: 0.68rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #4a4a6a;
+    color: #9a9ab0;
     cursor: pointer;
     transition: all 0.2s;
     border: none;
@@ -106,8 +106,8 @@
   }
 
   .tab.active {
-    background: #c8f135;
-    color: #0a0a0f;
+    background: #00a884;
+    color: #f4f4f7;
     font-weight: 500;
   }
 
@@ -119,17 +119,17 @@
     align-items: flex-start;
     gap: 14px;
     padding: 14px 16px;
-    background: #1a1a26;
+    background: #f0f0f4;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid rgba(10,10,30,0.08);
   }
 
   .step-num {
     font-family: 'DM Mono', monospace;
     font-size: 0.65rem;
-    background: rgba(200,241,53,0.1);
-    color: #c8f135;
-    border: 1px solid rgba(200,241,53,0.2);
+    background: rgba(0,168,132,0.10);
+    color: #00a884;
+    border: 1px solid rgba(0,168,132,0.2);
     border-radius: 5px;
     padding: 3px 7px;
     flex-shrink: 0;
@@ -140,19 +140,19 @@
   .step-text {
     font-size: 0.85rem;
     line-height: 1.5;
-    color: #c0c0d8;
+    color: #2a2a3a;
     font-weight: 300;
   }
 
-  .step-text strong { color: #f0f0f8; font-weight: 500; }
-  .step-text .lime { color: #c8f135; font-weight: 500; }
+  .step-text strong { color: #1a1a2a; font-weight: 500; }
+  .step-text .lime { color: #00a884; font-weight: 500; }
 
   /* ── OPEN BUTTON ── */
   .btn-open {
     display: block;
     width: 100%;
-    background: #c8f135;
-    color: #0a0a0f;
+    background: #00a884;
+    color: #f4f4f7;
     font-family: 'Syne', sans-serif;
     font-weight: 800;
     font-size: 1rem;
@@ -168,31 +168,31 @@
   }
 
   .btn-open:hover {
-    background: #d9f55f;
+    background: #1bbf97;
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(200,241,53,0.3);
+    box-shadow: 0 8px 24px rgba(0,168,132,0.3);
   }
 
   .already-installed {
     font-family: 'DM Mono', monospace;
     font-size: 0.7rem;
-    color: #3a3a5a;
+    color: #9a9ab0;
     text-align: center;
     margin-top: 12px;
     letter-spacing: 0.05em;
   }
 
   .already-installed a {
-    color: #6b6b8a;
+    color: #5a5a72;
     text-decoration: none;
   }
 
-  .already-installed a:hover { color: #c8f135; }
+  .already-installed a:hover { color: #00a884; }
 
   .step-text a,
   .step-text a:visited,
   .step-text a:hover {
-    color: #c8f135 !important;
+    color: #00a884 !important;
     text-decoration: none;
   }
 
@@ -253,7 +253,7 @@
     </div>
     <div class="step">
       <div class="step-num">06</div>
-      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style=“color: #c8f135 !important;”>User Guide</a></div>
+      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #00a884 !important;">User Guide</a></div>
     </div>
   </div>
 
@@ -277,7 +277,7 @@
     </div>
    <div class="step">
       <div class="step-num">05</div>
-      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style=“color: #c8f135 !important;”>User Guide</a></div>
+      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #00a884 !important;">User Guide</a></div>
     </div>
   </div>
 
@@ -301,7 +301,7 @@
     </div>
    <div class="step">
       <div class="step-num">05</div>
-      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style=“color: #c8f135 !important;”>User Guide</a></div>
+      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #00a884 !important;">User Guide</a></div>
     </div>
   </div>
 
