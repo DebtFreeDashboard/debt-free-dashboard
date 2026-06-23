@@ -1818,7 +1818,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.13.1';
+const APP_VERSION = '1.13.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1826,6 +1826,15 @@ const APP_VERSION = '1.13.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.13.2',
+    date: 'May 16, 2026',
+    name: 'Premium & theme persist across updates',
+    whatsNew: [],
+    fixes: [
+      'Fixed Premium needing to be re-activated after every app update. Your unlocked status and your theme choice now carry through updates automatically — no need to re-enter your license key. (This fix takes effect from this update forward; you may need to activate once more this time.)'
+    ]
+  },
   {
     version: '1.13.1',
     date: 'May 16, 2026',
@@ -4840,7 +4849,12 @@ async function checkForUpdates() {
       nextId: nextId,
       accruals: accruals,
       adjustments: adjustments,
-      interestAccrualEnabled: interestAccrualEnabled
+      interestAccrualEnabled: interestAccrualEnabled,
+      // v1.13.2 — carry premium + theme across updates so the user isn't
+      // silently locked out / reset to dark theme on every update
+      isPremium: isPremium,
+      licenseKey: licenseKey,
+      theme: theme
     };
     localStorage.setItem('debtfree_pending_restore', JSON.stringify(backup));
 
@@ -4881,7 +4895,11 @@ function exportData() {
     nextId: nextId,
     accruals: accruals,
     adjustments: adjustments,
-    interestAccrualEnabled: interestAccrualEnabled
+    interestAccrualEnabled: interestAccrualEnabled,
+    // v1.13.2 — theme is a harmless preference and safe to carry in a backup.
+    // Premium/license are deliberately NOT exported: a backup file can be
+    // shared, and we don't want it to become a way to hand out premium.
+    theme: theme
   };
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -4930,6 +4948,12 @@ function importData(event) {
       interestAccrualEnabled = !!data.interestAccrualEnabled;
       var _impToggle = document.getElementById('accrual-toggle');
       if (_impToggle) _impToggle.checked = interestAccrualEnabled;
+      // v1.13.2 — apply imported theme if present (premium/license are NOT
+      // imported by design — they stay tied to this device's activation).
+      if (data.theme === 'light' || data.theme === 'dark') {
+        theme = data.theme;
+        applyTheme();
+      }
       document.getElementById('extra-payment').value = extraMonthly || '';
       document.getElementById('strategy-select').value = strategy;
       selectStrategy(strategy);
@@ -5114,6 +5138,17 @@ function load() {
         accruals = data.accruals || [];
         adjustments = data.adjustments || [];
         interestAccrualEnabled = !!data.interestAccrualEnabled;
+        // v1.13.2 — restore premium + theme across updates. Fall back to the
+        // values still in localStorage when updating FROM a build that didn't
+        // include them in the backup (so a one-time upgrade from <=1.13.1
+        // doesn't lock the user out).
+        isPremium = (typeof data.isPremium === 'boolean')
+          ? data.isPremium
+          : (localStorage.getItem('debtfree_premium') === '1');
+        licenseKey = (typeof data.licenseKey === 'string')
+          ? data.licenseKey
+          : (localStorage.getItem('debtfree_license') || '');
+        theme = data.theme || localStorage.getItem('debtfree_theme') || 'dark';
         document.getElementById('extra-payment').value = extraMonthly || '';
         document.getElementById('strategy-select').value = strategy;
         // Show success message after render

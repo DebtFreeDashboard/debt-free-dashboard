@@ -1,8 +1,8 @@
 {
-  "version": "1.13.1",
+  "version": "1.13.2",
   "releaseDate": "2026-05-16",
-  "releaseName": "Light theme header fix",
+  "releaseName": "Premium & theme persist across updates",
   "notes": [
-    "Fixed the top header and tab bar staying dark when Light theme was on, which made the DebtFree logo and navigation hard to read. The header, tab bar, dropdown menus, and the iOS install banner now follow your selected theme."
+    "Fixed Premium needing to be re-activated after every app update. Your unlocked status and your theme choice now carry through updates automatically - no need to re-enter your license key. (This fix takes effect from this update forward; you may need to activate once more this time.)"
   ]
 }
