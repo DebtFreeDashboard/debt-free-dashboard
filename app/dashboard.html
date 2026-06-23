@@ -1288,6 +1288,10 @@
       <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
       <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
+      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
+        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
+        Planned lump sum applied
+      </div>
       <div id="cashflow-events" style="margin-top:16px;"></div>
     </div>
     <!-- Cash-Flow teaser (free, blur) -->
@@ -1917,7 +1921,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.14.0';
+const APP_VERSION = '1.15.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1925,6 +1929,16 @@ const APP_VERSION = '1.14.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.15.0',
+    date: 'May 16, 2026',
+    name: 'Clearer Cash-Flow Release',
+    whatsNew: [
+      'The Monthly Cash-Flow Release chart now marks the months where a planned lump sum lands, so a big drop in your minimums has a visible cause instead of looking like a mystery cliff.',
+      'When several debts are eliminated in the same month (often because a lump sum clears them together), they now group into a single release card — showing the combined monthly cash freed, with each debt itemized beneath — instead of a row of identical dates.'
+    ],
+    fixes: []
+  },
   {
     version: '1.14.0',
     date: 'May 16, 2026',
@@ -4577,7 +4591,43 @@ function computeReleaseEvents() {
   // Running obligation after each release
   let remaining = startObligation;
   events.forEach(function(ev){ remaining = Math.max(0, remaining - ev.freed); ev.remainingObligation = remaining; });
-  return { startObligation: startObligation, events: events, totalMonths: sim.months };
+
+  // v1.15.0 — group eliminations that fall in the same calendar month into a
+  // single release event (a big coordinated lump sum can zero out several debts
+  // at once). Each group carries its debts, combined freed amount, and the
+  // running obligation after the whole group clears.
+  const groupsByMonth = {};
+  const groupOrder = [];
+  events.forEach(function(ev){
+    if (!groupsByMonth[ev.month]) {
+      groupsByMonth[ev.month] = { month: ev.month, date: ev.date, debts: [], freed: 0, remainingObligation: ev.remainingObligation };
+      groupOrder.push(ev.month);
+    }
+    const g = groupsByMonth[ev.month];
+    g.debts.push({ id: ev.id, name: ev.name, freed: ev.freed });
+    g.freed += ev.freed;
+    // remainingObligation after the LAST debt in this month (events are sorted,
+    // so the last one we add has the lowest running value)
+    g.remainingObligation = ev.remainingObligation;
+  });
+  const groups = groupOrder.map(function(m){ return groupsByMonth[m]; });
+
+  // v1.15.0 — planned-lump markers: sum scheduled lump sums (and pending
+  // payments) by calendar-month index from today, so the chart can flag the
+  // months where a windfall lands and explain a sudden cliff.
+  const lumpByMonth = {};
+  plannedDisbursements().forEach(function(l){
+    if (!l.date) return;
+    const ld = new Date(l.date);
+    const mi = (ld.getFullYear() - now.getFullYear()) * 12 + (ld.getMonth() - now.getMonth());
+    if (mi < 0 || mi > sim.months) return; // only within the payoff horizon
+    lumpByMonth[mi] = (lumpByMonth[mi] || 0) + (l.amount || 0);
+  });
+  const lumpMarkers = Object.keys(lumpByMonth).map(function(k){
+    return { month: parseInt(k, 10), amount: lumpByMonth[k] };
+  }).sort(function(a,b){ return a.month - b.month; });
+
+  return { startObligation: startObligation, events: events, groups: groups, lumpMarkers: lumpMarkers, totalMonths: sim.months };
 }
 
 function monthLabel(date) {
@@ -4610,6 +4660,49 @@ function renderCashflow() {
   const styles = getComputedStyle(document.documentElement);
   const accent = styles.getPropertyValue('--accent').trim() || '#00e5b0';
   const muted = styles.getPropertyValue('--text-muted').trim() || '#7a7a9a';
+  const amber = styles.getPropertyValue('--accent4').trim() || '#d99a1f';
+
+  // v1.15.0 — planned-lump marker plugin: dashed vertical line + flag + label
+  // at each month a scheduled lump sum (or pending payment) lands.
+  const markers = data.lumpMarkers || [];
+  function shortAmt(n){
+    if (n >= 1000) {
+      const k = n / 1000;
+      return '$' + (k >= 10 ? Math.round(k) : k.toFixed(1).replace(/\.0$/, '')) + 'k';
+    }
+    return '$' + Math.round(n);
+  }
+  const lumpMarkerPlugin = {
+    id: 'lumpMarkers',
+    afterDatasetsDraw: function(chart) {
+      if (!markers.length) return;
+      const ctx = chart.ctx;
+      const xScale = chart.scales.x;
+      const yScale = chart.scales.y;
+      const top = yScale.getPixelForValue(yScale.max);
+      const bot = yScale.getPixelForValue(0);
+      markers.forEach(function(mk) {
+        if (mk.month < 0 || mk.month >= chart.data.labels.length) return;
+        const px = xScale.getPixelForValue(mk.month);
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = amber;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(px, top + 6); ctx.lineTo(px, bot); ctx.stroke();
+        ctx.setLineDash([]);
+        // flag triangle
+        ctx.fillStyle = amber;
+        ctx.beginPath(); ctx.moveTo(px - 5, top - 1); ctx.lineTo(px + 5, top - 1); ctx.lineTo(px, top + 7); ctx.closePath(); ctx.fill();
+        // label
+        ctx.font = "10px 'DM Mono', monospace";
+        ctx.fillStyle = amber;
+        ctx.textAlign = 'center';
+        ctx.fillText(shortAmt(mk.amount) + ' lump', px, top - 5);
+        ctx.restore();
+      });
+    }
+  };
+
   const ctx = document.getElementById('cashflowChart').getContext('2d');
   if (cashflowChart) cashflowChart.destroy();
   cashflowChart = new Chart(ctx, {
@@ -4618,28 +4711,49 @@ function renderCashflow() {
       label: 'Monthly minimums remaining',
       data: series,
       borderColor: accent,
-      backgroundColor: 'rgba(0,229,176,0.06)',
+      backgroundColor: 'rgba(0,168,132,0.07)',
       borderWidth: 2, pointRadius: 0, fill: true, stepped: true
     }]},
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: markers.length ? 16 : 0 } },
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return fmt(c.raw) + '/mo'; } } } },
       scales: {
         x: { ticks: { color: muted, maxTicksLimit: 8, font: { family: "'DM Mono'" } }, grid: { display: false } },
         y: { ticks: { color: muted, font: { family: "'DM Mono'" }, callback: function(v){ return '$' + v; } }, grid: { color: 'rgba(128,128,128,0.1)' }, beginAtZero: true }
       }
-    }
+    },
+    plugins: [lumpMarkerPlugin]
   });
 
-  // Events list
+  // v1.15.0 — marker legend (only when markers exist)
+  const legend = document.getElementById('cashflow-marker-legend');
+  if (legend) legend.style.display = markers.length ? 'flex' : 'none';
+
+  // v1.15.0 — grouped events list: same-month eliminations collapse into one
+  // card with the debts itemized beneath; single-debt months stay one row.
   const list = document.getElementById('cashflow-events');
-  list.innerHTML = data.events.map(function(ev) {
-    return '<div class="cashflow-event">' +
-      '<div><div class="cashflow-event-name">' + ev.name + ' paid off</div>' +
-      '<div class="cashflow-event-date">' + monthLabel(ev.date) + '</div></div>' +
-      '<div style="text-align:right;"><div class="cashflow-event-amt">+' + fmtDec(ev.freed) + '/mo</div>' +
-      '<div class="cashflow-event-running">' + fmtDec(ev.remainingObligation) + '/mo still committed</div></div>' +
+  list.innerHTML = (data.groups || []).map(function(g) {
+    const multi = g.debts.length > 1;
+    const title = multi ? (g.debts.length + ' debts paid off') : (g.debts[0].name + ' paid off');
+    let html = '<div class="cashflow-event" style="flex-direction:column; align-items:stretch; gap:0;">';
+    html += '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">' +
+      '<div><div class="cashflow-event-name">' + title + '</div>' +
+      '<div class="cashflow-event-date">' + monthLabel(g.date) + '</div></div>' +
+      '<div style="text-align:right;"><div class="cashflow-event-amt">+' + fmtDec(g.freed) + '/mo</div>' +
+      '<div class="cashflow-event-running">' + fmtDec(g.remainingObligation) + '/mo still committed</div></div>' +
       '</div>';
+    if (multi) {
+      html += '<div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:5px;">';
+      g.debts.forEach(function(d){
+        html += '<div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-muted);">' +
+          '<span>' + d.name + '</span>' +
+          '<span style="font-family:var(--font-mono);">+' + fmtDec(d.freed) + '/mo</span></div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
   }).join('');
 }
 

@@ -1,10 +1,9 @@
 {
-  "version": "1.14.0",
+  "version": "1.15.0",
   "releaseDate": "2026-05-16",
-  "releaseName": "Premium planning suite",
+  "releaseName": "Clearer Cash-Flow Release",
   "notes": [
-    "New (Premium): Monthly Cash-Flow Release. A step-down chart plus a list of release events showing exactly how much monthly cash frees up as each debt is eliminated - and how much stays committed until the next one falls.",
-    "New (Premium): Debt-Free Roadmap. Your journey to zero laid out milestone by milestone, with each debt's elimination date and the monthly payment it frees.",
-    "New (Premium): Portfolio table. Your debt list becomes a sortable table - sort by balance, APR, minimum payment, payoff order, or interest paid. The free card view is unchanged."
+    "The Monthly Cash-Flow Release chart now marks the months where a planned lump sum lands, so a big drop in your minimums has a visible cause instead of looking like a mystery cliff.",
+    "When several debts are eliminated in the same month (often because a lump sum clears them together), they now group into a single release card - showing the combined monthly cash freed, with each debt itemized beneath - instead of a row of identical dates."
   ]
 }
