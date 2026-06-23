@@ -1,12 +1,8 @@
 {
-  "version": "1.13.0",
+  "version": "1.13.1",
   "releaseDate": "2026-05-16",
-  "releaseName": "Free to use, with an optional Premium",
+  "releaseName": "Light theme header fix",
   "notes": [
-    "DebtFree Dashboard is now free to use for your entire payoff journey - unlimited debts, the full snowball/avalanche engine with rollover, your Freedom Date, progress tracking, and the new highlights below. No account, no subscription, your data never leaves your device.",
-    "New: a Next Debt to Eliminate spotlight on your Dashboard shows exactly which debt you're crushing next and when it'll be gone.",
-    "New: a Debt-Free Progress hero puts your overall progress front and center.",
-    "New: a light theme. Switch between dark (default) and light in Backup & Restore.",
-    "Optional Premium ($12, one-time): unlocks What-If lump-sum modeling, the cash-flow release view, estimated-interest tracking, and the premium portfolio/timeline views. Pay once, yours forever - it just helps support the project."
+    "Fixed the top header and tab bar staying dark when Light theme was on, which made the DebtFree logo and navigation hard to read. The header, tab bar, dropdown menus, and the iOS install banner now follow your selected theme."
   ]
 }

@@ -34,6 +34,7 @@
     --accent5: #4ecdc4;
     --glow: rgba(0,229,176,0.15);
     --danger-glow: rgba(255,107,107,0.15);
+    --header-bg: rgba(10,10,15,0.95);
     --font-display: 'Syne', sans-serif;
     --font-mono: 'DM Mono', monospace;
     --font-body: 'DM Sans', sans-serif;
@@ -135,6 +136,7 @@
     --accent5: #2bb3aa;
     --glow: rgba(0,168,132,0.12);
     --danger-glow: rgba(224,72,72,0.12);
+    --header-bg: rgba(244,244,247,0.95);
     --shadow: 0 4px 24px rgba(20,20,50,0.10);
   }
 
@@ -165,7 +167,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(10,10,15,0.95);
+    background: var(--header-bg);
     backdrop-filter: blur(20px);
   }
 
@@ -407,7 +409,7 @@
     box-shadow: 0 0 0 3px rgba(0,229,176,0.08);
   }
 
-  .form-field select option { background: #1a1a26; }
+  .form-field select option { background: var(--surface2); color: var(--text); }
 
   /* ─── BUTTONS ─── */
   .btn {
@@ -1816,7 +1818,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.13.0';
+const APP_VERSION = '1.13.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1824,6 +1826,15 @@ const APP_VERSION = '1.13.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.13.1',
+    date: 'May 16, 2026',
+    name: 'Light theme header fix',
+    whatsNew: [],
+    fixes: [
+      'Fixed the top header and tab bar staying dark when Light theme was on, which made the DebtFree logo and navigation hard to read. The header, tab bar, dropdown menus, and the iOS install banner now follow your selected theme.'
+    ]
+  },
   {
     version: '1.13.0',
     date: 'May 16, 2026',
@@ -5423,24 +5434,24 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
   banner.id = 'install-banner';
   banner.style.cssText = `
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-    background: #12121a; border-top: 1px solid rgba(200,241,53,0.3);
+    background: var(--surface); border-top: 1px solid rgba(200,241,53,0.3);
     padding: 16px 20px; display: flex; align-items: center;
     gap: 14px; font-family: 'DM Sans', sans-serif;
     animation: slideUp 0.3s ease;
   `;
   banner.innerHTML = `
     <div style="flex:1">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:#f0f0f8;margin-bottom:3px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:3px;">
         Add DebtFree to your home screen
       </div>
-      <div style="font-size:0.75rem;color:#6b6b8a;line-height:1.4;">
-        Tap <strong style="color:#c8f135">Share</strong> then 
-        <strong style="color:#c8f135">Add to Home Screen</strong> 
+      <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">
+        Tap <strong style="color:var(--accent)">Share</strong> then 
+        <strong style="color:var(--accent)">Add to Home Screen</strong> 
         for the full app experience
       </div>
     </div>
     <button onclick="document.getElementById('install-banner').remove();localStorage.setItem('installDismissed','1')"
-      style="background:none;border:1px solid rgba(255,255,255,0.15);color:#6b6b8a;
+      style="background:none;border:1px solid var(--border2);color:var(--text-muted);
              border-radius:6px;padding:6px 12px;font-size:0.75rem;cursor:pointer;
              font-family:'DM Mono',monospace;white-space:nowrap;">
       Not now
