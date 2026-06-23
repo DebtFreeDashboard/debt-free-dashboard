@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f4f4f7">
+<title>DebtFree — User Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f4f7;
+    --surface: #ffffff;
+    --surface2: #f0f0f4;
+    --surface3: #e6e6ee;
+    --border: rgba(10,10,30,0.10);
+    --border2: rgba(10,10,30,0.16);
+    --text: #1a1a2a;
+    --text-muted: #5a5a72;
+    --text-dim: #9a9ab0;
+    --accent: #00a884;
+    --accent2: #6a4f96;
+    --accent3: #e04848;
+    --accent4: #d99a1f;
+    --accent5: #2bb3aa;
+    --glow: rgba(0,168,132,0.12);
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+    --radius: 16px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 8px var(--accent); }
+    50% { box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,168,132,0.3); }
+  }
+
+  .header-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .btn-open-app {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-open-app:hover { opacity: 0.85; }
+
+  /* ─── LAYOUT ─── */
+  .page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    margin-bottom: 56px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    width: 28px; height: 1px;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    max-width: 560px;
+    line-height: 1.7;
+  }
+
+  /* ─── TOC ─── */
+  .toc {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 56px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .toc-title {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .toc-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 24px;
+  }
+
+  @media(max-width: 560px) { .toc-list { grid-template-columns: 1fr; } }
+
+  .toc-list a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.2s;
+  }
+
+  .toc-list a:hover { color: var(--accent); }
+
+  .toc-num {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--accent);
+    background: rgba(0,168,132,0.08);
+    border: 1px solid rgba(0,168,132,0.2);
+    padding: 2px 7px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  /* ─── SECTION ─── */
+  .guide-section {
+    margin-bottom: 64px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+  }
+
+  .section-icon.green  { background: rgba(0,168,132,0.08);  border-color: rgba(0,168,132,0.2); }
+  .section-icon.purple { background: rgba(123,94,167,0.1);  border-color: rgba(123,94,167,0.25); }
+  .section-icon.yellow { background: rgba(255,209,102,0.1); border-color: rgba(255,209,102,0.25); }
+  .section-icon.red    { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.25); }
+  .section-icon.teal   { background: rgba(78,205,196,0.1);  border-color: rgba(78,205,196,0.25); }
+
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  /* ─── STEPS ─── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .step {
+    display: flex;
+    gap: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    transition: border-color 0.2s;
+  }
+
+  .step:hover { border-color: var(--border2); }
+
+  .step-num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: rgba(0,168,132,0.08);
+    border: 1px solid rgba(0,168,132,0.2);
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-content h4 {
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    letter-spacing: -0.2px;
+  }
+
+  .step-content p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .step-content p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ─── TIPS GRID ─── */
+  .tips-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media(max-width: 600px) { .tips-grid { grid-template-columns: 1fr; } }
+
+  .tip-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px 20px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .tip-card:hover {
+    border-color: var(--border2);
+    transform: translateY(-1px);
+  }
+
+  .tip-card.accent { border-left: 3px solid var(--accent); }
+  .tip-card.yellow { border-left: 3px solid var(--accent4); }
+  .tip-card.purple { border-left: 3px solid var(--accent2); }
+  .tip-card.red    { border-left: 3px solid var(--accent3); }
+  .tip-card.teal   { border-left: 3px solid var(--accent5); }
+
+  .tip-emoji {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+  }
+
+  .tip-card h4 {
+    font-family: var(--font-display);
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+
+  .tip-card p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .tip-card p strong { color: var(--text); font-weight: 500; }
+
+  /* ─── CALLOUT ─── */
+  .callout {
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin: 20px 0;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  .callout.green {
+    background: rgba(0,168,132,0.06);
+    border: 1px solid rgba(0,168,132,0.2);
+    color: var(--text-muted);
+  }
+
+  .callout.yellow {
+    background: rgba(255,209,102,0.06);
+    border: 1px solid rgba(255,209,102,0.2);
+    color: var(--text-muted);
+  }
+
+  .callout strong { color: var(--text); }
+  .callout-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+  /* ─── FIELD TABLE ─── */
+  .field-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin: 16px 0;
+  }
+
+  .field-table th {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border2);
+    background: var(--surface2);
+  }
+
+  .field-table th:first-child { border-radius: 8px 0 0 0; }
+  .field-table th:last-child  { border-radius: 0 8px 0 0; }
+
+  .field-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    color: var(--text-muted);
+  }
+
+  .field-table td:first-child {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .field-table tr:last-child td { border-bottom: none; }
+
+  .field-table tr { background: var(--surface); }
+  .field-table tr:hover { background: var(--surface2); }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 48px 0;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 24px;
+    text-align: center;
+  }
+
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  footer p {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .tag-green  { background: rgba(0,168,132,0.1);  color: var(--accent);  border: 1px solid rgba(0,168,132,0.2); }
+  .tag-yellow { background: rgba(255,209,102,0.1); color: var(--accent4); border: 1px solid rgba(255,209,102,0.2); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ HEADER ══════════════════ -->
+<header>
+  <a class="logo" href="dashboard.html">
+    <div class="logo-dot"></div>
+    DebtFree
+  </a>
+  <span class="header-tag">User Guide</span>
+  <a class="btn-open-app" href="dashboard.html">Open App →</a>
+</header>
+
+<div class="page">
+
+  <!-- ══════════════════ HERO ══════════════════ -->
+  <div class="hero">
+    <div class="hero-eyebrow">Getting Started</div>
+    <h1>Your <span>Freedom Date</span><br>starts here.</h1>
+    <p class="hero-sub">This guide walks you through every feature of DebtFree Dashboard — from adding your first debt to using the strategy and scenario tools to accelerate your payoff.</p>
+  </div>
+
+  <!-- ══════════════════ TOC ══════════════════ -->
+  <div class="toc">
+    <div class="toc-title">In this guide</div>
+    <ul class="toc-list">
+      <li><a href="#adding-debts"><span class="toc-num">01</span>Adding Your Debts</a></li>
+      <li><a href="#dashboard"><span class="toc-num">02</span>Dashboard Tab</a></li>
+      <li><a href="#logging-payments"><span class="toc-num">03</span>Logging Payments</a></li>
+      <li><a href="#strategy"><span class="toc-num">04</span>Strategy Tab</a></li>
+      <li><a href="#whatif"><span class="toc-num">05</span>What If Tab</a></li>
+      <li><a href="#wins"><span class="toc-num">06</span>Wins Tab</a></li>
+      <li><a href="#backup"><span class="toc-num">07</span>Backup &amp; Updates</a></li>
+      <li><a href="#tips"><span class="toc-num">08</span>Tips &amp; Tricks</a></li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════ SECTION 1: ADDING DEBTS ══════════════════ -->
+  <div class="guide-section" id="adding-debts">
+    <div class="section-header">
+      <div class="section-icon green">💳</div>
+      <div>
+        <div class="section-label">Step 01</div>
+        <div class="section-title">Adding Your Debts</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">The most important step. Pull up your actual statements — not what you think you owe. The accuracy of every calculation depends on what you enter here.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Scroll to "Add a Debt"</h4>
+          <p>On the Dashboard tab, scroll past your stats cards to find the debt entry form. You'll fill this out once for each debt you have.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Enter the debt name and type</h4>
+          <p>Give it a recognizable name — <strong>Chase Sapphire</strong>, <strong>Student Loan</strong>, <strong>Car Payment</strong>. Select the type from the dropdown. The type is used for display only and doesn't affect calculations.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Enter your current balance</h4>
+          <p>Use your current statement balance — the exact amount you owe right now. Don't round up or down. Every dollar matters for your Freedom Date.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Enter your APR (interest rate)</h4>
+          <p>Find this on your statement or online account. Enter it as a number — for example, enter <strong>22.99</strong> not 0.2299. If you have multiple APRs on one card (purchases vs cash advance), use the purchase APR.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>Enter your minimum payment</h4>
+          <p>The minimum monthly payment shown on your statement. This is used to calculate how long payoff takes if you only pay minimums — and as the baseline for extra payment calculations.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h4>If you have a 0% promo rate — check "Promotional APR"</h4>
+          <p>For balance transfers or promo credit cards at 0%, tick the checkbox. You'll get three extra fields: <strong>Promo Rate</strong> (enter 0), <strong>Promo End Date</strong>, and <strong>Rate After Promo</strong>. The dashboard automatically switches to the real rate when the promo expires in your simulation. Don't skip this — it significantly affects your payoff projections.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <h4>Click Add Debt</h4>
+          <p>Your debt appears in the list and all stats update immediately. Repeat for every debt you have. The more complete your list, the more accurate your Freedom Date.</p>
+        </div>
+      </div>
+    </div>
+
+    <table class="field-table">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Where to find it</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Balance</td><td>Current statement balance or online account</td></tr>
+        <tr><td>APR</td><td>Statement, online account, or back of card agreement</td></tr>
+        <tr><td>Min Payment</td><td>"Minimum Payment Due" on your statement</td></tr>
+        <tr><td>Promo End Date</td><td>Your balance transfer confirmation email or statement</td></tr>
+        <tr><td>Rate After Promo</td><td>Your original card agreement or online account</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout green">
+      <span class="callout-icon">💡</span>
+      <span><strong>Tip:</strong> You can edit any debt at any time by clicking the Edit button on its card. Update your balance each month after making a payment to keep your Freedom Date accurate.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════ SECTION 2: DASHBOARD ══════════════════ -->
+  <div class="guide-section" id="dashboard">
+    <div class="section-header">
+      <div class="section-icon teal">📊</div>
+      <div>
+        <div class="section-label">Step 02</div>
+        <div class="section-title">Dashboard Tab</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Your command center. Four live stats at the top update instantly as you add debts, change your extra payment, or log payments.</p>
+
+    <div class="tips-grid">
+      <div class="tip-card accent">
+        <div class="tip-emoji">🗓️</div>
+        <h4>Freedom Date</h4>
+        <p>The month and year your last debt hits zero. This is your north star. Every feature in the app exists to pull this date closer.</p>
+      </div>
+      <div class="tip-card teal">
+        <div class="tip-emoji">💰</div>
+        <h4>Interest Saved</h4>
+        <p>How much less interest you'll pay vs. making minimum payments only. This number grows significantly when you add an extra monthly payment.</p>
+      </div>
+      <div class="tip-card yellow">
+        <div class="tip-emoji">📈</div>
+        <h4>Extra Monthly Payment</h4>
+        <p>Any amount you can consistently add above your minimums. Even <strong>$50/month</strong> can save thousands and shave years off your timeline. Change this anytime.</p>
+      </div>
+      <div class="tip-card purple">
+        <div class="tip-emoji">🔥</div>
+        <h4>Monthly Interest</h4>
+        <p>What you're paying in interest <em>this month</em> just to stand still. Use this as motivation — every extra dollar you pay reduces this number permanently.</p>
+      </div>
+    </div>
+
+    <div class="callout yellow">
+      <span class="callout-icon">⚡</span>
+      <span><strong>Payoff Chart:</strong> The curve below your stats shows your debt balance month by month from today to your Freedom Date. The steeper the curve, the faster you're paying down. Watch it change when you increase your extra monthly payment.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════ SECTION 3: LOGGING PAYMENTS ══════════════════ -->
+  <div class="guide-section" id="logging-payments">
+    <div class="section-header">
+      <div class="section-icon green">✅</div>
+      <div>
+        <div class="section-label">Step 03</div>
+        <div class="section-title">Logging Payments</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Log every payment as you make it. This keeps your balances accurate and tracks your real progress toward milestones.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Select the debt account</h4>
+          <p>Choose which debt you made a payment to from the dropdown.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Enter the payment amount</h4>
+          <p>The exact amount you paid — including both the minimum and any extra. If you paid $350 on a $200 minimum, enter <strong>350</strong>.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Set the date and click Log</h4>
+          <p>Defaults to today. You can backdate payments if you forgot to log one. The debt balance updates immediately and the payment appears in your history below.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips-grid" style="margin-top:16px;">
+      <div class="tip-card accent">
+        <div class="tip-emoji">✏️</div>
+        <h4>Edit a payment</h4>
+        <p>Made a mistake? Tap <strong>Edit</strong> on any payment in the log. The balance recalculates correctly from your original starting balance — not just a patch on top.</p>
+      </div>
+      <div class="tip-card red">
+        <div class="tip-emoji">🔮</div>
+        <h4>Future-dated payments</h4>
+        <p>Log a payment with a future date and it shows as <strong>pending</strong> — it won't affect your balance until that date arrives. The app auto-confirms it when the date comes.</p>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <span class="callout-icon">💡</span>
+      <span><strong>Monthly Summary Card:</strong> Above the payment log you'll see your total minimum payments plus your extra, so you know exactly what's going out this month for debt. Use this for budgeting.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════ SECTION 4: STRATEGY ══════════════════ -->
+  <div class="guide-section" id="strategy">
+    <div class="section-header">
+      <div class="section-icon purple">⚔️</div>
+      <div>
+        <div class="section-label">Step 04</div>
+        <div class="section-title">Strategy Tab</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Three strategies for attacking your debt. Pick the one you'll actually stick to — the best strategy is the one you follow.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">①</div>
+        <div class="step-content">
+          <h4>Avalanche — Mathematically optimal</h4>
+          <p>Attacks your <strong>highest APR debt first</strong>. Minimums paid on everything else, all extra goes to the top-rate debt. You pay the least total interest over time. Best if you're disciplined and want to minimize cost.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">②</div>
+        <div class="step-content">
+          <h4>Snowball — Motivationally powerful</h4>
+          <p>Attacks your <strong>smallest balance first</strong>. You eliminate debts faster in terms of count. Research shows this keeps people more motivated. If you've struggled staying on track before, start here.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">③</div>
+        <div class="step-content">
+          <h4>Hybrid — Balanced approach</h4>
+          <p>Blends both — considers APR and balance together. Good middle ground if you want some interest savings without waiting forever for your first debt to be eliminated.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout yellow">
+      <span class="callout-icon">📊</span>
+      <span><strong>Comparison Grid:</strong> The Strategy tab shows all three side by side — months to payoff, total interest paid, and payoff order. Read this before picking. The difference in total interest between Avalanche and Snowball is often <strong>hundreds or thousands of dollars</strong>.</span>
+    </div>
+
+    <div class="callout green">
+      <span class="callout-icon">💡</span>
+      <span><strong>About 0% promo cards:</strong> In Avalanche mode, your promo cards are prioritized by their <em>post-promo</em> rate — not their current 0%. So a card that becomes 26.99% after the promo ends correctly sorts as high priority. The app handles this automatically.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════ SECTION 5: WHAT IF ══════════════════ -->
+  <div class="guide-section" id="whatif">
+    <div class="section-header">
+      <div class="section-icon yellow">🔮</div>
+      <div>
+        <div class="section-label">Step 05</div>
+        <div class="section-title">What If Tab</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Your scenario sandbox. Model what happens if you find extra money — without changing any of your real data. Sliders reset every time you open this tab.</p>
+
+    <div class="tips-grid">
+      <div class="tip-card accent">
+        <div class="tip-emoji">📅</div>
+        <h4>Additional Monthly Payment</h4>
+        <p>Slide to see how much time and interest you'd save by consistently adding that amount above your current plan. Even <strong>$100/mo</strong> often saves a year or more.</p>
+      </div>
+      <div class="tip-card yellow">
+        <div class="tip-emoji">💵</div>
+        <h4>Lump Sum Paydown</h4>
+        <p>Model an immediate one-time payment — a tax refund, bonus, or windfall. The slider goes up to your full remaining balance so you can see what full payoff looks like.</p>
+      </div>
+      <div class="tip-card teal">
+        <div class="tip-emoji">🎉</div>
+        <h4>Debt Free!</h4>
+        <p>Slide the lump sum to your full remaining balance and you'll see "Debt Free! 🎉" appear in the Freedom Date card with full months saved displayed.</p>
+      </div>
+      <div class="tip-card purple">
+        <div class="tip-emoji">📌</div>
+        <h4>Baseline includes lump sums</h4>
+        <p>The baseline freedom date in What If already accounts for any Planned Lump Sum payments you've entered on the Dashboard. You're modeling on top of your real plan.</p>
+      </div>
+    </div>
+
+    <div class="callout yellow">
+      <span class="callout-icon">⚠️</span>
+      <span><strong>0 months saved?</strong> If you have planned lump sum payments that already cover your full payoff, the monthly slider may show 0 months saved — but will still show interest savings. This is correct — your existing plan is already optimal for the payoff date, and extra monthly payments just reduce the interest you pay along the way.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════ SECTION 6: WINS ══════════════════ -->
+  <div class="guide-section" id="wins">
+    <div class="section-header">
+      <div class="section-icon red">🏆</div>
+      <div>
+        <div class="section-label">Step 06</div>
+        <div class="section-title">Wins Tab</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Nine milestone badges that unlock automatically as you hit thresholds. Paying off debt takes years — this tab keeps the wins visible.</p>
+
+    <div class="tips-grid">
+      <div class="tip-card accent">
+        <div class="tip-emoji">🥇</div>
+        <h4>First Payment</h4>
+        <p>Unlocks the moment you log your first payment. The easiest badge — and the most important one to get, because it means you've started.</p>
+      </div>
+      <div class="tip-card yellow">
+        <div class="tip-emoji">💪</div>
+        <h4>Dollar Milestones</h4>
+        <p>Badges at $500, $5,000, and $10,000 paid off. These track cumulative payments across all debts so every dollar counts toward the next milestone.</p>
+      </div>
+      <div class="tip-card teal">
+        <div class="tip-emoji">✅</div>
+        <h4>First Debt Eliminated</h4>
+        <p>Unlocks when you pay any debt to $0. This one feels different. Hold onto that feeling — use it to attack the next one.</p>
+      </div>
+      <div class="tip-card purple">
+        <div class="tip-emoji">🌙</div>
+        <h4>Halfway There &amp; Final Stretch</h4>
+        <p>Based on your overall progress percentage. Halfway unlocks at 50%, Final Stretch at 75%. These are the hardest to earn and the most satisfying to see.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════ SECTION 7: BACKUP ══════════════════ -->
+  <div class="guide-section" id="backup">
+    <div class="section-header">
+      <div class="section-icon teal">💾</div>
+      <div>
+        <div class="section-label">Step 07</div>
+        <div class="section-title">Backup &amp; Updates</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Found in the Backup &amp; Restore section on the Dashboard tab. Three tools that protect your data and keep your app current.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">📤</div>
+        <div class="step-content">
+          <h4>Export Backup</h4>
+          <p>Downloads a JSON file containing everything — all debts, payment history, planned lump sums, strategy, and settings. <strong>Save this to your Files app, iCloud, or email it to yourself.</strong> Do this every few months or after entering a lot of new data.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">📥</div>
+        <div class="step-content">
+          <h4>Import Backup</h4>
+          <p>Restores your full data from a backup file. Use this when switching devices, reinstalling the app, or recovering after clearing browser data. Select your JSON backup file and everything restores instantly.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">🔄</div>
+        <div class="step-content">
+          <h4>Check for Updates</h4>
+          <p>Checks if a newer version of the dashboard is available. If one exists, it <strong>automatically saves your data, loads the new version, and restores your data</strong>. You never lose anything during an update. Tap this periodically to get new features.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <span class="callout-icon">📱</span>
+      <span><strong>Installing as an app:</strong> In Safari, tap Share → Add to Home Screen. The dashboard opens as a full-screen app with no browser chrome. Your data lives on your device — no account, no login, no cloud required.</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ══════════════════ SECTION 8: TIPS ══════════════════ -->
+  <div class="guide-section" id="tips">
+    <div class="section-header">
+      <div class="section-icon yellow">⚡</div>
+      <div>
+        <div class="section-label">Step 08</div>
+        <div class="section-title">Tips &amp; Tricks</div>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Things that make the dashboard more powerful once you've got the basics down.</p>
+
+    <div class="tips-grid">
+      <div class="tip-card accent">
+        <div class="tip-emoji">📅</div>
+        <h4>Update balances monthly</h4>
+        <p>After making your payments each month, tap Edit on each debt card and update the current balance from your statement. Keeps your Freedom Date accurate as you make real progress.</p>
+      </div>
+      <div class="tip-card yellow">
+        <div class="tip-emoji">🎁</div>
+        <h4>Plan future windfalls</h4>
+        <p>Use Planned Lump Sum Payments on the Dashboard to schedule future bonuses, tax refunds, or any irregular income. The system allocates them by strategy and updates your Freedom Date automatically.</p>
+      </div>
+      <div class="tip-card teal">
+        <div class="tip-emoji">🔁</div>
+        <h4>Switch strategies any time</h4>
+        <p>Not happy with your current strategy? Switch it on the Strategy tab. Your payment log stays intact and all calculations update immediately to reflect the new approach.</p>
+      </div>
+      <div class="tip-card purple">
+        <div class="tip-emoji">🧮</div>
+        <h4>Extra payment is the lever</h4>
+        <p>The single most impactful input in the entire dashboard is the Extra Monthly Payment field. Even finding $25 more per month moves your Freedom Date noticeably. Model it in What If first.</p>
+      </div>
+      <div class="tip-card red">
+        <div class="tip-emoji">⚠️</div>
+        <h4>Don't log partial minimums</h4>
+        <p>Log the full amount you paid on each debt, not just the "extra" portion. If you paid $350 on a card with a $200 minimum, log $350. The simulation tracks your minimum payments internally.</p>
+      </div>
+      <div class="tip-card accent">
+        <div class="tip-emoji">🚀</div>
+        <h4>The snowball effect is real</h4>
+        <p>When a debt hits $0, your minimum payments for that card get freed up. The app automatically rolls that freed cash into attacking your next target. This is why the payoff accelerates dramatically near the end.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- ══════════════════ FOOTER ══════════════════ -->
+<footer>
+  <div class="footer-logo">
+    <div class="logo-dot" style="width:8px;height:8px;"></div>
+    DebtFree Dashboard
+  </div>
+  <p>Questions? <a href="mailto:support@mydebtdashboard.com">support@mydebtdashboard.com</a></p>
+</footer>
+
+</body>
+</html>

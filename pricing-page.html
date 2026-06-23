@@ -5,27 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DebtFree Dashboard — Pricing</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #faf9f6;
+    --bg: #f4f4f7;
     --white: #ffffff;
-    --ink: #111;
-    --ink2: #333;
-    --muted: #888;
-    --dim: #bbb;
-    --border: #e8e5de;
-    --border2: #d8d4ca;
-    --sage: #2d5a3d;
-    --sage-light: rgba(45,90,61,0.08);
-    --sage-border: rgba(45,90,61,0.2);
-    --gold: #b5860f;
-    --gold-bg: rgba(181,134,15,0.08);
-    --gold-border: rgba(181,134,15,0.2);
-    --slate: #1e3a5f;
-    --font-serif: 'Libre Baskerville', Georgia, serif;
-    --font-sans: 'Manrope', sans-serif;
-    --font-mono: 'IBM Plex Mono', monospace;
+    --ink: #1a1a2a;
+    --ink2: #2a2a3a;
+    --muted: #5a5a72;
+    --dim: #9a9ab0;
+    --border: rgba(10,10,30,0.10);
+    --border2: rgba(10,10,30,0.16);
+    --sage: #00a884;
+    --sage-light: rgba(0,168,132,0.08);
+    --sage-border: rgba(0,168,132,0.2);
+    --gold: #d99a1f;
+    --gold-bg: rgba(217,154,31,0.08);
+    --gold-border: rgba(217,154,31,0.2);
+    --slate: #2bb3aa;
+    --font-serif: 'Syne', sans-serif;
+    --font-sans: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -190,6 +190,17 @@
 
   @media(max-width: 680px) { .cards-grid { grid-template-columns: 1fr; } }
 
+  .tier-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 860px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .tier-cols { grid-template-columns: 1fr; }
+  }
   .price-card {
     background: var(--white);
     border: 1px solid var(--border);
@@ -570,44 +581,66 @@
 <!-- HERO -->
 <div class="hero">
   <div class="hero-tag">🎯 Simple, honest pricing</div>
-  <h1 class="hero-h1">One purchase.<br><em>No surprises. Ever.</em></h1>
-  <p class="hero-sub">One-time purchase. Yours to use forever, on any device. No renewal. No subscription. No account required.</p>
+  <h1 class="hero-h1">Free to start.<br><em>$12 to go deeper.</em></h1>
+  <p class="hero-sub">The free tier takes you all the way to debt-free. Premium is a one-time $12 — yours forever, on any device. No renewal, no subscription, no account.</p>
 </div>
 
 <!-- PRICING -->
 <section class="pricing-section">
   <div class="pricing-wrap">
-    <div style="max-width:520px;margin:0 auto;">
+    <div class="tier-cols">
 
-      <div class="price-card featured">
+      <!-- FREE -->
+      <div class="price-card">
         <div class="card-top">
-          <div class="tier-badge badge-featured">Know Your Freedom Date</div>
-          <div class="card-name">DebtFree Dashboard</div>
-          <p class="card-tagline">The complete debt payoff toolkit. Installs as a native app on any device. One-time purchase. No subscription, ever.</p>
+          <div class="tier-badge">Free forever</div>
+          <div class="card-name">Free</div>
+          <p class="card-tagline">Everything you need to get out of debt. No account, no subscription, no catch.</p>
           <div class="price-row">
-            <span class="price-dollar">$</span>
-            <span class="price-num">29</span>
+            <span class="price-num">$0</span>
           </div>
-          <div class="price-cadence">One-time · instant access · PWA app</div>
+          <div class="price-cadence">Free to use · installs as a PWA app</div>
         </div>
         <div class="card-body">
           <div class="items-label">What's included</div>
           <div class="item-list">
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Installs as native app — iPhone, Android, desktop</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Avalanche, Snowball &amp; Hybrid strategies with live comparison</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Drag-to-reorder Hybrid mode</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Payoff chart &amp; freedom date calculator</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Promotional APR tracking with auto rate-switching</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">"What If" modeler vs. your actual plan</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Windfall planner with one-click undo</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Payment logger with out-of-order deletion</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Full debt editing — every field, any time</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">9 milestone achievement badges</div></div>
-            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Free lifetime updates</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Avalanche, Snowball &amp; Hybrid — with full payment rollover</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Unlimited debts &amp; your real freedom date</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Next Debt to Eliminate spotlight</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Debt-Free Progress tracker</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">What-If extra-payment slider</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Live payoff chart &amp; promo APR tracking</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Light &amp; dark themes</div></div>
             <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Works offline · 100% private · data stays local</div></div>
           </div>
-          <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-get btn-pro">Get Instant Access — $29 →</a>
-          <div class="guarantee-row">🛡️ 30-day money-back guarantee</div>
+          <a href="https://debtfreedashboard.github.io/debt-free-dashboard/app/dashboard.html" class="btn-get" style="background:transparent;color:var(--ink);border:1px solid var(--border2);">Open the Dashboard — Free →</a>
+        </div>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="price-card featured">
+        <div class="card-top">
+          <div class="tier-badge badge-featured">One-time $12</div>
+          <div class="card-name">Premium</div>
+          <p class="card-tagline">The planning &amp; analysis suite. Pay once — yours forever. No subscription, ever.</p>
+          <div class="price-row">
+            <span class="price-dollar">$</span>
+            <span class="price-num">12</span>
+          </div>
+          <div class="price-cadence">One-time · activate with a license key</div>
+        </div>
+        <div class="card-body">
+          <div class="items-label">Everything in Free, plus</div>
+          <div class="item-list">
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">What-If lump-sum modeling &amp; planned windfalls</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Monthly Cash-Flow Release view</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Debt-Free Roadmap timeline</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Sortable Portfolio table</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Estimated-interest tracking</div></div>
+            <div class="item"><div class="item-check check-pro">✓</div><div class="item-text">Supports ongoing development 💚</div></div>
+          </div>
+          <a href="https://debtfreedashboard.gumroad.com/l/prfzv" class="btn-get btn-pro">Get Premium — $12 →</a>
+          <div class="guarantee-row">🛡️ 30-day money-back guarantee on Premium</div>
         </div>
       </div>
 
@@ -626,28 +659,30 @@
         <thead>
           <tr>
             <th>Feature</th>
-            <th class="col-pro">DebtFree Dashboard · $29</th>
+            <th>Free</th>
+            <th class="col-pro">Premium · $12</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="cat-row"><td colspan="2">Core Dashboard</td></tr>
-          <tr><td>Interactive HTML dashboard (PWA app)</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Avalanche, Snowball &amp; Hybrid strategies</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Strategy comparison table</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Live payoff chart</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Freedom date calculator</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Promotional APR tracking</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr class="cat-row"><td colspan="2">Planning Tools</td></tr>
-          <tr><td>"What If" scenario modeler</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Windfall planner</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Payment logger &amp; history</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Progress tracking &amp; badges</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Free lifetime updates</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr class="cat-row"><td colspan="2">Platform</td></tr>
-          <tr><td>Works on mobile, tablet &amp; desktop</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>Data stays 100% local (private)</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>No account, login, or internet required</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
-          <tr><td>30-day money-back guarantee</td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr class="cat-row"><td colspan="3">Core payoff engine</td></tr>
+          <tr><td>Avalanche, Snowball &amp; Hybrid (with rollover)</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Unlimited debts &amp; freedom date</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Strategy comparison</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Live payoff chart &amp; promo APR tracking</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Next Debt to Eliminate &amp; Progress tracker</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>What-If extra-payment slider</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr class="cat-row"><td colspan="3">Premium planning suite</td></tr>
+          <tr><td>What-If lump sums &amp; planned windfalls</td><td><span class="check-n">—</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Monthly Cash-Flow Release view</td><td><span class="check-n">—</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Debt-Free Roadmap timeline</td><td><span class="check-n">—</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Sortable Portfolio table</td><td><span class="check-n">—</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Estimated-interest tracking</td><td><span class="check-n">—</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr class="cat-row"><td colspan="3">Platform</td></tr>
+          <tr><td>Works on mobile, tablet &amp; desktop</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Light &amp; dark themes</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Data stays 100% local (private)</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>No account, login, or internet required</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
+          <tr><td>Free lifetime updates</td><td><span class="check-y">✓</span></td><td class="col-pro"><span class="check-y">✓</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -664,15 +699,15 @@
         <span>What exactly do I get when I buy?</span>
         <span class="faq-icon">+</span>
       </div>
-      <div class="faq-a">You download a single HTML file that you open in any web browser — Chrome, Safari, Firefox. No installation required. Works on any device.</div>
+      <div class="faq-a">The dashboard is free to open and use right away — no purchase, no account. It runs in any browser and installs as an app on any device. Premium ($12, one-time) unlocks the planning suite: What-If lump sums, the cash-flow release view, the roadmap timeline, the portfolio table, and estimated-interest tracking.</div>
     </div>
 
     <div class="faq-item">
       <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
-        <span>Why one price instead of multiple tiers?</span>
+        <span>Why free, with a paid tier?</span>
         <span class="faq-icon">+</span>
       </div>
-      <div class="faq-a">Simpler is better. Everyone gets the full dashboard, every feature, free lifetime updates, and the same 30-day money-back guarantee. No upsells, no upgrade nags, no decision paralysis. $29, one-time, done.</div>
+      <div class="faq-a">The goal is for anyone to be able to get out of debt with this — so the free tier includes the complete payoff engine, unlimited debts, and your real freedom date, forever. Premium ($12, one-time) adds deeper planning and analysis tools for people who want them, and helps support ongoing development. No subscription, no upgrade nags.</div>
     </div>
 
     <div class="faq-item">

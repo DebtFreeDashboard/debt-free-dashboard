@@ -5,25 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DebtFree Dashboard — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* Palette unified with the DebtFree Dashboard light theme so the site and
+     the app share one visual language. */
   :root {
-    --ink: #0e0e0e;
-    --ink2: #1c1c1c;
-    --cream: #f5f0e8;
-    --cream2: #ede8dc;
-    --cream3: #e5dfd0;
-    --gold: #c9a84c;
-    --gold2: #e8c76a;
-    --gold-light: rgba(201,168,76,0.12);
-    --red: #c0392b;
-    --green: #1a6b4a;
-    --green-light: rgba(26,107,74,0.1);
-    --text: #0e0e0e;
-    --text-mid: #4a4a3a;
-    --text-muted: #8a8a7a;
-    --font-serif: 'Playfair Display', Georgia, serif;
-    --font-sans: 'Outfit', sans-serif;
+    --ink: #1a1a2a;
+    --ink2: #2a2a3a;
+    --cream: #f4f4f7;          /* page bg  (dashboard --bg) */
+    --cream2: #f0f0f4;         /* (dashboard --surface2) */
+    --cream3: #e6e6ee;         /* (dashboard --surface3) */
+    --white: #ffffff;          /* card surface (dashboard --surface) */
+    --gold: #00a884;           /* primary accent — dashboard teal */
+    --gold2: #2bb3aa;          /* secondary accent (dashboard --accent5) */
+    --gold-light: rgba(0,168,132,0.10);
+    --red: #e04848;
+    --green: #00a884;
+    --green-light: rgba(0,168,132,0.10);
+    --amber: #d99a1f;          /* dashboard --accent4, for premium tags */
+    --text: #1a1a2a;
+    --text-mid: #5a5a72;
+    --text-muted: #9a9ab0;
+    --border: rgba(10,10,30,0.10);
+    --border2: rgba(10,10,30,0.16);
+    --font-serif: 'Syne', sans-serif;
+    --font-sans: 'DM Sans', sans-serif;
     --font-mono: 'DM Mono', monospace;
   }
 
@@ -43,7 +49,7 @@
     content: '';
     position: fixed;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
     pointer-events: none;
     z-index: 9999;
   }
@@ -383,8 +389,8 @@
 
   /* ─── PAIN SECTION ─── */
   .pain-section {
-    background: var(--ink);
-    color: var(--cream);
+    background: var(--white);
+    color: var(--text);
     padding: 100px 40px;
   }
 
@@ -410,7 +416,7 @@
     font-family: var(--font-mono);
     font-size: 0.65rem;
     letter-spacing: 0.1em;
-    color: rgba(255,255,255,0.2);
+    color: var(--gold);
     margin-bottom: 12px;
   }
 
@@ -419,7 +425,7 @@
     font-size: 1.2rem;
     font-weight: 700;
     line-height: 1.4;
-    color: var(--cream);
+    color: var(--ink);
   }
 
   .pain-text em {
@@ -470,7 +476,7 @@
 
   /* ─── SCREEN PREVIEW ─── */
   .preview-section {
-    background: var(--ink);
+    background: var(--cream2);
     padding: 100px 40px;
     overflow: hidden;
   }
@@ -703,19 +709,48 @@
 
   /* ─── PRICING ─── */
   .pricing-section {
-    background: var(--ink);
+    background: var(--cream2);
     padding: 100px 24px;
     text-align: center;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
   }
 
   .pricing-card {
     width: 100%;
     margin: 0;
-    background: var(--cream);
+    background: var(--white);
+    border: 1px solid var(--border);
     border-radius: 16px;
     padding: 48px 40px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 24px rgba(20,20,50,0.06);
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 860px;
+    margin: 40px auto 0;
+    text-align: left;
+  }
+  .pricing-card.premium { border-color: var(--gold); }
+  .pricing-card.premium::before {
+    content: 'PREMIUM';
+    position: absolute; top: 16px; right: 16px;
+    font-family: var(--font-mono); font-size: 0.58rem; font-weight: 700;
+    letter-spacing: 0.1em; color: var(--amber);
+    border: 1px solid var(--amber); border-radius: 4px; padding: 2px 7px;
+  }
+  .tier-tag {
+    display: inline-block; font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700;
+    color: var(--gold); background: var(--gold-light);
+    border-radius: 4px; padding: 3px 9px; margin-bottom: 14px;
+  }
+  @media (max-width: 760px) {
+    .pricing-grid { grid-template-columns: 1fr; }
   }
 
   /* ─── PRICING GRID (was inline, now classed) ─── */
@@ -1179,13 +1214,13 @@
   <img src="assets/logo/debtfree-logo-primary-dark.svg" 
        alt="DebtFree Dashboard" 
        style="height:36px; width:auto;">
-  <span class="price-tag">One-time · No subscription</span>
+  <span class="price-tag">Free to use · Premium $12 one-time</span>
   <div class="nav-buy-group">
-    <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+    <a href="https://debtfreedashboard.github.io/debt-free-dashboard/app/dashboard.html"
    class="nav-cta"
    data-cta-label="nav-primary"
    data-cta-location="nav">
-  Get Instant Access — $19 →</a>
+  Open the Dashboard — Free →</a>
   </div>
 </nav>
 
@@ -1193,22 +1228,22 @@
 <section class="hero">
   <div class="hero-container">
     <div class="hero-left">
-      <div class="hero-kicker">v1.7 · Now with installment loan support</div>
-      <h1 class="hero-headline">See your real<br>debt-free date.<br><em>Then reach it.</em></h1>
-      <p class="hero-sub">Credit cards, auto loans, student loans, even your mortgage — one payoff plan. Crystal-clear math in 60 seconds. <strong style="color:var(--ink)">$19 one-time</strong>. No subscription, ever.</p>
+      <div class="hero-kicker">Free to use · No account · Works offline</div>
+      <h1 class="hero-headline">See your real<br>debt-free date.<br><em>Free.</em></h1>
+      <p class="hero-sub">Credit cards, auto loans, student loans, even your mortgage — one payoff plan with crystal-clear math in 60 seconds. Free for your whole payoff journey. A one-time <strong style="color:var(--ink)">$12</strong> unlocks the premium planning suite. No subscription, ever.</p>
       <div class="hero-actions">
-        <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+        <a href="https://debtfreedashboard.github.io/debt-free-dashboard/app/dashboard.html"
            class="btn-primary-lg"
            data-cta-label="hero-primary"
            data-cta-location="hero">
-          Get Instant Access — $19 <span class="arrow">→</span>
+          Open the Dashboard — Free <span class="arrow">→</span>
         </a>
         <a href="#dashboard-demo" class="hero-cta-secondary">▸ Watch 60-second demo</a>
       </div>
       <div class="hero-reassure">
-        <span>Instant download</span>
-        <span>Works offline</span>
-        <span>30-day money-back guarantee</span>
+        <span>Free, unlimited debts</span>
+        <span>Data stays on your device</span>
+        <span>Premium just $12 once</span>
       </div>
     </div>
     <div class="hero-right">
@@ -1264,7 +1299,7 @@
       <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
       Inside the dashboard
     </div>
-    <h2 class="section-title" style="color:var(--cream)">A real payoff plan,<br>built in 60 seconds.</h2>
+    <h2 class="section-title" style="color:var(--ink)">A real payoff plan,<br>built in 60 seconds.</h2>
     <div class="demo-video-wrap">
       <div class="video-frame">
         <div class="video-frame-bar">
@@ -1298,7 +1333,7 @@
       <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
       Sound familiar?
     </div>
-    <h2 class="section-title" style="color:var(--cream)">You earn good money.<br><em style="color:var(--gold)">So why is the debt still there?</em></h2>
+    <h2 class="section-title" style="color:var(--ink)">You earn good money.<br><em style="color:var(--gold)">So why is the debt still there?</em></h2>
     <div class="pain-grid">
       <div class="pain-item">
         <div class="pain-num">01</div>
@@ -1384,7 +1419,7 @@
 <section class="math-section">
   <div class="section-inner" style="max-width:640px">
     <div class="section-label">The math doesn't lie</div>
-    <h2 class="section-title" style="text-align:center">What $19 is actually<br>worth to you.</h2>
+    <h2 class="section-title" style="text-align:center">What free<br>actually saves you.</h2>
     <p class="section-body" style="text-align:center; margin:20px auto 40px; max-width:540px">Knowing the right strategy — and sticking to it — saves years of payments and thousands in interest. Here's what it looks like on $24,000 of debt:</p>
     <div class="math-grid" style="grid-template-columns:1fr">
       <div class="math-scenario">
@@ -1445,50 +1480,72 @@
 <!-- PRICING -->
 <section class="pricing-section" id="pricing">
   <div style="max-width:1100px; margin:0 auto">
-    <div class="section-label" style="justify-content:center; color:rgba(201,168,76,0.9)">
+    <div class="section-label" style="justify-content:center; color:var(--gold)">
       <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
       Simple pricing
       <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
     </div>
-    <h2 class="section-title" style="color:var(--cream); text-align:center">One tier.<br>One freedom date.</h2>
+    <h2 class="section-title" style="color:var(--ink); text-align:center">Free to start.<br>$12 to go deeper.</h2>
+    <p style="max-width:520px;margin:16px auto 0;color:var(--text-mid);text-align:center;">The free tier takes you all the way to debt-free. Premium adds the planning and analysis tools — a one-time payment, never a subscription.</p>
 
-    <div style="max-width:480px; margin:40px auto 0;">
+    <div class="pricing-grid">
 
-      <div class="pricing-card" style="position:relative;">
-        <div class="pricing-eyebrow">Know Your Freedom Date</div>
-        <div class="pricing-name">DebtFree Dashboard</div>
-        <div class="price-display">
-          <span class="price-dollar">$</span>
-          <span class="price-amount">19</span>
+      <!-- FREE -->
+      <div class="pricing-card">
+        <div class="tier-tag">Free forever</div>
+        <div class="pricing-name">Free</div>
+        <div class="price-display" style="justify-content:flex-start">
+          <span class="price-amount">$0</span>
         </div>
-        <div class="price-note">One-time · PWA app · No subscription ever</div>
-        <div class="pricing-items">
-          <div class="pricing-item">Installs as native app on any device</div>
-          <div class="pricing-item">Avalanche, Snowball &amp; Hybrid strategies</div>
-          <div class="pricing-item">Drag-to-reorder Hybrid mode</div>
-          <div class="pricing-item">Live payoff chart &amp; freedom date</div>
-          <div class="pricing-item">Promotional APR tracking</div>
-          <div class="pricing-item">What If modeler vs. your actual plan</div>
-          <div class="pricing-item">Windfall planner with one-click undo</div>
-          <div class="pricing-item">Payment logger with out-of-order deletion</div>
-          <div class="pricing-item">Full debt editing — every field, any time</div>
-          <div class="pricing-item">9 milestone achievement badges</div>
-          <div class="pricing-item">100% private — data stays local</div>
-          <div class="pricing-item">Free lifetime updates</div>
+        <div class="price-note" style="text-align:left">Everything you need to get out of debt</div>
+        <div class="pricing-items" style="margin-top:20px">
+          <div class="pricing-item">Avalanche, Snowball &amp; Hybrid — with full payment rollover</div>
+          <div class="pricing-item">Unlimited debts, your real freedom date</div>
+          <div class="pricing-item">Next Debt to Eliminate spotlight</div>
+          <div class="pricing-item">Debt-Free Progress tracker</div>
+          <div class="pricing-item">What-If extra-payment slider</div>
+          <div class="pricing-item">Live payoff chart, promo APR tracking</div>
+          <div class="pricing-item">Light &amp; dark themes</div>
+          <div class="pricing-item">Installs as an app · works offline · 100% private</div>
+        </div>
+        <a href="https://debtfreedashboard.github.io/debt-free-dashboard/app/dashboard.html"
+   class="btn-buy" style="background:transparent;color:var(--ink);border:1px solid var(--border2);margin-top:24px"
+   data-cta-label="pricing-free"
+   data-cta-location="pricing-section">
+  Open the Dashboard — Free →
+</a>
+      </div>
+
+      <!-- PREMIUM -->
+      <div class="pricing-card premium">
+        <div class="tier-tag" style="color:var(--amber);background:rgba(217,154,31,0.1)">One-time $12</div>
+        <div class="pricing-name">Premium</div>
+        <div class="price-display" style="justify-content:flex-start">
+          <span class="price-dollar">$</span>
+          <span class="price-amount">12</span>
+        </div>
+        <div class="price-note" style="text-align:left">Pay once, yours forever — no subscription</div>
+        <div class="pricing-items" style="margin-top:20px">
+          <div class="pricing-item"><strong>Everything in Free, plus:</strong></div>
+          <div class="pricing-item">What-If lump-sum modeling &amp; planned windfalls</div>
+          <div class="pricing-item">Monthly Cash-Flow Release view</div>
+          <div class="pricing-item">Debt-Free Roadmap timeline</div>
+          <div class="pricing-item">Sortable Portfolio table</div>
+          <div class="pricing-item">Estimated-interest tracking</div>
+          <div class="pricing-item">Supports ongoing development 💚</div>
         </div>
         <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
-   class="btn-buy"
-   data-cta-label="pricing-card"
+   class="btn-buy" style="margin-top:24px"
+   data-cta-label="pricing-premium"
    data-cta-location="pricing-section">
-  Get Instant Access — $19 →
+  Get Premium — $12 →
 </a>
-        <div class="guarantee">🛡️ 30-day money-back guarantee</div>
       </div>
 
     </div>
 
-    <div style="text-align:center;margin-top:20px;font-family:var(--font-mono);font-size:0.72rem;color:rgba(255,255,255,0.3);letter-spacing:0.05em;">
-      One tier. Everything included. No upsells.
+    <div style="text-align:center;margin-top:24px;font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);letter-spacing:0.05em;">
+      Activate Premium right inside the app with your license key. No account required.
     </div>
 
   </div>
@@ -1540,30 +1597,30 @@
 </section>
 
 <!-- FINAL CTA -->
-<section style="background:var(--ink); padding:80px 40px; text-align:center">
+<section style="background:var(--cream2); padding:80px 40px; text-align:center; border-top:1px solid var(--border)">
   <div style="max-width:600px; margin:0 auto">
-    <h2 style="font-family:var(--font-serif); font-size:clamp(2rem,5vw,3rem); color:var(--cream); font-weight:900; letter-spacing:-1px; margin-bottom:16px">Your freedom date<br>is waiting for you.</h2>
-    <p style="color:rgba(255,255,255,0.5); margin-bottom:36px; font-size:0.95rem; line-height:1.7">Stop making minimum payments into the void. Get the plan, run the numbers, and finally see the light at the end of the tunnel.</p>
+    <h2 style="font-family:var(--font-serif); font-size:clamp(2rem,5vw,3rem); color:var(--ink); font-weight:800; letter-spacing:-1px; margin-bottom:16px">Your freedom date<br>is waiting for you.</h2>
+    <p style="color:var(--text-mid); margin-bottom:36px; font-size:0.95rem; line-height:1.7">Stop making minimum payments into the void. Open the free dashboard, run your numbers, and finally see the light at the end of the tunnel.</p>
     <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
-      <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+      <a href="https://debtfreedashboard.github.io/debt-free-dashboard/app/dashboard.html"
          class="btn-primary-lg"
          data-cta-label="final-cta"
          data-cta-location="footer-cta"
          style="display:inline-flex;">
-        Get Instant Access — $19 <span class="arrow">→</span>
+        Open the Dashboard — Free <span class="arrow">→</span>
       </a>
     </div>
-    <p style="color:rgba(255,255,255,0.3); font-size:0.78rem; margin-top:16px">One-time · No subscription · 30-day guarantee</p>
+    <p style="color:var(--text-muted); font-size:0.78rem; margin-top:16px">Free to use · No account · Premium $12 one-time</p>
   </div>
 </section>
 
 <!-- MOBILE STICKY BUY BAR — visible only on small screens -->
 <div class="sticky-buy-bar">
- <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+ <a href="https://debtfreedashboard.github.io/debt-free-dashboard/app/dashboard.html"
    class="bar-starter"
    data-cta-label="sticky-mobile"
    data-cta-location="sticky-bar">
-  Get Instant Access — $19 →
+  Open the Dashboard — Free →
 </a>
 
 </div>
