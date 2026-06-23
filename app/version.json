@@ -1,11 +1,12 @@
 {
-  "version": "1.12.0",
+  "version": "1.13.0",
   "releaseDate": "2026-05-16",
-  "releaseName": "True snowball rollover - your numbers just got better",
+  "releaseName": "Free to use, with an optional Premium",
   "notes": [
-    "Your projections now roll over freed-up minimum payments. When a debt is paid off, its minimum payment now automatically redirects to your next debt in the simulation - and keeps stacking as each debt falls. If you have more than one debt, your Freedom Date just moved EARLIER and your Interest Saved just went UP. Nothing about your data changed - the projection simply reflects the plan you were already following.",
-    "The Min Payments Only comparison intentionally does NOT roll over freed minimums - it models doing nothing differently, which is what makes the comparison meaningful.",
-    "The scheduled payoff date under installment loans still reflects each loan's own contractual schedule, unaffected by rollover.",
-    "In the month a debt is paid off, the unused remainder of its final minimum payment now cascades to your next debt instead of disappearing from the simulation."
+    "DebtFree Dashboard is now free to use for your entire payoff journey - unlimited debts, the full snowball/avalanche engine with rollover, your Freedom Date, progress tracking, and the new highlights below. No account, no subscription, your data never leaves your device.",
+    "New: a Next Debt to Eliminate spotlight on your Dashboard shows exactly which debt you're crushing next and when it'll be gone.",
+    "New: a Debt-Free Progress hero puts your overall progress front and center.",
+    "New: a light theme. Switch between dark (default) and light in Backup & Restore.",
+    "Optional Premium ($12, one-time): unlocks What-If lump-sum modeling, the cash-flow release view, estimated-interest tracking, and the premium portfolio/timeline views. Pay once, yours forever - it just helps support the project."
   ]
 }
