@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DebtFree Dashboard — Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f4f7; --surface:#ffffff; --surface2:#f0f0f4;
+    --text:#1a1a2a; --muted:#5a5a72; --dim:#9a9ab0;
+    --border:rgba(10,10,30,0.10); --border2:rgba(10,10,30,0.16);
+    --lime:#00a884;  /* remapped brand accent (teal) */
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);}
+  /* font-family aliases used by the fragment */
+  .hero-h1{font-family:'Syne',sans-serif !important;}
+  .hero-eyebrow,.hero-device-url,.hero-video-caption{font-family:'DM Mono',monospace !important;}
+  .hero-cta-primary{font-family:'DM Sans',sans-serif !important;}
+  .hero-cta-price{font-family:'Syne',serif !important;}
+</style>
+</head>
+<body>
+<section class="hero">...</section> block
+  in index.html with this entire block. Keep your existing CSS
+  variables (--bg, --lime, etc.) — this uses them.
+
+  YOU'LL NEED TO PROVIDE:
+  • A short MP4/WebM screen recording of the dashboard in action
+    (6-15 seconds, loop-friendly). Save as /assets/hero-demo.mp4.
+    If you don't have one yet, the <video> element falls back to
+    a poster image gracefully.
+  • A poster image (1200x800 PNG/JPG) saved as
+    /assets/hero-demo-poster.jpg
+-->
+
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-inner">
+
+    <!-- LEFT: Copy column -->
+    <div class="hero-left">
+
+      <div class="hero-eyebrow">
+        <span class="dot-pulse"></span>
+        Built by someone who paid it all off
+      </div>
+
+      <h1 class="hero-h1">
+        See your<br>
+        <span class="hero-h1-accent">debt-free date</span><br>
+        free.
+      </h1>
+
+      <p class="hero-value-prop">
+        Type your debts in. Get your exact freedom date and the fastest path to it — free. A one-time $12 unlocks the premium planning suite. No subscription. No bank login.
+      </p>
+
+      <div class="hero-cta-row">
+        <a href="https://mydebtdashboard.com/app/dashboard.html"
+           class="hero-cta-primary"
+           data-cta-label="hero-primary"
+           data-cta-location="hero">
+          Open the Dashboard
+          <span class="hero-cta-price">Free</span>
+          <span class="hero-cta-arrow">→</span>
+        </a>
+        <a href="#how-it-works" class="hero-cta-secondary">
+          Watch 60-second demo
+        </a>
+      </div>
+
+      <div class="hero-trust-row">
+        <div class="trust-chip">
+          <span class="trust-icon">🛡️</span>
+          Free, unlimited debts
+        </div>
+        <div class="trust-chip">
+          <span class="trust-icon">💾</span>
+          Data stays on your device
+        </div>
+        <div class="trust-chip">
+          <span class="trust-icon">∞</span>
+          Premium just $12 once
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Video demo -->
+    <div class="hero-right">
+      <div class="hero-device">
+        <div class="hero-device-bar">
+          <span class="hero-dot hero-dot-r"></span>
+          <span class="hero-dot hero-dot-y"></span>
+          <span class="hero-dot hero-dot-g"></span>
+          <span class="hero-device-url">debtfree-dashboard.html</span>
+        </div>
+        <div class="hero-device-screen">
+          <video
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="metadata"
+            poster="/assets/hero-demo-poster.jpg"
+            class="hero-video">
+            <source src="/assets/hero-demo.mp4" type="video/mp4">
+            <source src="/assets/hero-demo.webm" type="video/webm">
+            <!-- Fallback: poster image renders if video fails -->
+          </video>
+          <div class="hero-video-caption">
+            ▸ Drag the "What If" slider to add $200/mo →
+            watch 4 years disappear from your timeline
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<style>
+  /* ═══════════ HERO STYLES ═══════════ */
+  /* Drop these into your existing <style> block, replacing the
+     old .hero rules. */
+
+  .hero {
+    position: relative;
+    padding: 56px 24px 80px;
+    overflow: hidden;
+    min-height: 640px;
+  }
+
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,168,132,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,168,132,0.04) 1px, transparent 1px);
+    background-size: 56px 56px;
+    pointer-events: none;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -200px;
+    left: -200px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(0,168,132,0.14) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    position: relative;
+    max-width: 1240px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 64px;
+    align-items: center;
+    z-index: 2;
+  }
+
+  /* ── LEFT: Copy ── */
+  .hero-left { max-width: 560px; }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--lime);
+    background: rgba(0,168,132, 0.06);
+    border: 1px solid rgba(0,168,132, 0.2);
+    padding: 8px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+  }
+
+  .dot-pulse {
+    width: 8px;
+    height: 8px;
+    background: var(--lime);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+  }
+
+  .hero-h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 900;
+    font-size: clamp(48px, 6vw, 84px);
+    line-height: 0.96;
+    letter-spacing: -0.025em;
+    margin-bottom: 28px;
+    color: var(--text);
+  }
+
+  .hero-h1-accent {
+    color: var(--lime);
+    font-style: italic;
+  }
+
+  .hero-value-prop {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--muted);
+    margin-bottom: 36px;
+    max-width: 480px;
+  }
+
+  /* ── CTA row ── */
+  .hero-cta-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .hero-cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--lime);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 17px;
+    padding: 18px 28px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 0 32px rgba(0,168,132, 0.25);
+  }
+  .hero-cta-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 40px rgba(0,168,132, 0.4);
+  }
+
+  .hero-cta-price {
+    font-family: 'Syne', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    margin-left: 4px;
+  }
+
+  .hero-cta-arrow {
+    font-size: 22px;
+    transition: transform 0.2s ease;
+  }
+  .hero-cta-primary:hover .hero-cta-arrow {
+    transform: translateX(4px);
+  }
+
+  .hero-cta-secondary {
+    color: var(--text);
+    font-size: 15px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--dim);
+    padding-bottom: 2px;
+    transition: border-color 0.15s ease;
+  }
+  .hero-cta-secondary:hover {
+    border-color: var(--lime);
+    color: var(--lime);
+  }
+
+  /* ── Trust chips ── */
+  .hero-trust-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .trust-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 100px;
+  }
+
+  .trust-icon { font-size: 14px; }
+
+  /* ── RIGHT: Video device ── */
+  .hero-right {
+    position: relative;
+  }
+
+  .hero-device {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 32px 80px rgba(0, 0, 0, 0.5),
+      0 0 100px rgba(0,168,132, 0.08);
+    transform: perspective(1200px) rotateY(-3deg) rotateX(2deg);
+  }
+
+  .hero-device-bar {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+  }
+  .hero-dot-r { background: #ff5f57; }
+  .hero-dot-y { background: #ffbd2e; }
+  .hero-dot-g { background: #28c840; }
+
+  .hero-device-url {
+    margin-left: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--dim);
+  }
+
+  .hero-device-screen {
+    position: relative;
+    background: #ffffff;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+
+  .hero-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hero-video-caption {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(8px);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,168,132, 0.2);
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 880px) {
+    .hero { padding: 32px 16px 56px; min-height: auto; }
+    .hero-inner { grid-template-columns: 1fr; gap: 40px; }
+    .hero-h1 { font-size: 48px; }
+    .hero-value-prop { font-size: 17px; }
+    .hero-device { transform: none; }
+    .hero-cta-row { flex-direction: column; align-items: stretch; }
+    .hero-cta-primary { justify-content: center; }
+    .hero-cta-secondary { text-align: center; }
+  }
+</style>
+
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  WHAT TO RECORD FOR /assets/hero-demo.mp4
+  ═══════════════════════════════════════════════════════════════
+
+  Length: 8-15 seconds, loops cleanly
+  Resolution: 1280x800 minimum, 1920x1200 ideal
+  Format: MP4 (H.264) primary, WebM secondary, ~2-4 MB target
+
+  SHOT LIST (record this exact sequence):
+  1. (2s) Open dashboard with 3 sample debts already entered
+  2. (3s) Drag the "What If" slider from $0 to $300/month —
+          watch the freedom date jump backwards on screen
+  3. (3s) Quick toggle: Avalanche → Snowball → Hybrid
+          (the strategy comparison numbers update visibly)
+  4. (2s) Final hold on the freedom date with $X,XXX saved
+          number visible
+
+  RECORDING TIPS:
+  • Mac: QuickTime → New Screen Recording → record just the
+    dashboard window
+  • Windows: Xbox Game Bar (Win+G) or OBS
+  • Crop to just the dashboard, no browser chrome
+  • Export at 30fps for smooth slider drag
+  • Compress with HandBrake before uploading — target 2-3 MB
+  • Test on mobile — autoplay-muted-playsinline is required
+
+  POSTER IMAGE (/assets/hero-demo-poster.jpg):
+  Take a high-quality screenshot of the dashboard at the most
+  visually compelling moment (probably mid-slider drag). 1280x800.
+  This is what visitors see if the video fails to load or while
+  it's buffering — make it count.
+
+  WHY THIS MATTERS:
+  Right now, GA shows 10s average engagement. A looping video
+  in the hero pulls eyes immediately. Even people who don't read
+  a single word will watch the slider move and grasp the value
+  prop. The video does what your copy hasn't been able to do.
+-->
+
+</body>
+</html>
