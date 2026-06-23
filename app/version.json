@@ -1,8 +1,10 @@
 {
-  "version": "1.13.2",
+  "version": "1.14.0",
   "releaseDate": "2026-05-16",
-  "releaseName": "Premium & theme persist across updates",
+  "releaseName": "Premium planning suite",
   "notes": [
-    "Fixed Premium needing to be re-activated after every app update. Your unlocked status and your theme choice now carry through updates automatically - no need to re-enter your license key. (This fix takes effect from this update forward; you may need to activate once more this time.)"
+    "New (Premium): Monthly Cash-Flow Release. A step-down chart plus a list of release events showing exactly how much monthly cash frees up as each debt is eliminated - and how much stays committed until the next one falls.",
+    "New (Premium): Debt-Free Roadmap. Your journey to zero laid out milestone by milestone, with each debt's elimination date and the monthly payment it frees.",
+    "New (Premium): Portfolio table. Your debt list becomes a sortable table - sort by balance, APR, minimum payment, payoff order, or interest paid. The free card view is unchanged."
   ]
 }

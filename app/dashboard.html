@@ -116,6 +116,49 @@
   .hero-progress-track { height:12px; background:var(--surface3); border-radius:6px; overflow:hidden; margin:18px 0 6px; }
   .hero-progress-fill { height:100%; background:linear-gradient(90deg, var(--accent5), var(--accent)); border-radius:6px; transition:width .6s ease; box-shadow:0 0 18px var(--glow); }
 
+  /* v1.14.0 — Debt-Free Roadmap (premium) */
+  .roadmap-step { position:relative; display:flex; gap:14px; padding:0 0 22px 0; }
+  .roadmap-step:last-child { padding-bottom:0; }
+  .roadmap-step::before {
+    content:''; position:absolute; left:8px; top:18px; bottom:-4px; width:2px;
+    background:var(--border2);
+  }
+  .roadmap-step:last-child::before { display:none; }
+  .roadmap-node {
+    position:relative; z-index:1; flex-shrink:0; width:18px; height:18px; border-radius:50%;
+    background:var(--surface); border:2px solid var(--accent); margin-top:2px;
+  }
+  .roadmap-node--final { background:var(--accent); box-shadow:0 0 14px var(--glow); }
+  .roadmap-step-body { flex:1; min-width:0; }
+  .roadmap-step-title { font-weight:700; font-size:0.95rem; }
+  .roadmap-step-sub { font-family:var(--font-mono); font-size:0.74rem; color:var(--text-muted); margin-top:2px; }
+
+  /* v1.14.0 — Cash-Flow release events list (premium) */
+  .cashflow-event {
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    padding:11px 14px; background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); margin-bottom:8px;
+  }
+  .cashflow-event:last-child { margin-bottom:0; }
+  .cashflow-event-name { font-weight:600; font-size:0.9rem; }
+  .cashflow-event-date { font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); margin-top:2px; }
+  .cashflow-event-amt { font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap; }
+  .cashflow-event-running { font-family:var(--font-mono); font-size:0.68rem; color:var(--text-dim); }
+
+  /* v1.14.0 — Portfolio table (premium) */
+  .pf-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .pf-table { width:100%; border-collapse:collapse; font-size:0.85rem; min-width:560px; }
+  .pf-th {
+    text-align:left; font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--text-muted); font-weight:700;
+    padding:10px 12px; border-bottom:1px solid var(--border2); white-space:nowrap; user-select:none;
+  }
+  .pf-th:hover { color:var(--text); }
+  .pf-num { text-align:right; }
+  .pf-td { padding:12px; border-bottom:1px solid var(--border); font-family:var(--font-mono); }
+  .pf-td:first-child { font-family:var(--font-body); }
+  .pf-table tbody tr:hover { background:var(--surface2); }
+
   /* v1.13.0 — light theme. Derived from the dark palette: surfaces inverted to
      warm-neutral light greys, text darkened, accents nudged slightly deeper so
      they keep contrast on a light background. Dark remains the default. */
@@ -1240,6 +1283,62 @@
       </div>
     </div>
 
+    <!-- v1.14.0 — Cash-Flow Release card (premium) -->
+    <div class="card" id="cashflow-card" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
+      <div id="cashflow-events" style="margin-top:16px;"></div>
+    </div>
+    <!-- Cash-Flow teaser (free, blur) -->
+    <div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
+            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
+            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
+          </div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">See your cash come back</div>
+          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v1.14.0 — Premium Roadmap timeline (premium) -->
+    <div class="card" id="roadmap-card" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
+      <div id="roadmap-track"></div>
+    </div>
+    <!-- Roadmap teaser (free, blur) -->
+    <div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">Your full roadmap to zero</div>
+          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Add Debt Form -->
     <div class="card">
       <div class="card-title"><div class="dot"></div> Add a Debt</div>
@@ -1818,7 +1917,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.13.2';
+const APP_VERSION = '1.14.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1826,6 +1925,17 @@ const APP_VERSION = '1.13.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.14.0',
+    date: 'May 16, 2026',
+    name: 'Premium planning suite',
+    whatsNew: [
+      'New (Premium): Monthly Cash-Flow Release. A step-down chart plus a list of release events showing exactly how much monthly cash frees up as each debt is eliminated — and how much stays committed until the next one falls.',
+      'New (Premium): Debt-Free Roadmap. Your journey to zero laid out milestone by milestone, with each debt\u2019s elimination date and the monthly payment it frees.',
+      'New (Premium): Portfolio table. Your debt list becomes a sortable table — sort by balance, APR, minimum payment, payoff order, or interest paid. The free card view is unchanged.'
+    ],
+    fixes: []
+  },
   {
     version: '1.13.2',
     date: 'May 16, 2026',
@@ -3212,10 +3322,15 @@ function updateWhatIf() {
 
 function applyPremiumState() {
   // Show/hide every gated feature and its teaser based on isPremium.
-  document.querySelectorAll('[data-premium]').forEach(function(el) {
+  // Data-dependent cards (cash-flow, roadmap) opt out via data-premium-managed
+  // so their own render functions control visibility (they hide when there are
+  // no active debts). For those, we only need to handle the no-data-agnostic
+  // teaser/real swap, which renderCashflow/renderRoadmap + the teaser visibility
+  // helper handle together.
+  document.querySelectorAll('[data-premium]:not([data-premium-managed])').forEach(function(el) {
     el.style.display = isPremium ? '' : 'none';
   });
-  document.querySelectorAll('[data-teaser]').forEach(function(el) {
+  document.querySelectorAll('[data-teaser]:not([data-teaser-managed])').forEach(function(el) {
     el.style.display = isPremium ? 'none' : '';
   });
   var badge = document.getElementById('premium-badge');
@@ -3229,6 +3344,19 @@ function applyPremiumState() {
     if (pending) pending.style.display = isPremium ? 'none' : '';
     if (unlocked) unlocked.style.display = isPremium ? '' : 'none';
   }
+}
+
+// v1.14.0 — visibility for the data-dependent premium cards + their teasers.
+// A card/teaser shows only when there are active debts to visualize. Premium
+// users see the real card; free users see the blurred teaser.
+function applyDataCardVisibility() {
+  const hasActive = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; }).length > 0;
+  [['cashflow-card','cashflow-teaser'], ['roadmap-card','roadmap-teaser']].forEach(function(pair) {
+    const real = document.getElementById(pair[0]);
+    const teaser = document.getElementById(pair[1]);
+    if (real) real.style.display = (isPremium && hasActive) ? 'block' : 'none';
+    if (teaser) teaser.style.display = (!isPremium && hasActive) ? 'block' : 'none';
+  });
 }
 
 async function verifyLicense() {
@@ -4037,11 +4165,14 @@ function render() {
   renderMonthlySummary();
   renderLumpSumList();
   renderChart();
+  renderCashflow();        // v1.14.0 (premium)
+  renderRoadmap();         // v1.14.0 (premium)
   renderPaymentLog();
   renderMilestones();
   populateDebtSelects();
   populateLumpDebtSelect();
   applyPremiumState();     // v1.13.0 — show/hide gated features + teasers
+  applyDataCardVisibility(); // v1.14.0 — cash-flow + roadmap cards/teasers
   // Keep What If in sync — only update if sliders are at zero to avoid disrupting active scenario
   const wiExtra = document.getElementById('wi-extra');
   const wiLump  = document.getElementById('wi-lump');
@@ -4177,6 +4308,15 @@ function renderDebtList() {
     return;
   }
 
+  // v1.14.0 — premium users get the sortable portfolio table instead of cards.
+  if (isPremium) {
+    renderPortfolioTable(list);
+    // Payment log visibility (kept consistent with the card path below)
+    document.getElementById('payment-log-card').style.display = debts.length ? 'block' : 'none';
+    if (document.getElementById('monthly-summary-card')) document.getElementById('monthly-summary-card').style.display = debts.filter(function(d){return d.balance>0;}).length ? 'block' : 'none';
+    return;
+  }
+
   list.innerHTML = debts.map(d => {
     const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
@@ -4253,6 +4393,100 @@ function renderDebtList() {
   if (strategy === 'hybrid') initDragDrop();
 }
 
+// v1.14.0 — Portfolio table (premium). Sortable columns: name, balance, APR,
+// min payment, payoff order, interest paid. Payoff order + interest come from
+// the same simulation the Strategy tab uses.
+let portfolioSort = { key: 'order', dir: 'asc' };
+function setPortfolioSort(key) {
+  if (portfolioSort.key === key) {
+    portfolioSort.dir = portfolioSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    portfolioSort = { key: key, dir: 'asc' };
+  }
+  renderDebtList();
+}
+function renderPortfolioTable(list) {
+  // Compute payoff order + interest from a sim over active, included debts
+  const activeForSim = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  let perDebtMap = {};
+  let orderMap = {};
+  if (activeForSim.length) {
+    const sim = simulate(activeForSim.map(function(d){ return {...d}; }), extra, 0, strategy, plannedDisbursements());
+    (sim.perDebt || []).forEach(function(p){ perDebtMap[p.id] = p; });
+    // payoff order = rank by paidOffMonth (nulls last)
+    const ranked = (sim.perDebt || []).slice().sort(function(a,b){
+      const am = a.paidOffMonth == null ? Infinity : a.paidOffMonth;
+      const bm = b.paidOffMonth == null ? Infinity : b.paidOffMonth;
+      return am - bm;
+    });
+    ranked.forEach(function(p, i){ orderMap[p.id] = i + 1; });
+  }
+
+  const rows = debts.map(function(d) {
+    const apr = (d.hasPromo && d.promoEnd && new Date() < new Date(d.promoEnd)) ? (d.promoApr || 0) : (d.realApr || d.apr || 0);
+    const excluded = d.includeInStrategy === false;
+    return {
+      d: d,
+      name: d.name,
+      balance: d.balance,
+      apr: apr,
+      min: d.minPayment || 0,
+      order: excluded ? Infinity : (orderMap[d.id] || Infinity),
+      interest: (perDebtMap[d.id] || {}).interestPaid || 0,
+      excluded: excluded
+    };
+  });
+
+  const k = portfolioSort.key, dir = portfolioSort.dir === 'asc' ? 1 : -1;
+  rows.sort(function(a, b) {
+    let av = a[k], bv = b[k];
+    if (k === 'name') return dir * String(av).localeCompare(String(bv));
+    return dir * ((av || 0) - (bv || 0));
+  });
+
+  function arrow(key) {
+    if (portfolioSort.key !== key) return '<span style="opacity:0.3;">↕</span>';
+    return portfolioSort.dir === 'asc' ? '▲' : '▼';
+  }
+
+  const head =
+    '<thead><tr>' +
+    '<th data-k="name" class="pf-th">Debt ' + arrow('name') + '</th>' +
+    '<th data-k="balance" class="pf-th pf-num">Balance ' + arrow('balance') + '</th>' +
+    '<th data-k="apr" class="pf-th pf-num">APR ' + arrow('apr') + '</th>' +
+    '<th data-k="min" class="pf-th pf-num">Min ' + arrow('min') + '</th>' +
+    '<th data-k="order" class="pf-th pf-num">Payoff&nbsp;# ' + arrow('order') + '</th>' +
+    '<th data-k="interest" class="pf-th pf-num">Interest ' + arrow('interest') + '</th>' +
+    '<th class="pf-th"></th>' +
+    '</tr></thead>';
+
+  const body = '<tbody>' + rows.map(function(r) {
+    const d = r.d;
+    const orderCell = r.excluded ? '<span style="color:var(--text-dim);">—</span>' : (r.order === Infinity ? '—' : r.order);
+    const exclTag = r.excluded ? ' <span class="tag tag-muted" style="font-size:0.55rem;">excluded</span>' : '';
+    return '<tr>' +
+      '<td class="pf-td"><span style="font-weight:600;">' + d.name + '</span>' + exclTag + '</td>' +
+      '<td class="pf-td pf-num">' + fmtDec(r.balance) + '</td>' +
+      '<td class="pf-td pf-num">' + r.apr + '%</td>' +
+      '<td class="pf-td pf-num">' + fmtDec(r.min) + '</td>' +
+      '<td class="pf-td pf-num">' + orderCell + '</td>' +
+      '<td class="pf-td pf-num">' + fmtDec(r.interest) + '</td>' +
+      '<td class="pf-td pf-num" style="white-space:nowrap;">' +
+        '<button class="btn btn-ghost" style="font-size:0.66rem;padding:4px 9px;" onclick="openEditModal(' + d.id + ')">Edit</button> ' +
+        '<button class="btn btn-danger" style="font-size:0.66rem;padding:4px 9px;" onclick="removeDebt(' + d.id + ')">✕</button>' +
+      '</td>' +
+      '</tr>';
+  }).join('') + '</tbody>';
+
+  list.innerHTML = '<div class="pf-wrap"><table class="pf-table">' + head + body + '</table></div>';
+  // Wire header sorting
+  list.querySelectorAll('.pf-th[data-k]').forEach(function(th) {
+    th.style.cursor = 'pointer';
+    th.onclick = function(){ setPortfolioSort(th.getAttribute('data-k')); };
+  });
+}
+
 function renderChart() {
   // v1.7.0 — payoff timeline reflects the strategy, so excluded debts
   // (mortgages by default) are skipped.  They still appear on the Dashboard
@@ -4307,6 +4541,135 @@ function renderChart() {
       }
     }
   });
+}
+
+// ═══════════════════════════════════════════
+//  v1.14.0 — CASH-FLOW RELEASE + ROADMAP (premium)
+// ═══════════════════════════════════════════
+// Shared computation: for each active debt, the month it's eliminated and the
+// minimum payment that frees up at that point. Returns chronological release
+// events plus the starting monthly minimum obligation. Uses the same engine
+// (with rollover) the rest of the app uses, so dates match the Strategy tab.
+function computeReleaseEvents() {
+  const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
+  if (!activeDebts.length) return null;
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const sim = simulate(activeDebts.map(function(d){ return {...d}; }), extra, 0, strategy, plannedDisbursements());
+  if (sim.diverged) return null;
+
+  const startObligation = activeDebts.reduce(function(s,d){ return s + (d.minPayment || 0); }, 0);
+  const now = new Date();
+  const events = [];
+  (sim.perDebt || []).forEach(function(p) {
+    if (p.paidOffMonth == null) return;
+    const debt = debts.find(function(d){ return d.id === p.id; });
+    if (!debt) return;
+    const date = new Date(now.getFullYear(), now.getMonth() + p.paidOffMonth, 1);
+    events.push({
+      id: p.id,
+      name: debt.name,
+      month: p.paidOffMonth,
+      date: date,
+      freed: debt.minPayment || 0
+    });
+  });
+  events.sort(function(a,b){ return a.month - b.month; });
+  // Running obligation after each release
+  let remaining = startObligation;
+  events.forEach(function(ev){ remaining = Math.max(0, remaining - ev.freed); ev.remainingObligation = remaining; });
+  return { startObligation: startObligation, events: events, totalMonths: sim.months };
+}
+
+function monthLabel(date) {
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+}
+
+let cashflowChart = null;
+function renderCashflow() {
+  const card = document.getElementById('cashflow-card');
+  if (!card) return;
+  if (!isPremium) return; // teaser handled by applyPremiumState
+  const data = computeReleaseEvents();
+  if (!data || !data.events.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  // Build a step-down series: obligation over months, dropping at each release.
+  const labels = [];
+  const series = [];
+  const now = new Date();
+  let obligation = data.startObligation;
+  const eventsByMonth = {};
+  data.events.forEach(function(ev){ eventsByMonth[ev.month] = ev; });
+  for (let m = 0; m <= data.totalMonths; m++) {
+    if (eventsByMonth[m]) obligation = eventsByMonth[m].remainingObligation;
+    const d = new Date(now.getFullYear(), now.getMonth() + m, 1);
+    labels.push(monthLabel(d));
+    series.push(obligation);
+  }
+
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue('--accent').trim() || '#00e5b0';
+  const muted = styles.getPropertyValue('--text-muted').trim() || '#7a7a9a';
+  const ctx = document.getElementById('cashflowChart').getContext('2d');
+  if (cashflowChart) cashflowChart.destroy();
+  cashflowChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: labels, datasets: [{
+      label: 'Monthly minimums remaining',
+      data: series,
+      borderColor: accent,
+      backgroundColor: 'rgba(0,229,176,0.06)',
+      borderWidth: 2, pointRadius: 0, fill: true, stepped: true
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return fmt(c.raw) + '/mo'; } } } },
+      scales: {
+        x: { ticks: { color: muted, maxTicksLimit: 8, font: { family: "'DM Mono'" } }, grid: { display: false } },
+        y: { ticks: { color: muted, font: { family: "'DM Mono'" }, callback: function(v){ return '$' + v; } }, grid: { color: 'rgba(128,128,128,0.1)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Events list
+  const list = document.getElementById('cashflow-events');
+  list.innerHTML = data.events.map(function(ev) {
+    return '<div class="cashflow-event">' +
+      '<div><div class="cashflow-event-name">' + ev.name + ' paid off</div>' +
+      '<div class="cashflow-event-date">' + monthLabel(ev.date) + '</div></div>' +
+      '<div style="text-align:right;"><div class="cashflow-event-amt">+' + fmtDec(ev.freed) + '/mo</div>' +
+      '<div class="cashflow-event-running">' + fmtDec(ev.remainingObligation) + '/mo still committed</div></div>' +
+      '</div>';
+  }).join('');
+}
+
+function renderRoadmap() {
+  const card = document.getElementById('roadmap-card');
+  if (!card) return;
+  if (!isPremium) return; // teaser handled by applyPremiumState
+  const data = computeReleaseEvents();
+  if (!data || !data.events.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const track = document.getElementById('roadmap-track');
+  let html = data.events.map(function(ev) {
+    return '<div class="roadmap-step">' +
+      '<div class="roadmap-node"></div>' +
+      '<div class="roadmap-step-body">' +
+      '<div class="roadmap-step-title">' + ev.name + ' eliminated</div>' +
+      '<div class="roadmap-step-sub">' + monthLabel(ev.date) + ' · frees ' + fmtDec(ev.freed) + '/mo</div>' +
+      '</div></div>';
+  }).join('');
+  // Final debt-free milestone
+  const now = new Date();
+  const freeDate = new Date(now.getFullYear(), now.getMonth() + data.totalMonths, 1);
+  html += '<div class="roadmap-step">' +
+    '<div class="roadmap-node roadmap-node--final"></div>' +
+    '<div class="roadmap-step-body">' +
+    '<div class="roadmap-step-title">Debt-free 🎉</div>' +
+    '<div class="roadmap-step-sub">' + monthLabel(freeDate) + '</div>' +
+    '</div></div>';
+  track.innerHTML = html;
 }
 
 function renderPaymentLog() {
