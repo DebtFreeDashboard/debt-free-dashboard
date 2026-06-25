@@ -222,6 +222,34 @@
     padding-top: max(14px, calc(env(safe-area-inset-top) + 8px));
     border-bottom: 1px solid var(--border);
   }
+  .install-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+  }
+  .install-link:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .install-link-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+  }
+  @media (max-width: 420px) {
+    .install-link-text { display: none; }
+    .install-link { padding: 7px 10px; }
+  }
 
   .logo {
     font-family: var(--font-display);
@@ -1215,6 +1243,10 @@
     <div class="logo-dot"></div>
     DebtFree
   </div>
+  <a href="/app/index.html" class="install-link" id="install-link">
+    <span class="install-link-icon">⤓</span>
+    <span class="install-link-text">Install app</span>
+  </a>
 </header>
 
 <nav class="tab-nav">
@@ -5985,6 +6017,46 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
     </button>
   `;
   document.body.appendChild(banner);
+}
+
+// ── ANDROID / DESKTOP INSTALL ──
+// Chrome/Edge fire 'beforeinstallprompt' when the PWA is installable.
+// We capture it and wire the header "Install app" link to trigger the
+// browser's native one-tap install instead of navigating to the guide.
+// iOS Safari never fires this event, so on iOS the link keeps its default
+// href (/app/index.html) and the instructions page handles it.
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const link = document.getElementById('install-link');
+  if (!link) return;
+  link.addEventListener('click', async (ev) => {
+    if (!deferredInstallPrompt) return; // fall back to href if prompt is gone
+    ev.preventDefault();
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (typeof gtag === 'function') {
+      gtag('event', 'install_prompt_result', { 'outcome': outcome });
+    }
+    deferredInstallPrompt = null;
+  });
+});
+
+// If the app gets installed (any method), log it and hide the header link.
+window.addEventListener('appinstalled', () => {
+  if (typeof gtag === 'function') {
+    gtag('event', 'app_installed');
+  }
+  const link = document.getElementById('install-link');
+  if (link) link.style.display = 'none';
+});
+
+// Hide the header install link if already running as an installed PWA.
+if (isInStandaloneMode() ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)) {
+  const link = document.getElementById('install-link');
+  if (link) link.style.display = 'none';
 }
 </script>
 
