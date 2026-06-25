@@ -9,9 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="DebtFree">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="Your interactive debt payoff command center. Know your freedom date.">
-<link rel="manifest" href="/debt-free-dashboard/app/manifest.json">
-<link rel="apple-touch-icon" href="/debt-free-dashboard/assets/icons/icon-192.png">
-<link rel="icon" href="/debt-free-dashboard/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/app/manifest.json">
+<link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
+<link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
 <title>DebtFree — Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
@@ -1191,6 +1191,21 @@
 
   .comparison-card.best h4 { color: var(--accent); }
 </style>
+
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-NCP56TD9BG');
+  // Fire a distinct event on every hosted dashboard load so boost traffic
+  // can be isolated from all other site traffic in GA.
+  gtag('event', 'app_opened', {
+    'page_location': window.location.href,
+    'page_path': window.location.pathname
+  });
+</script>
 </head>
 <body>
 
