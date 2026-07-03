@@ -1,9 +1,11 @@
 {
-  "version": "1.15.0",
-  "releaseDate": "2026-05-16",
-  "releaseName": "Clearer Cash-Flow Release",
+  "version": "1.17.0",
+  "releaseDate": "2026-07-03",
+  "releaseName": "Faster, smoother, tidier",
   "notes": [
-    "The Monthly Cash-Flow Release chart now marks the months where a planned lump sum lands, so a big drop in your minimums has a visible cause instead of looking like a mystery cliff.",
-    "When several debts are eliminated in the same month (often because a lump sum clears them together), they now group into a single release card - showing the combined monthly cash freed, with each debt itemized beneath - instead of a row of identical dates."
+    "The Payment Log now lives near the top of the Dashboard, right after your charts - you add debts once, but you log payments forever.",
+    "Undo for payments: after logging, a small toast appears for a few seconds with an Undo button, so a fat-fingered amount is one tap to reverse.",
+    "Performance: the Dashboard now runs one shared payoff simulation per refresh instead of seven identical ones, and the What-If sliders wait for your thumb to settle before recalculating - dragging is now smooth on phones and iPads.",
+    "The premium Cash-Flow and Roadmap cards now tuck themselves away when you're down to your final debt instead of showing a nearly-empty chart."
   ]
 }

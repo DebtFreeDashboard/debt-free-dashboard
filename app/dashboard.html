@@ -678,14 +678,14 @@
 
   .timeline-table td {
     padding: 10px 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
     color: var(--text-muted);
     vertical-align: top;
   }
 
   .timeline-table tr:last-child td { border-bottom: none; }
 
-  .timeline-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .timeline-table tr:hover td { background: var(--surface2); }
 
   .paid-off-row td { color: var(--accent) !important; }
 
@@ -865,6 +865,67 @@
   @media (hover: none) {
     .btn-delete-payment { opacity: 1; }
   }
+
+  /* v1.16.0 — floating Log Payment button (always reachable; no scrolling) */
+  .fab-log {
+    position: fixed;
+    right: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    z-index: 900;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.03em;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 28px;
+    padding: 14px 20px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px var(--glow), 0 4px 12px rgba(0,0,0,0.25);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .fab-log:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px var(--glow), 0 6px 14px rgba(0,0,0,0.3);
+  }
+
+  /* v1.17.0 — undo toast (shown after logging a payment) */
+  .toast {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    z-index: 950;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.25s cubic-bezier(.23,1,.32,1);
+    max-width: min(92vw, 420px);
+  }
+  .toast-undo {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: none;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    padding: 5px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .toast-undo:hover { background: rgba(0,168,132,0.1); }
 
   /* ─── EXTRAS ─── */
   .divider {
@@ -1390,6 +1451,34 @@
       </div>
     </div>
 
+    <!-- Payment Log -->
+    <div class="card" id="payment-log-card" style="display:none">
+      <div class="card-title"><div class="dot"></div> Payment Log</div>
+      <div id="payment-log-future-warn" class="alert warning" style="display:none;margin-bottom:12px;gap:8px;align-items:center;">
+        <span>&#9888;</span><span>Future-dated payment saved but will not affect your current balance or calculations until that date arrives. Use Planned Lump Sums above to model future payments in your payoff simulation.</span>
+      </div>
+      <div class="payment-log" id="payment-log">
+        <div class="empty-state" style="padding:20px"><p>Payments recorded here.</p></div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:2fr 1fr 1fr auto; margin-top:14px;">
+        <div class="form-field">
+          <label>Debt Account</label>
+          <select id="log-debt-select"></select>
+        </div>
+        <div class="form-field">
+          <label>Amount Paid ($)</label>
+          <input type="number" id="log-amount" placeholder="250" min="0" step="1" />
+        </div>
+        <div class="form-field">
+          <label>Date</label>
+          <input type="date" id="log-date" />
+        </div>
+        <div class="form-field" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" onclick="logPayment()">Log</button>
+        </div>
+      </div>
+    </div>
     <!-- Add Debt Form -->
     <div class="card">
       <div class="card-title"><div class="dot"></div> Add a Debt</div>
@@ -1601,34 +1690,6 @@
       </div>
     </div>
 
-    <!-- Payment Log -->
-    <div class="card" id="payment-log-card" style="display:none">
-      <div class="card-title"><div class="dot"></div> Payment Log</div>
-      <div id="payment-log-future-warn" class="alert warning" style="display:none;margin-bottom:12px;gap:8px;align-items:center;">
-        <span>&#9888;</span><span>Future-dated payment saved but will not affect your current balance or calculations until that date arrives. Use Planned Lump Sums above to model future payments in your payoff simulation.</span>
-      </div>
-      <div class="payment-log" id="payment-log">
-        <div class="empty-state" style="padding:20px"><p>Payments recorded here.</p></div>
-      </div>
-      <div class="form-grid" style="grid-template-columns:2fr 1fr 1fr auto; margin-top:14px;">
-        <div class="form-field">
-          <label>Debt Account</label>
-          <select id="log-debt-select"></select>
-        </div>
-        <div class="form-field">
-          <label>Amount Paid ($)</label>
-          <input type="number" id="log-amount" placeholder="250" min="0" step="1" />
-        </div>
-        <div class="form-field">
-          <label>Date</label>
-          <input type="date" id="log-date" />
-        </div>
-        <div class="form-field" style="justify-content:flex-end">
-          <label>&nbsp;</label>
-          <button class="btn btn-primary" onclick="logPayment()">Log</button>
-        </div>
-      </div>
-    </div>
     <!-- Backup & Restore -->
     <div class="card" id="backup-card">
       <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
@@ -1964,11 +2025,46 @@
 
 </div><!-- /app -->
 
+<!-- v1.17.0 — undo toast root -->
+<div id="toast-root"></div>
+
+<!-- v1.16.0 — Floating quick-log payment (button + modal) -->
+<button class="fab-log" id="fab-log" onclick="openQuickLog()">+ Log Payment</button>
+<div id="quicklog-modal" class="modal-overlay hidden" onclick="closeQuickLog(event)">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title">Log a Payment</div>
+      <button class="modal-close" aria-label="Close" onclick="closeQuickLog()">&times;</button>
+    </div>
+    <div id="quicklog-future-warn" class="alert warning" style="display:none;margin-bottom:14px;gap:8px;align-items:center;">
+      <span>&#9888;</span><span>Future-dated payment saved as pending — it won't affect your balance until that date arrives.</span>
+    </div>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-field">
+        <label>Debt Account</label>
+        <select id="qlog-debt-select"></select>
+      </div>
+      <div class="form-field">
+        <label>Amount Paid ($)</label>
+        <input type="number" id="qlog-amount" placeholder="250" min="0" step="1" />
+      </div>
+      <div class="form-field">
+        <label>Date</label>
+        <input type="date" id="qlog-date" />
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:20px;">
+      <button class="btn btn-ghost" onclick="closeQuickLog()">Cancel</button>
+      <button class="btn btn-primary" onclick="quickLogPayment()">Log Payment</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.15.0';
+const APP_VERSION = '1.17.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -1976,6 +2072,30 @@ const APP_VERSION = '1.15.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.17.0',
+    date: 'May 16, 2026',
+    name: 'Faster, smoother, tidier',
+    whatsNew: [
+      'The Payment Log now lives near the top of the Dashboard, right after your charts — you add debts once, but you log payments forever.',
+      'Undo for payments: after logging, a small toast appears for a few seconds with an Undo button, so a fat-fingered amount is one tap to reverse.',
+      'Performance: the Dashboard now runs one shared payoff simulation per refresh instead of seven identical ones, and the What-If sliders wait for your thumb to settle before recalculating — dragging is now smooth on phones and iPads.',
+      'The premium Cash-Flow and Roadmap cards now tuck themselves away when you\u2019re down to your final debt (nothing left to analyze) instead of showing a nearly-empty chart.'
+    ],
+    fixes: []
+  },
+  {
+    version: '1.16.0',
+    date: 'May 16, 2026',
+    name: 'Quick payment logging',
+    whatsNew: [
+      'New floating "+ Log Payment" button — always visible in the bottom corner, so you can log a payment from anywhere without scrolling to the bottom of the Dashboard. It opens a quick modal with the same debt/amount/date fields, and shows each debt\u2019s current balance right in the picker.'
+    ],
+    fixes: [
+      'Light theme: the Payoff Timeline chart now follows your theme — its axis labels and gridlines were previously hardcoded to dark-theme colors, making them dim or invisible on light.',
+      'Light theme: the Strategy tab\u2019s payoff table row dividers are now visible (they used a white-on-dark tint that disappeared on light backgrounds).'
+    ]
+  },
   {
     version: '1.15.0',
     date: 'May 16, 2026',
@@ -2354,6 +2474,54 @@ function plannedDisbursements() {
     }
   });
   return out;
+}
+
+// v1.17.0 — MEMOIZED SIMULATIONS
+// Every Dashboard render used to run 7 independent full simulations with
+// identical inputs (stats ×2, next-debt, portfolio, chart, cashflow, roadmap).
+// These helpers compute once and reuse. The cache key is content-based —
+// built from every input that affects the result — so there is no explicit
+// invalidation to forget: any change to balances, minimums, APRs, promo
+// fields, strategy, extra payment, or scheduled disbursements produces a new
+// key and a fresh simulation. Callers MUST NOT mutate the returned object.
+let _planSimCache = { key: null, res: null };
+let _baseSimCache = { key: null, res: null };
+
+function _activePlanDebts() {
+  return debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
+}
+function _simKeyFor(activeDebts, extra, disb, rollover) {
+  return JSON.stringify([strategy, extra, rollover,
+    activeDebts.map(function(d){ return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoApr, d.promoEnd, d.postPromoApr]; }),
+    disb.map(function(l){ return [l.debtId, l.amount, l.date]; })
+  ]);
+}
+
+// The current plan: active debts, dashboard extra, all planned disbursements,
+// rollover on. Identical inputs to what renderStats/NextDebt/Chart/Portfolio/
+// Cashflow/Roadmap/What-If-baseline each computed independently before.
+function getPlanSim() {
+  const activeDebts = _activePlanDebts();
+  if (!activeDebts.length) return null;
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const disb = plannedDisbursements();
+  const key = _simKeyFor(activeDebts, extra, disb, true);
+  if (_planSimCache.key === key) return _planSimCache.res;
+  const res = simulate(activeDebts.map(function(d){ return {...d}; }), extra, 0, strategy, disb);
+  _planSimCache = { key: key, res: res };
+  return res;
+}
+
+// The do-nothing counterfactual: minimums only, no lumps, no rollover.
+// Used by the Interest Saved stat.
+function getBaselineSim() {
+  const activeDebts = _activePlanDebts();
+  if (!activeDebts.length) return null;
+  const key = _simKeyFor(activeDebts, 0, [], false);
+  if (_baseSimCache.key === key) return _baseSimCache.res;
+  const res = simulate(activeDebts.map(function(d){ return {...d}; }), 0, 0, strategy, [], { rollover: false });
+  _baseSimCache = { key: key, res: res };
+  return res;
 }
 
 function progressPct() {
@@ -3100,41 +3268,109 @@ function saveEditDebt() {
 // ═══════════════════════════════════════════
 //  LOG PAYMENT
 // ═══════════════════════════════════════════
+// v1.16.0 — shared payment-logging core used by both the dashboard form and
+// the floating quick-log modal. Returns 'future' | 'logged' | null.
+function logPaymentCore(debtId, amount, date) {
+  if (isNaN(amount) || amount <= 0) { alert('Enter a valid payment amount.'); return null; }
+  const d = debts.find(function(x) { return x.id === debtId; });
+  if (!d) return null;
+
+  const today = localDateStr();
+  const pid = Date.now();
+  if (date > today) {
+    // Future date — save as pending; no balance change until it arrives
+    payments.push({ id: pid, debtId: debtId, debtName: d.name, amount: amount, date: date, eliminated: false, pending: true });
+    save(); render();
+    return { status: 'future', paymentId: pid, debtName: d.name, amount: amount };
+  }
+
+  const actualPayment = Math.min(amount, d.balance);
+  d.balance = Math.max(0, d.balance - actualPayment);
+  payments.push({ id: pid, debtId: debtId, debtName: d.name, amount: actualPayment, date: date, eliminated: d.balance <= 0 });
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
+  save(); render();
+  return { status: 'logged', paymentId: pid, debtName: d.name, amount: actualPayment };
+}
+
+// v1.17.0 — undo toast. Cheap insurance against fat-finger entries in the
+// quick modal: 6 seconds to reverse. Undo routes through deletePayment(),
+// which rebuilds the balance from the full ledger — so it's safe for both
+// applied and pending payments.
+let _toastTimer = null;
+function showUndoToast(paymentId, text) {
+  const root = document.getElementById('toast-root');
+  if (!root) return;
+  clearTimeout(_toastTimer);
+  root.innerHTML = '<div class="toast"><span>' + text + '</span>' +
+    '<button class="toast-undo" onclick="undoToastPayment(' + paymentId + ')">Undo</button></div>';
+  _toastTimer = setTimeout(dismissToast, 6000);
+}
+function dismissToast() {
+  const root = document.getElementById('toast-root');
+  if (root) root.innerHTML = '';
+  clearTimeout(_toastTimer);
+}
+function undoToastPayment(paymentId) {
+  deletePayment(paymentId);
+  dismissToast();
+}
+
 function logPayment() {
   const debtId = parseInt(document.getElementById('log-debt-select').value);
   const amount = parseFloat(document.getElementById('log-amount').value);
   const date = document.getElementById('log-date').value || localDateStr();
-
-  if (isNaN(amount) || amount <= 0) { alert('Enter a valid payment amount.'); return; }
-
-  const d = debts.find(function(x) { return x.id === debtId; });
-  if (!d) return;
-
-  // Check if date is in the future
-  const today = localDateStr();
-  const isFuture = date > today;
-
-  if (isFuture) {
-    // Show warning but do NOT reduce balance — mark as pending
-    payments.push({ id: Date.now(), debtId: debtId, debtName: d.name, amount: amount, date: date, eliminated: false, pending: true });
-    document.getElementById('log-amount').value = '';
-    // Show warning in payment log area
+  const result = logPaymentCore(debtId, amount, date);
+  if (result === null) return;
+  document.getElementById('log-amount').value = '';
+  if (result.status === 'future') {
     const warn = document.getElementById('payment-log-future-warn');
     if (warn) {
       warn.style.display = 'flex';
       setTimeout(function() { warn.style.display = 'none'; }, 6000);
     }
-    save(); render();
+  } else {
+    showUndoToast(result.paymentId, 'Logged ' + fmtDec(result.amount) + ' to ' + result.debtName);
+  }
+}
+
+// v1.16.0 — floating quick-log modal
+function openQuickLog() {
+  const modal = document.getElementById('quicklog-modal');
+  if (!modal) return;
+  populateDebtSelects(); // ensure qlog select is fresh
+  const dateEl = document.getElementById('qlog-date');
+  if (dateEl && !dateEl.value) dateEl.value = localDateStr();
+  const warn = document.getElementById('quicklog-future-warn');
+  if (warn) warn.style.display = 'none';
+  modal.classList.remove('hidden');
+  const amt = document.getElementById('qlog-amount');
+  if (amt) amt.focus();
+}
+
+function closeQuickLog(e) {
+  const modal = document.getElementById('quicklog-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
+  const amt = document.getElementById('qlog-amount');
+  if (amt) amt.value = '';
+}
+
+function quickLogPayment() {
+  const debtId = parseInt(document.getElementById('qlog-debt-select').value);
+  const amount = parseFloat(document.getElementById('qlog-amount').value);
+  const date = document.getElementById('qlog-date').value || localDateStr();
+  const result = logPaymentCore(debtId, amount, date);
+  if (result === null) return;
+  document.getElementById('qlog-amount').value = '';
+  if (result.status === 'future') {
+    // Keep the modal open so the pending explanation is seen
+    const warn = document.getElementById('quicklog-future-warn');
+    if (warn) warn.style.display = 'flex';
     return;
   }
-
-  const actualPayment = Math.min(amount, d.balance);
-  d.balance = Math.max(0, d.balance - actualPayment);
-  payments.push({ id: Date.now(), debtId: debtId, debtName: d.name, amount: actualPayment, date: date, eliminated: d.balance <= 0 });
-
-  document.getElementById('log-amount').value = '';
-  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
-  save(); render();
+  closeQuickLog();
+  showUndoToast(result.paymentId, 'Logged ' + fmtDec(result.amount) + ' to ' + result.debtName);
 }
 
 // ═══════════════════════════════════════════
@@ -3220,13 +3456,23 @@ function initWiSliders() {
   configs.forEach(function(cfg) {
     var el = document.getElementById(cfg.id);
     if (!el) return;
-    function onUpdate() {
+    // v1.17.0 — the fill repaints instantly (cheap), but the two full
+    // simulations behind updateWhatIf are debounced so dragging stays smooth
+    // on mobile. 'change'/'touchend' fire immediately for the settled value.
+    let _wiDebounce = null;
+    function onInput() {
       updateSliderFill(cfg.id, cfg.color);
+      clearTimeout(_wiDebounce);
+      _wiDebounce = setTimeout(updateWhatIf, 120);
+    }
+    function onSettle() {
+      updateSliderFill(cfg.id, cfg.color);
+      clearTimeout(_wiDebounce);
       updateWhatIf();
     }
-    el.addEventListener('input',   onUpdate);
-    el.addEventListener('change',  onUpdate);
-    el.addEventListener('touchend', onUpdate);
+    el.addEventListener('input',   onInput);
+    el.addEventListener('change',  onSettle);
+    el.addEventListener('touchend', onSettle);
     updateSliderFill(cfg.id, cfg.color); // set initial state
   });
 }
@@ -3257,10 +3503,9 @@ function updateWhatIf() {
   const dashboardExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
-  // Baseline: current plan with all planned lump sums, no slider additions
-  // Use JSON deep copy to prevent simulate() mutations from leaking between calls
-  const baselineDebts = JSON.parse(JSON.stringify(activeDebts));
-  const baseline = simulate(baselineDebts, dashboardExtra, 0, strategy, plannedDisbursements());
+  // Baseline: current plan with all planned lump sums, no slider additions.
+  // v1.17.0 — memoized: identical inputs to the Dashboard sim.
+  const baseline = getPlanSim();
 
   // Scenario: adds slider extra monthly + What If lump sum applied immediately
   // Pass lump directly as lumpSum parameter (not via plannedLumps) so it reduces
@@ -3415,7 +3660,7 @@ function applyDataCardVisibility() {
   [['cashflow-card','cashflow-teaser'], ['roadmap-card','roadmap-teaser']].forEach(function(pair) {
     const real = document.getElementById(pair[0]);
     const teaser = document.getElementById(pair[1]);
-    if (real) real.style.display = (isPremium && hasActive) ? 'block' : 'none';
+    if (real) real.style.display = (isPremium && hasActive && real.dataset.hasContent !== '0') ? 'block' : 'none';
     if (teaser) teaser.style.display = (!isPremium && hasActive) ? 'block' : 'none';
   });
 }
@@ -4251,8 +4496,7 @@ function renderNextDebt() {
   const activeDebts = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
   if (activeDebts.length === 0) { card.style.display = 'none'; return; }
 
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const sim = simulate(activeDebts.map(function(d){ return {...d}; }), extra, 0, strategy, plannedDisbursements());
+  const sim = getPlanSim(); // v1.17.0 — memoized
   // sim.order is the post-run balances array in strategy order; the first debt
   // to reach zero is the one with the smallest paidOffMonth. Fall back to the
   // first in strategy order if timing data isn't present.
@@ -4328,11 +4572,9 @@ function renderStats() {
   document.getElementById('stat-interest').textContent = fmtDec(interest);
 
   if (activeDebts.length) {
-    const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, plannedDisbursements());
-    // v1.12.0 — baseline is the do-nothing counterfactual: no extra, no
-    // lumps, and NO rollover of freed minimums (a person not following a
-    // plan pockets them). The plan leg above rolls minimums by default.
-    const minRes = simulate(activeDebts.map(d=>({...d})), 0, 0, strategy, [], { rollover: false });
+    // v1.17.0 — memoized: shared plan sim + cached no-rollover baseline
+    const res = getPlanSim();
+    const minRes = getBaselineSim();
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
@@ -4473,7 +4715,7 @@ function renderPortfolioTable(list) {
   let perDebtMap = {};
   let orderMap = {};
   if (activeForSim.length) {
-    const sim = simulate(activeForSim.map(function(d){ return {...d}; }), extra, 0, strategy, plannedDisbursements());
+    const sim = getPlanSim(); // v1.17.0 — memoized
     (sim.perDebt || []).forEach(function(p){ perDebtMap[p.id] = p; });
     // payoff order = rank by paidOffMonth (nulls last)
     const ranked = (sim.perDebt || []).slice().sort(function(a,b){
@@ -4556,10 +4798,15 @@ function renderChart() {
   document.getElementById('chart-card').style.display = activeDebts.length ? 'block' : 'none';
   if (!activeDebts.length) return;
 
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const res = simulate(activeDebts.map(d=>({...d})), extra, 0, strategy, plannedDisbursements());
+  const res = getPlanSim(); // v1.17.0 — memoized
   const labels = res.monthlyData.map(m => 'Mo '+m.month);
   const data = res.monthlyData.map(m => m.remaining);
+
+  // v1.16.0 — colors follow the active theme (previously hardcoded to the
+  // dark palette, so light-theme users got dim ticks and invisible grids).
+  const _styles = getComputedStyle(document.documentElement);
+  const _accent = _styles.getPropertyValue('--accent').trim() || '#00e5b0';
+  const _muted  = _styles.getPropertyValue('--text-muted').trim() || '#7a7a9a';
 
   const ctx = document.getElementById('payoffChart').getContext('2d');
   if (payoffChart) payoffChart.destroy();
@@ -4571,8 +4818,8 @@ function renderChart() {
       datasets: [{
         label: 'Remaining Balance',
         data,
-        borderColor: '#00e5b0',
-        backgroundColor: 'rgba(0,229,176,0.06)',
+        borderColor: _accent,
+        backgroundColor: 'rgba(0,168,132,0.07)',
         borderWidth: 2,
         pointRadius: 0,
         fill: true,
@@ -4592,12 +4839,12 @@ function renderChart() {
       },
       scales: {
         x: {
-          ticks: { color: '#4a4a6a', maxTicksLimit: 8, font: { family: "'DM Mono'" } },
-          grid: { color: 'rgba(255,255,255,0.04)' }
+          ticks: { color: _muted, maxTicksLimit: 8, font: { family: "'DM Mono'" } },
+          grid: { color: 'rgba(128,128,128,0.1)' }
         },
         y: {
-          ticks: { color: '#4a4a6a', callback: v => fmt(v), font: { family: "'DM Mono'" } },
-          grid: { color: 'rgba(255,255,255,0.04)' }
+          ticks: { color: _muted, callback: v => fmt(v), font: { family: "'DM Mono'" } },
+          grid: { color: 'rgba(128,128,128,0.1)' }
         }
       }
     }
@@ -4614,9 +4861,8 @@ function renderChart() {
 function computeReleaseEvents() {
   const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
   if (!activeDebts.length) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const sim = simulate(activeDebts.map(function(d){ return {...d}; }), extra, 0, strategy, plannedDisbursements());
-  if (sim.diverged) return null;
+  const sim = getPlanSim(); // v1.17.0 — memoized (shared by cashflow + roadmap)
+  if (!sim || sim.diverged) return null;
 
   const startObligation = activeDebts.reduce(function(s,d){ return s + (d.minPayment || 0); }, 0);
   const now = new Date();
@@ -4687,7 +4933,16 @@ function renderCashflow() {
   if (!card) return;
   if (!isPremium) return; // teaser handled by applyPremiumState
   const data = computeReleaseEvents();
-  if (!data || !data.events.length) { card.style.display = 'none'; return; }
+  // v1.17.0 — with fewer than 2 release events there's nothing to analyze
+  // (a single step down to zero); collapse the card instead of rendering a
+  // nearly-empty chart. dataset.hasContent keeps applyDataCardVisibility
+  // from re-showing what we hide here.
+  if (!data || data.events.length < 2) {
+    card.style.display = 'none';
+    card.dataset.hasContent = '0';
+    return;
+  }
+  card.dataset.hasContent = '1';
   card.style.display = 'block';
 
   // Build a step-down series: obligation over months, dropping at each release.
@@ -4809,7 +5064,13 @@ function renderRoadmap() {
   if (!card) return;
   if (!isPremium) return; // teaser handled by applyPremiumState
   const data = computeReleaseEvents();
-  if (!data || !data.events.length) { card.style.display = 'none'; return; }
+  // v1.17.0 — same threshold as the cash-flow card (see note there)
+  if (!data || data.events.length < 2) {
+    card.style.display = 'none';
+    card.dataset.hasContent = '0';
+    return;
+  }
+  card.dataset.hasContent = '1';
   card.style.display = 'block';
 
   const track = document.getElementById('roadmap-track');
@@ -5203,7 +5464,7 @@ function renderStrategy() {
   //   • safeMinPayment kicks in, preventing infinite-payoff projections when
   //     a stored minPayment is below monthly post-promo interest.
   //   • Max-APR avalanche sort + calendar-accurate lump math (B1, C4).
-  const stratResult = simulate(sorted, extra, 0, strategy, plannedDisbursements());
+  const stratResult = getPlanSim(); // v1.17.0 — memoized (same inputs; simulate sorts internally)
   const perDebtMap = {};
   (stratResult.perDebt || []).forEach(function(p) { perDebtMap[p.id] = p; });
   const overallMonths = stratResult.months || 1;
@@ -5326,6 +5587,17 @@ function populateDebtSelects() {
   sel.innerHTML = activeDebts.length
     ? activeDebts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('')
     : '<option value="">No active debts</option>';
+
+  // v1.16.0 — quick-log modal select mirrors the dashboard form's options,
+  // with balances for at-a-glance context. FAB shows only when loggable.
+  const qsel = document.getElementById('qlog-debt-select');
+  if (qsel) {
+    qsel.innerHTML = activeDebts.length
+      ? activeDebts.map(d=>`<option value="${d.id}">${d.name} (${fmtDec(d.balance)})</option>`).join('')
+      : '<option value="">No active debts</option>';
+  }
+  const fab = document.getElementById('fab-log');
+  if (fab) fab.style.display = activeDebts.length ? 'inline-flex' : 'none';
 
   const wsel = document.getElementById('wi-windfall-debt');
   wsel.innerHTML = activeDebts.length
