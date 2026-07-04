@@ -1,9 +1,9 @@
 {
-  "version": "1.21.0",
-  "releaseDate": "2026-07-03",
-  "releaseName": "Dial-a-Date + True Cost",
+  "version": "1.21.1",
+  "releaseDate": "2026-07-04",
+  "releaseName": "Activation tracking",
   "notes": [
-    "New (Premium): Dial-a-Date. Pick the month you want to be debt-free, and the app calculates the exact extra monthly payment it takes to hit it - then lets you apply it to your plan in one tap. Find it right under your Freedom Date.",
-    "New (Free): True Cost. Every debt now shows what it really costs you - the interest you're paying per day, and the total interest you'd hand over if you only ever paid the minimum."
+    "Internal: added activation analytics so we can measure how many visitors enter their first debt.",
+    "Standardized the app's page title."
   ]
 }

@@ -12,7 +12,7 @@
 <link rel="manifest" href="/app/manifest.json">
 <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
 <link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
-<title>DebtFree — Command Center</title>
+<title>DebtFree Dashboard — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -2217,7 +2217,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.21.0';
+const APP_VERSION = '1.21.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3308,10 +3308,19 @@ function addDebt() {
     originationDate: originationDate
   });
 
-  // v1.11.0 — anchor entry: the balance the user just entered is current as
-  // of today (their statement already includes interest to date). A $0
-  // accrual for the joining month prevents the engine from adding this
-  // month's interest on top of an already-current number.
+  // v1.21.1 — activation event. The single most important funnel step: a
+  // visitor becomes a real user the moment they enter their first debt. Every
+  // downstream feature (share cards, Dial-a-Date, premium) is inert until this
+  // fires, so this is the number that tells us whether traffic is activating.
+  if (typeof trackShare === 'function') {
+    trackShare('debt_added', {
+      _category: 'activation',
+      debt_count: debts.length,
+      is_first: debts.length === 1,
+      has_promo: !!hasPromo,
+      debt_type: type
+    });
+  }
   if (interestAccrualEnabled) {
     const _now = new Date();
     accruals.push({
@@ -3689,7 +3698,10 @@ let _celebrateContent = null;  // v1.19.0 — held so the format toggle can redr
 function trackShare(action, params) {
   try {
     if (typeof gtag === 'function') {
-      gtag('event', action, Object.assign({ event_category: 'flywheel' }, params || {}));
+      const p = params || {};
+      const category = p._category || 'flywheel';
+      delete p._category;
+      gtag('event', action, Object.assign({ event_category: category }, p));
     }
   } catch (e) {}
 }
