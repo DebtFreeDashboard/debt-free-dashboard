@@ -1,11 +1,9 @@
 {
-  "version": "1.17.0",
+  "version": "1.21.0",
   "releaseDate": "2026-07-03",
-  "releaseName": "Faster, smoother, tidier",
+  "releaseName": "Dial-a-Date + True Cost",
   "notes": [
-    "The Payment Log now lives near the top of the Dashboard, right after your charts - you add debts once, but you log payments forever.",
-    "Undo for payments: after logging, a small toast appears for a few seconds with an Undo button, so a fat-fingered amount is one tap to reverse.",
-    "Performance: the Dashboard now runs one shared payoff simulation per refresh instead of seven identical ones, and the What-If sliders wait for your thumb to settle before recalculating - dragging is now smooth on phones and iPads.",
-    "The premium Cash-Flow and Roadmap cards now tuck themselves away when you're down to your final debt instead of showing a nearly-empty chart."
+    "New (Premium): Dial-a-Date. Pick the month you want to be debt-free, and the app calculates the exact extra monthly payment it takes to hit it - then lets you apply it to your plan in one tap. Find it right under your Freedom Date.",
+    "New (Free): True Cost. Every debt now shows what it really costs you - the interest you're paying per day, and the total interest you'd hand over if you only ever paid the minimum."
   ]
 }

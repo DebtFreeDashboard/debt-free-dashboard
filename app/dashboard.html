@@ -927,6 +927,83 @@
   }
   .toast-undo:hover { background: rgba(0,168,132,0.1); }
 
+  /* v1.19.0 — format segmented toggle in celebration modal */
+  .seg-btn {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 18px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .seg-btn.seg-active {
+    background: var(--surface);
+    color: var(--accent);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  /* v1.21.0 — Dial-a-Date entry button */
+  .dial-entry {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    text-align: left;
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .dial-entry:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .dial-entry-icon { font-size: 1.5rem; line-height: 1; }
+  .dial-entry-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  .dial-entry-title { font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text); }
+  .dial-entry-sub { font-size: 0.78rem; color: var(--text-muted); }
+  .dial-entry-arrow { color: var(--accent); font-size: 1.2rem; }
+
+  /* Dial-a-Date result card */
+  .dialdate-result-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+  }
+  .ddr-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .ddr-big { font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; color: var(--accent); line-height: 1; }
+  .ddr-big span { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
+  .ddr-detail { font-size: 0.9rem; color: var(--text); margin-top: 10px; }
+  .ddr-compare { font-size: 0.82rem; color: var(--text-muted); margin-top: 8px; line-height: 1.5; }
+  .dialdate-note { font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 12px; }
+  .dialdate-note.warn { color: var(--accent4); }
+
+  /* v1.21.0 — True Cost strip on debt cards */
+  .truecost-strip {
+    min-width: 100%;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: rgba(217,154,31,0.07);
+    border: 1px solid rgba(217,154,31,0.18);
+    border-radius: var(--radius-sm);
+  }
+  .truecost-strip.warn { background: rgba(224,72,72,0.07); border-color: rgba(224,72,72,0.2); }
+  .tc-day { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--accent4); white-space: nowrap; }
+  .tc-day span { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; }
+  .truecost-strip.warn .tc-day { color: var(--accent3); }
+  .tc-life { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
+  .tc-life strong { color: var(--text); }
+
   /* ─── EXTRAS ─── */
   .divider {
     height: 1px;
@@ -1351,6 +1428,17 @@
       </div>
     </div>
 
+    <!-- v1.21.0 — Dial-a-Date entry (premium). Placed at the Freedom Date, the
+         exact number it changes, so free users meet the gate at peak desire. -->
+    <button id="dial-date-entry" class="dial-entry" onclick="openDialDate()" style="display:none">
+      <span class="dial-entry-icon">&#127919;</span>
+      <span class="dial-entry-text">
+        <span class="dial-entry-title">Want to be debt-free sooner?</span>
+        <span class="dial-entry-sub">Pick a target date &mdash; see the payment to hit it</span>
+      </span>
+      <span class="dial-entry-arrow">&rarr;</span>
+    </button>
+
     <!-- v1.13.0 — Next Debt to Eliminate (free) -->
     <div class="card next-debt-card" id="next-debt-card" style="display:none">
       <div class="next-debt-flag">▸ NEXT TARGET</div>
@@ -1380,6 +1468,9 @@
           <span id="progress-label-paid">$0 paid off</span>
           <span id="progress-label-left" style="color:var(--text-dim)"></span>
         </div>
+        <button id="share-progress-btn" class="btn btn-ghost" style="margin-top:16px;width:100%;" onclick="shareProgress()">
+          &#128241; Share my progress
+        </button>
       </div>
     </div>
 
@@ -2025,6 +2116,68 @@
 
 </div><!-- /app -->
 
+<!-- v1.21.0 — Dial-a-Date modal -->
+<div id="dialdate-modal" class="modal-overlay hidden" onclick="closeDialDate(event)">
+  <div class="modal" style="max-width:460px;" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">&#127919; Hit a Target Date</div>
+      <button class="modal-close" aria-label="Close" onclick="closeDialDate()">&times;</button>
+    </div>
+
+    <!-- Premium: the working tool -->
+    <div id="dialdate-tool">
+      <p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;margin-bottom:18px;">
+        Choose when you want to be debt-free. We'll calculate the extra monthly payment it takes to get there.
+      </p>
+      <div class="form-field">
+        <label>Target debt-free date</label>
+        <input type="month" id="dialdate-target" onchange="runDialDate()" />
+      </div>
+      <div id="dialdate-result" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- Free: blurred teaser (consistent with other gates) -->
+    <div id="dialdate-teaser" style="display:none;">
+      <div class="teaser-blur">
+        <div class="dialdate-result-card">
+          <div class="ddr-label">Extra payment needed</div>
+          <div class="ddr-big">$438<span>/mo</span></div>
+          <div class="ddr-detail">to be debt-free by <strong>Mar 2027</strong> &mdash; 8 months sooner</div>
+        </div>
+      </div>
+      <div class="lock-overlay">
+        <div class="lock-icon">&#128274;</div>
+        <div class="lock-card-title">Dial in your debt-free date</div>
+        <div class="lock-card-desc" style="max-width:300px;">
+          Pick any target date and instantly see the exact monthly payment to hit it. Unlock the full planning suite for a one-time $12.
+        </div>
+        <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="margin-top:14px;text-decoration:none;">Unlock Premium &mdash; $12</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- v1.18.0 — confetti + celebration overlay -->
+<canvas id="confetti-canvas" style="position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:1200;"></canvas>
+<div id="celebrate-overlay" class="modal-overlay hidden" style="z-index:1210;" onclick="closeCelebrate(event)">
+  <div class="modal celebrate-modal" style="max-width:420px;text-align:center;" onclick="event.stopPropagation()">
+    <div id="celebrate-emoji" style="font-size:4rem;line-height:1;margin-bottom:8px;">\uD83C\uDF89</div>
+    <div id="celebrate-headline" style="font-family:var(--font-display);font-weight:800;font-size:1.5rem;margin-bottom:6px;"></div>
+    <div id="celebrate-sub" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:18px;"></div>
+    <img id="share-card-preview" alt="Your shareable win card" style="width:100%;border-radius:14px;border:1px solid var(--border);margin-bottom:14px;" />
+    <div class="seg-toggle" style="display:inline-flex;gap:2px;margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:3px;">
+      <button id="fmt-square" class="seg-btn seg-active" onclick="switchCardFormat('square')">Square</button>
+      <button id="fmt-story" class="seg-btn" onclick="switchCardFormat('story')">Story</button>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-primary" onclick="shareShareCard()">Share my win</button>
+      <button class="btn btn-ghost" onclick="downloadShareCard()">Save image</button>
+    </div>
+    <button class="btn btn-ghost" style="margin-top:10px;width:100%;" onclick="closeCelebrate()">Done</button>
+  </div>
+</div>
+<canvas id="share-card-canvas" style="display:none;"></canvas>
+
 <!-- v1.17.0 — undo toast root -->
 <div id="toast-root"></div>
 
@@ -2064,7 +2217,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.17.0';
+const APP_VERSION = '1.21.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2072,6 +2225,16 @@ const APP_VERSION = '1.17.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.18.0',
+    date: 'May 16, 2026',
+    name: 'Celebrate your wins',
+    whatsNew: [
+      'Milestone celebrations: when you eliminate a debt, cross 25/50/75% paid off, hit a big interest-saved number, or reach debt-free, the app now celebrates the moment with confetti and a clean, shareable win card.',
+      'Every card is built to share \u2014 save it or send it straight from the app. It shows your debts eliminated and freedom date (never your balances), so it\u2019s a flex, not a confession.'
+    ],
+    fixes: []
+  },
   {
     version: '1.17.0',
     date: 'May 16, 2026',
@@ -2438,6 +2601,97 @@ function totalOriginal() { return debts.reduce((a,d)=>a+(isNaN(d.originalBalance
 
 function totalPaid() { return payments.filter(p => !p.pending).reduce((a,p)=>a+p.amount,0); }
 
+// ── v1.18.0 — MILESTONE FLYWHEEL ──
+// Fires a celebration + shareable win card at emotional-peak moments, then
+// records the milestone so it never re-triggers on reload. Framing is
+// competence-first ("6 debts eliminated"), never confession ("$68k in debt"):
+// this audience shares wins and systems, not vulnerability. Every card bakes
+// the site URL into the image itself, because most shares are screenshots —
+// if the URL isn't rendered in, there's no attribution and no flywheel.
+let shownMilestones = [];  // persisted keys of milestones already celebrated
+let _milestonesBaselined = false;  // gate: suppress celebrations until first load baselines
+
+// Snapshot the current milestone-relevant state without firing anything.
+// Used at first-run to baseline (so importing a mid-journey backup doesn't
+// dump five retroactive celebrations on load).
+function milestoneKeysAchieved() {
+  const keys = [];
+  const active = debts.filter(function(d){ return d.balance > 0; });
+  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; });
+
+  // Per-debt eliminations
+  paidOff.forEach(function(d){ keys.push('elim:' + d.id); });
+
+  // Debt-free (had debts, none remain active)
+  if (debts.length && !active.length && debts.some(function(d){ return d.originalBalance > 0; })) {
+    keys.push('debtfree');
+  }
+
+  // Percent-of-total-paid thresholds
+  const pct = progressPct();
+  [25, 50, 75].forEach(function(t){ if (pct >= t) keys.push('pct:' + t); });
+
+  // Interest-saved thresholds (uses the same memoized sims as the stat)
+  const plan = getPlanSim();
+  const base = getBaselineSim();
+  if (plan && base) {
+    const saved = Math.max(0, base.totalInterest - plan.totalInterest);
+    [5000, 10000, 20000].forEach(function(t){ if (saved >= t) keys.push('saved:' + t); });
+  }
+  return keys;
+}
+
+// Human-readable payload for a milestone key → drives celebration + card.
+function milestoneContent(key) {
+  const paidOffCount = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; }).length;
+  if (key === 'debtfree') {
+    return { emoji: '\uD83C\uDF89', headline: 'DEBT-FREE', sub: 'Every debt eliminated. The plan worked.', big: 'Freedom.' };
+  }
+  if (key.indexOf('elim:') === 0) {
+    const id = parseInt(key.split(':')[1], 10);
+    const d = debts.find(function(x){ return x.id === id; });
+    const name = d ? d.name : 'A debt';
+    return { emoji: '\u2705', headline: name + ' \u2014 eliminated', sub: paidOffCount + (paidOffCount === 1 ? ' debt down.' : ' debts down.') + ' Momentum is real.', big: name + ' paid off' };
+  }
+  if (key.indexOf('pct:') === 0) {
+    const t = key.split(':')[1];
+    return { emoji: '\uD83D\uDCC8', headline: t + '% paid off', sub: 'More than ' + t + '% of the way to zero.', big: t + '% down' };
+  }
+  if (key.indexOf('saved:') === 0) {
+    const t = parseInt(key.split(':')[1], 10);
+    return { emoji: '\uD83D\uDCB0', headline: fmt(t) + ' in interest saved', sub: 'Money kept in your pocket, not the bank\u2019s.', big: fmt(t) + ' saved' };
+  }
+  return null;
+}
+
+// Called after every save/render. Fires at most ONE card per pass (the
+// highest-priority new milestone), so a big payment that crosses several
+// thresholds at once celebrates the best one rather than spamming a stack.
+function checkMilestones() {
+  const achieved = milestoneKeysAchieved();
+  const fresh = achieved.filter(function(k){ return shownMilestones.indexOf(k) === -1; });
+  if (!fresh.length) return;
+
+  // Record them all as shown (we only *display* one, but none should re-fire)
+  fresh.forEach(function(k){ if (shownMilestones.indexOf(k) === -1) shownMilestones.push(k); });
+  persistMilestones();
+
+  // Priority: debt-free > elimination > interest saved > percent
+  const priority = function(k){
+    if (k === 'debtfree') return 0;
+    if (k.indexOf('elim:') === 0) return 1;
+    if (k.indexOf('saved:') === 0) return 2;
+    if (k.indexOf('pct:') === 0) return 3;
+    return 9;
+  };
+  fresh.sort(function(a, b){ return priority(a) - priority(b); });
+  celebrateMilestone(fresh[0]);
+}
+
+function persistMilestones() {
+  try { localStorage.setItem('debtfree_milestones', JSON.stringify(shownMilestones)); } catch (e) {}
+}
+
 // ── REFERENTIAL INTEGRITY (added in v1.3.9) ──
 // Find lumpSums and payments that point at debtIds no longer present in the
 // debts array. These are usually leftovers from a debt that was deleted and
@@ -2528,6 +2782,94 @@ function progressPct() {
   const orig = totalOriginal();
   if (!orig) return 0;
   return Math.min(100, (totalPaid() / orig) * 100);
+}
+
+// ── v1.21.0 — DIAL-A-DATE (reverse solver) ──
+// Forward, the engine answers "given $X/mo extra, when am I debt-free?".
+// Dial-a-Date inverts it: "to be debt-free by month N, how much extra/mo do I
+// need?". We binary-search the extra payment against the SAME simulate() the
+// rest of the app uses, so the answer is always consistent with the forecast.
+//
+// Returns one of:
+//   { feasible:true,  extra, months, targetMonths, interest }
+//   { feasible:false, reason:'sooner', minMonths, minExtra, ... }  (target is
+//         earlier than physically possible even with a huge payment)
+//   { feasible:false, reason:'nodebts' }
+function solveForTargetDate(targetMonths) {
+  const active = _activePlanDebts();
+  if (!active.length) return { feasible: false, reason: 'nodebts' };
+
+  const disb = plannedDisbursements();
+  const runExtra = function(extra) {
+    return simulate(active.map(function(d){ return {...d}; }), extra, 0, strategy, disb);
+  };
+
+  // Absolute floor: the fastest possible payoff. We approximate "infinite money"
+  // with a very large extra, which pays every non-promo debt almost immediately
+  // (promo debts still can't be beaten before their 0% window in the engine's
+  // cascade, so this floor honors promo logic).
+  const HUGE = Math.max(1e6, totalOriginal() * 10);
+  const floor = runExtra(HUGE);
+  if (targetMonths < floor.months) {
+    return { feasible: false, reason: 'sooner', minMonths: floor.months, minExtra: null };
+  }
+
+  // What does $0 extra already give us? If the plan already hits the target
+  // with no extra, required extra is 0.
+  const base = runExtra(0);
+  if (base.months <= targetMonths) {
+    return { feasible: true, extra: 0, months: base.months, targetMonths: targetMonths, interest: base.totalInterest };
+  }
+
+  // Binary-search the smallest extra that reaches the target month.
+  // More extra → fewer months (monotonic), so we can bisect cleanly.
+  let lo = 0, hi = HUGE, best = null;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    const res = runExtra(mid);
+    if (res.months <= targetMonths) { best = { extra: mid, res: res }; hi = mid; }
+    else { lo = mid; }
+    if (hi - lo < 1) break; // converged to <$1
+  }
+  if (!best) return { feasible: false, reason: 'sooner', minMonths: floor.months, minExtra: null };
+  return {
+    feasible: true,
+    extra: Math.ceil(best.extra),
+    months: best.res.months,
+    targetMonths: targetMonths,
+    interest: best.res.totalInterest
+  };
+}
+
+// ── v1.21.0 — TRUE COST (per debt) ──
+// The visceral number: what each card costs you per day, and total lifetime
+// interest if you paid ONLY the minimum on it (no rollover, no extra). This is
+// the "see something you can't easily see" hook that makes the planning tools
+// feel necessary. Standalone per-debt minimum-only amortization.
+function trueCostOf(debt) {
+  const bal = debt.balance;
+  if (!bal || bal <= 0) return null;
+  const apr = (!isNaN(debt.apr) && debt.apr >= 0) ? debt.apr : 0;
+  const dailyRate = apr / 100 / 365;
+  const perDay = bal * dailyRate;
+
+  // Minimum-only payoff on THIS debt alone. Many cards have a min that barely
+  // covers interest; if the min can't amortize, flag it.
+  const monthlyRate = apr / 100 / 12;
+  let b = bal, months = 0, interest = 0;
+  const min = debt.minPayment || 0;
+  const firstMonthInterest = b * monthlyRate;
+  if (min <= firstMonthInterest + 0.01 && monthlyRate > 0) {
+    return { perDay: perDay, neverPaysOff: true, lifetimeInterest: null, months: null };
+  }
+  while (b > 0 && months < 1200) {
+    const i = b * monthlyRate;
+    interest += i;
+    b = b + i - min;
+    months++;
+    if (b < 0) b = 0;
+  }
+  return { perDay: perDay, neverPaysOff: false, lifetimeInterest: interest, months: months };
 }
 
 function monthlyInterest() {
@@ -3334,6 +3676,398 @@ function logPayment() {
 }
 
 // v1.16.0 — floating quick-log modal
+// ── v1.18.0 — CELEBRATION + SHARE CARD ──
+// Shows a full-screen celebration at a milestone, with a rendered win card the
+// user can download or share. The card is drawn on a canvas at 2x (1080x1080,
+// Instagram-native) with the site URL baked in so screenshots still attribute.
+let _lastCardBlob = null;
+let _celebrateContent = null;  // v1.19.0 — held so the format toggle can redraw
+
+// v1.20.0 — flywheel analytics. Safe no-op if gtag isn't loaded (offline PWA).
+// Lets us see whether the flywheel actually spins: do people open cards, switch
+// formats, share vs save, and does milestone vs on-demand drive more sharing.
+function trackShare(action, params) {
+  try {
+    if (typeof gtag === 'function') {
+      gtag('event', action, Object.assign({ event_category: 'flywheel' }, params || {}));
+    }
+  } catch (e) {}
+}
+
+function switchCardFormat(fmt) {
+  if (!_celebrateContent) return;
+  trackShare('card_format', { format: fmt });
+  drawShareCard(_celebrateContent, fmt);
+  ['square','story'].forEach(function(f){
+    const b = document.getElementById('fmt-' + f);
+    if (b) b.classList.toggle('seg-active', f === fmt);
+  });
+}
+
+function celebrateMilestone(key) {
+  const content = milestoneContent(key);
+  if (!content) return;
+  const overlay = document.getElementById('celebrate-overlay');
+  if (!overlay) return;
+
+  document.getElementById('celebrate-emoji').textContent = content.emoji;
+  document.getElementById('celebrate-headline').textContent = content.headline;
+  document.getElementById('celebrate-sub').textContent = content.sub;
+
+  _celebrateContent = content;      // v1.19.0
+  _cardFormat = 'square';
+  drawShareCard(content, 'square'); // paints the hidden canvas + preview
+  ['square','story'].forEach(function(f){
+    const b = document.getElementById('fmt-' + f);
+    if (b) b.classList.toggle('seg-active', f === 'square');
+  });
+  overlay.classList.remove('hidden');
+  trackShare('card_shown', { source: 'milestone', milestone: key });
+  if (typeof confettiBurst === 'function') confettiBurst();
+}
+
+// v1.20.0 — on-demand progress share. Milestones are rare (a handful across a
+// whole payoff), but the urge to share hits unpredictably — after a big
+// payment, when someone asks how it's going, when motivation strikes. This
+// opens the SAME card generator for the CURRENT status, any time, with no
+// confetti (it's user-initiated, not an achievement moment). Framing stays
+// competence-first: progress %, debts eliminated, freedom date — never balances.
+function shareProgress() {
+  const pct = Math.round(progressPct());
+  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; }).length;
+  const active = debts.filter(function(d){ return d.balance > 0; }).length;
+
+  let big, sub, emoji;
+  if (active === 0 && debts.some(function(d){ return d.originalBalance > 0; })) {
+    emoji = '\uD83C\uDF89'; big = 'Debt-free.'; sub = 'Every debt eliminated. The plan worked.';
+  } else if (paidOff > 0) {
+    emoji = '\uD83D\uDCAA'; big = pct + '% to debt-free'; sub = paidOff + (paidOff === 1 ? ' debt down' : ' debts down') + ' and counting.';
+  } else {
+    emoji = '\uD83D\uDE80'; big = pct + '% to debt-free'; sub = 'The plan is in motion.';
+  }
+
+  const content = { emoji: emoji, headline: 'My progress', sub: sub, big: big };
+  const overlay = document.getElementById('celebrate-overlay');
+  if (!overlay) return;
+
+  document.getElementById('celebrate-emoji').textContent = content.emoji;
+  document.getElementById('celebrate-headline').textContent = content.headline;
+  document.getElementById('celebrate-sub').textContent = content.sub;
+
+  _celebrateContent = content;
+  _cardFormat = 'square';
+  drawShareCard(content, 'square');
+  ['square','story'].forEach(function(f){
+    const b = document.getElementById('fmt-' + f);
+    if (b) b.classList.toggle('seg-active', f === 'square');
+  });
+  overlay.classList.remove('hidden');
+  trackShare('card_shown', { source: 'on_demand', pct: pct });
+  // No confetti — this is a deliberate share, not a surprise celebration.
+}
+
+function closeCelebrate() {
+  const overlay = document.getElementById('celebrate-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  _lastCardBlob = null;
+}
+
+// Draw the shareable win card. Competence-framed, URL baked in.
+// v1.18.0 → v1.19.0: renders square (1080×1080, feed) or story (1080×1920, IG/
+// TikTok stories). Story keeps all content inside the vertical "safe band" —
+// IG overlays its own chrome on the top and bottom ~250px of a story, so the
+// headline and URL are pulled toward center and never sit under that chrome.
+let _cardFormat = 'square';
+function drawShareCard(content, format) {
+  format = format || _cardFormat || 'square';
+  _cardFormat = format;
+  const canvas = document.getElementById('share-card-canvas');
+  if (!canvas) return;
+  const isStory = (format === 'story');
+  const W = 1080, H = isStory ? 1920 : 1080;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  const styles = getComputedStyle(document.documentElement);
+  const accent = (styles.getPropertyValue('--accent').trim() || '#00a884');
+  const isLight = (document.documentElement.getAttribute('data-theme') === 'light');
+  const bg = isLight ? '#f4f4f7' : '#0a0a0f';
+  const surface = isLight ? '#ffffff' : '#12121a';
+  const ink = isLight ? '#1a1a2a' : '#f0f0f8';
+  const muted = isLight ? '#5a5a72' : '#7a7a9a';
+
+  // Background fills the whole frame
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  const glow = ctx.createRadialGradient(W*0.85, H*0.12, 0, W*0.85, H*0.12, W*0.6);
+  glow.addColorStop(0, hexA(accent, 0.18)); glow.addColorStop(1, hexA(accent, 0));
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+
+  // Panel: square uses a bordered card; story uses a taller card inset within
+  // the safe band so IG's top/bottom chrome overlaps only the background.
+  const pad = 90;
+  const panelX = pad;
+  const panelY = isStory ? 300 : pad;                 // safe-band top
+  const panelW = W - pad*2;
+  const panelH = isStory ? (H - 600) : (H - pad*2);   // safe-band bottom
+  roundRect(ctx, panelX, panelY, panelW, panelH, 48);
+  ctx.fillStyle = surface; ctx.fill();
+  ctx.lineWidth = 2; ctx.strokeStyle = hexA(accent, 0.35); ctx.stroke();
+
+  const cx = W / 2;
+  const inX = panelX + 70;      // inner left
+  const top = panelY + 70;      // inner top
+
+  // Logo
+  ctx.fillStyle = accent;
+  roundRect(ctx, inX, top, 92, 92, 22); ctx.fill();
+  ctx.fillStyle = isLight ? '#ffffff' : '#0a0a0f';
+  ctx.font = '700 46px Syne, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('DF', inX + 46, top + 50);
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = ink; ctx.font = '800 44px Syne, sans-serif';
+  ctx.fillText('DebtFree', inX + 120, top + 40);
+  ctx.fillStyle = muted; ctx.font = '500 26px "DM Mono", monospace';
+  ctx.fillText('DASHBOARD', inX + 120, top + 78);
+
+  // Vertical rhythm — story has more room so spread things out
+  const emojiY   = isStory ? panelY + 520 : panelY + 400;
+  const bigY     = isStory ? panelY + 720 : panelY + 560;
+  const subY     = isStory ? panelY + 800 : panelY + 630;
+  const stripY   = isStory ? panelY + panelH - 320 : panelY + panelH - 210;
+  const urlY     = panelY + panelH - 70;
+  const maxW     = panelW - 120;
+
+  // Emoji
+  ctx.font = (isStory ? '190px' : '150px') + ' sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(content.emoji, cx, emojiY);
+
+  // Big line — auto-fit
+  ctx.fillStyle = ink;
+  let size = isStory ? 108 : 92;
+  ctx.font = '800 ' + size + 'px Syne, sans-serif';
+  while (ctx.measureText(content.big).width > maxW && size > 40) {
+    size -= 4; ctx.font = '800 ' + size + 'px Syne, sans-serif';
+  }
+  ctx.fillText(content.big, cx, bigY);
+
+  // Sub line
+  ctx.fillStyle = muted;
+  ctx.font = '400 34px "DM Sans", sans-serif';
+  wrapText(ctx, content.sub, cx, subY, maxW, 46);
+
+  // Stat strip (real data)
+  const active = debts.filter(function(d){ return d.balance > 0; }).length;
+  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; }).length;
+  const plan = getPlanSim();
+  let freedom = '\u2014';
+  if (plan && !plan.diverged) {
+    const fd = new Date(); fd.setMonth(fd.getMonth() + plan.months);
+    freedom = fd.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  } else if (!active) { freedom = 'DONE'; }
+  ctx.textAlign = 'center';
+  drawStat(ctx, panelX + panelW*0.30, stripY, String(paidOff), 'debts eliminated', accent, muted);
+  drawStat(ctx, panelX + panelW*0.70, stripY, freedom, 'freedom date', accent, muted);
+
+  // URL baked in
+  ctx.fillStyle = muted; ctx.font = '500 30px "DM Mono", monospace';
+  ctx.fillText('mydebtdashboard.com', cx, urlY);
+
+  const preview = document.getElementById('share-card-preview');
+  if (preview) preview.src = canvas.toDataURL('image/png');
+  canvas.toBlob(function(b){ _lastCardBlob = b; }, 'image/png');
+}
+
+// Canvas helpers
+function hexA(hex, a) {
+  const h = hex.replace('#',''); const n = parseInt(h.length===3 ? h.split('').map(function(c){return c+c;}).join('') : h, 16);
+  return 'rgba(' + ((n>>16)&255) + ',' + ((n>>8)&255) + ',' + (n&255) + ',' + a + ')';
+}
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.arcTo(x+w, y, x+w, y+h, r); ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r); ctx.arcTo(x, y, x+w, y, r); ctx.closePath();
+}
+function wrapText(ctx, text, cx, y, maxW, lh) {
+  const words = text.split(' '); let line = ''; const lines = [];
+  words.forEach(function(w){
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+    else line = test;
+  });
+  if (line) lines.push(line);
+  lines.forEach(function(l, i){ ctx.fillText(l, cx, y + i*lh); });
+}
+function drawStat(ctx, cx, y, big, label, accent, muted) {
+  ctx.fillStyle = accent; ctx.font = '800 68px Syne, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(big, cx, y);
+  ctx.fillStyle = muted; ctx.font = '500 26px "DM Mono", monospace';
+  ctx.fillText(label, cx, y + 44);
+}
+
+// Download / native share
+function downloadShareCard() {
+  const canvas = document.getElementById('share-card-canvas');
+  if (!canvas) return;
+  trackShare('card_save', { format: _cardFormat });
+  const a = document.createElement('a');
+  a.download = 'debtfree-win.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+async function shareShareCard() {
+  // Web Share API (Level 2) with file support — works on most mobile browsers.
+  // Falls back to download where sharing files isn't supported.
+  try {
+    if (_lastCardBlob && navigator.canShare) {
+      const file = new File([_lastCardBlob], 'debtfree-win.png', { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        trackShare('card_share', { format: _cardFormat, method: 'native' });
+        await navigator.share({ files: [file], title: 'My debt payoff progress',
+          text: 'Tracking my debt payoff with DebtFree Dashboard \u2014 mydebtdashboard.com' });
+        return;
+      }
+    }
+  } catch (e) { /* user cancelled or unsupported — fall through */ }
+  downloadShareCard();
+}
+
+// Lightweight confetti (no library; respects reduced-motion)
+function confettiBurst() {
+  try {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  } catch (e) {}
+  const c = document.getElementById('confetti-canvas');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const styles = getComputedStyle(document.documentElement);
+  const accent = styles.getPropertyValue('--accent').trim() || '#00a884';
+  const colors = [accent, '#ffd166', '#4ecdc4', '#ff6b6b', '#ffffff'];
+  const parts = [];
+  for (let i = 0; i < 140; i++) {
+    parts.push({ x: c.width/2, y: c.height*0.4, vx: (Math.random()-0.5)*16, vy: Math.random()*-16 - 4,
+      g: 0.4 + Math.random()*0.3, s: 6 + Math.random()*8, col: colors[i % colors.length], rot: Math.random()*6, vr: (Math.random()-0.5)*0.4 });
+  }
+  let frames = 0;
+  (function anim(){
+    frames++;
+    ctx.clearRect(0, 0, c.width, c.height);
+    parts.forEach(function(p){
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.col; ctx.fillRect(-p.s/2, -p.s/2, p.s, p.s); ctx.restore();
+    });
+    if (frames < 130) requestAnimationFrame(anim);
+    else ctx.clearRect(0, 0, c.width, c.height);
+  })();
+}
+
+// ── v1.21.0 — Dial-a-Date modal control ──
+function openDialDate() {
+  const modal = document.getElementById('dialdate-modal');
+  if (!modal) return;
+  const tool = document.getElementById('dialdate-tool');
+  const teaser = document.getElementById('dialdate-teaser');
+  if (isPremium) {
+    tool.style.display = 'block';
+    teaser.style.display = 'none';
+    // Default the picker to the current freedom date and solve immediately so
+    // the user sees a live answer without hunting for the input.
+    const plan = getPlanSim();
+    const target = document.getElementById('dialdate-target');
+    if (plan && !plan.diverged) {
+      const fd = new Date(); fd.setMonth(fd.getMonth() + plan.months);
+      target.value = fd.getFullYear() + '-' + String(fd.getMonth()+1).padStart(2,'0');
+    }
+    runDialDate();
+  } else {
+    tool.style.display = 'none';
+    teaser.style.display = 'block';
+  }
+  trackShare('dialdate_open', { premium: !!isPremium });
+  modal.classList.remove('hidden');
+}
+
+function closeDialDate(e) {
+  const modal = document.getElementById('dialdate-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
+}
+
+function runDialDate() {
+  const out = document.getElementById('dialdate-result');
+  const target = document.getElementById('dialdate-target');
+  if (!out || !target || !target.value) return;
+
+  // Convert YYYY-MM to a month count from now
+  const parts = target.value.split('-');
+  const ty = parseInt(parts[0], 10), tm = parseInt(parts[1], 10) - 1;
+  const now = new Date();
+  const targetMonths = (ty - now.getFullYear()) * 12 + (tm - now.getMonth());
+
+  if (targetMonths < 1) {
+    out.innerHTML = '<div class="dialdate-note warn">Pick a date in the future.</div>';
+    return;
+  }
+
+  const r = solveForTargetDate(targetMonths);
+  const dashExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
+
+  if (!r.feasible && r.reason === 'nodebts') {
+    out.innerHTML = '<div class="dialdate-note">Add some debts first and this will calculate your target payment.</div>';
+    return;
+  }
+  if (!r.feasible && r.reason === 'sooner') {
+    const fd = new Date(); fd.setMonth(fd.getMonth() + r.minMonths);
+    const soonest = fd.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    out.innerHTML =
+      '<div class="dialdate-result-card">' +
+        '<div class="ddr-label">That date isn\u2019t reachable</div>' +
+        '<div class="ddr-detail">Even with a very large payment, the earliest you can be debt-free is <strong>' + soonest + '</strong>. Promo-rate balances can\u2019t be beaten before their 0% window ends. Try that date or later.</div>' +
+      '</div>';
+    return;
+  }
+
+  // Feasible
+  const extra = r.extra;
+  const delta = extra - dashExtra;
+  const targetLabelD = new Date(); targetLabelD.setMonth(targetLabelD.getMonth() + targetMonths);
+  const targetLabel = targetLabelD.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  let compare = '';
+  if (extra === 0) {
+    compare = 'Your current plan already gets you there \u2014 no extra needed. \uD83C\uDF89';
+  } else if (delta > 0) {
+    compare = 'That\u2019s <strong>' + fmt(delta) + '/mo more</strong> than your current ' + fmt(dashExtra) + '/mo extra.';
+  } else if (delta < 0) {
+    compare = 'You\u2019re already paying more than needed \u2014 you could ease off by ' + fmt(-delta) + '/mo and still hit it.';
+  } else {
+    compare = 'That matches your current extra payment exactly.';
+  }
+
+  out.innerHTML =
+    '<div class="dialdate-result-card">' +
+      '<div class="ddr-label">Extra payment needed</div>' +
+      '<div class="ddr-big">' + fmt(extra) + '<span>/mo</span></div>' +
+      '<div class="ddr-detail">to be debt-free by <strong>' + targetLabel + '</strong></div>' +
+      '<div class="ddr-compare">' + compare + '</div>' +
+      (extra > 0 ? '<button class="btn btn-ghost" style="margin-top:14px;width:100%;" onclick="applyDialExtra(' + extra + ')">Apply this to my plan</button>' : '') +
+    '</div>';
+}
+
+// Push the solved extra into the real plan (the dashboard extra-payment field).
+function applyDialExtra(extra) {
+  const field = document.getElementById('extra-payment');
+  if (!field) return;
+  field.value = extra;
+  extraMonthly = extra;
+  save(); render();
+  trackShare('dialdate_apply', { extra: extra });
+  closeDialDate();
+}
+
 function openQuickLog() {
   const modal = document.getElementById('quicklog-modal');
   if (!modal) return;
@@ -4485,6 +5219,15 @@ function render() {
   if (wiExtra && wiLump && parseInt(wiExtra.value) === 0 && parseInt(wiLump.value) === 0) {
     updateWhatIf();
   }
+
+  // v1.18.0 — flywheel: check for newly-crossed milestones after each render.
+  // Suppressed during the initial load (see _milestonesBaselined) so importing
+  // a mid-journey backup doesn't dump retroactive celebrations.
+  if (_milestonesBaselined) checkMilestones();
+
+  // v1.21.0 — Dial-a-Date entry shows whenever there's an active plan to solve.
+  const _dialBtn = document.getElementById('dial-date-entry');
+  if (_dialBtn) _dialBtn.style.display = _activePlanDebts().length ? 'flex' : 'none';
 }
 
 // v1.13.0 — Next Debt to Eliminate (free). Uses the same strategy ordering and
@@ -4656,6 +5399,26 @@ function renderDebtList() {
       ? `<span class="tag tag-muted" style="margin-left:6px;font-size:0.58rem;">not in payoff plan</span>`
       : '';
 
+    // v1.21.0 — True Cost strip: the visceral per-day + lifetime-at-minimums
+    // number. Only for active debts (a paid-off debt has no cost).
+    let trueCostStrip = '';
+    const tc = trueCostOf(d);
+    if (tc && !isZero) {
+      if (tc.neverPaysOff) {
+        trueCostStrip = `<div class="truecost-strip warn">
+          <span class="tc-day">${fmtDec(tc.perDay)}<span>/day</span></span>
+          <span class="tc-life">At the minimum, this barely covers interest \u2014 it may never pay off. Add extra to make progress.</span>
+        </div>`;
+      } else {
+        const yrs = Math.floor(tc.months / 12), mos = tc.months % 12;
+        const dur = (yrs ? yrs + 'y ' : '') + (mos ? mos + 'mo' : (yrs ? '' : '0mo'));
+        trueCostStrip = `<div class="truecost-strip">
+          <span class="tc-day">${fmtDec(tc.perDay)}<span>/day</span></span>
+          <span class="tc-life">Minimum-only: <strong>${fmtDec(tc.lifetimeInterest)}</strong> interest over ${dur}</span>
+        </div>`;
+      }
+    }
+
     return `
     <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
@@ -4682,6 +5445,7 @@ function renderDebtList() {
       </div>
       <button class="btn btn-ghost" style="font-size:0.72rem;padding:6px 12px;" onclick="openEditModal(${d.id})">Edit</button>
       <button class="btn btn-danger" onclick="removeDebt(${d.id})">✕</button>
+      ${trueCostStrip}
       <div class="progress-wrap" style="min-width:100%">
         <div class="progress-bar" style="width:${pct}%; background:${isZero ? 'var(--accent)' : 'var(--accent2)'}"></div>
       </div>
@@ -5764,8 +6528,14 @@ function importData(event) {
         sessionStorage.removeItem('debtfree_lumpsums_bak');
       } catch(e) {}
       save();
+      // v1.18.0 — re-baseline the flywheel to the imported state, so a
+      // mid-journey restore doesn't fire a storm of retroactive celebrations.
+      // Only milestones crossed AFTER the import will celebrate.
+      _milestonesBaselined = false;
+      shownMilestones = milestoneKeysAchieved();
+      persistMilestones();
+      _milestonesBaselined = true;
       render();
-      showBackupMsg('ok', 'Restored ' + debts.length + ' debts and ' + payments.length + ' payments successfully.');
     } catch(err) {
       showBackupMsg('warn', 'Could not read backup file. Make sure it is a valid DebtFree export.');
     }
@@ -6237,9 +7007,22 @@ document.addEventListener('keydown', e => {
     if (wnModal) wnModal.classList.add('hidden');
   }
 });
+// v1.18.0 — flywheel boot. Load celebrated milestones. On first-ever run
+// (no stored set), baseline everything already achieved so a returning user or
+// an imported mid-journey backup doesn't get a retroactive celebration storm —
+// only milestones crossed from here forward will fire.
+try {
+  const storedMs = localStorage.getItem('debtfree_milestones');
+  if (storedMs !== null) {
+    shownMilestones = JSON.parse(storedMs) || [];
+  } else {
+    shownMilestones = milestoneKeysAchieved();
+    persistMilestones();
+  }
+} catch (e) { shownMilestones = []; }
+_milestonesBaselined = true;
+
 render();
-// v1.7.1 -- show release notes if this is a new version for this user
-checkAndShowWhatsNew();
 </script>
 <script>
 // ── SERVICE WORKER REGISTRATION ──
