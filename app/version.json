@@ -1,9 +1,9 @@
 {
-  "version": "1.21.1",
-  "releaseDate": "2026-07-04",
-  "releaseName": "Activation tracking",
+  "version": "1.21.2",
+  "releaseDate": "2026-07-09",
+  "releaseName": "Session diagnostics",
   "notes": [
-    "Internal: added activation analytics so we can measure how many visitors enter their first debt.",
-    "Standardized the app's page title."
+    "Internal: added temporary session diagnostics (Microsoft Clarity) to see where first-time visitors get stuck before entering their first debt.",
+    "Internal: text input is masked in recordings, so users' debt amounts are not captured. Planned for removal after the first-run test window."
   ]
 }
