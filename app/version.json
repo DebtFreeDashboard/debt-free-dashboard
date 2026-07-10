@@ -1,9 +1,10 @@
 {
-  "version": "1.21.2",
-  "releaseDate": "2026-07-09",
-  "releaseName": "Session diagnostics",
+  "version": "1.21.3",
+  "releaseDate": "2026-07-05",
+  "releaseName": "Mobile teaser fixes",
   "notes": [
-    "Internal: added temporary session diagnostics (Microsoft Clarity) to see where first-time visitors get stuck before entering their first debt.",
-    "Internal: text input is masked in recordings, so users' debt amounts are not captured. Planned for removal after the first-run test window."
+    "Fixed: premium feature previews (What-If lump sum, Cash-Flow, Roadmap, Lump Sums) could get cut off on phones - the unlock message now always fits, on any screen size.",
+    "Fixed: the Dial-a-Date preview for free users now shows the proper blurred preview with its unlock overlay.",
+    "Fixed: tapping the What-If lump sum preview now takes you to the unlock section instead of doing nothing."
   ]
 }
