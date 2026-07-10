@@ -1009,6 +1009,19 @@
   .tc-life { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
   .tc-life strong { color: var(--text); }
 
+  /* v1.22.0 — collapsible dashboard cards */
+  [data-collapse] > .card-title { cursor: pointer; user-select: none; }
+  .collapse-chev {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+    display: inline-block;
+  }
+  .card-collapsed .collapse-chev { transform: rotate(-90deg); }
+  .card-collapsed .card-body { display: none; }
+  .card-collapsed { padding-bottom: 16px; }
+
   /* ─── EXTRAS ─── */
   .divider {
     height: 1px;
@@ -1489,7 +1502,7 @@
     </div>
 
     <!-- Chart -->
-    <div class="card" id="chart-card" style="display:none">
+    <div class="card" id="chart-card" data-collapse="chart" data-collapse-default="open" style="display:none">
       <div class="card-title"><div class="dot"></div> Payoff Timeline</div>
       <div class="chart-wrap">
         <canvas id="payoffChart"></canvas>
@@ -1497,7 +1510,7 @@
     </div>
 
     <!-- v1.14.0 — Cash-Flow Release card (premium) -->
-    <div class="card" id="cashflow-card" data-premium data-premium-managed style="display:none">
+    <div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="open" data-premium data-premium-managed style="display:none">
       <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
       <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
@@ -1533,7 +1546,7 @@
     </div>
 
     <!-- v1.14.0 — Premium Roadmap timeline (premium) -->
-    <div class="card" id="roadmap-card" data-premium data-premium-managed style="display:none">
+    <div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="open" data-premium data-premium-managed style="display:none">
       <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
       <div id="roadmap-track"></div>
@@ -1585,7 +1598,7 @@
       </div>
     </div>
     <!-- Add Debt Form -->
-    <div class="card">
+    <div class="card" id="add-debt-card" data-collapse="adddebt" data-collapse-default="dynamic">
       <div class="card-title"><div class="dot"></div> Add a Debt</div>
       <div class="form-grid">
         <div class="form-field">
@@ -1693,7 +1706,7 @@
     </div>
 
     <!-- Debt List -->
-    <div class="card">
+    <div class="card" id="debt-list-card" data-collapse="debts" data-collapse-default="open">
       <div class="card-title"><div class="dot"></div> Your Debts <span class="tag tag-muted" id="debt-count" style="margin-left:4px">0 accounts</span></div>
       <div class="debt-list" id="debt-list">
         <div class="empty-state">
@@ -1704,7 +1717,7 @@
     </div>
 
     <!-- Monthly Budget -->
-    <div class="card" id="budget-card">
+    <div class="card" id="budget-card" data-collapse="budget" data-collapse-default="closed">
       <div class="card-title"><div class="dot"></div> Monthly Payoff Budget</div>
       <div class="form-grid" style="grid-template-columns:1fr 1fr">
         <div class="form-field">
@@ -1724,7 +1737,7 @@
 
 
     <!-- Monthly Payment Summary -->
-    <div class="card" id="monthly-summary-card" style="display:none">
+    <div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Monthly Payment Summary</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
         <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
@@ -1740,7 +1753,7 @@
       </div>
     </div>
     <!-- Planned Lump Sums -->
-    <div class="card" id="lump-sum-card" style="display:none">
+    <div class="card" id="lump-sum-card" data-collapse="lumps" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments</div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
       <div id="lump-sum-list"></div>
@@ -1796,7 +1809,7 @@
     </div>
 
     <!-- Backup & Restore -->
-    <div class="card" id="backup-card">
+    <div class="card" id="backup-card" data-collapse="backup" data-collapse-default="closed">
       <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
@@ -2201,7 +2214,7 @@
 <div id="toast-root"></div>
 
 <!-- v1.16.0 — Floating quick-log payment (button + modal) -->
-<button class="fab-log" id="fab-log" onclick="openQuickLog()">+ Log Payment</button>
+<button class="fab-log" id="fab-log">+ Log Payment</button>
 <div id="quicklog-modal" class="modal-overlay hidden" onclick="closeQuickLog(event)">
   <div class="modal" style="max-width:440px;">
     <div class="modal-header">
@@ -2236,7 +2249,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.21.3';
+const APP_VERSION = '1.22.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2244,6 +2257,16 @@ const APP_VERSION = '1.21.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.22.0',
+    date: 'May 16, 2026',
+    name: 'A calmer dashboard',
+    whatsNew: [
+      'Dashboard sections are now collapsible \u2014 tap any card title to tuck it away or bring it back. Your layout is remembered. Everyday essentials (stats, next debt, progress, payment log) always stay visible; secondary sections like Budget and Backup start tucked away to cut scrolling roughly in half on phones.',
+      'The floating button is now smarter: when you haven\u2019t added any debts yet it says "+ Add Debt" and takes you straight to the form; once you have debts it becomes "+ Log Payment" as before.'
+    ],
+    fixes: []
+  },
   {
     version: '1.18.0',
     date: 'May 16, 2026',
@@ -4097,6 +4120,97 @@ function applyDialExtra(extra) {
   save(); render();
   trackShare('dialdate_apply', { extra: extra });
   closeDialDate();
+}
+
+// ── v1.22.0 — COLLAPSIBLE DASHBOARD CARDS ──
+// Cuts mobile page length roughly in half without hiding the daily-habit core
+// (stats, Next Debt, Progress, Payment Log stay always-open). Rules:
+//   Tier 2 (open by default):    chart, cash-flow, roadmap, debt list
+//   Tier 3 (closed by default):  budget, summary, lumps, backup
+//   Add Debt is state-aware: OPEN with zero debts (activation is the whole
+//   point of a first visit), closed once they have debts (FAB covers it).
+// Per-card state persists in localStorage so the page respects each user's
+// setup. Teasers are deliberately NOT collapsible — gates stay visible.
+let _collapseState = {};
+function loadCollapseState() {
+  try { _collapseState = JSON.parse(localStorage.getItem('debtfree_collapse')) || {}; } catch (e) { _collapseState = {}; }
+}
+function persistCollapseState() {
+  try { localStorage.setItem('debtfree_collapse', JSON.stringify(_collapseState)); } catch (e) {}
+}
+
+function initCollapsibles() {
+  loadCollapseState();
+  document.querySelectorAll('[data-collapse]').forEach(function(card) {
+    const key = card.getAttribute('data-collapse');
+    const title = card.querySelector('.card-title');
+    if (!title || card.dataset.collapseInit) return;
+    card.dataset.collapseInit = '1';
+
+    // Wrap everything after the title into a body container, so toggling is a
+    // single class flip. Moving nodes preserves element references, so render
+    // targets like #debt-list and #cashflow-events keep working.
+    const body = document.createElement('div');
+    body.className = 'card-body';
+    const toMove = [];
+    let n = title.nextSibling;
+    while (n) { toMove.push(n); n = n.nextSibling; }
+    toMove.forEach(function(node){ body.appendChild(node); });
+    card.appendChild(body);
+
+    // Chevron + tap target
+    const chev = document.createElement('span');
+    chev.className = 'collapse-chev';
+    chev.innerHTML = '&#9662;';
+    title.appendChild(chev);
+    title.addEventListener('click', function(){ toggleCollapse(key); });
+
+    // Initial state: stored preference wins; otherwise the default
+    let collapsed;
+    if (_collapseState[key] !== undefined) {
+      collapsed = !!_collapseState[key];
+    } else {
+      const def = card.getAttribute('data-collapse-default');
+      if (def === 'dynamic') collapsed = debts.length > 0;   // Add Debt rule
+      else collapsed = (def === 'closed');
+    }
+    card.classList.toggle('card-collapsed', collapsed);
+  });
+}
+
+function toggleCollapse(key) {
+  const card = document.querySelector('[data-collapse="' + key + '"]');
+  if (!card) return;
+  const collapsed = !card.classList.contains('card-collapsed');
+  card.classList.toggle('card-collapsed', collapsed);
+  _collapseState[key] = collapsed ? 1 : 0;
+  persistCollapseState();
+}
+
+function expandCollapse(key, persist) {
+  const card = document.querySelector('[data-collapse="' + key + '"]');
+  if (!card) return;
+  card.classList.remove('card-collapsed');
+  // Navigational expands (e.g. the FAB jumping to Add Debt) should NOT write a
+  // lasting preference — only explicit header taps do. Otherwise one FAB tap
+  // would pin the Add Debt card open forever, defeating the dynamic default.
+  if (persist !== false) {
+    _collapseState[key] = 0;
+    persistCollapseState();
+  }
+}
+
+// v1.22.0 — contextual FAB target: with zero debts the floating button becomes
+// "+ Add Debt" (activation is the job); with debts it's "+ Log Payment".
+function goAddDebt() {
+  showSection('dashboard');
+  expandCollapse('adddebt', false);
+  const card = document.getElementById('add-debt-card');
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(function(){
+    const nameEl = document.getElementById('debt-name');
+    if (nameEl && nameEl.focus) nameEl.focus();
+  }, 350);
 }
 
 function openQuickLog() {
@@ -6392,7 +6506,19 @@ function populateDebtSelects() {
       : '<option value="">No active debts</option>';
   }
   const fab = document.getElementById('fab-log');
-  if (fab) fab.style.display = activeDebts.length ? 'inline-flex' : 'none';
+  if (fab) {
+    // v1.22.0 — contextual FAB: the one floating button always offers the
+    // user's next meaningful action. Zero debts → "+ Add Debt" (activation);
+    // otherwise → "+ Log Payment" (the daily habit).
+    fab.style.display = 'inline-flex';
+    if (activeDebts.length) {
+      fab.textContent = '+ Log Payment';
+      fab.onclick = openQuickLog;
+    } else {
+      fab.textContent = '+ Add Debt';
+      fab.onclick = goAddDebt;
+    }
+  }
 
   const wsel = document.getElementById('wi-windfall-debt');
   wsel.innerHTML = activeDebts.length
@@ -7052,6 +7178,9 @@ try {
   }
 } catch (e) { shownMilestones = []; }
 _milestonesBaselined = true;
+
+// v1.22.0 — set up collapsible cards (needs debts loaded for the Add Debt rule)
+initCollapsibles();
 
 render();
 </script>

@@ -1,10 +1,9 @@
 {
-  "version": "1.21.3",
+  "version": "1.22.0",
   "releaseDate": "2026-07-05",
-  "releaseName": "Mobile teaser fixes",
+  "releaseName": "A calmer dashboard",
   "notes": [
-    "Fixed: premium feature previews (What-If lump sum, Cash-Flow, Roadmap, Lump Sums) could get cut off on phones - the unlock message now always fits, on any screen size.",
-    "Fixed: the Dial-a-Date preview for free users now shows the proper blurred preview with its unlock overlay.",
-    "Fixed: tapping the What-If lump sum preview now takes you to the unlock section instead of doing nothing."
+    "Dashboard sections are now collapsible - tap any card title to tuck it away or bring it back. Your layout is remembered. Everyday essentials (stats, next debt, progress, payment log) always stay visible; secondary sections like Budget and Backup start tucked away to cut scrolling roughly in half on phones.",
+    "The floating button is now smarter: when you haven't added any debts yet it says '+ Add Debt' and takes you straight to the form; once you have debts it becomes '+ Log Payment' as before."
   ]
 }
