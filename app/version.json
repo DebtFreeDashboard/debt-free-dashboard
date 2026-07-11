@@ -1,9 +1,13 @@
 {
-  "version": "1.22.0",
-  "releaseDate": "2026-07-05",
-  "releaseName": "A calmer dashboard",
+  "version": "1.23.0",
+  "releaseDate": "2026-07-11",
+  "releaseName": "Polish & accessibility",
   "notes": [
-    "Dashboard sections are now collapsible - tap any card title to tuck it away or bring it back. Your layout is remembered. Everyday essentials (stats, next debt, progress, payment log) always stay visible; secondary sections like Budget and Backup start tucked away to cut scrolling roughly in half on phones.",
-    "The floating button is now smarter: when you haven't added any debts yet it says '+ Add Debt' and takes you straight to the form; once you have debts it becomes '+ Log Payment' as before."
+    "New 'Collapse all / Expand all' control on the Dashboard for one-tap tidying.",
+    "A friendly welcome note now greets first-time visitors above the Add a Debt form.",
+    "Collapsible sections now work with the keyboard and announce their state to screen readers.",
+    "The Escape key now closes every popup, including quick payment logging, Dial-a-Date, and celebrations.",
+    "Leave the app open across midnight or return days later - due payments and monthly interest now process the moment you come back.",
+    "Fixed: What's New release dates are now accurate; debt names containing characters like & or < display correctly everywhere."
   ]
 }

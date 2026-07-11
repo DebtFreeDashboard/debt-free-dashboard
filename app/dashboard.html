@@ -1009,6 +1009,22 @@
   .tc-life { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
   .tc-life strong { color: var(--text); }
 
+  /* v1.23.0 — collapse-all control */
+  .collapse-all-btn {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .collapse-all-btn:hover { color: var(--accent); border-color: var(--accent); }
+
   /* v1.22.0 — collapsible dashboard cards */
   [data-collapse] > .card-title { cursor: pointer; user-select: none; }
   .collapse-chev {
@@ -1502,6 +1518,10 @@
     </div>
 
     <!-- Chart -->
+    <!-- v1.23.0 — collapse/expand all (applies to collapsible cards only) -->
+    <div style="display:flex;justify-content:flex-end;margin:-8px 0 10px;">
+      <button id="collapse-all-btn" class="collapse-all-btn" onclick="toggleAllCollapse()">Collapse all</button>
+    </div>
     <div class="card" id="chart-card" data-collapse="chart" data-collapse-default="open" style="display:none">
       <div class="card-title"><div class="dot"></div> Payoff Timeline</div>
       <div class="chart-wrap">
@@ -1600,6 +1620,10 @@
     <!-- Add Debt Form -->
     <div class="card" id="add-debt-card" data-collapse="adddebt" data-collapse-default="dynamic">
       <div class="card-title"><div class="dot"></div> Add a Debt</div>
+      <!-- v1.23.0 — first-run welcome (shows only with zero debts) -->
+      <div id="welcome-hint" style="display:none;background:rgba(0,168,132,0.08);border:1px solid rgba(0,168,132,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.5;">
+        &#128075; <strong>Welcome!</strong> Add your first debt below &mdash; your freedom date appears the moment you do. Your data never leaves this device.
+      </div>
       <div class="form-grid">
         <div class="form-field">
           <label>Debt Name</label>
@@ -2249,7 +2273,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.22.0';
+const APP_VERSION = '1.23.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2258,8 +2282,24 @@ const APP_VERSION = '1.22.0';
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
   {
+    version: '1.23.0',
+    date: 'July 11, 2026',
+    name: 'Polish & accessibility',
+    whatsNew: [
+      'New "Collapse all / Expand all" control on the Dashboard for one-tap tidying.',
+      'A friendly welcome note now greets first-time visitors above the Add a Debt form.',
+      'Collapsible sections now work with the keyboard (Tab to a card title, Enter or Space to toggle) and announce their state to screen readers.',
+      'The Escape key now closes every popup, including quick payment logging, Dial-a-Date, and celebrations.',
+      'If you leave the app open across midnight (or return to it days later), due payments and monthly interest now process the moment you come back.'
+    ],
+    fixes: [
+      'What\u2019s New release dates are now accurate (they previously showed a placeholder date).',
+      'Debt names containing characters like & or < now display correctly everywhere.'
+    ]
+  },
+  {
     version: '1.22.0',
-    date: 'May 16, 2026',
+    date: 'July 5, 2026',
     name: 'A calmer dashboard',
     whatsNew: [
       'Dashboard sections are now collapsible \u2014 tap any card title to tuck it away or bring it back. Your layout is remembered. Everyday essentials (stats, next debt, progress, payment log) always stay visible; secondary sections like Budget and Backup start tucked away to cut scrolling roughly in half on phones.',
@@ -2269,7 +2309,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.18.0',
-    date: 'May 16, 2026',
+    date: 'July 3, 2026',
     name: 'Celebrate your wins',
     whatsNew: [
       'Milestone celebrations: when you eliminate a debt, cross 25/50/75% paid off, hit a big interest-saved number, or reach debt-free, the app now celebrates the moment with confetti and a clean, shareable win card.',
@@ -2279,7 +2319,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.17.0',
-    date: 'May 16, 2026',
+    date: 'July 3, 2026',
     name: 'Faster, smoother, tidier',
     whatsNew: [
       'The Payment Log now lives near the top of the Dashboard, right after your charts — you add debts once, but you log payments forever.',
@@ -2291,7 +2331,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.16.0',
-    date: 'May 16, 2026',
+    date: 'July 3, 2026',
     name: 'Quick payment logging',
     whatsNew: [
       'New floating "+ Log Payment" button — always visible in the bottom corner, so you can log a payment from anywhere without scrolling to the bottom of the Dashboard. It opens a quick modal with the same debt/amount/date fields, and shows each debt\u2019s current balance right in the picker.'
@@ -2303,7 +2343,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.15.0',
-    date: 'May 16, 2026',
+    date: 'July 2, 2026',
     name: 'Clearer Cash-Flow Release',
     whatsNew: [
       'The Monthly Cash-Flow Release chart now marks the months where a planned lump sum lands, so a big drop in your minimums has a visible cause instead of looking like a mystery cliff.',
@@ -2313,7 +2353,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.14.0',
-    date: 'May 16, 2026',
+    date: 'June 27, 2026',
     name: 'Premium planning suite',
     whatsNew: [
       'New (Premium): Monthly Cash-Flow Release. A step-down chart plus a list of release events showing exactly how much monthly cash frees up as each debt is eliminated — and how much stays committed until the next one falls.',
@@ -2324,7 +2364,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.13.2',
-    date: 'May 16, 2026',
+    date: 'June 26, 2026',
     name: 'Premium & theme persist across updates',
     whatsNew: [],
     fixes: [
@@ -2333,7 +2373,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.13.1',
-    date: 'May 16, 2026',
+    date: 'June 25, 2026',
     name: 'Light theme header fix',
     whatsNew: [],
     fixes: [
@@ -2342,7 +2382,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.13.0',
-    date: 'May 16, 2026',
+    date: 'June 25, 2026',
     name: 'Free to use, with an optional Premium',
     whatsNew: [
       'DebtFree Dashboard is now free to use for your entire payoff journey — unlimited debts, the full snowball/avalanche engine with rollover, your Freedom Date, progress tracking, and the new highlights below. No account, no subscription, your data never leaves your device.',
@@ -2355,7 +2395,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.12.0',
-    date: 'May 16, 2026',
+    date: 'June 23, 2026',
     name: 'True snowball rollover — your numbers just got better',
     whatsNew: [
       'Your projections now roll over freed-up minimum payments. When a debt is paid off, its minimum payment now automatically redirects to your next debt in the simulation — and keeps stacking as each debt falls. This is the core mechanic of the snowball and avalanche methods, and it was missing from the math until now. If you have more than one debt, your Freedom Date just moved EARLIER and your Interest Saved just went UP. Nothing about your data changed — the projection simply reflects the plan you were already following.',
@@ -2368,7 +2408,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.11.0',
-    date: 'May 16, 2026',
+    date: 'June 22, 2026',
     name: 'Optional automatic interest tracking',
     whatsNew: [
       'Estimated interest: the dashboard can now automatically add estimated monthly interest to your balances, so your tracked numbers stay closer to your real statements. Find the toggle in Backup & Restore. Interest is added once per month per debt on the 1st, appears as its own line in your Payment Log, and promo 0% periods are respected. Off by default for existing users.',
@@ -2378,7 +2418,7 @@ const RELEASE_NOTES = [
   },
   {
     version: '1.10.3',
-    date: 'May 16, 2026',
+    date: 'June 21, 2026',
     name: 'Cross-tab consistency fixes',
     whatsNew: [],
     fixes: [
@@ -2630,6 +2670,15 @@ function showSection(id) {
 // ═══════════════════════════════════════════
 //  HELPERS
 // ═══════════════════════════════════════════
+// v1.23.0 — render-time escaping for user-entered text (debt names). Names go
+// into innerHTML templates in many places; without this, a name containing
+// & < > or quotes renders as markup instead of text.
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function fmt(n) {
   if (Math.abs(n) >= 1000) return '$' + n.toLocaleString('en-US', {maximumFractionDigits:0});
   return '$' + n.toFixed(0);
@@ -3722,7 +3771,7 @@ function logPayment() {
       setTimeout(function() { warn.style.display = 'none'; }, 6000);
     }
   } else {
-    showUndoToast(result.paymentId, 'Logged ' + fmtDec(result.amount) + ' to ' + result.debtName);
+    showUndoToast(result.paymentId, 'Logged ' + fmtDec(result.amount) + ' to ' + escapeHtml(result.debtName));
   }
 }
 
@@ -3740,7 +3789,7 @@ let _celebrateContent = null;  // v1.19.0 — held so the format toggle can redr
 function trackShare(action, params) {
   try {
     if (typeof gtag === 'function') {
-      const p = params || {};
+      const p = Object.assign({}, params || {});  // copy — never mutate caller's object
       const category = p._category || 'flywheel';
       delete p._category;
       gtag('event', action, Object.assign({ event_category: category }, p));
@@ -4158,12 +4207,18 @@ function initCollapsibles() {
     toMove.forEach(function(node){ body.appendChild(node); });
     card.appendChild(body);
 
-    // Chevron + tap target
+    // Chevron + tap target. v1.23.0 — also keyboard-operable: focusable,
+    // announces expanded/collapsed state, toggles on Enter/Space.
     const chev = document.createElement('span');
     chev.className = 'collapse-chev';
     chev.innerHTML = '&#9662;';
     title.appendChild(chev);
     title.addEventListener('click', function(){ toggleCollapse(key); });
+    title.tabIndex = 0;
+    title.setAttribute('role', 'button');
+    title.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleCollapse(key); }
+    });
 
     // Initial state: stored preference wins; otherwise the default
     let collapsed;
@@ -4175,7 +4230,9 @@ function initCollapsibles() {
       else collapsed = (def === 'closed');
     }
     card.classList.toggle('card-collapsed', collapsed);
+    title.setAttribute('aria-expanded', String(!collapsed));
   });
+  updateCollapseAllBtn();
 }
 
 function toggleCollapse(key) {
@@ -4183,8 +4240,33 @@ function toggleCollapse(key) {
   if (!card) return;
   const collapsed = !card.classList.contains('card-collapsed');
   card.classList.toggle('card-collapsed', collapsed);
+  const t = card.querySelector('.card-title');
+  if (t) t.setAttribute('aria-expanded', String(!collapsed));
   _collapseState[key] = collapsed ? 1 : 0;
   persistCollapseState();
+  updateCollapseAllBtn();
+}
+
+// ── v1.23.0 — collapse/expand all (U2) ──
+function updateCollapseAllBtn() {
+  const btn = document.getElementById('collapse-all-btn');
+  if (!btn) return;
+  const cards = Array.prototype.slice.call(document.querySelectorAll('[data-collapse]'));
+  const anyOpen = cards.some(function(c){ return !c.classList.contains('card-collapsed'); });
+  btn.textContent = anyOpen ? 'Collapse all' : 'Expand all';
+}
+function toggleAllCollapse() {
+  const cards = Array.prototype.slice.call(document.querySelectorAll('[data-collapse]'));
+  const anyOpen = cards.some(function(c){ return !c.classList.contains('card-collapsed'); });
+  cards.forEach(function(c){
+    c.classList.toggle('card-collapsed', anyOpen);
+    const k = c.getAttribute('data-collapse');
+    _collapseState[k] = anyOpen ? 1 : 0;
+    const t = c.querySelector('.card-title');
+    if (t) t.setAttribute('aria-expanded', String(!anyOpen));
+  });
+  persistCollapseState();
+  updateCollapseAllBtn();
 }
 
 function expandCollapse(key, persist) {
@@ -4249,7 +4331,7 @@ function quickLogPayment() {
     return;
   }
   closeQuickLog();
-  showUndoToast(result.paymentId, 'Logged ' + fmtDec(result.amount) + ' to ' + result.debtName);
+  showUndoToast(result.paymentId, 'Logged ' + fmtDec(result.amount) + ' to ' + escapeHtml(result.debtName));
 }
 
 // ═══════════════════════════════════════════
@@ -4488,7 +4570,7 @@ function updateWhatIf() {
   var ws = document.getElementById('wi-windfall-debt');
   if (ws) {
     ws.innerHTML = activeDebts.map(function(d) {
-      return '<option value="' + d.id + '">' + d.name + '</option>';
+      return '<option value="' + d.id + '">' + escapeHtml(d.name) + '</option>';
     }).join('');
   }
 }
@@ -5121,7 +5203,7 @@ function showDebtFreeModal(date, leftover, allocations) {
       '<div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">How this lump sum is applied</div>' +
       allocations.map(function(a) {
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">' +
-          '<span style="color:var(--text);">' + a.debtName + '</span>' +
+          '<span style="color:var(--text);">' + escapeHtml(a.debtName) + '</span>' +
           '<span style="font-family:var(--font-mono);color:var(--accent);">-' + fmtDec(a.amount) + '</span>' +
           '</div>';
       }).join('') +
@@ -5214,7 +5296,7 @@ function renderLumpSumList() {
     if (editingLumpSumId === l.id) {
       return '<div class="payment-entry" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;align-items:center;">' +
         '<input type="date" id="edit-lump-date-' + l.id + '" value="' + l.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:140px;" />' +
-        '<span class="payment-debt">' + l.debtName + modeTag + '</span>' +
+        '<span class="payment-debt">' + escapeHtml(l.debtName) + modeTag + '</span>' +
         '<input type="number" id="edit-lump-amount-' + l.id + '" value="' + l.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
         '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;opacity:1;" onclick="saveEditLumpSum(' + l.id + ')">Save</button>' +
         '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;opacity:1;" onclick="cancelEditLumpSum()">Cancel</button>' +
@@ -5222,7 +5304,7 @@ function renderLumpSumList() {
     }
     return '<div class="payment-entry" style="margin-bottom:6px;">' +
       '<span class="payment-date">' + l.date + '</span>' +
-      '<span class="payment-debt">' + l.debtName + modeTag + '</span>' +
+      '<span class="payment-debt">' + escapeHtml(l.debtName) + modeTag + '</span>' +
       '<span class="payment-amount" style="color:var(--accent);">-' + fmtDec(l.amount) + '</span>' +
       '<button class="btn-delete-payment" style="font-size:0.68rem;padding:3px 8px;margin-left:4px;" onclick="startEditLumpSum(' + l.id + ')" title="Edit">Edit</button>' +
       '<button class="btn-delete-payment" onclick="deleteLumpSum(' + l.id + ')" title="Remove">✕</button>' +
@@ -5235,7 +5317,7 @@ function populateLumpDebtSelect() {
   if (!sel) return;
   const active = debts.filter(function(d) { return d.balance > 0; });
   sel.innerHTML = active.map(function(d) {
-    return '<option value="' + d.id + '">' + d.name + ' (' + fmtDec(d.balance) + ')</option>';
+    return '<option value="' + d.id + '">' + escapeHtml(d.name) + ' (' + fmtDec(d.balance) + ')</option>';
   }).join('');
 }
 
@@ -5325,7 +5407,7 @@ function applyWindfall() {
 
   document.getElementById('windfall-result').innerHTML = `
     <div class="alert" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <span>✅ Applied ${fmt(saved)} to <strong>${d.name}</strong>. New balance: <strong>${fmtDec(d.balance)}</strong>.${d.balance === 0 ? ' 🎉 <strong>Debt eliminated!</strong>' : ''}</span>
+      <span>✅ Applied ${fmt(saved)} to <strong>${escapeHtml(d.name)}</strong>. New balance: <strong>${fmtDec(d.balance)}</strong>.${d.balance === 0 ? ' 🎉 <strong>Debt eliminated!</strong>' : ''}</span>
       <button class="btn btn-ghost" style="font-size:0.75rem;padding:6px 14px;white-space:nowrap;border-color:rgba(255,107,107,0.4);color:var(--accent3);" onclick="undoWindfall(${paymentId})">↩ Undo</button>
     </div>`;
 
@@ -5373,6 +5455,10 @@ function render() {
   // v1.21.0 — Dial-a-Date entry shows whenever there's an active plan to solve.
   const _dialBtn = document.getElementById('dial-date-entry');
   if (_dialBtn) _dialBtn.style.display = _activePlanDebts().length ? 'flex' : 'none';
+
+  // v1.23.0 — first-run welcome hint (zero debts only)
+  const _hint = document.getElementById('welcome-hint');
+  if (_hint) _hint.style.display = debts.length ? 'none' : 'block';
 }
 
 // v1.13.0 — Next Debt to Eliminate (free). Uses the same strategy ordering and
@@ -5568,7 +5654,7 @@ function renderDebtList() {
     <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
-      <div class="debt-name">${d.name} ${isZero ? '✅' : ''}${promoBadge}${excludedBadge}</div>
+      <div class="debt-name">${escapeHtml(d.name)} ${isZero ? '✅' : ''}${promoBadge}${excludedBadge}</div>
       <div class="debt-stats">
         <div class="debt-stat">
           <span class="debt-stat-label">Balance</span>
@@ -5678,7 +5764,7 @@ function renderPortfolioTable(list) {
     const orderCell = r.excluded ? '<span style="color:var(--text-dim);">—</span>' : (r.order === Infinity ? '—' : r.order);
     const exclTag = r.excluded ? ' <span class="tag tag-muted" style="font-size:0.55rem;">excluded</span>' : '';
     return '<tr>' +
-      '<td class="pf-td"><span style="font-weight:600;">' + d.name + '</span>' + exclTag + '</td>' +
+      '<td class="pf-td"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + '</td>' +
       '<td class="pf-td pf-num">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num">' + fmtDec(r.min) + '</td>' +
@@ -5958,7 +6044,7 @@ function renderCashflow() {
       html += '<div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:5px;">';
       g.debts.forEach(function(d){
         html += '<div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-muted);">' +
-          '<span>' + d.name + '</span>' +
+          '<span>' + escapeHtml(d.name) + '</span>' +
           '<span style="font-family:var(--font-mono);">+' + fmtDec(d.freed) + '/mo</span></div>';
       });
       html += '</div>';
@@ -5987,7 +6073,7 @@ function renderRoadmap() {
     return '<div class="roadmap-step">' +
       '<div class="roadmap-node"></div>' +
       '<div class="roadmap-step-body">' +
-      '<div class="roadmap-step-title">' + ev.name + ' eliminated</div>' +
+      '<div class="roadmap-step-title">' + escapeHtml(ev.name) + ' eliminated</div>' +
       '<div class="roadmap-step-sub">' + monthLabel(ev.date) + ' · frees ' + fmtDec(ev.freed) + '/mo</div>' +
       '</div></div>';
   }).join('');
@@ -6026,7 +6112,7 @@ function renderPaymentLog() {
       const a = row.a;
       return '<div class="payment-entry" style="opacity:0.85;">' +
         '<span class="payment-date">' + a.date + '</span>' +
-        '<span class="payment-debt">' + a.debtName +
+        '<span class="payment-debt">' + escapeHtml(a.debtName) +
           '<span class="tag tag-muted" style="margin-left:4px;font-size:0.62rem;">Estimated interest · ' + a.apr + '%</span></span>' +
         '<span class="payment-amount" style="color:var(--warning, #d99a3d);">+' + fmtDec(a.amount) + '</span>' +
         '</div>';
@@ -6039,7 +6125,7 @@ function renderPaymentLog() {
     if (editingThis) {
       return '<div class="payment-entry" style="flex-wrap:wrap;gap:8px;align-items:center;">' +
         '<input type="date" id="edit-pay-date" value="' + p.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:130px;" />' +
-        '<span class="payment-debt">' + p.debtName + noteTag + elimTag + '</span>' +
+        '<span class="payment-debt">' + escapeHtml(p.debtName) + noteTag + elimTag + '</span>' +
         '<input type="number" id="edit-pay-amount" value="' + p.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
         '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;opacity:1;" onclick="saveEditPayment(' + p.id + ')">Save</button>' +
         '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;opacity:1;" onclick="cancelEditPayment()">Cancel</button>' +
@@ -6049,7 +6135,7 @@ function renderPaymentLog() {
     const amtStyle = isPending ? 'color:var(--text-muted);text-decoration:line-through;' : '';
     return '<div class="payment-entry" style="' + (isPending ? 'opacity:0.65;' : '') + '">' +
       '<span class="payment-date">' + p.date + '</span>' +
-      '<span class="payment-debt">' + p.debtName + noteTag + pendingTag + elimTag + '</span>' +
+      '<span class="payment-debt">' + escapeHtml(p.debtName) + noteTag + pendingTag + elimTag + '</span>' +
       '<span class="payment-amount" style="' + amtStyle + '">-' + fmtDec(p.amount) + '</span>' +
       '<button class="btn-delete-payment" style="font-size:0.68rem;padding:3px 8px;margin-left:4px;" onclick="startEditPayment(' + p.id + ')" title="Edit payment">Edit</button>' +
       '<button class="btn-delete-payment" onclick="deletePayment(' + p.id + ')" title="Delete">✕</button>' +
@@ -6446,7 +6532,7 @@ function renderStrategy() {
     return `<tr>
       <td><span class="order-num">${i+1}</span></td>
       <td>
-        <div style="font-weight:600">${d.name}</div>
+        <div style="font-weight:600">${escapeHtml(d.name)}</div>
         <span class="debt-type-badge ${badgeClass(d.type)}" style="margin-top:3px;display:inline-block">${badgeLabel(d.type)}</span>
         ${reasonCell}
       </td>
@@ -6479,7 +6565,7 @@ function renderMilestones() {
   document.getElementById('paid-debts-list').innerHTML = paidDebts.map(d=>`
     <div class="debt-item" style="border-color:rgba(0,229,176,0.3); background:rgba(0,229,176,0.03)">
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
-      <div class="debt-name">${d.name}</div>
+      <div class="debt-name">${escapeHtml(d.name)}</div>
       <div class="debt-stats">
         <div class="debt-stat">
           <span class="debt-stat-label">Original</span>
@@ -6494,7 +6580,7 @@ function populateDebtSelects() {
   const activeDebts = debts.filter(d=>d.balance>0);
   const sel = document.getElementById('log-debt-select');
   sel.innerHTML = activeDebts.length
-    ? activeDebts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('')
+    ? activeDebts.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')
     : '<option value="">No active debts</option>';
 
   // v1.16.0 — quick-log modal select mirrors the dashboard form's options,
@@ -6502,7 +6588,7 @@ function populateDebtSelects() {
   const qsel = document.getElementById('qlog-debt-select');
   if (qsel) {
     qsel.innerHTML = activeDebts.length
-      ? activeDebts.map(d=>`<option value="${d.id}">${d.name} (${fmtDec(d.balance)})</option>`).join('')
+      ? activeDebts.map(d=>`<option value="${d.id}">${escapeHtml(d.name)} (${fmtDec(d.balance)})</option>`).join('')
       : '<option value="">No active debts</option>';
   }
   const fab = document.getElementById('fab-log');
@@ -6522,7 +6608,7 @@ function populateDebtSelects() {
 
   const wsel = document.getElementById('wi-windfall-debt');
   wsel.innerHTML = activeDebts.length
-    ? activeDebts.map(d=>`<option value="${d.id}">${d.name}</option>`).join('')
+    ? activeDebts.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')
     : '<option value="">No active debts</option>';
 }
 
@@ -7039,10 +7125,10 @@ function showOrphanBanner() {
   if (document.getElementById('orphan-banner')) return;
 
   const lumpDesc = orphans.lumps.map(function(l) {
-    return l.debtName + ' $' + (l.amount || 0).toFixed(2) + ' (' + l.date + ')';
+    return escapeHtml(l.debtName) + ' $' + (l.amount || 0).toFixed(2) + ' (' + l.date + ')';
   }).join(', ');
   const payDesc  = orphans.payments.map(function(p) {
-    return p.debtName + ' $' + (p.amount || 0).toFixed(2) + ' (' + p.date + ')';
+    return escapeHtml(p.debtName) + ' $' + (p.amount || 0).toFixed(2) + ' (' + p.date + ')';
   }).join(', ');
 
   const parts = [];
@@ -7152,6 +7238,18 @@ setInterval(function() {
   var _acc = processInterestAccrual();
   if (_due || _acc) render();
 }, 1000 * 60 * 60 * 24);
+// v1.23.0 — iOS suspends timers when a PWA is backgrounded, so the 24h tick
+// above can silently stall. When the app becomes visible again on a NEW day,
+// run the same due-payment + accrual processing so balances are always current.
+let _lastDayCheck = localDateStr();
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible' && localDateStr() !== _lastDayCheck) {
+    _lastDayCheck = localDateStr();
+    var _d = processDuePayments();
+    var _a = processInterestAccrual();
+    if (_d || _a) render();
+  }
+});
 // Restore hybrid body class if strategy was saved as hybrid
 if (strategy === 'hybrid') document.body.classList.add('hybrid-mode');
 // Close modal on Escape
@@ -7162,6 +7260,12 @@ document.addEventListener('keydown', e => {
     if (dfModal) dfModal.classList.add('hidden');
     const wnModal = document.getElementById('whatsnew-modal');
     if (wnModal) wnModal.classList.add('hidden');
+    // v1.23.0 — Escape now covers every modal, not just the original three
+    const qlModal = document.getElementById('quicklog-modal');
+    if (qlModal) qlModal.classList.add('hidden');
+    const ddModal = document.getElementById('dialdate-modal');
+    if (ddModal) ddModal.classList.add('hidden');
+    if (typeof closeCelebrate === 'function') closeCelebrate();
   }
 });
 // v1.18.0 — flywheel boot. Load celebrated milestones. On first-ever run
