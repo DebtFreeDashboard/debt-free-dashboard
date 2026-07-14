@@ -1,10 +1,9 @@
 {
-  "version": "1.23.2",
-  "releaseDate": "2026-07-11",
-  "releaseName": "Custom order, fixed properly",
+  "version": "1.24.1",
+  "releaseDate": "2026-07-14",
+  "releaseName": "True Cost tells the truth about 0% cards",
   "notes": [
-    "You can now set your custom payoff order right on the Strategy tab - no more selecting Hybrid, then hunting for the list on the Dashboard. Reorder in either place; both stay in sync.",
-    "Fixed a serious bug: switching away from Hybrid (to peek at Snowball or Avalanche) silently erased your custom order and reset it to the order you added the debts in. Your custom order is now saved permanently.",
-    "Fixed: Hybrid reordering had no controls at all for Premium members, and dragging never worked on phones. Up/down buttons now work everywhere, on every device."
+    "Important fix: True Cost was reading a 0%-promo card's rate as 0% forever. A balance-transfer or store-financing card could show '$0.00/day, $0 interest' even when its rate was about to jump to 25%+ and its minimum payment wouldn't cover the interest.",
+    "True Cost now projects through the promo expiry. Cards where the minimum won't cover interest after 0% ends get a clear warning with the end date, the new rate, and the daily cost. Healthy promo cards now show lifetime interest that includes the rate jump."
   ]
 }

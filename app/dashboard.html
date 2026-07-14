@@ -1008,6 +1008,7 @@
   .truecost-strip.warn .tc-day { color: var(--accent3); }
   .tc-life { font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; }
   .tc-life strong { color: var(--text); }
+  .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
   /* v1.23.0 — collapse-all control */
   .collapse-all-btn {
@@ -1302,6 +1303,19 @@
 
   body.hybrid-mode .drag-handle { display: flex; }
 
+  /* v1.24.0 — attacking line on Next Target card */
+  .next-debt-attacking {
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    background: rgba(0,168,132,0.07);
+    border: 1px solid rgba(0,168,132,0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    line-height: 1.4;
+  }
+  .next-debt-attacking strong { color: var(--accent); }
+
   /* v1.23.2 — Strategy-tab hybrid order list */
   .hybrid-order-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
   .hybrid-order-row {
@@ -1550,6 +1564,7 @@
       </div>
       <div class="next-debt-bar"><div class="next-debt-bar-fill" id="next-debt-bar-fill" style="width:0%"></div></div>
       <div class="next-debt-eta" id="next-debt-eta">—</div>
+      <div class="next-debt-attacking" id="next-debt-attacking" style="display:none;"></div>
     </div>
 
     <!-- v1.13.0 — Debt-Free Progress hero (free) -->
@@ -2004,6 +2019,12 @@
         <span>💡</span>
         <span id="best-strategy-text"></span>
       </div>
+      <!-- v1.24.0 — identical-plan notice: when the selected strategy produces
+           the exact same plan as another, say so instead of looking frozen -->
+      <div class="alert" id="identical-plan-alert" style="display:none; margin-top:12px; margin-bottom:0">
+        <span>&#8644;</span>
+        <span id="identical-plan-text"></span>
+      </div>
       <div class="alert warning" id="no-extra-alert" style="display:none; margin-top:12px; margin-bottom:0">
         <span>👆</span>
         <span>Strategies look identical because no Extra Monthly Payment is set. <button onclick="document.getElementById('extra-payment').focus(); showSection('dashboard')" style="background:none;border:none;color:var(--accent);font-family:var(--font-mono);font-size:0.78rem;cursor:pointer;text-decoration:underline;padding:0;">Set your monthly extra on Dashboard</button> to see how each strategy compares.</span>
@@ -2328,7 +2349,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.23.2';
+const APP_VERSION = '1.24.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2336,6 +2357,36 @@ const APP_VERSION = '1.23.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.24.1',
+    date: 'July 14, 2026',
+    name: 'True Cost tells the truth about 0% cards',
+    whatsNew: [],
+    fixes: [
+      'Important fix: True Cost was reading a 0%-promo card\u2019s rate as 0% forever. A balance-transfer or store-financing card could show \u201c$0.00/day \u00b7 $0 interest\u201d \u2014 even when its rate was about to jump to 25%+ and its minimum payment wouldn\u2019t cover the interest. The most dangerous debt on the page looked like the safest.',
+      'True Cost now projects through the promo expiry. Cards where the minimum won\u2019t cover interest after 0% ends get a clear warning with the end date, the new rate, and what it will cost per day. Healthy promo cards now show lifetime interest that includes the rate jump.'
+    ]
+  },
+  {
+    version: '1.24.0',
+    date: 'July 14, 2026',
+    name: 'Clearer strategy signals',
+    whatsNew: [
+      'The Next Target card now tells you when the next debt to fall is different from the debt your strategy is attacking. Under Avalanche, a card with a big minimum payment can pay itself off first while your extra dollars work on the highest-cost debt \u2014 now the card shows both, so nothing looks frozen.',
+      'New identical-plan notice on the Strategy tab: when two strategies would produce the exact same plan (same payoff dates, same interest to the cent), the app now says so \u2014 instead of leaving you wondering why nothing changed when you switched.'
+    ],
+    fixes: []
+  },
+  {
+    version: '1.23.3',
+    date: 'July 11, 2026',
+    name: 'Strategy tab, live',
+    whatsNew: [],
+    fixes: [
+      'The Strategy tab now updates instantly. Reordering your Hybrid debts refreshes the comparison cards and payoff table the moment you tap \u2191\u2193 \u2014 no more navigating away and back to see your changes.',
+      'Any change made while on the Strategy tab (like logging a payment from the floating button) now refreshes the whole tab immediately.'
+    ]
+  },
   {
     version: '1.23.2',
     date: 'July 11, 2026',
@@ -3017,27 +3068,69 @@ function solveForTargetDate(targetMonths) {
 function trueCostOf(debt) {
   const bal = debt.balance;
   if (!bal || bal <= 0) return null;
-  const apr = (!isNaN(debt.apr) && debt.apr >= 0) ? debt.apr : 0;
-  const dailyRate = apr / 100 / 365;
-  const perDay = bal * dailyRate;
 
-  // Minimum-only payoff on THIS debt alone. Many cards have a min that barely
-  // covers interest; if the min can't amortize, flag it.
-  const monthlyRate = apr / 100 / 12;
-  let b = bal, months = 0, interest = 0;
+  // v1.24.1 — PROMO-AWARE. This used to read debt.apr flat, which during a 0%
+  // promo is 0 — so it projected 0% FOREVER and reported "$0 lifetime interest"
+  // on exactly the cards most likely to hurt someone: a 0% balance transfer
+  // whose rate detonates to 25%+ later, often with a minimum payment that then
+  // can't even cover the interest. The projection now steps month by month
+  // through accrualRateFor(), so the promo expiry and the post-promo rate are
+  // both honored, and the payment trap is caught before it fires.
+  const now = new Date();
+  const curApr = accrualRateFor(debt, now);
+  const perDay = bal * (curApr / 100 / 365);
+
   const min = debt.minPayment || 0;
-  const firstMonthInterest = b * monthlyRate;
-  if (min <= firstMonthInterest + 0.01 && monthlyRate > 0) {
-    return { perDay: perDay, neverPaysOff: true, lifetimeInterest: null, months: null };
-  }
-  while (b > 0 && months < 1200) {
-    const i = b * monthlyRate;
+  const inPromo = !!(debt.hasPromo && debt.promoEnd && new Date(debt.promoEnd) > now);
+  const laterApr = inPromo
+    ? accrualRateFor(debt, new Date(debt.promoEnd.length ? debt.promoEnd : now))
+    : curApr;
+  const perDayAfter = inPromo ? bal * (laterApr / 100 / 365) : null;
+
+  // Minimum-only amortization on THIS debt alone, walking real calendar months
+  // so the rate changes when the promo actually ends.
+  let b = bal, months = 0, interest = 0, trapMonth = null;
+  const MAX = 1200;
+  while (b > 0 && months < MAX) {
+    const m = new Date(now.getFullYear(), now.getMonth() + months, 1);
+    const rate = accrualRateFor(debt, m) / 100 / 12;
+    const i = b * rate;
+    // The minimum can't cover this month's interest — the balance grows.
+    if (min <= i + 0.01 && rate > 0) {
+      if (trapMonth === null) trapMonth = months;
+      return {
+        perDay: perDay,
+        perDayAfter: perDayAfter,
+        promoApr: inPromo ? curApr : null,
+        postPromoApr: inPromo ? laterApr : null,
+        neverPaysOff: true,
+        trapMonth: trapMonth,     // 0 = already trapped; >0 = trap starts when promo ends
+        promoEnd: inPromo ? debt.promoEnd : null,
+        lifetimeInterest: null,
+        months: null
+      };
+    }
     interest += i;
     b = b + i - min;
     months++;
     if (b < 0) b = 0;
   }
-  return { perDay: perDay, neverPaysOff: false, lifetimeInterest: interest, months: months };
+  if (b > 0) {
+    return { perDay: perDay, perDayAfter: perDayAfter, promoApr: inPromo ? curApr : null,
+             postPromoApr: inPromo ? laterApr : null, neverPaysOff: true, trapMonth: 0,
+             promoEnd: inPromo ? debt.promoEnd : null, lifetimeInterest: null, months: null };
+  }
+  return {
+    perDay: perDay,
+    perDayAfter: perDayAfter,
+    promoApr: inPromo ? curApr : null,
+    postPromoApr: inPromo ? laterApr : null,
+    neverPaysOff: false,
+    trapMonth: null,
+    promoEnd: inPromo ? debt.promoEnd : null,
+    lifetimeInterest: interest,
+    months: months
+  };
 }
 
 function monthlyInterest() {
@@ -4437,7 +4530,7 @@ function selectStrategy(s) {
   // v1.10.1 — strategy change can make auto-lumps stale; let banner re-evaluate
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
 
-  save(); renderStrategy(); recalculate();
+  save(); recalculate();  // v1.23.3 — render() now refreshes the active Strategy tab
 }
 
 function recalculate() {
@@ -5541,14 +5634,43 @@ function render() {
   const _hint = document.getElementById('welcome-hint');
   if (_hint) _hint.style.display = debts.length ? 'none' : 'block';
 
-  // v1.23.2 — keep the Strategy-tab hybrid order list in sync with any
-  // reorder made on the Dashboard (and vice versa).
-  renderHybridOrderList();
+  // v1.23.3 — if the user is ON the Strategy tab, re-render it whenever data
+  // changes (reorders, payments via the quick-log modal, etc). Previously only
+  // entering the tab rendered it, so moving a debt up/down updated the order
+  // list but left the comparison cards and payoff table stale until you
+  // navigated away and back.
+  const _stratSection = document.getElementById('section-strategy');
+  if (_stratSection && _stratSection.classList.contains('active')) {
+    renderStrategy();
+  } else {
+    // Off-tab: still keep the lightweight order list in sync so it's fresh
+    // the moment the tab opens.
+    renderHybridOrderList();
+  }
 }
 
 // v1.13.0 — Next Debt to Eliminate (free). Uses the same strategy ordering and
 // simulation the rest of the app uses, so the "next target" and its ETA match
 // the Strategy tab exactly.
+// v1.24.0 — the debt the current strategy is actively attacking (where extra
+// dollars and freed minimums flow). Distinct from "next to be eliminated": a
+// debt with a big minimum can self-amortize and fall first even though every
+// extra dollar is aimed elsewhere. Showing both kills the "card looks frozen"
+// confusion when strategies share a target or minimums dominate.
+function currentAttackDebt() {
+  const active = _activePlanDebts().filter(function(d){ return d.balance > 0; });
+  if (!active.length) return null;
+  if (strategy === 'snowball') {
+    return active.slice().sort(function(a,b){ return a.balance - b.balance; })[0];
+  }
+  if (strategy === 'avalanche') {
+    const copies = active.map(function(d){ return {...d}; });
+    avalancheSort(copies, plannedDisbursements(), null);
+    return active.find(function(d){ return d.id === copies[0].id; });
+  }
+  return active[0]; // hybrid: top of the custom order
+}
+
 function renderNextDebt() {
   const card = document.getElementById('next-debt-card');
   if (!card) return;
@@ -5595,7 +5717,23 @@ function renderNextDebt() {
     const monthName = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     etaEl.textContent = '🎯 On track to eliminate by ' + monthName + ' (' + targetEta + ' month' + (targetEta !== 1 ? 's' : '') + ')';
   } else {
-    etaEl.textContent = '🎯 Your current focus — put every extra dollar here.';
+    etaEl.textContent = '🎯 Next debt to fall on your current plan.';
+  }
+
+  // v1.24.0 — when the next debt to FALL isn't the debt the strategy is
+  // ATTACKING (common under Avalanche when a big minimum self-amortizes a
+  // smaller card first), say so. Without this, switching strategies can look
+  // broken: the card shows the same "next payoff" even though the money is
+  // now aimed somewhere else.
+  const attackEl = document.getElementById('next-debt-attacking');
+  if (attackEl) {
+    const atk = currentAttackDebt();
+    if (atk && target && atk.id !== target.id) {
+      attackEl.innerHTML = '&#9889; Your extra payments are attacking: <strong>' + escapeHtml(atk.name) + '</strong>';
+      attackEl.style.display = 'block';
+    } else {
+      attackEl.style.display = 'none';
+    }
   }
 }
 
@@ -5717,20 +5855,39 @@ function renderDebtList() {
 
     // v1.21.0 — True Cost strip: the visceral per-day + lifetime-at-minimums
     // number. Only for active debts (a paid-off debt has no cost).
+    // v1.24.1 — True Cost is now promo-aware. Three distinct cases:
+    //   1. Already trapped: min can't cover interest today.
+    //   2. Promo time-bomb: 0% today, but the min won't cover interest once the
+    //      promo ends. Previously this showed a cheerful "$0.00/day / $0 interest"
+    //      — the most dangerous debt on the page looked like the safest.
+    //   3. Normal: honest per-day + lifetime interest at minimums.
     let trueCostStrip = '';
     const tc = trueCostOf(d);
     if (tc && !isZero) {
-      if (tc.neverPaysOff) {
+      const promoEndLabel = tc.promoEnd
+        ? new Date(tc.promoEnd).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        : '';
+      if (tc.neverPaysOff && tc.trapMonth > 0) {
+        // Promo time-bomb
         trueCostStrip = `<div class="truecost-strip warn">
           <span class="tc-day">${fmtDec(tc.perDay)}<span>/day</span></span>
-          <span class="tc-life">At the minimum, this barely covers interest \u2014 it may never pay off. Add extra to make progress.</span>
+          <span class="tc-life">\u26a0\ufe0f <strong>0% ends ${promoEndLabel}.</strong> After that it jumps to ${tc.postPromoApr}% (about ${fmtDec(tc.perDayAfter)}/day), and the ${fmtDec(d.minPayment || 0)} minimum won\u2019t even cover the interest \u2014 the balance would start growing. Pay this down before then.</span>
+        </div>`;
+      } else if (tc.neverPaysOff) {
+        // Already trapped today
+        trueCostStrip = `<div class="truecost-strip warn">
+          <span class="tc-day">${fmtDec(tc.perDay)}<span>/day</span></span>
+          <span class="tc-life">\u26a0\ufe0f The ${fmtDec(d.minPayment || 0)} minimum doesn\u2019t cover the interest \u2014 at minimums alone this balance would <strong>never</strong> be paid off. Every extra dollar here counts.</span>
         </div>`;
       } else {
         const yrs = Math.floor(tc.months / 12), mos = tc.months % 12;
         const dur = (yrs ? yrs + 'y ' : '') + (mos ? mos + 'mo' : (yrs ? '' : '0mo'));
+        const promoNote = (tc.promoEnd && tc.postPromoApr)
+          ? ` <span class="tc-promo">(includes the jump to ${tc.postPromoApr}% when 0% ends ${promoEndLabel})</span>`
+          : '';
         trueCostStrip = `<div class="truecost-strip">
           <span class="tc-day">${fmtDec(tc.perDay)}<span>/day</span></span>
-          <span class="tc-life">Minimum-only: <strong>${fmtDec(tc.lifetimeInterest)}</strong> interest over ${dur}</span>
+          <span class="tc-life">Minimum-only: <strong>${fmtDec(tc.lifetimeInterest)}</strong> interest over ${dur}${promoNote}</span>
         </div>`;
       }
     }
@@ -6532,6 +6689,36 @@ function renderStrategy() {
     document.getElementById('cmp-sb-int').textContent = fmt(sb.totalInterest) + ' interest';
     document.getElementById('cmp-min-months').textContent = mn.months;
     document.getElementById('cmp-min-int').textContent = fmt(mn.totalInterest) + ' interest';
+
+    // v1.24.0 — identical-plan detection. Two plans are "the same" when every
+    // debt pays off in the same month and total interest matches to the cent.
+    // Happens legitimately: e.g. Avalanche's top target is also first in the
+    // user's Hybrid order, or scheduled lumps pin every payoff date. Without
+    // this notice, switching between such strategies looks like a bug.
+    function _planSig(r) {
+      if (!r || !r.perDebt) return null;
+      return r.perDebt.map(function(p){ return p.id + ':' + p.paidOffMonth; }).sort().join('|') +
+             '#' + (r.totalInterest || 0).toFixed(2);
+    }
+    const stratForCompare = getPlanSim();
+    const curSig = _planSig(stratForCompare);
+    const twins = [];
+    if (strategy !== 'avalanche' && curSig && curSig === _planSig(av)) twins.push('Avalanche');
+    if (strategy !== 'snowball'  && curSig && curSig === _planSig(sb)) twins.push('Snowball');
+    const idAlert = document.getElementById('identical-plan-alert');
+    const idText  = document.getElementById('identical-plan-text');
+    if (idAlert && idText) {
+      if (twins.length) {
+        const atk = (typeof currentAttackDebt === 'function') ? currentAttackDebt() : null;
+        const curName = strategy === 'hybrid' ? 'your Hybrid order' : (strategy.charAt(0).toUpperCase() + strategy.slice(1));
+        idText.innerHTML = 'Heads up: ' + curName + ' currently produces the <strong>same plan</strong> as ' +
+          twins.join(' and ') + (atk ? ' \u2014 both attack <strong>' + escapeHtml(atk.name) + '</strong> first' : '') +
+          '. Every payoff date and dollar of interest is identical, so switching between them won\u2019t change your numbers.';
+        idAlert.style.display = 'flex';
+      } else {
+        idAlert.style.display = 'none';
+      }
+    }
 
     const best = av.totalInterest <= sb.totalInterest ? 'Avalanche' : 'Snowball';
     const savings = Math.abs(av.totalInterest - sb.totalInterest);
