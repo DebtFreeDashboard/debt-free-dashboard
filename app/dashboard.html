@@ -1302,6 +1302,59 @@
 
   body.hybrid-mode .drag-handle { display: flex; }
 
+  /* v1.23.2 — Strategy-tab hybrid order list */
+  .hybrid-order-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .hybrid-order-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+  .hybrid-order-row.is-zero { opacity: 0.55; }
+  .hybrid-order-row.dragging { opacity: 0.4; }
+  .hybrid-order-row.drag-over { border-top: 2px solid var(--accent); }
+  .hybrid-order-num {
+    font-family: var(--font-mono); font-size: 0.7rem;
+    color: var(--accent); min-width: 18px; text-align: center;
+  }
+  .hybrid-drag { display: flex !important; }
+  .hybrid-order-name { flex: 1; font-weight: 600; font-size: 0.85rem; min-width: 0; }
+  .hybrid-order-bal { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
+  .hybrid-order-empty { font-size: 0.8rem; color: var(--text-muted); padding: 10px; }
+
+  /* v1.23.1 — reorder controls (work on touch; drag does not) */
+  .reorder-ctl { display: inline-flex; gap: 4px; margin-right: 6px; }
+  .reorder-btn {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1;
+    color: var(--accent);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    min-width: 30px;
+    min-height: 30px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .reorder-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(0,168,132,0.08); }
+  .reorder-btn:disabled { opacity: 0.3; cursor: default; }
+  .pf-drag { display: none; }
+  body.hybrid-mode .pf-drag { display: inline-flex; vertical-align: middle; margin-right: 6px; }
+  .pf-row-drag.dragging { opacity: 0.4; }
+  .pf-row-drag.drag-over td { border-top: 2px solid var(--accent); }
+  .pf-hybrid-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: rgba(0,168,132,0.06);
+    border: 1px solid rgba(0,168,132,0.2);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    line-height: 1.45;
+  }
+
   .debt-item.drag-over {
     border-color: var(--accent) !important;
     background: rgba(0,229,176,0.05) !important;
@@ -1975,8 +2028,10 @@
       <div id="hybrid-order-note" style="display:none; margin-bottom:12px;">
         <div class="alert warning">
           <span>🎯</span>
-          <span>Hybrid mode is active. Use the <strong>≡ drag handle</strong> on the left of each debt card to reorder them. Your custom order is saved automatically.</span>
+          <span>Hybrid mode is active. Set your custom payoff order below &mdash; debts are paid off top to bottom. Your order is saved automatically and kept even if you switch strategies.</span>
         </div>
+        <!-- v1.23.2 — reorder right here on the Strategy tab; no trip to Dashboard -->
+        <div id="hybrid-order-list" class="hybrid-order-list"></div>
       </div>
       <div style="overflow-x:auto">
         <table class="timeline-table" id="timeline-table">
@@ -2273,7 +2328,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.23.0';
+const APP_VERSION = '1.23.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2281,6 +2336,28 @@ const APP_VERSION = '1.23.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.23.2',
+    date: 'July 11, 2026',
+    name: 'Custom order, fixed properly',
+    whatsNew: [
+      'You can now set your custom payoff order right on the Strategy tab \u2014 no more selecting Hybrid, then hunting for the list on the Dashboard. Reorder in either place; both stay in sync.'
+    ],
+    fixes: [
+      'Fixed a serious bug: switching away from Hybrid (to peek at Snowball or Avalanche) silently ERASED your custom order and reset it to the order you added the debts in. Your custom order is now saved permanently \u2014 switch strategies freely and come back to find it exactly as you left it.'
+    ]
+  },
+  {
+    version: '1.23.1',
+    date: 'July 11, 2026',
+    name: 'Hybrid reordering fixed',
+    whatsNew: [],
+    fixes: [
+      'Fixed: in Hybrid (Custom order) mode, there was no way to reorder your debts. Premium members saw the portfolio table, which had no reorder controls at all. Every debt now has \u2191\u2193 buttons in Hybrid mode \u2014 in both the table and the card view.',
+      'Fixed: reordering by dragging never worked on phones or tablets (drag-and-drop is a desktop-only browser feature). The new \u2191\u2193 buttons work on every device; dragging still works on desktop.',
+      'While Hybrid is active, the portfolio table now displays in your custom order and column sorting pauses, so moving a debt always means what you expect.'
+    ]
+  },
   {
     version: '1.23.0',
     date: 'July 11, 2026',
@@ -4344,13 +4421,17 @@ function selectStrategy(s) {
   document.getElementById('strategy-select').value = s;
   document.getElementById('hybrid-order-note').style.display = s === 'hybrid' ? 'block' : 'none';
 
-  // Toggle hybrid drag mode
+  // Toggle hybrid drag mode.
+  // v1.23.2 — CRITICAL FIX: leaving Hybrid used to run debts.sort(by id),
+  // which silently DESTROYED the user's custom order. simulate() reads the
+  // debts array order directly for hybrid, so that array IS the custom payoff
+  // order. Peeking at Avalanche and coming back wiped a carefully-built order
+  // with no warning. The array is now left untouched — the custom order
+  // survives strategy switches and reloads, exactly as a saved setting should.
   if (s === 'hybrid') {
     document.body.classList.add('hybrid-mode');
   } else {
-    // Restore insertion order when leaving Hybrid so Dashboard list is neutral
     document.body.classList.remove('hybrid-mode');
-    debts.sort((a, b) => a.id - b.id);
   }
 
   // v1.10.1 — strategy change can make auto-lumps stale; let banner re-evaluate
@@ -5459,6 +5540,10 @@ function render() {
   // v1.23.0 — first-run welcome hint (zero debts only)
   const _hint = document.getElementById('welcome-hint');
   if (_hint) _hint.style.display = debts.length ? 'none' : 'block';
+
+  // v1.23.2 — keep the Strategy-tab hybrid order list in sync with any
+  // reorder made on the Dashboard (and vice versa).
+  renderHybridOrderList();
 }
 
 // v1.13.0 — Next Debt to Eliminate (free). Uses the same strategy ordering and
@@ -5594,7 +5679,7 @@ function renderDebtList() {
     return;
   }
 
-  list.innerHTML = debts.map(d => {
+  list.innerHTML = debts.map((d, _i) => {
     const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
 
@@ -5653,6 +5738,7 @@ function renderDebtList() {
     return `
     <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
+      ${reorderControls(d.id, _i, debts.length)}
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
       <div class="debt-name">${escapeHtml(d.name)} ${isZero ? '✅' : ''}${promoBadge}${excludedBadge}</div>
       <div class="debt-stats">
@@ -5736,12 +5822,19 @@ function renderPortfolioTable(list) {
     };
   });
 
-  const k = portfolioSort.key, dir = portfolioSort.dir === 'asc' ? 1 : -1;
-  rows.sort(function(a, b) {
-    let av = a[k], bv = b[k];
-    if (k === 'name') return dir * String(av).localeCompare(String(bv));
-    return dir * ((av || 0) - (bv || 0));
-  });
+  // v1.23.1 — in hybrid mode the table MUST display in the user's custom order
+  // (the debts array order), otherwise dragging/moving a row would be
+  // meaningless against a balance/APR sort. Column sorting is suspended while
+  // hybrid is active; it returns the moment another strategy is selected.
+  const isHybrid = (strategy === 'hybrid');
+  if (!isHybrid) {
+    const k = portfolioSort.key, dir = portfolioSort.dir === 'asc' ? 1 : -1;
+    rows.sort(function(a, b) {
+      let av = a[k], bv = b[k];
+      if (k === 'name') return dir * String(av).localeCompare(String(bv));
+      return dir * ((av || 0) - (bv || 0));
+    });
+  }
 
   function arrow(key) {
     if (portfolioSort.key !== key) return '<span style="opacity:0.3;">↕</span>';
@@ -5750,6 +5843,7 @@ function renderPortfolioTable(list) {
 
   const head =
     '<thead><tr>' +
+    (isHybrid ? '<th class="pf-th" style="width:1%;">Order</th>' : '') +
     '<th data-k="name" class="pf-th">Debt ' + arrow('name') + '</th>' +
     '<th data-k="balance" class="pf-th pf-num">Balance ' + arrow('balance') + '</th>' +
     '<th data-k="apr" class="pf-th pf-num">APR ' + arrow('apr') + '</th>' +
@@ -5759,11 +5853,17 @@ function renderPortfolioTable(list) {
     '<th class="pf-th"></th>' +
     '</tr></thead>';
 
-  const body = '<tbody>' + rows.map(function(r) {
+  const body = '<tbody>' + rows.map(function(r, i) {
     const d = r.d;
     const orderCell = r.excluded ? '<span style="color:var(--text-dim);">—</span>' : (r.order === Infinity ? '—' : r.order);
     const exclTag = r.excluded ? ' <span class="tag tag-muted" style="font-size:0.55rem;">excluded</span>' : '';
-    return '<tr>' +
+    return '<tr data-id="' + d.id + '"' + (isHybrid ? ' draggable="true" class="pf-row-drag"' : '') + '>' +
+      (isHybrid
+        ? '<td class="pf-td" style="white-space:nowrap;">' +
+            '<span class="drag-handle pf-drag" title="Drag to reorder"><span></span><span></span><span></span></span>' +
+            reorderControls(d.id, i, rows.length) +
+          '</td>'
+        : '') +
       '<td class="pf-td"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + '</td>' +
       '<td class="pf-td pf-num">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num">' + r.apr + '%</td>' +
@@ -5777,11 +5877,63 @@ function renderPortfolioTable(list) {
       '</tr>';
   }).join('') + '</tbody>';
 
-  list.innerHTML = '<div class="pf-wrap"><table class="pf-table">' + head + body + '</table></div>';
-  // Wire header sorting
-  list.querySelectorAll('.pf-th[data-k]').forEach(function(th) {
-    th.style.cursor = 'pointer';
-    th.onclick = function(){ setPortfolioSort(th.getAttribute('data-k')); };
+  const hybridNote = isHybrid
+    ? '<div class="pf-hybrid-note">Drag a row, or use \u2191\u2193, to set your custom payoff order. Column sorting is paused while Hybrid is active.</div>'
+    : '';
+  list.innerHTML = '<div class="pf-wrap">' + hybridNote + '<table class="pf-table">' + head + body + '</table></div>';
+
+  if (!isHybrid) {
+    // Wire header sorting (suspended in hybrid — see note above)
+    list.querySelectorAll('.pf-th[data-k]').forEach(function(th) {
+      th.style.cursor = 'pointer';
+      th.onclick = function(){ setPortfolioSort(th.getAttribute('data-k')); };
+    });
+  } else {
+    initRowDragDrop(list.querySelectorAll('tr[data-id]'), list);
+  }
+}
+
+// v1.23.1 — generic row/item drag-drop, used by both the card list and the
+// portfolio table. Desktop convenience only; ↑/↓ buttons are the control that
+// works everywhere (HTML5 drag events never fire on touch).
+function initRowDragDrop(items, container) {
+  let dragSrc = null;
+  Array.prototype.forEach.call(items, function(item) {
+    item.addEventListener('dragstart', function(e) {
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.dataset.id);
+    });
+    item.addEventListener('dragend', function() {
+      item.classList.remove('dragging');
+      Array.prototype.forEach.call(items, function(i){ i.classList.remove('drag-over'); });
+    });
+    item.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (item !== dragSrc) {
+        Array.prototype.forEach.call(items, function(i){ i.classList.remove('drag-over'); });
+        item.classList.add('drag-over');
+      }
+    });
+    item.addEventListener('dragleave', function(){ item.classList.remove('drag-over'); });
+    item.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (dragSrc && dragSrc !== item) {
+        const srcId = parseInt(dragSrc.dataset.id);
+        const tgtId = parseInt(item.dataset.id);
+        const srcIdx = debts.findIndex(function(d){ return d.id === srcId; });
+        const tgtIdx = debts.findIndex(function(d){ return d.id === tgtId; });
+        if (srcIdx !== -1 && tgtIdx !== -1) {
+          const moved = debts.splice(srcIdx, 1)[0];
+          debts.splice(tgtIdx, 0, moved);
+          if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
+          save(); render();
+        }
+      }
+      return false;
+    });
   });
 }
 
@@ -6363,6 +6515,7 @@ function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, tota
 }
 
 function renderStrategy() {
+  renderHybridOrderList(); // v1.23.2 — keep the Strategy-tab order list in sync
   // v1.7.0 — strategy tab only considers debts in the payoff plan
   const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
@@ -7062,6 +7215,57 @@ function updateFeePreview() {
 // ═══════════════════════════════════════════
 //  DRAG AND DROP (Hybrid mode)
 // ═══════════════════════════════════════════
+// v1.23.1 — shared reorder core. Two bugs fixed here:
+//   1) Premium users render the portfolio TABLE, and renderDebtList() returned
+//      early before initDragDrop() — so drag handles never existed for the very
+//      people who paid for hybrid mode. Custom ordering was unreachable.
+//   2) HTML5 drag events don't fire on touch devices, so reordering was broken
+//      on phones for everyone. The ↑/↓ buttons below work on every device and
+//      are the primary control; drag remains as a desktop convenience.
+function moveDebt(id, dir) {
+  const i = debts.findIndex(function(d){ return d.id === id; });
+  if (i === -1) return;
+  const j = i + dir;
+  if (j < 0 || j >= debts.length) return;
+  const tmp = debts[i]; debts[i] = debts[j]; debts[j] = tmp;
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
+  save(); render();
+}
+
+// Reorder controls markup, shared by both the card and table renderers.
+function reorderControls(id, idx, total) {
+  if (strategy !== 'hybrid') return '';
+  return '<span class="reorder-ctl">' +
+    '<button class="reorder-btn" title="Move up" aria-label="Move up"' + (idx === 0 ? ' disabled' : '') +
+      ' onclick="event.stopPropagation(); moveDebt(' + id + ', -1)">\u2191</button>' +
+    '<button class="reorder-btn" title="Move down" aria-label="Move down"' + (idx === total - 1 ? ' disabled' : '') +
+      ' onclick="event.stopPropagation(); moveDebt(' + id + ', 1)">\u2193</button>' +
+  '</span>';
+}
+
+// v1.23.2 — Strategy-tab reorder list. Same debts array, same moveDebt(), so
+// the two tabs can never disagree: reorder in either place and both update.
+function renderHybridOrderList() {
+  const wrap = document.getElementById('hybrid-order-list');
+  if (!wrap) return;
+  if (strategy !== 'hybrid') { wrap.innerHTML = ''; return; }
+  if (!debts.length) {
+    wrap.innerHTML = '<div class="hybrid-order-empty">Add a debt to set a custom order.</div>';
+    return;
+  }
+  wrap.innerHTML = debts.map(function(d, i) {
+    const zero = d.balance <= 0;
+    return '<div class="hybrid-order-row' + (zero ? ' is-zero' : '') + '" data-id="' + d.id + '" draggable="true">' +
+      '<span class="hybrid-order-num">' + (i + 1) + '</span>' +
+      '<span class="drag-handle hybrid-drag" title="Drag to reorder"><span></span><span></span><span></span></span>' +
+      '<span class="hybrid-order-name">' + escapeHtml(d.name) + (zero ? ' \u2705' : '') + '</span>' +
+      '<span class="hybrid-order-bal">' + fmtDec(d.balance) + '</span>' +
+      reorderControls(d.id, i, debts.length) +
+    '</div>';
+  }).join('');
+  initRowDragDrop(wrap.querySelectorAll('.hybrid-order-row'), wrap);
+}
+
 function initDragDrop() {
   const list = document.getElementById('debt-list');
   const items = list.querySelectorAll('.debt-item[data-id]');

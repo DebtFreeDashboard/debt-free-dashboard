@@ -1,13 +1,10 @@
 {
-  "version": "1.23.0",
+  "version": "1.23.2",
   "releaseDate": "2026-07-11",
-  "releaseName": "Polish & accessibility",
+  "releaseName": "Custom order, fixed properly",
   "notes": [
-    "New 'Collapse all / Expand all' control on the Dashboard for one-tap tidying.",
-    "A friendly welcome note now greets first-time visitors above the Add a Debt form.",
-    "Collapsible sections now work with the keyboard and announce their state to screen readers.",
-    "The Escape key now closes every popup, including quick payment logging, Dial-a-Date, and celebrations.",
-    "Leave the app open across midnight or return days later - due payments and monthly interest now process the moment you come back.",
-    "Fixed: What's New release dates are now accurate; debt names containing characters like & or < display correctly everywhere."
+    "You can now set your custom payoff order right on the Strategy tab - no more selecting Hybrid, then hunting for the list on the Dashboard. Reorder in either place; both stay in sync.",
+    "Fixed a serious bug: switching away from Hybrid (to peek at Snowball or Avalanche) silently erased your custom order and reset it to the order you added the debts in. Your custom order is now saved permanently.",
+    "Fixed: Hybrid reordering had no controls at all for Premium members, and dragging never worked on phones. Up/down buttons now work everywhere, on every device."
   ]
 }
