@@ -2349,7 +2349,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.24.1';
+const APP_VERSION = '1.24.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2357,6 +2357,15 @@ const APP_VERSION = '1.24.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.24.2',
+    date: 'August 5, 2026',
+    name: 'What-If accuracy fix',
+    whatsNew: [],
+    fixes: [
+      'Fixed a What-If bug where adding MORE to your monthly payment could show a LATER freedom date and higher interest. When a scheduled lump sum was aimed at a debt you\u2019d already paid off, its money was cascading to the wrong place. Extra payments now always move your date earlier (or leave it unchanged) \u2014 never later.'
+    ]
+  },
   {
     version: '1.24.1',
     date: 'July 14, 2026',
@@ -3428,31 +3437,36 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       d.bal = Math.max(0, d.bal);
     }
 
-    // Apply any planned lump sums due this month
+    // Apply any planned lump sums due this month.
+    // v1.24.2 — MONOTONICITY FIX. A lump is pinned to a target debt, then any
+    // excess cascades to other debts. The old code cascaded starting from the
+    // TARGET'S index in strategy order. That broke monotonicity: with more
+    // monthly extra, the snowball zeroes the target sooner, so by the lump date
+    // the target is already paid — and the leftover cascaded from a mid-list
+    // position, stranding money on higher-order debts while the true focus debt
+    // (e.g. snowball-last) starved. Net effect: paying MORE per month could push
+    // the payoff date LATER. The fix: pay the target if it still has a balance,
+    // then always cascade the remainder from the FRONT of strategy order, so
+    // surplus flows to the current focus debt regardless of how early the target
+    // was cleared. Every dollar still lands; it just never gets stranded.
     if (lumpByMonth[month]) {
       lumpByMonth[month].forEach(function(lump) {
-        const target = balances.find(function(b) { return b.id === lump.debtId; });
+        var lumpRemaining = lump.amount;
+        var target = balances.find(function(b) { return b.id === lump.debtId; });
+        // 1) Honor the explicit target first (if it still carries a balance).
         if (target && target.bal > 0) {
-          // Apply to specific debt — cascade any excess to next debts in strategy order
-          var lumpRemaining = lump.amount;
-          var startIdx = balances.indexOf(target);
-          if (startIdx < 0) startIdx = 0;
-          // Pay target first, then cascade remainder through remaining debts
-          for (var li = startIdx; li < balances.length && lumpRemaining > 0; li++) {
-            if (balances[li].bal <= 0) continue;
-            var lPay = Math.min(balances[li].bal, lumpRemaining);
-            balances[li].bal = Math.max(0, balances[li].bal - lPay);
-            lumpRemaining -= lPay;
-          }
-        } else if (!target) {
-          // No specific debt — cascade through all debts in strategy order
-          var lumpRemaining = lump.amount;
-          for (var li = 0; li < balances.length && lumpRemaining > 0; li++) {
-            if (balances[li].bal <= 0) continue;
-            var lPay = Math.min(balances[li].bal, lumpRemaining);
-            balances[li].bal = Math.max(0, balances[li].bal - lPay);
-            lumpRemaining -= lPay;
-          }
+          var tPay = Math.min(target.bal, lumpRemaining);
+          target.bal = Math.max(0, target.bal - tPay);
+          lumpRemaining -= tPay;
+        }
+        // 2) Cascade any remainder through ALL debts in strategy order, front to
+        //    back — identical to how an untargeted lump behaves. This is what
+        //    keeps the result monotonic no matter when the target was cleared.
+        for (var li = 0; li < balances.length && lumpRemaining > 0; li++) {
+          if (balances[li].bal <= 0) continue;
+          var lPay = Math.min(balances[li].bal, lumpRemaining);
+          balances[li].bal = Math.max(0, balances[li].bal - lPay);
+          lumpRemaining -= lPay;
         }
       });
     }

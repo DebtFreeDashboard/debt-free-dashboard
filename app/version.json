@@ -1,9 +1,8 @@
 {
-  "version": "1.24.1",
-  "releaseDate": "2026-07-14",
-  "releaseName": "True Cost tells the truth about 0% cards",
+  "version": "1.24.2",
+  "releaseDate": "2026-08-05",
+  "releaseName": "What-If accuracy fix",
   "notes": [
-    "Important fix: True Cost was reading a 0%-promo card's rate as 0% forever. A balance-transfer or store-financing card could show '$0.00/day, $0 interest' even when its rate was about to jump to 25%+ and its minimum payment wouldn't cover the interest.",
-    "True Cost now projects through the promo expiry. Cards where the minimum won't cover interest after 0% ends get a clear warning with the end date, the new rate, and the daily cost. Healthy promo cards now show lifetime interest that includes the rate jump."
+    "Fixed a What-If bug where adding more to your monthly payment could show a later freedom date and higher interest. When a scheduled lump sum was aimed at a debt you'd already paid off, its money was cascading to the wrong place. Extra payments now always move your date earlier or leave it unchanged - never later."
   ]
 }
