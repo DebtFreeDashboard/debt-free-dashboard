@@ -1,8 +1,8 @@
 // DebtFree Dashboard — Service Worker
-// v1.14.0 (Freemium + premium planning suite)
+// v1.10.1 (Redistribution banner fixes)
 // Bump CACHE_NAME when you want installed PWA clients to re-fetch cached assets.
 
-const CACHE_NAME = 'debtfree-v21';
+const CACHE_NAME = 'debtfree-v25';
 const CORE_ASSETS = [
   './',
   './dashboard.html',
