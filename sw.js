@@ -2,7 +2,7 @@
 // v1.10.1 (Redistribution banner fixes)
 // Bump CACHE_NAME when you want installed PWA clients to re-fetch cached assets.
 
-const CACHE_NAME = 'debtfree-v25';
+const CACHE_NAME = 'debtfree-v26';
 const CORE_ASSETS = [
   './',
   './dashboard.html',
