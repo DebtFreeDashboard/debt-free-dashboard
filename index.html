@@ -1155,6 +1155,69 @@
   gtag('config', 'G-NCP56TD9BG');
 </script>
 <script>
+  // DebtFree Dashboard — arrival + in-app browser tracking (mirrors the app's
+  // `arrival` event so the homepage and the app report into one funnel).
+  // Answers: which channel lands here, how many arrive inside a social app's
+  // webview, and how many go on to open the dashboard.
+  function dfDetectInApp() {
+    var ua = navigator.userAgent || '';
+    if (/Instagram/i.test(ua)) return 'Instagram';
+    if (/TikTok|BytedanceWebview|musical_ly/i.test(ua)) return 'TikTok';
+    if (/FBAN|FBAV|FB_IAB/i.test(ua)) return 'Facebook';
+    if (/Twitter/i.test(ua)) return 'X';
+    if (/LinkedInApp/i.test(ua)) return 'LinkedIn';
+    if (/Snapchat/i.test(ua)) return 'Snapchat';
+    if (/Pinterest/i.test(ua)) return 'Pinterest';
+    return null;
+  }
+  (function dfCaptureArrival() {
+    try {
+      if (sessionStorage.getItem('debtfree_home_arrival_logged') === '1') return;
+      var p = new URLSearchParams(location.search);
+      if (typeof gtag === 'function') {
+        gtag('event', 'arrival', {
+          'event_category': 'acquisition',
+          'utm_source': p.get('utm_source') || '(none)',
+          'utm_medium': p.get('utm_medium') || '(none)',
+          'in_app': dfDetectInApp() || '(browser)',
+          'landed_on': 'home'
+        });
+      }
+      sessionStorage.setItem('debtfree_home_arrival_logged', '1');
+    } catch (e) {}
+  })();
+
+  // Homepage -> app click-through. This is the number that decides the
+  // Instagram routing test: of the people who land here, how many reach the
+  // dashboard. UTMs are forwarded onto the app link so the app's own arrival
+  // event keeps the original source instead of attributing to this site.
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('a[href*="dashboard.html"]').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (typeof gtag === 'function') {
+          gtag('event', 'home_to_app', {
+            'event_category': 'acquisition',
+            'cta_location': this.dataset.ctaLocation || 'unspecified',
+            'in_app': dfDetectInApp() || '(browser)'
+          });
+        }
+        try {
+          var here = new URLSearchParams(location.search);
+          var src = here.get('utm_source'), med = here.get('utm_medium');
+          if (src) {
+            var u = new URL(this.href, location.origin);
+            if (!u.searchParams.get('utm_source')) {
+              u.searchParams.set('utm_source', src);
+              if (med) u.searchParams.set('utm_medium', med);
+              this.href = u.toString();
+            }
+          }
+        } catch (e) {}
+      });
+    });
+  });
+</script>
+<script>
   // DebtFree Dashboard — outbound click tracking
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('a[href*="gumroad.com"]').forEach(function(link) {
