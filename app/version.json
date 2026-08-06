@@ -1,8 +1,8 @@
 {
-  "version": "1.24.2",
+  "version": "1.25.0",
   "releaseDate": "2026-08-05",
-  "releaseName": "What-If accuracy fix",
+  "releaseName": "Don't lose your data to in-app browsers",
   "notes": [
-    "Fixed a What-If bug where adding more to your monthly payment could show a later freedom date and higher interest. When a scheduled lump sum was aimed at a debt you'd already paid off, its money was cascading to the wrong place. Extra payments now always move your date earlier or leave it unchanged - never later."
+    "If you open the app from inside Instagram, TikTok, or Facebook, you'll now see a warning at the top. Those apps store your data in a separate sandbox - debts you enter there won't appear when you visit the site normally, and you can't add the app to your home screen. The banner shows exactly how to open it in your real browser, with a one-tap Copy link button."
   ]
 }

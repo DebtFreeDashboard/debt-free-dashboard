@@ -1010,6 +1010,47 @@
   .tc-life strong { color: var(--text); }
   .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
+  /* v1.25.0 — in-app browser banner */
+  .inapp-banner {
+    background: linear-gradient(135deg, rgba(217,154,31,0.14), rgba(217,154,31,0.06));
+    border: 1px solid rgba(217,154,31,0.4);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .inapp-banner-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .inapp-banner-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .inapp-banner-text strong { color: var(--accent4); }
+  .inapp-banner-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .inapp-btn {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    background: var(--accent4);
+    color: #1a1a2a;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .inapp-btn-ghost {
+    background: none;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    font-weight: 400;
+  }
+
   /* v1.23.0 — collapse-all control */
   .collapse-all-btn {
     font-family: var(--font-mono);
@@ -1508,6 +1549,26 @@
 </div><!-- /sticky-top -->
 
 <div class="app">
+
+<!-- v1.25.0 — in-app browser warning. ~60% of sessions arrive inside the
+     Instagram/TikTok webview, whose storage is a sandbox separate from Safari:
+     debts entered here are invisible if the user later opens the site normally,
+     and the app can't be installed to the home screen. iOS gives no way to
+     escape the webview programmatically, so the only honest fix is to tell the
+     user how to open it properly. -->
+<div id="inapp-banner" class="inapp-banner" style="display:none;">
+  <div class="inapp-banner-body">
+    <div class="inapp-banner-title">&#9888;&#65039; Open in your browser to save your progress</div>
+    <div class="inapp-banner-text" id="inapp-banner-text">
+      You're viewing this inside another app. Anything you enter here won't be there when you come back.
+      Tap <strong>&#8943;</strong> at the top of the screen, then <strong>Open in browser</strong>.
+    </div>
+    <div class="inapp-banner-actions">
+      <button class="inapp-btn" onclick="copyAppLink()" id="inapp-copy-btn">Copy link</button>
+      <button class="inapp-btn inapp-btn-ghost" onclick="dismissInAppBanner()">Continue anyway</button>
+    </div>
+  </div>
+</div>
 
   <!-- ══════════════════════ DASHBOARD ══════════════════════ -->
   <div class="section active" id="section-dashboard">
@@ -2349,7 +2410,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.24.2';
+const APP_VERSION = '1.25.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2357,6 +2418,15 @@ const APP_VERSION = '1.24.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.25.0',
+    date: 'August 5, 2026',
+    name: 'Don\u2019t lose your data to in-app browsers',
+    whatsNew: [
+      'If you open the app from inside Instagram, TikTok, or Facebook, you\u2019ll now see a warning at the top. Those apps store your data in a separate sandbox \u2014 debts you enter there won\u2019t appear when you visit the site normally, and you can\u2019t add the app to your home screen. The banner shows you exactly how to open it in your real browser, with a one-tap Copy link button.'
+    ],
+    fixes: []
+  },
   {
     version: '1.24.2',
     date: 'August 5, 2026',
@@ -4477,6 +4547,89 @@ function goAddDebt() {
     const nameEl = document.getElementById('debt-name');
     if (nameEl && nameEl.focus) nameEl.focus();
   }, 350);
+}
+
+// ── v1.25.0 — IN-APP BROWSER DETECTION ──
+// Detects Instagram / TikTok / Facebook / etc. webviews. These render the app
+// fine, but their storage container is separate from the real browser: debts
+// entered here vanish the moment the user opens mydebtdashboard.com normally,
+// and the PWA can't be installed. Since iOS forbids escaping a webview from
+// script, we show instructions rather than pretending we can redirect.
+function detectInAppBrowser() {
+  const ua = navigator.userAgent || '';
+  if (/Instagram/i.test(ua))                 return 'Instagram';
+  if (/TikTok|BytedanceWebview|musical_ly/i.test(ua)) return 'TikTok';
+  if (/FBAN|FBAV|FB_IAB/i.test(ua))          return 'Facebook';
+  if (/Twitter/i.test(ua))                   return 'X';
+  if (/LinkedInApp/i.test(ua))               return 'LinkedIn';
+  if (/Snapchat/i.test(ua))                  return 'Snapchat';
+  if (/Pinterest/i.test(ua))                 return 'Pinterest';
+  return null;
+}
+
+function initInAppBanner() {
+  const app = detectInAppBrowser();
+  if (!app) return;
+  // Respect a dismissal for this session only — the risk is real enough that
+  // it's worth re-raising on a fresh visit.
+  try { if (sessionStorage.getItem('debtfree_inapp_dismissed') === '1') return; } catch (e) {}
+
+  const banner = document.getElementById('inapp-banner');
+  const textEl = document.getElementById('inapp-banner-text');
+  if (!banner || !textEl) return;
+
+  // Platform-accurate instructions. Android's Instagram/Facebook webviews use a
+  // ⋮ menu; iOS uses ⋯ (or a compass icon on TikTok).
+  const isAndroid = /Android/i.test(navigator.userAgent || '');
+  const menuGlyph = isAndroid ? '&#8942;' : '&#8943;';
+  const openLabel = isAndroid ? 'Open in Chrome' : 'Open in browser';
+  textEl.innerHTML =
+    'You\u2019re viewing this inside ' + app + '. Anything you enter here is stored separately \u2014 ' +
+    'it won\u2019t be there when you open the site normally, and you can\u2019t add the app to your home screen. ' +
+    'Tap <strong>' + menuGlyph + '</strong> at the top of the screen, then <strong>' + openLabel + '</strong>.';
+
+  banner.style.display = 'block';
+  if (typeof trackShare === 'function') {
+    trackShare('inapp_banner_shown', { _category: 'acquisition', in_app: app });
+  }
+}
+
+function dismissInAppBanner() {
+  const banner = document.getElementById('inapp-banner');
+  if (banner) banner.style.display = 'none';
+  try { sessionStorage.setItem('debtfree_inapp_dismissed', '1'); } catch (e) {}
+  if (typeof trackShare === 'function') {
+    trackShare('inapp_banner_dismissed', { _category: 'acquisition' });
+  }
+}
+
+function copyAppLink() {
+  const url = 'https://mydebtdashboard.com/app/dashboard.html';
+  const btn = document.getElementById('inapp-copy-btn');
+  const done = function() {
+    if (btn) { btn.textContent = 'Copied \u2713'; setTimeout(function(){ btn.textContent = 'Copy link'; }, 2500); }
+    if (typeof trackShare === 'function') {
+      trackShare('inapp_link_copied', { _category: 'acquisition', in_app: detectInAppBrowser() });
+    }
+  };
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done).catch(function(){ legacyCopy(url, done); });
+    } else { legacyCopy(url, done); }
+  } catch (e) { legacyCopy(url, done); }
+}
+
+function legacyCopy(text, cb) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (cb) cb();
+  } catch (e) {}
 }
 
 function openQuickLog() {
@@ -7690,6 +7843,32 @@ _milestonesBaselined = true;
 
 // v1.22.0 — set up collapsible cards (needs debts loaded for the Add Debt rule)
 initCollapsibles();
+
+// v1.25.0 — warn if we're inside a social app's in-app browser
+initInAppBanner();
+
+// v1.25.0 — record how this visitor arrived, once per session, so acquisition
+// source is attached to the activation funnel (debt_added) in GA4 rather than
+// living only in GA4's own attribution.
+(function captureArrival() {
+  try {
+    if (sessionStorage.getItem('debtfree_arrival_logged') === '1') return;
+    const p = new URLSearchParams(location.search);
+    const src = p.get('utm_source') || '';
+    const med = p.get('utm_medium') || '';
+    const inApp = detectInAppBrowser();
+    if (typeof trackShare === 'function') {
+      trackShare('arrival', {
+        _category: 'acquisition',
+        utm_source: src || '(none)',
+        utm_medium: med || '(none)',
+        in_app: inApp || '(browser)',
+        landed_on: 'app'
+      });
+    }
+    sessionStorage.setItem('debtfree_arrival_logged', '1');
+  } catch (e) {}
+})();
 
 render();
 </script>
