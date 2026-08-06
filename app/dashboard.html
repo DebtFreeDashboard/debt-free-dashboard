@@ -1010,6 +1010,46 @@
   .tc-life strong { color: var(--text); }
   .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
+  /* v1.26.0 — Paid Off Debts trophy case */
+  .paid-off-summary {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+    padding: 12px;
+    background: rgba(0,168,132,0.07);
+    border: 1px solid rgba(0,168,132,0.22);
+    border-radius: var(--radius-sm);
+  }
+  .po-sum-item { display: flex; flex-direction: column; flex: 1; min-width: 90px; }
+  .po-sum-val {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: var(--accent);
+    line-height: 1.2;
+  }
+  .po-sum-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .paid-off-item {
+    border-color: rgba(0,168,132,0.3) !important;
+    background: rgba(0,168,132,0.04) !important;
+  }
+  .po-date {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .po-interest { color: var(--accent4) !important; }
+  .po-edit { font-size: 0.7rem; padding: 5px 12px; }
+
   /* v1.25.0 — in-app browser banner */
   .inapp-banner {
     background: linear-gradient(135deg, rgba(217,154,31,0.14), rgba(217,154,31,0.06));
@@ -1869,6 +1909,20 @@
       </div>
     </div>
 
+    <!-- v1.26.0 — Paid Off Debts. Eliminated debts leave the active list (so it
+         visibly shrinks as you win) and land here as a trophy case, collapsed by
+         default. Kept editable: people genuinely reuse paid-off cards (0%
+         transfer offers), and reactivating preserves the debt's ledger history
+         instead of forcing a duplicate that would fragment Total Paid Off. -->
+    <div class="card" id="paid-off-card" data-collapse="paidoff" data-collapse-default="closed" style="display:none">
+      <div class="card-title">
+        <div class="dot"></div> &#127942; Paid Off Debts
+        <span class="tag tag-muted" id="paid-off-count" style="margin-left:4px">0</span>
+      </div>
+      <div class="paid-off-summary" id="paid-off-summary"></div>
+      <div class="debt-list" id="paid-off-list"></div>
+    </div>
+
     <!-- Monthly Budget -->
     <div class="card" id="budget-card" data-collapse="budget" data-collapse-default="closed">
       <div class="card-title"><div class="dot"></div> Monthly Payoff Budget</div>
@@ -2410,7 +2464,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.25.0';
+const APP_VERSION = '1.26.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2419,8 +2473,20 @@ const APP_VERSION = '1.25.0';
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
   {
+    version: '1.26.0',
+    date: 'August 6, 2026',
+    name: 'Paid Off Debts trophy case',
+    whatsNew: [
+      'When you eliminate a debt it now leaves your active list and moves into a new Paid Off Debts section right below it. Your debt list actually gets shorter as you win.',
+      'Each eliminated debt shows what the fight cost you: the original balance, the interest you paid, and how many months it took. Hard work, on the record.',
+      'The section is collapsed by default and shows running totals - everything you have eliminated, total interest paid, and accounts closed.',
+      'Paid-off debts stay editable. If you use a card again (say, a 0% balance transfer), edit it and it returns to your active list with its full history intact - and paying it off a second time earns a fresh celebration.'
+    ],
+    fixes: []
+  },
+  {
     version: '1.25.0',
-    date: 'August 5, 2026',
+    date: 'August 6, 2026',
     name: 'Don\u2019t lose your data to in-app browsers',
     whatsNew: [
       'If you open the app from inside Instagram, TikTok, or Facebook, you\u2019ll now see a warning at the top. Those apps store your data in a separate sandbox \u2014 debts you enter there won\u2019t appear when you visit the site normally, and you can\u2019t add the app to your home screen. The banner shows you exactly how to open it in your real browser, with a one-tap Copy link button.'
@@ -3846,6 +3912,9 @@ function updateEditFeePreview() {
 function saveEditDebt() {
   const d = debts.find(x => x.id === editingId);
   if (!d) return;
+  // v1.26.0 — remember whether this was a paid-off debt, so we can detect a
+  // reactivation below (e.g. a 0% transfer put onto a card you'd already killed).
+  const _wasPaidOff = d.balance <= 0 && d.originalBalance > 0;
 
   const name    = document.getElementById('edit-name').value.trim();
   const type    = document.getElementById('edit-type').value;
@@ -3954,6 +4023,22 @@ function saveEditDebt() {
       });
     }
   })();
+
+  // v1.26.0 — reactivation: a paid-off debt just came back (new charges, or a
+  // 0% transfer onto a card you'd already killed). Clear its elimination
+  // milestone so beating it a second time earns a fresh celebration — paying
+  // off the same card twice is a real win, not a duplicate.
+  if (_wasPaidOff && d.balance > 0) {
+    const _key = 'elim:' + d.id;
+    const _i = shownMilestones.indexOf(_key);
+    if (_i !== -1) {
+      shownMilestones.splice(_i, 1);
+      // 'debtfree' too — you're no longer debt-free, and reaching it again counts.
+      const _df = shownMilestones.indexOf('debtfree');
+      if (_df !== -1) shownMilestones.splice(_df, 1);
+      persistMilestones();
+    }
+  }
 
   document.getElementById('edit-modal').classList.add('hidden');
   editingId = null;
@@ -5060,6 +5145,58 @@ function accrualRateFor(d, monthDate) {
 }
 
 // Total estimated interest accrued to date for one debt.
+// ── v1.26.0 — ELIMINATED DEBT STATS ──
+// The trophy numbers: what this debt actually cost in interest, and how long the
+// fight took. Both come from real tracked history, never a projection:
+//   interest = the accrual ledger (only exists if interest tracking was on)
+//   duration = first tracked activity -> the payment that zeroed it
+// When a debt has no tracked history (added and zeroed manually, or accrual off),
+// we return nulls and the UI OMITS the stat rather than printing "$0" — a false
+// zero on a debt someone fought for years reads like the work didn't count.
+function eliminatedStatsFor(debt) {
+  const id = debt.id;
+  const paidPayments = payments.filter(function(p) { return p.debtId === id && !p.pending; });
+  const debtAccruals = accruals.filter(function(a) { return a.debtId === id; });
+
+  // Zero-amount anchor rows (the v1.11.0 joining-month entries) aren't evidence
+  // of tracked interest.
+  const realAccruals = debtAccruals.filter(function(a) { return a.amount > 0; });
+  const interestPaid = realAccruals.reduce(function(sum, a) { return sum + a.amount; }, 0);
+  const hasInterest = realAccruals.length > 0;
+
+  // Payoff date: the payment that eliminated it, else the most recent payment.
+  let payoffDate = null;
+  const elim = paidPayments.filter(function(p) { return p.eliminated; })
+                           .sort(function(a, b) { return a.date < b.date ? 1 : -1; })[0];
+  if (elim) payoffDate = elim.date;
+  else if (paidPayments.length) {
+    payoffDate = paidPayments.slice().sort(function(a, b) { return a.date < b.date ? 1 : -1; })[0].date;
+  }
+
+  // Duration: earliest tracked activity -> payoff. Needs both ends to be real.
+  let months = null, startDate = null;
+  const allDates = paidPayments.map(function(p) { return p.date; })
+    .concat(debtAccruals.map(function(a) { return a.date; }))
+    .filter(Boolean).sort();
+  if (allDates.length && payoffDate) {
+    startDate = allDates[0];
+    const sd = new Date(startDate + 'T00:00:00');
+    const ed = new Date(payoffDate + 'T00:00:00');
+    if (!isNaN(sd.getTime()) && !isNaN(ed.getTime()) && ed >= sd) {
+      const m = (ed.getFullYear() - sd.getFullYear()) * 12 + (ed.getMonth() - sd.getMonth());
+      months = Math.max(1, m); // a payoff inside month one is still a month of effort
+    }
+  }
+
+  return {
+    interestPaid: hasInterest ? interestPaid : null,
+    months: months,
+    payoffDate: payoffDate,
+    startDate: startDate,
+    totalPaid: paidPayments.reduce(function(sum, p) { return sum + p.amount; }, 0)
+  };
+}
+
 function accruedInterestFor(debtId) {
   return accruals.filter(function(a) { return a.debtId === debtId; })
                  .reduce(function(s, a) { return s + a.amount; }, 0);
@@ -5968,23 +6105,34 @@ function renderStats() {
 
 function renderDebtList() {
   const list = document.getElementById('debt-list');
-  document.getElementById('debt-count').textContent = debts.length + ' account' + (debts.length!==1?'s':'');
+  // v1.26.0 — the count reflects ACTIVE accounts; paid-off ones have their own card.
+  const _activeCount = debts.filter(function(d) { return d.balance > 0; }).length;
+  document.getElementById('debt-count').textContent = _activeCount + ' account' + (_activeCount !== 1 ? 's' : '');
 
-  if (!debts.length) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">💳</div><p>No debts added yet.<br>Add your first debt above to start building your payoff plan.</p></div>`;
+  if (!_activeCount) {
+    // Distinguish "nothing added yet" from "you beat all of them".
+    list.innerHTML = debts.length
+      ? `<div class="empty-state"><div class="icon">&#127942;</div><p><strong>Every debt eliminated.</strong><br>Your paid-off accounts are in the trophy case below.</p></div>`
+      : `<div class="empty-state"><div class="icon">💳</div><p>No debts added yet.<br>Add your first debt above to start building your payoff plan.</p></div>`;
+    renderPaidOffDebts();
+    document.getElementById('payment-log-card').style.display = debts.length ? 'block' : 'none';
     return;
   }
 
   // v1.14.0 — premium users get the sortable portfolio table instead of cards.
   if (isPremium) {
     renderPortfolioTable(list);
+    renderPaidOffDebts(); // v1.26.0 — trophy case renders on the table path too
     // Payment log visibility (kept consistent with the card path below)
     document.getElementById('payment-log-card').style.display = debts.length ? 'block' : 'none';
     if (document.getElementById('monthly-summary-card')) document.getElementById('monthly-summary-card').style.display = debts.filter(function(d){return d.balance>0;}).length ? 'block' : 'none';
     return;
   }
 
-  list.innerHTML = debts.map((d, _i) => {
+  // v1.26.0 — the active list shows only live debts; eliminated ones move to the
+  // Paid Off card below. The list visibly shrinking IS the reward.
+  const activeList = debts.filter(function(d) { return d.balance > 0; });
+  list.innerHTML = activeList.map((d, _i) => {
     const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
 
@@ -6097,6 +6245,9 @@ function renderDebtList() {
   document.getElementById('payment-log-card').style.display = debts.length ? 'block' : 'none';
   if (document.getElementById('monthly-summary-card')) document.getElementById('monthly-summary-card').style.display = debts.filter(function(d){return d.balance>0;}).length ? 'block' : 'none';
 
+  // v1.26.0 — trophy case (free card path)
+  renderPaidOffDebts();
+
   // Init drag-and-drop if hybrid
   if (strategy === 'hybrid') initDragDrop();
 }
@@ -6131,7 +6282,9 @@ function renderPortfolioTable(list) {
     ranked.forEach(function(p, i){ orderMap[p.id] = i + 1; });
   }
 
-  const rows = debts.map(function(d) {
+  // v1.26.0 — paid-off debts leave this table for the Paid Off card, matching
+  // the free-tier card list. Premium users get the shrinking list too.
+  const rows = debts.filter(function(d) { return d.balance > 0; }).map(function(d) {
     const apr = (d.hasPromo && d.promoEnd && new Date() < new Date(d.promoEnd)) ? (d.promoApr || 0) : (d.realApr || d.apr || 0);
     const excluded = d.includeInStrategy === false;
     return {
@@ -7081,6 +7234,80 @@ function renderMilestones() {
       </div>
       <span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent)">PAID OFF ✓</span>
     </div>`).join('');
+}
+
+// ── v1.26.0 — PAID OFF DEBTS (trophy case) ──
+// Most-recent win first, because the freshest victory is the most motivating
+// thing to see. Each entry shows the hard numbers worth being proud of:
+// original balance, interest actually paid, and how many months it took.
+// Edit stays available — a paid-off card can come back (0% transfer offers),
+// and reactivating through Edit preserves the debt's full ledger history.
+function renderPaidOffDebts() {
+  const card = document.getElementById('paid-off-card');
+  const list = document.getElementById('paid-off-list');
+  const countEl = document.getElementById('paid-off-count');
+  const summaryEl = document.getElementById('paid-off-summary');
+  if (!card || !list) return;
+
+  const paid = debts.filter(function(d) { return d.balance <= 0 && d.originalBalance > 0; });
+  if (!paid.length) {
+    card.style.display = 'none';
+    card.dataset.hasContent = '0';
+    return;
+  }
+  card.dataset.hasContent = '1';
+  card.style.display = 'block';
+  if (countEl) countEl.textContent = paid.length + (paid.length === 1 ? ' win' : ' wins');
+
+  const stats = {};
+  paid.forEach(function(d) { stats[d.id] = eliminatedStatsFor(d); });
+
+  // Newest win first; debts with no payoff date sort last.
+  const ordered = paid.slice().sort(function(a, b) {
+    const da = stats[a.id].payoffDate, db = stats[b.id].payoffDate;
+    if (da && db) return da < db ? 1 : -1;
+    if (da) return -1;
+    if (db) return 1;
+    return 0;
+  });
+
+  // Headline totals across every win.
+  const totalOrig = paid.reduce(function(s, d) { return s + (d.originalBalance || 0); }, 0);
+  const totalInt = paid.reduce(function(s, d) { return s + (stats[d.id].interestPaid || 0); }, 0);
+  if (summaryEl) {
+    summaryEl.innerHTML =
+      '<div class="po-sum-item"><span class="po-sum-val">' + fmt(totalOrig) + '</span><span class="po-sum-label">eliminated</span></div>' +
+      (totalInt > 0
+        ? '<div class="po-sum-item"><span class="po-sum-val">' + fmt(totalInt) + '</span><span class="po-sum-label">interest paid</span></div>'
+        : '') +
+      '<div class="po-sum-item"><span class="po-sum-val">' + paid.length + '</span><span class="po-sum-label">' + (paid.length === 1 ? 'account closed' : 'accounts closed') + '</span></div>';
+  }
+
+  list.innerHTML = ordered.map(function(d) {
+    const st = stats[d.id];
+    const bits = [];
+    bits.push('<div class="debt-stat"><span class="debt-stat-label">Original</span><span class="debt-stat-val">' + fmtDec(d.originalBalance) + '</span></div>');
+    // Omitted entirely when untracked — a false $0 would cheapen the win.
+    if (st.interestPaid !== null && st.interestPaid > 0) {
+      bits.push('<div class="debt-stat"><span class="debt-stat-label">Interest paid</span><span class="debt-stat-val po-interest">' + fmtDec(st.interestPaid) + '</span></div>');
+    }
+    if (st.months !== null) {
+      const y = Math.floor(st.months / 12), m = st.months % 12;
+      const dur = (y ? y + (y === 1 ? ' yr ' : ' yrs ') : '') + (m ? m + ' mo' : (y ? '' : '1 mo'));
+      bits.push('<div class="debt-stat"><span class="debt-stat-label">Took</span><span class="debt-stat-val">' + dur.trim() + '</span></div>');
+    }
+    const when = st.payoffDate
+      ? new Date(st.payoffDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      : null;
+
+    return '<div class="debt-item paid-off-item" data-id="' + d.id + '">' +
+      '<span class="debt-type-badge ' + badgeClass(d.type) + '">' + badgeLabel(d.type) + '</span>' +
+      '<div class="debt-name">' + escapeHtml(d.name) + ' &#9989;</div>' +
+      (when ? '<span class="po-date">Paid off ' + when + '</span>' : '') +
+      '<div class="debt-stats">' + bits.join('') + '</div>' +
+      '<button class="btn btn-ghost po-edit" onclick="openEditModal(' + d.id + ')" title="Reopen this account if you use it again">Edit</button>' +
+    '</div>';
+  }).join('');
 }
 
 function populateDebtSelects() {

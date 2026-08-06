@@ -1,8 +1,11 @@
 {
-  "version": "1.25.0",
-  "releaseDate": "2026-08-05",
-  "releaseName": "Don't lose your data to in-app browsers",
+  "version": "1.26.0",
+  "releaseDate": "2026-08-06",
+  "releaseName": "Paid Off Debts trophy case",
   "notes": [
-    "If you open the app from inside Instagram, TikTok, or Facebook, you'll now see a warning at the top. Those apps store your data in a separate sandbox - debts you enter there won't appear when you visit the site normally, and you can't add the app to your home screen. The banner shows exactly how to open it in your real browser, with a one-tap Copy link button."
+    "When you eliminate a debt it now leaves your active list and moves into a new Paid Off Debts section right below it. Your debt list actually gets shorter as you win.",
+    "Each eliminated debt shows what the fight cost you: the original balance, the interest you paid, and how many months it took.",
+    "The section is collapsed by default and shows running totals - everything eliminated, total interest paid, and accounts closed.",
+    "Paid-off debts stay editable. If you use a card again (say, a 0% balance transfer), edit it and it returns to your active list with its full history intact - and paying it off a second time earns a fresh celebration."
   ]
 }
