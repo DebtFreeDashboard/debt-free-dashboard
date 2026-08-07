@@ -1011,23 +1011,38 @@
   .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
   /* v1.26.0 — Paid Off Debts trophy case */
+  /* v1.26.1 — summary stats. Previously three flex columns with min-width:90px:
+     on a phone each column shrank below the width of its own number, and since
+     "$16,680" can't wrap, it overflowed and collided with the next stat. Now it
+     stacks as full-width rows on narrow screens (value left, label right) and
+     only goes three-across when there's genuinely room. */
   .paid-off-summary {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
     margin-bottom: 14px;
-    padding: 12px;
+    padding: 12px 14px;
     background: rgba(0,168,132,0.07);
     border: 1px solid rgba(0,168,132,0.22);
     border-radius: var(--radius-sm);
   }
-  .po-sum-item { display: flex; flex-direction: column; flex: 1; min-width: 90px; }
+  .po-sum-item {
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    padding: 5px 0;
+  }
+  .po-sum-item + .po-sum-item { border-top: 1px solid rgba(0,168,132,0.14); }
   .po-sum-val {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     color: var(--accent);
     line-height: 1.2;
+    white-space: nowrap;
   }
   .po-sum-label {
     font-family: var(--font-mono);
@@ -1035,7 +1050,20 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-muted);
-    margin-top: 2px;
+    text-align: right;
+    line-height: 1.3;
+  }
+  @media (min-width: 560px) {
+    .paid-off-summary { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .po-sum-item {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 2px;
+      padding: 0;
+    }
+    .po-sum-item + .po-sum-item { border-top: none; }
+    .po-sum-label { text-align: left; }
   }
   .paid-off-item {
     border-color: rgba(0,168,132,0.3) !important;
@@ -2464,7 +2492,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.26.0';
+const APP_VERSION = '1.26.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2472,6 +2500,15 @@ const APP_VERSION = '1.26.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.26.1',
+    date: 'August 6, 2026',
+    name: 'Paid Off Debts layout fix',
+    whatsNew: [],
+    fixes: [
+      'Fixed the totals at the top of Paid Off Debts overlapping each other on phones. The three figures now stack as clean rows on narrow screens and sit side by side when there is room.'
+    ]
+  },
   {
     version: '1.26.0',
     date: 'August 6, 2026',

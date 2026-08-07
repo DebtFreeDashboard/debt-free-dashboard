@@ -1,11 +1,8 @@
 {
-  "version": "1.26.0",
+  "version": "1.26.1",
   "releaseDate": "2026-08-06",
-  "releaseName": "Paid Off Debts trophy case",
+  "releaseName": "Paid Off Debts layout fix",
   "notes": [
-    "When you eliminate a debt it now leaves your active list and moves into a new Paid Off Debts section right below it. Your debt list actually gets shorter as you win.",
-    "Each eliminated debt shows what the fight cost you: the original balance, the interest you paid, and how many months it took.",
-    "The section is collapsed by default and shows running totals - everything eliminated, total interest paid, and accounts closed.",
-    "Paid-off debts stay editable. If you use a card again (say, a 0% balance transfer), edit it and it returns to your active list with its full history intact - and paying it off a second time earns a fresh celebration."
+    "Fixed the totals at the top of Paid Off Debts overlapping each other on phones. The three figures now stack as clean rows on narrow screens and sit side by side when there is room."
   ]
 }
