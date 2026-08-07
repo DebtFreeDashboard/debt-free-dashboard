@@ -342,7 +342,12 @@
   }
 
   /* ─── LAYOUT ─── */
-  .app { max-width: 1100px; margin: 0 auto; padding: 24px 16px 80px; }
+  /* v1.28.0 — bottom padding reserves a strip the FAB can never permanently
+     cover. It was 80px; the FAB is ~48px tall sitting 20px up, plus the iOS
+     home-indicator inset, so the last element on the page could come to rest
+     underneath it. Content still scrolls *behind* the FAB mid-scroll (that is
+     inherent to a floating button) but nothing now ends up stuck under it. */
+  .app { max-width: 1100px; margin: 0 auto; padding: 24px 16px calc(120px + env(safe-area-inset-bottom)); }
 
   /* ─── SECTIONS ─── */
   .section { display: none; animation: fadeUp 0.35s ease; }
@@ -421,6 +426,41 @@
   .demo-banner-btn:hover { filter: brightness(1.08); }
   @media (max-width: 560px) {
     .demo-banner-btn { width: 100%; }
+  }
+
+  /* v1.28.0 — inline form validation. Replaces native alert(), which on
+     mobile is a modal interrupt that names no field: the user had to dismiss
+     it and then guess what was wrong. These mark the offending input directly. */
+  .field-optional {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-left: 6px;
+    font-weight: 400;
+  }
+  .field-hint {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    line-height: 1.35;
+  }
+  .form-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,107,107,0.10);
+    border: 1px solid rgba(255,107,107,0.4);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-top: 14px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  input.field-invalid, select.field-invalid {
+    border-color: var(--accent3) !important;
+    box-shadow: 0 0 0 2px rgba(255,107,107,0.15);
   }
 
   /* ─── CARDS ─── */
@@ -1906,8 +1946,8 @@
       </div>
       <div class="form-grid">
         <div class="form-field">
-          <label>Debt Name</label>
-          <input type="text" id="debt-name" placeholder="e.g. Chase Sapphire" />
+          <label>Debt Name <span class="field-optional">optional</span></label>
+          <input type="text" id="debt-name" placeholder="e.g. Rewards Visa" />
         </div>
         <div class="form-field">
           <label>Type</label>
@@ -1922,21 +1962,24 @@
         </div>
         <div class="form-field">
           <label>Balance ($)</label>
-          <input type="number" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview()" />
+          <input type="number" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview(); clearFieldError(this);" />
         </div>
         <div class="form-field">
           <label>APR (%)</label>
           <input type="number" id="debt-apr" placeholder="22.99" min="0" max="100" step="0.01"
-            oninput="validateAprField(this)" onblur="validateAprField(this)" />
+            oninput="validateAprField(this); clearFieldError(this);" onblur="validateAprField(this)" />
           <div id="apr-warning" style="display:none;font-size:0.72rem;color:var(--accent3);margin-top:4px;font-family:var(--font-mono);">
             ⚠ APR over 100% — did you mean to type a decimal? (e.g. 27.49)
           </div>
         </div>
         <div class="form-field">
-          <label>Min Payment ($)</label>
-          <input type="number" id="debt-min" placeholder="100" min="0" step="1" />
+          <label>Min Payment ($) <span class="field-optional">optional</span></label>
+          <input type="number" id="debt-min" placeholder="100" min="0" step="1"
+            oninput="clearFieldError(this)" />
+          <div class="field-hint" id="min-hint">Leave blank and we'll estimate it</div>
         </div>
       </div>
+      <div class="form-error" id="add-debt-error" style="display:none;"></div>
 
       <!-- Promo APR toggle -->
       <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
@@ -2575,7 +2618,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.27.0';
+const APP_VERSION = '1.28.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2583,6 +2626,20 @@ const APP_VERSION = '1.27.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.28.0',
+    date: 'August 7, 2026',
+    name: 'Fewer fields, cleaner lines',
+    whatsNew: [
+      'Adding a debt now only needs the balance and the APR. The name is optional (it falls back to the account type), and if you leave the minimum payment blank we estimate it for you — you can always edit it afterwards.',
+      'If something is missing, the form now tells you which field and highlights it, instead of showing a pop-up that made you guess.'
+    ],
+    fixes: [
+      'The "on track" line on the Next Target card no longer wraps onto a second line, and now uses the same short date style as your Freedom Date.',
+      'Fixed the Freedom Date card reading "1 months away" in your final month.',
+      'The floating button no longer sits on top of the last section at the bottom of the page.'
+    ]
+  },
   {
     version: '1.27.0',
     date: 'August 7, 2026',
@@ -3784,6 +3841,70 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
 // ═══════════════════════════════════════════
 //  ADD DEBT
 // ═══════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
+// v1.28.0 — ACTIVATION: FORM FRICTION
+//
+// Three required fields were blocking the activation event, and two of them
+// didn't need to be:
+//   * Debt Name has zero effect on any calculation, yet an empty one hard
+//     -stopped the add. Now defaults to the selected type ("Credit Card").
+//   * Min Payment is the field people genuinely don't know without digging
+//     out a statement — the most plausible in-form abandonment point, and
+//     invisible in GA4 because only the success event was ever tracked. Now
+//     estimated when left blank.
+//   * Validation used native alert(): a modal interrupt that named no field.
+//     Now inline, marking the offending input.
+// Balance and APR remain required — without them there is no math.
+// ══════════════════════════════════════════════════════════════════════
+
+// Card issuers typically bill the greater of a flat floor or a small
+// percentage of the balance, with the percentage covering accrued interest.
+// Installment debt is a straight amortization over its remaining term.
+// This is a starting estimate the user can overwrite, never a claim about
+// what any particular lender will actually charge.
+function estimateMinPayment(balance, apr, type) {
+  if (!(balance > 0)) return 0;
+  const r = (apr || 0) / 100 / 12;
+  const loanType = (typeof inferLoanType === 'function') ? inferLoanType(type) : 'revolving';
+  if (loanType === 'installment') {
+    const term = type === 'mortgage' ? 360 : (type === 'auto' ? 60 : 120);
+    const pmt = r > 0
+      ? (balance * r) / (1 - Math.pow(1 + r, -term))
+      : balance / term;
+    return Math.max(25, Math.round(pmt));
+  }
+  // Revolving: 1% of principal + this month's interest, floored at $25 and
+  // never more than the balance itself.
+  const est = balance * 0.01 + balance * r;
+  return Math.min(Math.round(balance), Math.max(25, Math.round(est)));
+}
+
+function clearFieldError(el) {
+  if (el && el.classList) el.classList.remove('field-invalid');
+  const box = document.getElementById('add-debt-error');
+  if (box) box.style.display = 'none';
+}
+
+function showFormError(message, focusId) {
+  const box = document.getElementById('add-debt-error');
+  if (box) {
+    box.innerHTML = '<span>&#9888;</span><span>' + escapeHtml(message) + '</span>';
+    box.style.display = 'flex';
+  }
+  if (focusId) {
+    const el = document.getElementById(focusId);
+    if (el) {
+      if (el.classList) el.classList.add('field-invalid');
+      if (el.focus) el.focus();
+      if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+  // Surfaces which field is actually costing us activations.
+  if (typeof trackShare === 'function') {
+    trackShare('add_debt_error', { _category: 'activation', field: focusId || 'unknown' });
+  }
+}
+
 function addDebt() {
   // v1.27.0 — the user's first real debt must never land in a list that
   // still holds example rows. Clearing here (rather than only on the
@@ -3791,24 +3912,52 @@ function addDebt() {
   // Deliberately BEFORE the debt is pushed, so debt_added still reports
   // debt_count: 1 / is_first: true for a genuine first activation.
   if (_demoMode) exitDemo(true);
-  const name = document.getElementById('debt-name').value.trim();
-  const type = document.getElementById('debt-type').value;
+  const typeEl = document.getElementById('debt-type');
+  const type = typeEl.value;
   const balance = parseFloat(document.getElementById('debt-balance').value);
   const apr = parseFloat(document.getElementById('debt-apr').value);
-  const min = parseFloat(document.getElementById('debt-min').value);
+  const minRaw = document.getElementById('debt-min').value;
   const hasPromo = document.getElementById('debt-has-promo').checked;
 
-  if (!name || isNaN(balance) || isNaN(apr) || isNaN(min)) {
-    alert('Please fill in all fields.');
+  // Name is cosmetic — fall back to the selected type's own label so the
+  // debt list never shows a blank row.
+  const nameRaw = document.getElementById('debt-name').value.trim();
+  let name = nameRaw;
+  if (!name) {
+    const opt = typeEl.options[typeEl.selectedIndex];
+    name = (opt && opt.textContent) ? opt.textContent.trim() : 'Debt';
+  }
+
+  // Required, one at a time, so the user is told exactly what to fix.
+  if (isNaN(balance) || balance <= 0) {
+    showFormError('Enter the current balance to see your payoff date.', 'debt-balance');
+    return;
+  }
+  if (isNaN(apr)) {
+    showFormError('Enter the APR — it drives the whole calculation. Use 0 if this debt charges no interest.', 'debt-apr');
     return;
   }
 
   const safeApr = sanitizeApr(apr);
   if (safeApr === null) {
-    alert('APR looks incorrect — ' + apr + '% is unusually high. Did you mean ' + (apr / 100).toFixed(2) + '%? Please double-check and re-enter.');
-    document.getElementById('debt-apr').focus();
+    showFormError('That APR looks too high — ' + apr + '%. Did you mean ' + (apr / 100).toFixed(2) + '%?', 'debt-apr');
     return;
   }
+
+  // Blank minimum is estimated rather than blocking. An explicit 0 is
+  // honoured (some payment plans genuinely have none).
+  let min;
+  if (minRaw === '' || minRaw === null || typeof minRaw === 'undefined') {
+    min = estimateMinPayment(balance, apr, type);
+  } else {
+    min = parseFloat(minRaw);
+    if (isNaN(min) || min < 0) {
+      showFormError('Minimum payment must be a positive number, or left blank to estimate it.', 'debt-min');
+      return;
+    }
+  }
+  clearFieldError(document.getElementById('debt-balance'));
+  clearFieldError(document.getElementById('debt-apr'));
   let finalBalance = balance;
   let promoApr = null, promoEnd = null, postPromoApr = null, transferFee = 0;
 
@@ -3868,7 +4017,10 @@ function addDebt() {
       debt_count: debts.length,
       is_first: debts.length === 1,
       has_promo: !!hasPromo,
-      debt_type: type
+      debt_type: type,
+      // v1.28.0 — how often the removed requirements would have blocked this
+      min_estimated: (minRaw === '' || minRaw === null || typeof minRaw === 'undefined') ? 'yes' : 'no',
+      name_defaulted: nameRaw ? 'no' : 'yes'
     });
   }
   if (interestAccrualEnabled) {
@@ -6119,6 +6271,16 @@ function currentAttackDebt() {
   return active[0]; // hybrid: top of the custom order
 }
 
+// v1.28.0 — single source of truth for "how far away" phrasing, shared by the
+// Freedom Date sub-label and the Next Target ETA so they can never drift apart
+// again. Fixes a live grammar bug: the Freedom Date card had no singular case
+// and rendered "1 months away".
+function monthsAway(m) {
+  if (!(typeof m === 'number') || !isFinite(m) || m < 0) return '';
+  if (m === 0) return 'this month';
+  return m + ' month' + (m !== 1 ? 's' : '') + ' away';
+}
+
 function renderNextDebt() {
   const card = document.getElementById('next-debt-card');
   if (!card) return;
@@ -6158,12 +6320,17 @@ function renderNextDebt() {
   const paidPct = orig > 0 ? Math.min(100, Math.max(0, (1 - target.balance / orig) * 100)) : 0;
   document.getElementById('next-debt-bar-fill').style.width = paidPct.toFixed(0) + '%';
 
+  // v1.28.0 — this line wrapped at EVERY month count, not just large ones:
+  // the long month name plus a parenthetical pushed it past the ~46 mono
+  // characters that fit at 390px. Now uses the 3-letter month (matching the
+  // Freedom Date card above) and "N months away" (matching its sub-label), so
+  // the two cards read as one system. Worst case measured at 42 chars.
   const etaEl = document.getElementById('next-debt-eta');
   if (typeof targetEta === 'number' && targetEta > 0) {
     const d = new Date();
     d.setMonth(d.getMonth() + targetEta);
-    const monthName = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    etaEl.textContent = '🎯 On track to eliminate by ' + monthName + ' (' + targetEta + ' month' + (targetEta !== 1 ? 's' : '') + ')';
+    const monthName = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    etaEl.textContent = '🎯 On track for ' + monthName + ' · ' + monthsAway(targetEta);
   } else {
     etaEl.textContent = '🎯 Next debt to fall on your current plan.';
   }
@@ -6223,7 +6390,9 @@ function renderStats() {
     const freeDate = new Date();
     freeDate.setMonth(freeDate.getMonth() + res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
-    document.getElementById('stat-months').textContent = res.months + ' months away';
+    // v1.28.0 — was `res.months + ' months away'`, which rendered the
+    // ungrammatical "1 months away" in the final month of a payoff.
+    document.getElementById('stat-months').textContent = monthsAway(res.months);
     const saved = Math.max(0, minRes.totalInterest - res.totalInterest);
     document.getElementById('stat-saved').textContent = fmt(saved);
   } else {

@@ -1,11 +1,12 @@
 {
-  "version": "1.27.0",
+  "version": "1.28.0",
   "releaseDate": "2026-08-07",
-  "releaseName": "A first look before you type",
+  "releaseName": "Fewer fields, cleaner lines",
   "notes": [
-    "New visitors now land on a worked example — real payoff date, real interest saved, a live chart — instead of a screen of zeros. It is clearly marked as an example, nothing about it is saved, and one tap on \"Start with my numbers\" clears it and takes you to the form.",
-    "The Dashboard now opens straight onto your figures — the old \"Debt Command Center\" heading and tagline have been removed, so on a phone you see your numbers immediately instead of scrolling past a title.",
-    "The app name in the top bar now reads \"DebtFree Dashboard\" and takes up less room.",
-    "Corrected the wording of the first-run privacy note so it accurately describes how your balances are handled: they stay on your device and are never sent to our servers."
+    "Adding a debt now only needs the balance and the APR. The name is optional (it falls back to the account type), and if you leave the minimum payment blank we estimate it for you — you can always edit it afterwards.",
+    "If something is missing, the form now tells you which field and highlights it, instead of showing a pop-up that made you guess.",
+    "The \"on track\" line on the Next Target card no longer wraps onto a second line, and now uses the same short date style as your Freedom Date.",
+    "Fixed the Freedom Date card reading \"1 months away\" in your final month.",
+    "The floating button no longer sits on top of the last section at the bottom of the page."
   ]
 }
