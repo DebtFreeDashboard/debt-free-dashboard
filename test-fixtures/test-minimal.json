@@ -1,0 +1,76 @@
+{
+  "version": 2,
+  "exportDate": "2026-08-06T12:00:00.000Z",
+  "debts": [
+    {
+      "id": 1,
+      "name": "Credit Card",
+      "type": "cc",
+      "balance": 3200.0,
+      "originalBalance": 3200.0,
+      "apr": 24.99,
+      "realApr": 24.99,
+      "regularApr": 24.99,
+      "minPayment": 96,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null
+    },
+    {
+      "id": 3,
+      "name": "Car Payment",
+      "type": "loan",
+      "balance": 8500.0,
+      "originalBalance": 8500.0,
+      "apr": 7.25,
+      "realApr": 7.25,
+      "regularApr": 7.25,
+      "minPayment": 265,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "installment",
+      "includeInStrategy": true,
+      "origPrincipal": 8500,
+      "termMonths": 36,
+      "originationDate": "2026-08-06"
+    }
+  ],
+  "payments": [],
+  "lumpSums": [],
+  "strategy": "snowball",
+  "extraMonthly": 0,
+  "nextId": 5,
+  "accruals": [
+    {
+      "id": 2,
+      "debtId": 1,
+      "debtName": "Credit Card",
+      "month": "2026-08",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-08-06"
+    },
+    {
+      "id": 4,
+      "debtId": 3,
+      "debtName": "Car Payment",
+      "month": "2026-08",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-08-06"
+    }
+  ],
+  "adjustments": [],
+  "interestAccrualEnabled": true,
+  "theme": "light"
+}

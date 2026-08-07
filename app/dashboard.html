@@ -256,14 +256,30 @@
     .install-link { padding: 7px 10px; }
   }
 
+  /* v1.27.0 — logo is now a lockup rather than a single word. Two reasons:
+     the Dashboard tab no longer shows a page title, so this is the only
+     thing naming the product on screen; and people screenshot this app, so
+     the mark should say what it is. "DebtFree" keeps the display weight
+     (that's the brand equity); "Dashboard" rides along lighter and muted so
+     the pair still reads as one mark instead of two flat words.
+     Also now the page's h1 — with the visible title gone, dropping the
+     heading entirely would leave screen readers with no landmark. */
   .logo {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     letter-spacing: -0.5px;
     display: flex;
     align-items: center;
     gap: 8px;
+    margin: 0;
+  }
+  .logo-brand { font-weight: 800; }
+  .logo-suffix {
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: -0.2px;
+    margin-left: 0.32em;
   }
 
   .logo-dot {
@@ -352,6 +368,59 @@
     font-size: 0.9rem;
     font-weight: 300;
     margin-bottom: 28px;
+  }
+
+  /* v1.27.0 — first-run example banner.
+     Must be impossible to mistake for the user's own data, so: accent-tinted,
+     full-width, pinned directly above the stats, and only dismissible by an
+     explicit action. */
+  .demo-banner {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: linear-gradient(90deg, rgba(0,168,132,0.16), rgba(0,168,132,0.06));
+    border: 1px solid rgba(0,168,132,0.45);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .demo-banner-text {
+    flex: 1 1 200px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    min-width: 0;
+  }
+  .demo-banner-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid rgba(0,168,132,0.5);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+  .demo-banner-btn {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: filter 0.15s;
+  }
+  .demo-banner-btn:hover { filter: brightness(1.08); }
+  @media (max-width: 560px) {
+    .demo-banner-btn { width: 100%; }
   }
 
   /* ─── CARDS ─── */
@@ -1596,10 +1665,10 @@
 
 <div class="sticky-top">
 <header>
-  <div class="logo">
+  <h1 class="logo">
     <div class="logo-dot"></div>
-    DebtFree
-  </div>
+    <span class="logo-brand">DebtFree</span><span class="logo-suffix">Dashboard</span>
+  </h1>
   <a href="/app/index.html" class="install-link" id="install-link">
     <span class="install-link-icon">⤓</span>
     <span class="install-link-text">Install app</span>
@@ -1640,8 +1709,22 @@
 
   <!-- ══════════════════════ DASHBOARD ══════════════════════ -->
   <div class="section active" id="section-dashboard">
-    <div class="page-title">Debt Command Center</div>
-    <div class="page-subtitle">Track every debt. Celebrate every dollar. Own your freedom date.</div>
+    <!-- v1.27.0 — the "Debt Command Center" title + tagline were removed
+         outright. The nav tab above already reads DASHBOARD, so the block was
+         restating the page's own name using the most valuable space on the
+         screen. With it gone the stats (or, on a first visit, the worked
+         example) are the first thing rendered. The other tabs keep their
+         headers — there the subtitle does real explanatory work. -->
+
+    <!-- v1.27.0 — first-run example banner. Shown by seedDemo(), removed by
+         exitDemo(). Sits above the stats because those are the cards carrying
+         the example numbers. -->
+    <div class="demo-banner" id="demo-banner">
+      <div class="demo-banner-text">
+        <span class="demo-banner-tag">Example</span>Sample numbers so you can see how this works. Nothing here is saved.
+      </div>
+      <button class="demo-banner-btn" onclick="startMyNumbers()">Start with my numbers</button>
+    </div>
 
     <!-- Stats -->
     <div class="stat-grid" id="stat-grid">
@@ -1819,7 +1902,7 @@
       <div class="card-title"><div class="dot"></div> Add a Debt</div>
       <!-- v1.23.0 — first-run welcome (shows only with zero debts) -->
       <div id="welcome-hint" style="display:none;background:rgba(0,168,132,0.08);border:1px solid rgba(0,168,132,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.5;">
-        &#128075; <strong>Welcome!</strong> Add your first debt below &mdash; your freedom date appears the moment you do. Your data never leaves this device.
+        &#128075; <strong>Welcome!</strong> Add your first debt below &mdash; your freedom date appears the moment you do. Your balances stay on your device &mdash; never on our servers.
       </div>
       <div class="form-grid">
         <div class="form-field">
@@ -2492,7 +2575,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.26.1';
+const APP_VERSION = '1.27.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2500,6 +2583,19 @@ const APP_VERSION = '1.26.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.27.0',
+    date: 'August 7, 2026',
+    name: 'A first look before you type',
+    whatsNew: [
+      'New visitors now land on a worked example — real payoff date, real interest saved, a live chart — instead of a screen of zeros. It is clearly marked as an example, nothing about it is saved, and one tap on "Start with my numbers" clears it and takes you to the form.',
+      'The Dashboard now opens straight onto your figures — the old "Debt Command Center" heading and tagline have been removed, so on a phone you see your numbers immediately instead of scrolling past a title.',
+      'The app name in the top bar now reads "DebtFree Dashboard" and takes up less room.'
+    ],
+    fixes: [
+      'Corrected the wording of the first-run privacy note so it accurately describes how your balances are handled: they stay on your device and are never sent to our servers.'
+    ]
+  },
   {
     version: '1.26.1',
     date: 'August 6, 2026',
@@ -3689,6 +3785,12 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
 //  ADD DEBT
 // ═══════════════════════════════════════════
 function addDebt() {
+  // v1.27.0 — the user's first real debt must never land in a list that
+  // still holds example rows. Clearing here (rather than only on the
+  // dismiss button) means every path out of demo mode is covered.
+  // Deliberately BEFORE the debt is pushed, so debt_added still reports
+  // debt_count: 1 / is_first: true for a genuine first activation.
+  if (_demoMode) exitDemo(true);
   const name = document.getElementById('debt-name').value.trim();
   const type = document.getElementById('debt-type').value;
   const balance = parseFloat(document.getElementById('debt-balance').value);
@@ -5965,15 +6067,20 @@ function render() {
   // v1.18.0 — flywheel: check for newly-crossed milestones after each render.
   // Suppressed during the initial load (see _milestonesBaselined) so importing
   // a mid-journey backup doesn't dump retroactive celebrations.
-  if (_milestonesBaselined) checkMilestones();
+  // v1.27.0 — also suppressed in demo mode: the example carries progress, and
+  // throwing confetti for wins the user didn't earn would be both confusing
+  // and would burn the celebration the first real milestone should get.
+  if (_milestonesBaselined && !_demoMode) checkMilestones();
 
   // v1.21.0 — Dial-a-Date entry shows whenever there's an active plan to solve.
   const _dialBtn = document.getElementById('dial-date-entry');
   if (_dialBtn) _dialBtn.style.display = _activePlanDebts().length ? 'flex' : 'none';
 
   // v1.23.0 — first-run welcome hint (zero debts only)
+  // v1.27.0 — also hidden in demo mode; the example banner is doing that job
+  // and two first-run messages at once is noise.
   const _hint = document.getElementById('welcome-hint');
-  if (_hint) _hint.style.display = debts.length ? 'none' : 'block';
+  if (_hint) _hint.style.display = (debts.length || _demoMode) ? 'none' : 'block';
 
   // v1.23.3 — if the user is ON the Strategy tab, re-render it whenever data
   // changes (reorders, payments via the quick-log modal, etc). Previously only
@@ -7458,6 +7565,15 @@ function showBackupMsg(type, text) {
 }
 
 function exportData() {
+  // v1.27.0 — Backup & Restore is visible (collapsed) on the cold-start
+  // screen, so a curious first-time visitor can reach Export while the
+  // example is still on screen. exportData() reads the live `debts` array,
+  // which in demo mode holds the sample rows — without this guard they'd
+  // download a backup file full of debts that were never theirs.
+  if (_demoMode) {
+    showBackupMsg('warn', 'This is example data, so there is nothing to back up yet. Tap "Start with my numbers" to add your own debts first.');
+    return;
+  }
   const data = {
     version: 2,   // v1.11.0 — v2 adds accruals/adjustments/interestAccrualEnabled
     exportDate: new Date().toISOString(),
@@ -7664,7 +7780,152 @@ function sanitizeDebts(parsed) {
   });
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// v1.27.0 — FIRST-RUN EXAMPLE STATE
+//
+// The cold-start problem: a brand-new visitor saw four $0 stat cards, an
+// empty chart frame and a form. Nothing on screen demonstrated that the
+// engine does anything, so the ask was "do data entry and then we'll show
+// you the value". Now the first paint runs a realistic example through the
+// SAME engine, so the freedom date, interest saved, next target, progress
+// hero and payoff chart are all live before the user types anything.
+//
+// Three hard rules, each of which would be a serious bug if broken:
+//   1. It must NEVER fire debt_added. That event is the activation metric
+//      the whole funnel is measured on. Demo data is written straight to
+//      the array and rendered — it never routes through addDebt().
+//   2. It must NEVER persist. save() hard-returns while in demo mode, so
+//      nothing reaches localStorage and a backup export can't capture it.
+//      Reload with the demo up = clean slate, not phantom debts.
+//   3. It must NEVER be mistaken for the user's own data. A persistent
+//      banner sits above the stats until explicitly dismissed.
+//
+// Scenario chosen deliberately: cards + an installment loan (proves the
+// engine handles both, which a credit-card calculator can't), an APR
+// spread wide enough that strategy ordering visibly matters, a total near
+// real US household revolving debt, and a freedom date ~28 months out —
+// far enough to be credible, near enough to inspire. Snowball is the demo
+// strategy because avalanche here (correctly, by total interest cost)
+// targets the largest card first, putting the first win 24 months out;
+// snowball lands it at month 9, which is what a first-time visitor needs
+// to see. Generic issuer names only — no real brands.
+// ══════════════════════════════════════════════════════════════════════
+var _demoMode = false;
+
+var DEMO_DEBTS = [
+  { id: -101, name: 'Rewards Visa', type: 'cc', balance: 6800, originalBalance: 7500,
+    apr: 24.99, realApr: 24.99, regularApr: 24.99, minPayment: 170,
+    promoApr: null, promoEnd: null, postPromoApr: null, transferFee: 0, hasPromo: false,
+    loanType: 'revolving', includeInStrategy: true,
+    origPrincipal: null, termMonths: null, originationDate: null },
+  { id: -102, name: 'Store Card', type: 'cc', balance: 1900, originalBalance: 2400,
+    apr: 29.99, realApr: 29.99, regularApr: 29.99, minPayment: 55,
+    promoApr: null, promoEnd: null, postPromoApr: null, transferFee: 0, hasPromo: false,
+    loanType: 'revolving', includeInStrategy: true,
+    origPrincipal: null, termMonths: null, originationDate: null },
+  { id: -103, name: 'Car Loan', type: 'loan', balance: 7200, originalBalance: 14000,
+    apr: 6.49, realApr: 6.49, regularApr: 6.49, minPayment: 285,
+    promoApr: null, promoEnd: null, postPromoApr: null, transferFee: 0, hasPromo: false,
+    loanType: 'installment', includeInStrategy: true,
+    origPrincipal: 14000, termMonths: 60, originationDate: '2023-08-01' }
+];
+
+// Dated relative to today so the example never looks stale, and ordered
+// newest-last to match how the payment log reads.
+function _demoPayments() {
+  function back(months, day) {
+    var d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() - months);
+    d.setDate(day);
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  return [
+    { id: -201, debtId: -103, debtName: 'Car Loan',     amount: 2300, date: back(3, 12), eliminated: false },
+    { id: -202, debtId: -101, debtName: 'Rewards Visa', amount: 250,  date: back(3, 14), eliminated: false },
+    { id: -203, debtId: -102, debtName: 'Store Card',   amount: 150,  date: back(2, 9),  eliminated: false },
+    { id: -204, debtId: -103, debtName: 'Car Loan',     amount: 2300, date: back(2, 12), eliminated: false },
+    { id: -205, debtId: -101, debtName: 'Rewards Visa', amount: 250,  date: back(1, 14), eliminated: false },
+    { id: -206, debtId: -102, debtName: 'Store Card',   amount: 200,  date: back(1, 9),  eliminated: false },
+    { id: -207, debtId: -103, debtName: 'Car Loan',     amount: 2200, date: back(1, 12), eliminated: false },
+    { id: -208, debtId: -101, debtName: 'Rewards Visa', amount: 200,  date: back(0, 3),  eliminated: false },
+    { id: -209, debtId: -102, debtName: 'Store Card',   amount: 150,  date: back(0, 5),  eliminated: false }
+  ];
+}
+
+// True only for a genuinely fresh visitor: no debts, no payments, and no
+// prior dismissal. A returning user who cleared their debts on purpose
+// must not get the example shoved back at them.
+function _shouldSeedDemo() {
+  try {
+    if (localStorage.getItem('debtfree_demo_dismissed') === '1') return false;
+    if (localStorage.getItem('debtfree_debts')) return false;
+    if (localStorage.getItem('debtfree_payments')) return false;
+  } catch (e) { return false; }
+  return debts.length === 0 && payments.length === 0;
+}
+
+function seedDemo() {
+  _demoMode = true;
+  debts = DEMO_DEBTS.map(function(d) { return {...d}; });
+  payments = _demoPayments();
+  lumpSums = [];
+  strategy = 'snowball';
+  extraMonthly = 200;
+  var _ex = document.getElementById('extra-payment');
+  if (_ex) _ex.value = 200;
+  var _ss = document.getElementById('strategy-select');
+  if (_ss) _ss.value = 'snowball';
+  var banner = document.getElementById('demo-banner');
+  if (banner) banner.style.display = 'flex';
+  document.body.classList.add('demo-mode');
+}
+
+// Leaving demo mode always wipes the example first. Called both by the
+// explicit dismiss button and implicitly the moment a real debt is added,
+// so a user's first real entry can never end up sitting in a list
+// alongside fake ones.
+function exitDemo(persistDismissal) {
+  if (!_demoMode) return;
+  _demoMode = false;
+  debts = [];
+  payments = [];
+  lumpSums = [];
+  extraMonthly = 200;
+  var banner = document.getElementById('demo-banner');
+  if (banner) banner.style.display = 'none';
+  document.body.classList.remove('demo-mode');
+  if (persistDismissal !== false) {
+    try { localStorage.setItem('debtfree_demo_dismissed', '1'); } catch (e) {}
+  }
+}
+
+// "Start with my numbers" — clear the example, drop the user straight into
+// the form with the balance field focused (the first figure that actually
+// moves the math; the name field is optional to the engine).
+function startMyNumbers() {
+  exitDemo(true);
+  save();
+  render();
+  showSection('dashboard');
+  expandCollapse('adddebt', false);
+  var card = document.getElementById('add-debt-card');
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(function() {
+    var b = document.getElementById('debt-balance');
+    if (b && b.focus) b.focus();
+  }, 350);
+  if (typeof trackShare === 'function') {
+    trackShare('demo_dismissed', { _category: 'activation', via: 'start_my_numbers' });
+  }
+}
+
 function save() {
+  // v1.27.0 — demo data is display-only. Writing it would make example
+  // debts indistinguishable from the user's own on the next visit and
+  // would contaminate backup exports.
+  if (_demoMode) return;
   try {
     localStorage.setItem('debtfree_debts', JSON.stringify(debts));
     localStorage.setItem('debtfree_payments', JSON.stringify(payments));
@@ -8108,6 +8369,11 @@ _milestonesBaselined = true;
 // v1.22.0 — set up collapsible cards (needs debts loaded for the Add Debt rule)
 initCollapsibles();
 
+// v1.27.0 — first-run example. Must come after _milestonesBaselined is set
+// and after initCollapsibles(), so the seeded state renders through the
+// normal path with no celebration side-effects.
+if (_shouldSeedDemo()) seedDemo();
+
 // v1.25.0 — warn if we're inside a social app's in-app browser
 initInAppBanner();
 
@@ -8127,7 +8393,8 @@ initInAppBanner();
         utm_source: src || '(none)',
         utm_medium: med || '(none)',
         in_app: inApp || '(browser)',
-        landed_on: 'app'
+        landed_on: 'app',
+        demo_shown: _demoMode ? 'yes' : 'no'
       });
     }
     sessionStorage.setItem('debtfree_arrival_logged', '1');
