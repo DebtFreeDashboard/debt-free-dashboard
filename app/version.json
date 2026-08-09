@@ -1,12 +1,13 @@
 {
-  "version": "1.28.1",
+  "version": "1.28.2",
   "releaseDate": "2026-08-08",
-  "releaseName": "Layout cleanup",
+  "releaseName": "Readable on a phone",
   "notes": [
-    "The floating button now slides out of the way while you scroll down and comes back when you scroll up, so it no longer covers section headings or rows.",
-    "Field labels no longer wrap onto a second line and knock the columns beside them out of alignment.",
-    "The Log Payment and Add Lump Sum forms now lay out properly on a phone — the account picker no longer cuts off mid-word and the button no longer overlaps the date field.",
-    "Rows in Payment Log and Planned Lump Sums now give long account names their own line, so amounts stay aligned and the remove button no longer runs off the edge.",
-    "Tidied up the payoff strategy names and several small captions so they read consistently."
+    "The floating button now comes back on its own a moment after you stop scrolling, instead of staying hidden until you scroll back up.",
+    "The Payoff Order table and the premium Portfolio table now stack into readable cards on a phone, so they no longer scroll sideways with every column squeezed and wrapping.",
+    "Account pickers now use the full width of the row, so long names like \"Student Loan Consolidation\" are no longer cut off mid-word.",
+    "Cash-flow rows now give the event its own line, so longer entries no longer overlap the row above.",
+    "Fixed content occasionally ghosting through the header while scrolling on iPhone.",
+    "Tidied a hint under the minimum payment field that was wrapping onto two lines."
   ]
 }
