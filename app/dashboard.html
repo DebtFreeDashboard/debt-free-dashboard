@@ -145,6 +145,17 @@
     border-radius:var(--radius-sm); margin-bottom:8px;
   }
   .cashflow-event:last-child { margin-bottom:0; }
+  /* v1.28.2 — the left column (name + date) and the right column (amount +
+     running total) were competing for one flex row. "3 debts paid off" wrapped
+     mid-phrase and collided with the row above. Below 560px the name takes the
+     full first line and the figures sit beneath it, same pattern as the
+     payment rows. */
+  @media (max-width: 560px) {
+    .cashflow-event { flex-wrap:wrap; row-gap:4px; align-items:flex-start; }
+    .cashflow-event > * { min-width:0; }
+    .cashflow-event-name { flex:1 0 100%; line-height:1.3; }
+    .cashflow-event-running { text-align:right; }
+  }
   .cashflow-event-name { font-weight:600; font-size:0.9rem; }
   .cashflow-event-date { font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); margin-top:2px; }
   .cashflow-event-amt { font-family:var(--font-mono); font-weight:700; color:var(--accent); white-space:nowrap; }
@@ -163,6 +174,84 @@
   .pf-td { padding:12px; border-bottom:1px solid var(--border); font-family:var(--font-mono); }
   .pf-td:first-child { font-family:var(--font-body); }
   .pf-table tbody tr:hover { background:var(--surface2); }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     v1.28.2 — RESPONSIVE TABLES
+     Both the Strategy timeline (6 cols) and the premium Portfolio table
+     (min-width 560px) sat inside overflow-x:auto. On a phone that produced
+     the worst of both worlds: the table scrolled sideways AND every cell
+     wrapped internally, so one row could consume ~350px of height to show
+     five short values.
+     Below 560px each row becomes a stacked card instead — the same
+     restructure-don't-truncate call already made for the payment rows.
+     Headers are hidden and each cell carries its own label via data-label.
+     Above 560px both tables are untouched.
+     ══════════════════════════════════════════════════════════════════════ */
+  @media (max-width: 560px) {
+    .timeline-table, .pf-table { min-width: 0; font-size: 0.78rem; }
+    .timeline-table thead, .pf-table thead { display: none; }
+    .timeline-table, .timeline-table tbody, .timeline-table tr, .timeline-table td,
+    .pf-table, .pf-table tbody, .pf-table tr, .pf-table td { display: block; width: 100%; }
+
+    .timeline-table tr, .pf-table tr {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      background: var(--surface2);
+    }
+    .timeline-table td, .pf-table td {
+      border-bottom: none;
+      padding: 3px 0;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: right;
+    }
+    /* Cells carrying a label render as label | value rows. */
+    .timeline-table td[data-label]::before, .pf-table td[data-label]::before {
+      content: attr(data-label);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-align: left;
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+    /* Rank + name lead the card at full width, no label, left aligned. */
+    .timeline-table td.tl-rank, .pf-table td.pf-rank {
+      display: none;   /* rank moves inline with the name */
+    }
+    .timeline-table td.tl-name, .pf-table td.pf-name {
+      display: block;
+      text-align: left;
+      padding-bottom: 8px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .timeline-table td.tl-name::before, .pf-table td.pf-name::before { content: none; }
+    .tl-rank-inline {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 22px; height: 22px; border-radius: 11px;
+      background: var(--surface3); color: var(--text-muted);
+      font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700;
+      margin-right: 8px; vertical-align: 2px;
+    }
+    /* The rank reason is prose — full width beneath, not a label|value pair. */
+    .tl-reason { text-align: left !important; }
+  }
+  /* Above the breakpoint the inline rank duplicates the # column. */
+  @media (min-width: 561px) { .tl-rank-inline { display: none; } }
+
+  /* v1.28.2 — long account names were clipping mid-word inside selects
+     ("Student Loan Consolida…"). A select can't wrap, so the fix is to let it
+     use the full row rather than sit in a half-width column. */
+  @media (max-width: 560px) {
+    .form-grid .form-field.field-full { grid-column: 1 / -1; }
+  }
 
   /* v1.13.0 — light theme. Derived from the dark palette: surfaces inverted to
      warm-neutral light greys, text darkened, accents nudged slightly deeper so
@@ -211,12 +300,24 @@
   }
 
   /* ─── HEADER ─── */
+  /* v1.28.2 — content was ghosting through / above the header on iOS. Cause is
+     a known Safari repaint bug: backdrop-filter on a position:sticky element
+     leaves stale scrolled content painted in its compositing layer. Promoting
+     the element to its own layer with translateZ(0) forces a clean repaint.
+     isolation:isolate keeps the blur from sampling outside its own stacking
+     context. If ghosting survives on device, the fallback is to drop
+     backdrop-filter entirely and take --header-bg to full opacity. */
   .sticky-top {
     position: sticky;
     top: 0;
     z-index: 100;
     background: var(--header-bg);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    will-change: transform;
+    isolation: isolate;
   }
 
   header {
@@ -440,8 +541,10 @@
     margin-left: 6px;
     font-weight: 400;
   }
+  /* v1.28.2 — 0.68rem needed ~177px; a half-width column is 152px, so this
+     wrapped and pushed the field below it out of alignment. */
   .field-hint {
-    font-size: 0.68rem;
+    font-size: 0.62rem;
     color: var(--text-dim);
     margin-top: 4px;
     line-height: 1.35;
@@ -1999,7 +2102,7 @@
         <div class="empty-state" style="padding:20px"><p>Payments recorded here.</p></div>
       </div>
       <div class="form-grid form-grid-action form-grid-log" style="margin-top:14px;">
-        <div class="form-field">
+        <div class="form-field field-full">
           <label>Debt Account</label>
           <select id="log-debt-select"></select>
         </div>
@@ -2165,7 +2268,7 @@
           <label>Extra Per Month ($)</label>
           <input type="number" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculate()" onchange="recalculate()" />
         </div>
-        <div class="form-field">
+        <div class="form-field field-full">
           <label>Strategy</label>
           <select id="strategy-select" onchange="recalculate()">
             <option value="avalanche">Avalanche &mdash; highest APR</option>
@@ -2203,7 +2306,7 @@
         <button id="lump-mode-manual" onclick="setLumpMode('manual')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--card2);color:var(--text-muted);letter-spacing:0.05em;">&#9776; I Choose Debt</button>
       </div>
       <div id="lump-debt-field" style="display:none;margin-bottom:12px;">
-        <div class="form-field">
+        <div class="form-field field-full">
           <label>Debt Account</label>
           <select id="lump-debt-select"></select>
         </div>
@@ -2505,7 +2608,7 @@
     <div class="card">
       <div class="card-title"><div class="dot"></div> One-Time Windfall</div>
       <div class="form-grid" style="grid-template-columns:2fr 1fr auto">
-        <div class="form-field">
+        <div class="form-field field-full">
           <label>Apply Windfall To</label>
           <select id="wi-windfall-debt"></select>
         </div>
@@ -2674,7 +2777,7 @@
       <span>&#9888;</span><span>Future-dated payment saved as pending — it won't affect your balance until that date arrives.</span>
     </div>
     <div class="form-grid" style="grid-template-columns:1fr;">
-      <div class="form-field">
+      <div class="form-field field-full">
         <label>Debt Account</label>
         <select id="qlog-debt-select"></select>
       </div>
@@ -2698,7 +2801,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.28.1';
+const APP_VERSION = '1.28.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2706,6 +2809,20 @@ const APP_VERSION = '1.28.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.28.2',
+    date: 'August 8, 2026',
+    name: 'Readable on a phone',
+    whatsNew: [],
+    fixes: [
+      'The floating button now comes back on its own a moment after you stop scrolling, instead of staying hidden until you scroll back up.',
+      'The Payoff Order table and the premium Portfolio table now stack into readable cards on a phone, so they no longer scroll sideways with every column squeezed and wrapping.',
+      'Account pickers now use the full width of the row, so long names like "Student Loan Consolidation" are no longer cut off mid-word.',
+      'Cash-flow rows now give the event its own line, so longer entries no longer overlap the row above.',
+      'Fixed content occasionally ghosting through the header while scrolling on iPhone.',
+      'Tidied a hint under the minimum payment field that was wrapping onto two lines.'
+    ]
+  },
   {
     version: '1.28.1',
     date: 'August 8, 2026',
@@ -6750,13 +6867,14 @@ function renderPortfolioTable(list) {
             reorderControls(d.id, i, rows.length) +
           '</td>'
         : '') +
-      '<td class="pf-td"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + '</td>' +
-      '<td class="pf-td pf-num">' + fmtDec(r.balance) + '</td>' +
-      '<td class="pf-td pf-num">' + r.apr + '%</td>' +
-      '<td class="pf-td pf-num">' + fmtDec(r.min) + '</td>' +
-      '<td class="pf-td pf-num">' + orderCell + '</td>' +
-      '<td class="pf-td pf-num">' + fmtDec(r.interest) + '</td>' +
-      '<td class="pf-td pf-num" style="white-space:nowrap;">' +
+      // v1.28.2 — data-label drives the stacked card layout below 560px.
+      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + '</td>' +
+      '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
+      '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
+      '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
+      '<td class="pf-td pf-num" data-label="Order">' + orderCell + '</td>' +
+      '<td class="pf-td pf-num" data-label="Interest">' + fmtDec(r.interest) + '</td>' +
+      '<td class="pf-td pf-num pf-actions" style="white-space:nowrap;">' +
         '<button class="btn btn-ghost" style="font-size:0.66rem;padding:4px 9px;" onclick="openEditModal(' + d.id + ')">Edit</button> ' +
         '<button class="btn btn-danger" style="font-size:0.66rem;padding:4px 9px;" onclick="removeDebt(' + d.id + ')">✕</button>' +
       '</td>' +
@@ -7593,22 +7711,25 @@ function renderStrategy() {
 
     // v1.9.0 — rank-reason subtitle under debt name
     var reasonCell = reason
-      ? '<div style="font-size:0.7rem;color:var(--text-dim);margin-top:6px;font-family:var(--font-mono);line-height:1.3">' +
+      ? '<div class="tl-reason" style="font-size:0.7rem;color:var(--text-dim);margin-top:6px;font-family:var(--font-mono);line-height:1.3">' +
         reason.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') +
         '</div>'
       : '';
 
+    // v1.28.2 — data-label drives the stacked card layout below 560px (see the
+    // responsive table block in the stylesheet). The rank is duplicated inline
+    // with the name because the # column is hidden at that width.
     return `<tr>
-      <td><span class="order-num">${i+1}</span></td>
-      <td>
-        <div style="font-weight:600">${escapeHtml(d.name)}</div>
+      <td class="tl-rank"><span class="order-num">${i+1}</span></td>
+      <td class="tl-name">
+        <div style="font-weight:600"><span class="tl-rank-inline">${i+1}</span>${escapeHtml(d.name)}</div>
         <span class="debt-type-badge ${badgeClass(d.type)}" style="margin-top:3px;display:inline-block">${badgeLabel(d.type)}</span>
         ${reasonCell}
       </td>
-      <td>${fmtDec(d.balance)}</td>
-      <td style="color:${d.apr > 20 ? 'var(--accent3)' : d.apr > 10 ? 'var(--accent4)' : 'var(--text-muted)'}">${d.apr}%</td>
-      <td>${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}${schedCell}</td>
-      <td style="color:var(--accent3)">${fmt(debtInterest)}</td>
+      <td data-label="Balance">${fmtDec(d.balance)}</td>
+      <td data-label="APR" style="color:${d.apr > 20 ? 'var(--accent3)' : d.apr > 10 ? 'var(--accent4)' : 'var(--text-muted)'}">${d.apr}%</td>
+      <td data-label="Est. payoff">${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}${schedCell}</td>
+      <td data-label="Interest paid" style="color:var(--accent3)">${fmt(debtInterest)}</td>
     </tr>`;
   }).join('');
 }
@@ -8662,8 +8783,18 @@ if (_shouldSeedDemo()) seedDemo();
     }
     lastY = y;
   }
+  // v1.28.2 — idle reset. Direction alone left the FAB retracted indefinitely
+  // whenever the user simply stopped mid-page: the only ways back were to
+  // scroll up or reach an edge, so stopping to read made the primary action
+  // look like it had vanished. The button is now hidden only while actively
+  // scrolling away from it.
+  var idleTimer = null;
   window.addEventListener('scroll', function() {
     if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(function() {
+      fab.classList.remove('fab-hidden');
+    }, 900);
   }, { passive: true });
   // A modal or tab change can leave the FAB retracted with no scroll to
   // restore it; showFab() is the explicit reset.
