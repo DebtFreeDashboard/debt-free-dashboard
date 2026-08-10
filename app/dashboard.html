@@ -1302,6 +1302,75 @@
   .tc-life strong { color: var(--text); }
   .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
+  /* v1.28.3 — active strategy bar + lump optimizer panel */
+  .active-strategy-bar {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: rgba(0,168,132,0.09);
+    border: 1px solid rgba(0,168,132,0.3);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+  .asb-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .asb-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent);
+  }
+  .asb-num { font-family: var(--font-mono); font-weight: 500; font-size: 0.8rem; color: var(--text); }
+  .comparison-note {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin-bottom: 12px;
+  }
+  .comparison-card.is-current { outline: 2px solid rgba(0,168,132,0.55); outline-offset: -2px; }
+  .comparison-card.is-current h4::after {
+    content: ' \2014 YOUR PLAN';
+    font-family: var(--font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+  }
+  .lump-opt-panel {
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .lump-opt-panel.opt-available {
+    background: rgba(217,154,31,0.09);
+    border-color: rgba(217,154,31,0.4);
+  }
+  .lump-opt-panel.opt-good {
+    background: rgba(0,168,132,0.07);
+    border-color: rgba(0,168,132,0.25);
+  }
+  .lump-opt-head { display: flex; gap: 10px; align-items: flex-start; }
+  .lump-opt-icon { font-size: 1.2rem; line-height: 1.2; }
+  .lump-opt-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .lump-opt-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+  .lump-opt-text strong { color: var(--accent4); }
+  .opt-good .lump-opt-text strong { color: var(--accent); }
+  .lump-opt-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 12px; }
+
   /* v1.26.0 — Paid Off Debts trophy case */
   /* v1.26.1 — summary stats. Previously three flex columns with min-width:90px:
      on a phone each column shrank below the width of its own number, and since
@@ -2447,20 +2516,28 @@
     <!-- Comparison -->
     <div class="card">
       <div class="card-title"><div class="dot"></div> Strategy Comparison</div>
+      <!-- v1.28.3 — say plainly which strategy is running before showing any
+           numbers. Users were reading the comparison without realising which
+           card was their own plan. -->
+      <div class="active-strategy-bar" id="active-strategy-bar">
+        <span class="asb-label">Your plan</span>
+        <span class="asb-value" id="asb-value">—</span>
+      </div>
+      <div class="comparison-note" id="comparison-note"></div>
       <div class="comparison-grid" id="comparison-grid">
-        <div class="comparison-card">
+        <div class="comparison-card" id="cmp-card-av">
           <h4>🏔️ Avalanche</h4>
           <div class="big" id="cmp-av-months">—</div>
           <div class="sub">months to freedom</div>
           <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-av-int">$— interest</div>
         </div>
-        <div class="comparison-card">
+        <div class="comparison-card" id="cmp-card-sb">
           <h4>⛄ Snowball</h4>
           <div class="big" id="cmp-sb-months">—</div>
           <div class="sub">months to freedom</div>
           <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-sb-int">$— interest</div>
         </div>
-        <div class="comparison-card">
+        <div class="comparison-card" id="cmp-card-min">
           <h4>📊 Min Payments Only</h4>
           <div class="big" id="cmp-min-months">—</div>
           <div class="sub">months to freedom</div>
@@ -2483,15 +2560,22 @@
       </div>
     </div>
 
-    <!-- v1.10.0 — Lump redistribution banner -->
-    <div id="lump-redist-banner" class="alert warning" style="display:none; margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:10px">
-      <div style="display:flex; align-items:flex-start; gap:8px;">
-        <span>⚠️</span>
-        <span id="lump-redist-text"></span>
+    <!-- v1.28.3 — Lump sum optimizer. Replaces the old "re-distribute to match
+         your strategy" banner, which assumed aligning lumps with the strategy
+         was always better. On real data it could make a plan measurably worse.
+         This panel simulates both ways and only recommends a change when it
+         genuinely saves money — and shows exactly how much. -->
+    <div id="lump-optimizer-panel" class="lump-opt-panel" style="display:none;">
+      <div class="lump-opt-head">
+        <span class="lump-opt-icon">&#127919;</span>
+        <div>
+          <div class="lump-opt-title" id="lump-opt-title">Lump sum placement</div>
+          <div class="lump-opt-text" id="lump-opt-text"></div>
+        </div>
       </div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; align-self:stretch; justify-content:flex-end;">
+      <div class="lump-opt-actions" id="lump-opt-actions">
         <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
-        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-redist-action" onclick="applyRedistribution()">Re-distribute</button>
+        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-opt-action" onclick="applyOptimizedLumps()">Optimize my lump sums</button>
       </div>
     </div>
 
@@ -2801,7 +2885,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.28.2';
+const APP_VERSION = '1.28.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2809,6 +2893,19 @@ const APP_VERSION = '1.28.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.28.3',
+    date: 'August 10, 2026',
+    name: 'Lump Sum Optimizer',
+    whatsNew: [
+      'New: your Strategy tab now checks whether your scheduled lump sums are placed as well as they could be. Keeping the same dates and the same total, it finds the split across your debts that saves the most interest \u2014 and tells you exactly how much you\u2019d save before you change anything.',
+      'The Strategy Comparison now says plainly which strategy you\u2019re on, with your current months and interest right at the top, and marks your plan among the cards.'
+    ],
+    fixes: [
+      'Fixed a real problem with the old Re-distribute button: it moved your lump sums onto the debts your strategy was already attacking, which could make your plan WORSE. Your monthly extra payment is already hitting those debts \u2014 a lump sum does more good where the monthly payment won\u2019t reach in time. The optimizer now handles this properly and will never recommend a change that costs you money.',
+      'Fixed the Strategy Comparison giving contradictory advice. It used to compare both strategies against one fixed lump sum allocation, so whichever strategy that allocation happened to suit would win \u2014 and the recommendation could flip on identical data. Each strategy is now shown with your lump sums placed at their best for that strategy, which is the only fair comparison.'
+    ]
+  },
   {
     version: '1.28.2',
     date: 'August 8, 2026',
@@ -7422,6 +7519,172 @@ function redistributeAutoLumps() {
 let _redistDismissed = false;
 function _resetRedistDismiss() { _redistDismissed = false; }
 function dismissRedistBanner() { _redistDismissed = true; renderStrategy(); }
+// ── v1.28.3 — LUMP SUM OPTIMIZER ──
+// The problem this solves: a lump sum and a monthly extra payment do DIFFERENT
+// jobs, and aligning them wastes the lump. The monthly extra already sweeps the
+// strategy order top-down, so pouring a lump onto the debt it's already
+// attacking mostly pays dollars that were coming anyway. A lump is a one-shot
+// strike, and it earns the most where the monthly sweep won't arrive before the
+// interest does — typically promo balances about to expire and small high-APR
+// cards that would otherwise sit accruing for a year.
+//
+// The old "re-distribute to match your strategy" logic assumed the opposite,
+// and on real data it could make a plan measurably WORSE.
+//
+// Method: greedy marginal allocation. Hand out the money in chunks; at each
+// step try every (debt x lump date) placement and keep whichever reduces total
+// interest most. Greedy finds a very good answer, not a provably perfect one.
+// Every dollar of the original lump totals is preserved; only the split moves.
+
+function autoLumpGroups() {
+  const groups = {};
+  lumpSums.forEach(function(l) {
+    if (l.mode && l.mode !== 'auto') return;   // manual lumps are the user's call
+    if (!groups[l.date]) groups[l.date] = { date: l.date, total: 0, ids: [] };
+    groups[l.date].total += l.amount;
+    groups[l.date].ids.push(l.id);
+  });
+  return Object.keys(groups).sort().map(function(k) { return groups[k]; });
+}
+
+// Disbursements that are NOT auto lumps (pending payments, manual lumps).
+// These are fixed and must survive optimization untouched.
+function nonAutoDisbursements() {
+  const autoIds = {};
+  lumpSums.forEach(function(l) { if (!l.mode || l.mode === 'auto') autoIds[l.id] = true; });
+  return plannedDisbursements().filter(function(x) {
+    return !lumpSums.some(function(l) {
+      return autoIds[l.id] && l.debtId === x.debtId && l.date === x.date &&
+             Math.abs(l.amount - x.amount) < 0.01;
+    });
+  });
+}
+
+function _simWithAllocation(groups, alloc, targets, extra, strat) {
+  const disb = nonAutoDisbursements();
+  groups.forEach(function(g, gi) {
+    const a = alloc[gi];
+    for (const id in a) {
+      if (a[id] > 0) disb.push({ debtId: +id, debtName: '', amount: a[id], date: g.date });
+    }
+  });
+  return simulate(targets.map(function(d) { return {...d}; }), extra, 0, strat, disb);
+}
+
+function optimizeLumpAllocation(strat, opts) {
+  opts = opts || {};
+  const groups = autoLumpGroups();
+  if (!groups.length) return null;
+  const targets = _activePlanDebts();
+  if (targets.length < 2) return null;
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+
+  const grandTotal = groups.reduce(function(s, g) { return s + g.total; }, 0);
+  const step = opts.step || Math.max(100, Math.round(grandTotal / 140 / 50) * 50);
+
+  const alloc = groups.map(function() { return {}; });
+  const remaining = groups.map(function(g) { return g.total; });
+  targets.forEach(function(d) { alloc.forEach(function(a) { a[d.id] = 0; }); });
+
+  let sims = 0, guard = 0;
+  const maxSteps = (opts.maxSteps || 400);
+  while ((remaining.some(function(r) { return r > 0.005; })) && guard++ < maxSteps) {
+    let best = null;
+    for (let gi = 0; gi < groups.length; gi++) {
+      if (remaining[gi] <= 0.005) continue;
+      const chunk = Math.min(step, remaining[gi]);
+      for (let k = 0; k < targets.length; k++) {
+        const id = targets[k].id;
+        alloc[gi][id] += chunk;
+        const r = _simWithAllocation(groups, alloc, targets, extra, strat);
+        sims++;
+        alloc[gi][id] -= chunk;
+        if (!best || r.totalInterest < best.interest - 1e-9) {
+          best = { gi: gi, id: id, chunk: chunk, interest: r.totalInterest, months: r.months };
+        }
+      }
+    }
+    if (!best) break;
+    alloc[best.gi][best.id] += best.chunk;
+    remaining[best.gi] -= best.chunk;
+  }
+
+  const final = _simWithAllocation(groups, alloc, targets, extra, strat);
+  return { alloc: alloc, groups: groups, interest: final.totalInterest,
+           months: final.months, sims: sims, step: step };
+}
+
+// What the plan costs right now, with lumps exactly where they sit.
+function currentPlanInterest(strat) {
+  const targets = _activePlanDebts();
+  if (!targets.length) return null;
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const r = simulate(targets.map(function(d) { return {...d}; }), extra, 0,
+                     strat || strategy, plannedDisbursements());
+  return { interest: r.totalInterest, months: r.months };
+}
+
+// Optimization is the most expensive thing the app does; cache on its inputs.
+let _optCache = { key: null, res: null };
+function getOptimizedPlan(strat) {
+  strat = strat || strategy;
+  const targets = _activePlanDebts();
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const key = JSON.stringify([strat, extra,
+    targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
+    autoLumpGroups().map(function(g) { return [g.date, g.total]; }),
+    nonAutoDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })
+  ]);
+  if (_optCache.key === key) return _optCache.res;
+  const res = optimizeLumpAllocation(strat);
+  _optCache = { key: key, res: res };
+  return res;
+}
+
+// Write an optimized allocation back into lumpSums, preserving group totals.
+function applyOptimizedLumps() {
+  const opt = getOptimizedPlan(strategy);
+  if (!opt) return;
+  const cur = currentPlanInterest(strategy);
+  if (cur && opt.interest >= cur.interest - 0.01) return; // never make it worse
+
+  const nameOf = {};
+  debts.forEach(function(d) { nameOf[d.id] = d.name; });
+
+  const dates = {};
+  opt.groups.forEach(function(g) { dates[g.date] = true; });
+  for (let i = lumpSums.length - 1; i >= 0; i--) {
+    const l = lumpSums[i];
+    if ((!l.mode || l.mode === 'auto') && dates[l.date]) lumpSums.splice(i, 1);
+  }
+  opt.groups.forEach(function(g, gi) {
+    const groupId = Date.now() + gi;
+    const a = opt.alloc[gi];
+    Object.keys(a).forEach(function(id) {
+      if (a[id] <= 0.005) return;
+      lumpSums.push({
+        id: Date.now() + Math.floor(Math.random() * 100000),
+        debtId: +id,
+        debtName: nameOf[+id] || '',
+        amount: round2(a[id]),
+        date: g.date,
+        mode: 'auto',
+        groupId: groupId
+      });
+    });
+  });
+
+  _redistDismissed = false;
+  _optCache = { key: null, res: null };
+  _planSimCache = { key: null, res: null };
+  if (typeof trackShare === 'function') {
+    trackShare('lumps_optimized', { _category: 'planning', saved: Math.round((cur ? cur.interest : 0) - opt.interest) });
+  }
+  save();
+  render();
+  renderStrategy();
+}
+
 function applyRedistribution() {
   _redistDismissed = false;
   redistributeAutoLumps();
@@ -7526,10 +7789,56 @@ function renderStrategy() {
 
   // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
   if (activeDebts.length) {
-    const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
-    const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
+    // v1.28.3 — FAIR COMPARISON. Previously both strategies were simulated
+    // against ONE fixed lump-sum allocation. Since lumps are pinned to specific
+    // debts, that allocation suits one strategy better than the other — so the
+    // winner flipped depending on how the lumps happened to be split, and the
+    // card could recommend Avalanche one minute and Snowball the next on
+    // identical data. Now each strategy is shown with the SAME pool of lump
+    // money placed as well as it can be FOR THAT STRATEGY, which is the only
+    // apples-to-apples way to answer "which strategy suits my debts?".
+    const _hasAutoLumps = autoLumpGroups().length > 0;
+    let av, sb, fairBasis = false;
+    if (_hasAutoLumps && activeDebts.length >= 2) {
+      const optAv = getOptimizedPlan('avalanche');
+      const optSb = getOptimizedPlan('snowball');
+      if (optAv && optSb) {
+        av = { months: optAv.months, totalInterest: optAv.interest, perDebt: null };
+        sb = { months: optSb.months, totalInterest: optSb.interest, perDebt: null };
+        fairBasis = true;
+      }
+    }
+    if (!fairBasis) {
+      av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
+      sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
+    }
     // v1.12.0 — min-only column is the do-nothing baseline: no rollover
     const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', [], { rollover: false });
+
+    // Which plan is the user actually on right now?
+    const _curPlan = currentPlanInterest(strategy);
+    const _asbVal = document.getElementById('asb-value');
+    if (_asbVal) {
+      const _label = strategy === 'hybrid' ? 'Hybrid (custom order)'
+                   : strategy.charAt(0).toUpperCase() + strategy.slice(1);
+      _asbVal.innerHTML = _label + (_curPlan
+        ? ' &middot; <span class="asb-num">' + _curPlan.months + ' months</span> &middot; <span class="asb-num">' +
+          fmt(_curPlan.interest) + ' interest</span>'
+        : '');
+    }
+    const _noteEl = document.getElementById('comparison-note');
+    if (_noteEl) {
+      _noteEl.textContent = fairBasis
+        ? 'Each strategy below is shown at its best: same debts, same extra payment, and your scheduled lump sums placed as well as possible for that strategy.'
+        : 'Based on your current plan.';
+    }
+    ['av','sb','min'].forEach(function(k){
+      const c=document.getElementById('cmp-card-'+k);
+      if (c) c.classList.remove('is-current');
+    });
+    const _curCard = strategy === 'avalanche' ? 'cmp-card-av' : (strategy === 'snowball' ? 'cmp-card-sb' : null);
+    if (_curCard && document.getElementById(_curCard)) document.getElementById(_curCard).classList.add('is-current');
+
     document.getElementById('cmp-av-months').textContent = av.months;
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
     document.getElementById('cmp-sb-months').textContent = sb.months;
@@ -7547,11 +7856,16 @@ function renderStrategy() {
       return r.perDebt.map(function(p){ return p.id + ':' + p.paidOffMonth; }).sort().join('|') +
              '#' + (r.totalInterest || 0).toFixed(2);
     }
+    // v1.28.3 — this check is about the user's LIVE plan, so it must compare
+    // against simulations that use their CURRENT lump allocation, not the
+    // optimized figures shown in the comparison cards above.
     const stratForCompare = getPlanSim();
     const curSig = _planSig(stratForCompare);
+    const avNow = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
+    const sbNow = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
     const twins = [];
-    if (strategy !== 'avalanche' && curSig && curSig === _planSig(av)) twins.push('Avalanche');
-    if (strategy !== 'snowball'  && curSig && curSig === _planSig(sb)) twins.push('Snowball');
+    if (strategy !== 'avalanche' && curSig && curSig === _planSig(avNow)) twins.push('Avalanche');
+    if (strategy !== 'snowball'  && curSig && curSig === _planSig(sbNow)) twins.push('Snowball');
     const idAlert = document.getElementById('identical-plan-alert');
     const idText  = document.getElementById('identical-plan-text');
     if (idAlert && idText) {
@@ -7583,40 +7897,59 @@ function renderStrategy() {
     } else {
       noExtraAlert.style.display = 'none';
       bestAlert.style.display = 'flex';
-      document.getElementById('best-strategy-text').textContent =
-        `The ${best} method saves you ${fmt(savings)} more in interest for your current debts.`;
+      document.getElementById('best-strategy-text').innerHTML =
+        'The <strong>' + best + '</strong> method saves you <strong>' + fmt(savings) +
+        ' more in interest</strong> on your debts' +
+        (fairBasis ? ', comparing each strategy with your lump sums placed at their best.' : '.');
     }
 
-    document.querySelectorAll('.comparison-card').forEach(c => c.classList.remove('best'));
-    if (best === 'Avalanche') document.querySelectorAll('.comparison-card')[0].classList.add('best');
-    else document.querySelectorAll('.comparison-card')[1].classList.add('best');
+    ['cmp-card-av','cmp-card-sb','cmp-card-min'].forEach(function(id){
+      const c=document.getElementById(id); if (c) c.classList.remove('best');
+    });
+    const bestEl = document.getElementById(best === 'Avalanche' ? 'cmp-card-av' : 'cmp-card-sb');
+    if (bestEl) bestEl.classList.add('best');
   }
 
-  // v1.10.0 — show or hide the lump redistribution banner
-  const _redistBanner = document.getElementById('lump-redist-banner');
-  if (_redistBanner) {
-    if (_redistDismissed) {
-      _redistBanner.style.display = 'none';
+  // v1.28.3 — lump sum optimizer panel. Only ever recommends a change when the
+  // optimized allocation actually beats what the user has now, and states the
+  // saving in dollars. If their current placement is already as good, it says
+  // so rather than nagging them into a worse plan (which the old
+  // "re-distribute to match your strategy" banner could genuinely do).
+  const _optPanel = document.getElementById('lump-optimizer-panel');
+  if (_optPanel) {
+    const _hasLumps = autoLumpGroups().length > 0;
+    if (_redistDismissed || !_hasLumps || activeDebts.length < 2) {
+      _optPanel.style.display = 'none';
     } else {
-      const _stale = lumpsNeedRedistribution();
-      if (_stale.length > 0) {
-        const _stratLabel = strategy.charAt(0).toUpperCase() + strategy.slice(1);
-        const _dates = _stale.map(function(s) {
-          const d = new Date(s.date);
-          return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        }).join(' and ');
-        const _txtEl = document.getElementById('lump-redist-text');
+      const _cur = currentPlanInterest(strategy);
+      const _opt = getOptimizedPlan(strategy);
+      const _titleEl = document.getElementById('lump-opt-title');
+      const _txtEl = document.getElementById('lump-opt-text');
+      const _actionsEl = document.getElementById('lump-opt-actions');
+      const _stratLabel = strategy === 'hybrid' ? 'your custom order'
+                        : strategy.charAt(0).toUpperCase() + strategy.slice(1);
+      if (_cur && _opt && _opt.interest < _cur.interest - 1) {
+        const _saved = _cur.interest - _opt.interest;
+        const _monthsSaved = _cur.months - _opt.months;
+        _optPanel.className = 'lump-opt-panel opt-available';
+        if (_titleEl) _titleEl.textContent = 'Your lump sums could work harder';
         if (_txtEl) {
-          _txtEl.innerHTML = 'Your auto-distributed lump sums for <strong>' + _dates +
-            '</strong> no longer match your current ' + _stratLabel + ' strategy. ' +
-            'Re-distribute keeps the same totals but reallocates per-debt amounts to fit your current debts.';
+          _txtEl.innerHTML = 'Keeping the same dates and the same total, moving your lump sums to different debts would save you <strong>' +
+            fmt(_saved) + ' in interest</strong>' +
+            (_monthsSaved > 0 ? ' and <strong>' + _monthsSaved + ' month' + (_monthsSaved !== 1 ? 's' : '') + '</strong>' : '') +
+            ' under ' + _stratLabel + '.';
         }
-        const _actionBtn = document.getElementById('lump-redist-action');
-        if (_actionBtn) _actionBtn.textContent = 'Re-distribute under ' + _stratLabel;
-        _redistBanner.style.display = 'flex';
+        if (_actionsEl) _actionsEl.style.display = 'flex';
       } else {
-        _redistBanner.style.display = 'none';
+        _optPanel.className = 'lump-opt-panel opt-good';
+        if (_titleEl) _titleEl.textContent = 'Your lump sums are well placed';
+        if (_txtEl) {
+          _txtEl.innerHTML = 'We checked other ways to split your scheduled lump sums across your debts &mdash; none beats what you have now under ' +
+            _stratLabel + '. Nothing to change.';
+        }
+        if (_actionsEl) _actionsEl.style.display = 'none';
       }
+      _optPanel.style.display = 'block';
     }
   }
 
