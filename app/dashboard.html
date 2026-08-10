@@ -1336,7 +1336,7 @@
   }
   .comparison-card.is-current { outline: 2px solid rgba(0,168,132,0.55); outline-offset: -2px; }
   .comparison-card.is-current h4::after {
-    content: ' \2014 YOUR PLAN';
+    content: ' \2014 YOUR STRATEGY';
     font-family: var(--font-mono);
     font-size: 0.55rem;
     letter-spacing: 0.08em;
@@ -2520,7 +2520,7 @@
            numbers. Users were reading the comparison without realising which
            card was their own plan. -->
       <div class="active-strategy-bar" id="active-strategy-bar">
-        <span class="asb-label">Your plan</span>
+        <span class="asb-label">Your plan today</span>
         <span class="asb-value" id="asb-value">—</span>
       </div>
       <div class="comparison-note" id="comparison-note"></div>
@@ -2885,7 +2885,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.28.3';
+const APP_VERSION = '1.28.5';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2893,6 +2893,29 @@ const APP_VERSION = '1.28.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.28.5',
+    date: 'August 10, 2026',
+    name: 'Lump Sum Optimizer',
+    whatsNew: [
+      'New: your Strategy tab now checks whether your scheduled lump sums are placed as well as they could be. Keeping the same dates and the same total, it searches for the split across your debts that saves the most interest \u2014 and tells you roughly how much you\u2019d save before you change anything.',
+      'The Strategy Comparison now says plainly which strategy you\u2019re on. The bar at the top shows what your plan costs today; each card shows what that strategy could cost at its best.',
+      'When two strategies come out close enough that the difference is within the margin of the comparison, the app now says they\u2019re effectively tied instead of crowning a winner \u2014 because for many people they genuinely are, and picking the one you\u2019ll stick with matters more.'
+    ],
+    fixes: [
+      'Fixed the old Re-distribute button, which moved your lump sums onto the debts your strategy was already attacking \u2014 and could make your plan worse. Your monthly extra is already hitting those debts; a lump sum does more good where the monthly payment won\u2019t reach in time. The optimizer will never recommend a change that costs you money.',
+      'Fixed the Strategy Comparison giving contradictory advice. It compared both strategies against one fixed lump sum allocation, so whichever strategy that allocation happened to suit would win. Each strategy is now shown with your lump sums placed at their best for that strategy.'
+    ]
+  },
+  {
+    version: '1.28.4',
+    date: 'August 10, 2026',
+    name: 'Clearer strategy numbers',
+    whatsNew: [],
+    fixes: [
+      'Fixed confusing labelling on the Strategy tab. The bar at the top shows what your plan costs TODAY, while each strategy card shows what that strategy could cost AT ITS BEST with your lump sums placed optimally \u2014 but both were tagged \u201cYour plan\u201d, so the same strategy appeared to show two different interest totals. The bar now reads \u201cYour plan today\u201d, cards read \u201cinterest at best\u201d, and the note explains the gap between them.'
+    ]
+  },
   {
     version: '1.28.3',
     date: 'August 10, 2026',
@@ -7571,24 +7594,16 @@ function _simWithAllocation(groups, alloc, targets, extra, strat) {
   return simulate(targets.map(function(d) { return {...d}; }), extra, 0, strat, disb);
 }
 
-function optimizeLumpAllocation(strat, opts) {
-  opts = opts || {};
-  const groups = autoLumpGroups();
-  if (!groups.length) return null;
-  const targets = _activePlanDebts();
-  if (targets.length < 2) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-
-  const grandTotal = groups.reduce(function(s, g) { return s + g.total; }, 0);
-  const step = opts.step || Math.max(100, Math.round(grandTotal / 140 / 50) * 50);
-
-  const alloc = groups.map(function() { return {}; });
-  const remaining = groups.map(function(g) { return g.total; });
-  targets.forEach(function(d) { alloc.forEach(function(a) { a[d.id] = 0; }); });
-
+// A single greedy pass: hand out the money in chunks of `step`, each time
+// placing the chunk wherever it reduces total interest most. Fast, but the
+// answer it lands on depends on the chunk size — which is why it is only a
+// SEED here, never the final answer.
+function _seedAllocation(groups, targets, extra, strat, step) {
+  const alloc = groups.map(function(){ return {}; });
+  targets.forEach(function(d){ alloc.forEach(function(a){ a[d.id] = 0; }); });
+  const remaining = groups.map(function(g){ return g.total; });
   let sims = 0, guard = 0;
-  const maxSteps = (opts.maxSteps || 400);
-  while ((remaining.some(function(r) { return r > 0.005; })) && guard++ < maxSteps) {
+  while (remaining.some(function(r){ return r > 0.005; }) && guard++ < 600) {
     let best = null;
     for (let gi = 0; gi < groups.length; gi++) {
       if (remaining[gi] <= 0.005) continue;
@@ -7599,19 +7614,90 @@ function optimizeLumpAllocation(strat, opts) {
         const r = _simWithAllocation(groups, alloc, targets, extra, strat);
         sims++;
         alloc[gi][id] -= chunk;
-        if (!best || r.totalInterest < best.interest - 1e-9) {
-          best = { gi: gi, id: id, chunk: chunk, interest: r.totalInterest, months: r.months };
-        }
+        if (!best || r.totalInterest < best.i - 1e-9) best = { gi: gi, id: id, chunk: chunk, i: r.totalInterest };
       }
     }
     if (!best) break;
     alloc[best.gi][best.id] += best.chunk;
     remaining[best.gi] -= best.chunk;
   }
+  return { alloc: alloc, sims: sims };
+}
 
-  const final = _simWithAllocation(groups, alloc, targets, extra, strat);
-  return { alloc: alloc, groups: groups, interest: final.totalInterest,
-           months: final.months, sims: sims, step: step };
+// Local refinement: repeatedly try shifting money between debts WITHIN the same
+// lump date (so each date's total never changes) at decreasing amounts, keeping
+// any shift that lowers total interest. This is what actually finds the good
+// answer — a lone greedy pass routinely leaves several hundred dollars behind.
+function _refineAllocation(groups, alloc, targets, extra, strat, budget) {
+  let best = _simWithAllocation(groups, alloc, targets, extra, strat).totalInterest;
+  let sims = 1;
+  const grand = groups.reduce(function(s, g){ return s + g.total; }, 0);
+  const deltas = [grand/25, grand/60, grand/150, grand/400].map(function(x){
+    return Math.max(25, Math.round(x / 25) * 25);
+  });
+  for (let di = 0; di < deltas.length; di++) {
+    const delta = deltas[di];
+    let improved = true, guard = 0;
+    while (improved && sims < budget && guard++ < 12) {
+      improved = false;
+      for (let gi = 0; gi < groups.length; gi++) {
+        for (let si = 0; si < targets.length; si++) {
+          const src = targets[si].id;
+          if (alloc[gi][src] < delta - 1e-9) continue;
+          for (let ti = 0; ti < targets.length; ti++) {
+            const dst = targets[ti].id;
+            if (dst === src || sims >= budget) continue;
+            // Re-check the source EVERY time: an accepted move earlier in this
+            // loop may have drained it below `delta`. Without this the balance
+            // goes negative, and since the write-back skips non-positive
+            // amounts that silently INFLATES the total lump sum.
+            if (alloc[gi][src] < delta - 1e-9) break;
+            alloc[gi][src] -= delta; alloc[gi][dst] += delta;
+            const r = _simWithAllocation(groups, alloc, targets, extra, strat);
+            sims++;
+            if (r.totalInterest < best - 1e-9) { best = r.totalInterest; improved = true; }
+            else { alloc[gi][src] += delta; alloc[gi][dst] -= delta; }
+          }
+        }
+      }
+    }
+  }
+  return { best: best, alloc: alloc, sims: sims };
+}
+
+// Multi-start: seed from a FIXED set of chunk sizes, refine each, keep the best.
+// Fixed seeds matter — they make the result fully deterministic, so the same
+// data always produces the same recommendation. The spread between starts is
+// kept as an honest uncertainty band: this is a heuristic search, not a proof
+// of optimality, and the UI uses that band to avoid reporting search noise as
+// a real difference between strategies.
+function optimizeLumpAllocation(strat, opts) {
+  opts = opts || {};
+  const groups = autoLumpGroups();
+  if (!groups.length) return null;
+  const targets = _activePlanDebts();
+  if (targets.length < 2) return null;
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+
+  const grand = groups.reduce(function(s, g){ return s + g.total; }, 0);
+  const divisors = opts.divisors || [7, 10, 14];
+  const budget = opts.budget || 2000;
+
+  let bestInterest = Infinity, bestAlloc = null, sims = 0;
+  const found = [];
+  for (let i = 0; i < divisors.length; i++) {
+    const step = Math.max(50, Math.round(grand / divisors[i] / 50) * 50);
+    const sd = _seedAllocation(groups, targets, extra, strat, step);
+    sims += sd.sims;
+    const rf = _refineAllocation(groups, sd.alloc, targets, extra, strat, budget);
+    sims += rf.sims;
+    found.push(rf.best);
+    if (rf.best < bestInterest) { bestInterest = rf.best; bestAlloc = rf.alloc; }
+  }
+  const spread = Math.max.apply(null, found) - bestInterest;
+  const final = _simWithAllocation(groups, bestAlloc, targets, extra, strat);
+  return { alloc: bestAlloc, groups: groups, interest: final.totalInterest,
+           months: final.months, spread: spread, sims: sims };
 }
 
 // What the plan costs right now, with lumps exactly where they sit.
@@ -7647,6 +7733,25 @@ function applyOptimizedLumps() {
   if (!opt) return;
   const cur = currentPlanInterest(strategy);
   if (cur && opt.interest >= cur.interest - 0.01) return; // never make it worse
+
+  // Safety gate: the money written back must reconcile to the original totals,
+  // to the cent, per lump date. This is the user's real plan — a search bug
+  // must never be able to invent or destroy money on it. If anything fails to
+  // balance we abandon the change and leave their lump sums untouched.
+  for (let gi = 0; gi < opt.groups.length; gi++) {
+    const a = opt.alloc[gi];
+    let sum = 0, negative = false;
+    for (const id in a) {
+      if (a[id] < -0.005) negative = true;
+      if (a[id] > 0) sum += a[id];
+    }
+    if (negative || Math.abs(sum - opt.groups[gi].total) > 0.5) {
+      if (typeof trackShare === 'function') {
+        trackShare('lump_optimize_aborted', { _category: 'planning' });
+      }
+      return;
+    }
+  }
 
   const nameOf = {};
   debts.forEach(function(d) { nameOf[d.id] = d.name; });
@@ -7828,9 +7933,16 @@ function renderStrategy() {
     }
     const _noteEl = document.getElementById('comparison-note');
     if (_noteEl) {
-      _noteEl.textContent = fairBasis
-        ? 'Each strategy below is shown at its best: same debts, same extra payment, and your scheduled lump sums placed as well as possible for that strategy.'
-        : 'Based on your current plan.';
+      if (fairBasis && _curPlan) {
+        const _bestForCurrent = (strategy === 'avalanche') ? av.totalInterest
+                              : (strategy === 'snowball') ? sb.totalInterest : null;
+        const _gap = (_bestForCurrent !== null) ? (_curPlan.interest - _bestForCurrent) : 0;
+        _noteEl.innerHTML = 'Each card below shows that strategy <strong>at its best</strong> \u2014 same debts, same extra payment, ' +
+          'with your scheduled lump sums placed as well as possible for it. That\u2019s why these differ from your plan today' +
+          (_gap > 25 ? ': moving your lump sums could close a gap of about ' + fmt(Math.round(_gap/10)*10) + ' without paying a cent more.' : '.');
+      } else {
+        _noteEl.textContent = 'Based on your current plan.';
+      }
     }
     ['av','sb','min'].forEach(function(k){
       const c=document.getElementById('cmp-card-'+k);
@@ -7839,10 +7951,13 @@ function renderStrategy() {
     const _curCard = strategy === 'avalanche' ? 'cmp-card-av' : (strategy === 'snowball' ? 'cmp-card-sb' : null);
     if (_curCard && document.getElementById(_curCard)) document.getElementById(_curCard).classList.add('is-current');
 
+    // v1.28.4 — when the cards show optimized figures they must say so, or the
+    // current-strategy card contradicts the "your plan today" bar above it.
+    const _suffix = fairBasis ? ' interest at best' : ' interest';
     document.getElementById('cmp-av-months').textContent = av.months;
-    document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
+    document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + _suffix;
     document.getElementById('cmp-sb-months').textContent = sb.months;
-    document.getElementById('cmp-sb-int').textContent = fmt(sb.totalInterest) + ' interest';
+    document.getElementById('cmp-sb-int').textContent = fmt(sb.totalInterest) + _suffix;
     document.getElementById('cmp-min-months').textContent = mn.months;
     document.getElementById('cmp-min-int').textContent = fmt(mn.totalInterest) + ' interest';
 
@@ -7883,6 +7998,16 @@ function renderStrategy() {
 
     const best = av.totalInterest <= sb.totalInterest ? 'Avalanche' : 'Snowball';
     const savings = Math.abs(av.totalInterest - sb.totalInterest);
+    // v1.28.5 — the optimizer is a heuristic search, not a proof of optimality.
+    // It reports how much its own starting points disagreed (`spread`); when the
+    // gap between two strategies is inside that band, the "winner" is search
+    // noise rather than a real finding, and saying so is the honest answer.
+    let _band = 0;
+    if (fairBasis) {
+      const _oa = getOptimizedPlan('avalanche'), _ob = getOptimizedPlan('snowball');
+      _band = Math.max((_oa && _oa.spread) || 0, (_ob && _ob.spread) || 0, 25);
+    }
+    const _tied = fairBasis && savings <= _band;
 
     // v1.12.0 — with rollover, strategies can genuinely differ even at $0
     // extra (rolled minimums cascade in strategy order). Show the "set an
@@ -7897,17 +8022,22 @@ function renderStrategy() {
     } else {
       noExtraAlert.style.display = 'none';
       bestAlert.style.display = 'flex';
-      document.getElementById('best-strategy-text').innerHTML =
-        'The <strong>' + best + '</strong> method saves you <strong>' + fmt(savings) +
-        ' more in interest</strong> on your debts' +
-        (fairBasis ? ', comparing each strategy with your lump sums placed at their best.' : '.');
+      document.getElementById('best-strategy-text').innerHTML = _tied
+        ? 'Avalanche and Snowball come out <strong>effectively tied</strong> for your debts \u2014 about ' +
+          fmt(Math.abs(av.totalInterest - sb.totalInterest)) + ' apart, which is within the margin of this comparison. ' +
+          'Pick whichever you\u2019ll actually stick with.'
+        : 'The <strong>' + best + '</strong> method saves you roughly <strong>' + fmt(savings) +
+          ' more in interest</strong> on your debts' +
+          (fairBasis ? ', comparing each strategy with your lump sums placed at their best.' : '.');
     }
 
     ['cmp-card-av','cmp-card-sb','cmp-card-min'].forEach(function(id){
       const c=document.getElementById(id); if (c) c.classList.remove('best');
     });
-    const bestEl = document.getElementById(best === 'Avalanche' ? 'cmp-card-av' : 'cmp-card-sb');
-    if (bestEl) bestEl.classList.add('best');
+    if (!_tied) {
+      const bestEl = document.getElementById(best === 'Avalanche' ? 'cmp-card-av' : 'cmp-card-sb');
+      if (bestEl) bestEl.classList.add('best');
+    }
   }
 
   // v1.28.3 — lump sum optimizer panel. Only ever recommends a change when the
@@ -7928,14 +8058,21 @@ function renderStrategy() {
       const _actionsEl = document.getElementById('lump-opt-actions');
       const _stratLabel = strategy === 'hybrid' ? 'your custom order'
                         : strategy.charAt(0).toUpperCase() + strategy.slice(1);
-      if (_cur && _opt && _opt.interest < _cur.interest - 1) {
+      // Require the gain to clear the search's own uncertainty before suggesting
+      // a change — otherwise we'd be nudging users to churn their plan for noise.
+      const _minGain = Math.max(25, (_opt && _opt.spread) || 0);
+      if (_cur && _opt && _opt.interest < _cur.interest - _minGain) {
         const _saved = _cur.interest - _opt.interest;
         const _monthsSaved = _cur.months - _opt.months;
         _optPanel.className = 'lump-opt-panel opt-available';
         if (_titleEl) _titleEl.textContent = 'Your lump sums could work harder';
         if (_txtEl) {
-          _txtEl.innerHTML = 'Keeping the same dates and the same total, moving your lump sums to different debts would save you <strong>' +
-            fmt(_saved) + ' in interest</strong>' +
+          // Rounded to the nearest $10 with an explicit "about": the search is a
+          // heuristic, so a to-the-dollar figure would imply precision it
+          // doesn't have.
+          const _shown = Math.max(10, Math.round(_saved / 10) * 10);
+          _txtEl.innerHTML = 'Keeping the same dates and the same total, moving your lump sums to different debts would save you about <strong>' +
+            fmt(_shown) + ' in interest</strong>' +
             (_monthsSaved > 0 ? ' and <strong>' + _monthsSaved + ' month' + (_monthsSaved !== 1 ? 's' : '') + '</strong>' : '') +
             ' under ' + _stratLabel + '.';
         }

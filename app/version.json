@@ -1,11 +1,12 @@
 {
-  "version": "1.28.3",
+  "version": "1.28.5",
   "releaseDate": "2026-08-10",
   "releaseName": "Lump Sum Optimizer",
   "notes": [
-    "New: your Strategy tab now checks whether your scheduled lump sums are placed as well as they could be. Keeping the same dates and the same total, it finds the split across your debts that saves the most interest - and tells you exactly how much you'd save before you change anything.",
-    "The Strategy Comparison now says plainly which strategy you're on, with your current months and interest right at the top, and marks your plan among the cards.",
-    "Fixed: the old Re-distribute button moved your lump sums onto the debts your strategy was already attacking, which could make your plan worse. Your monthly extra payment is already hitting those debts - a lump sum does more good where the monthly payment won't reach in time. The optimizer now handles this properly and will never recommend a change that costs you money.",
-    "Fixed: the Strategy Comparison could give contradictory advice, because it compared both strategies against one fixed lump sum allocation. Each strategy is now shown with your lump sums placed at their best for that strategy."
+    "New: your Strategy tab now checks whether your scheduled lump sums are placed as well as they could be. Keeping the same dates and the same total, it searches for the split across your debts that saves the most interest - and tells you roughly how much you'd save before you change anything.",
+    "The Strategy Comparison now says plainly which strategy you're on. The bar at the top shows what your plan costs today; each card shows what that strategy could cost at its best.",
+    "When two strategies come out close enough that the difference is within the margin of the comparison, the app now says they're effectively tied instead of crowning a winner - because for many people they genuinely are, and picking the one you'll stick with matters more.",
+    "Fixed the old Re-distribute button, which moved your lump sums onto the debts your strategy was already attacking - and could make your plan worse. The optimizer will never recommend a change that costs you money.",
+    "Fixed the Strategy Comparison giving contradictory advice. It compared both strategies against one fixed lump sum allocation, so whichever strategy that allocation happened to suit would win."
   ]
 }
