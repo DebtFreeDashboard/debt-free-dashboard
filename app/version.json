@@ -1,12 +1,9 @@
 {
-  "version": "1.28.5",
+  "version": "1.29.0",
   "releaseDate": "2026-08-10",
-  "releaseName": "Lump Sum Optimizer",
+  "releaseName": "Balance Transfer Modeller",
   "notes": [
-    "New: your Strategy tab now checks whether your scheduled lump sums are placed as well as they could be. Keeping the same dates and the same total, it searches for the split across your debts that saves the most interest - and tells you roughly how much you'd save before you change anything.",
-    "The Strategy Comparison now says plainly which strategy you're on. The bar at the top shows what your plan costs today; each card shows what that strategy could cost at its best.",
-    "When two strategies come out close enough that the difference is within the margin of the comparison, the app now says they're effectively tied instead of crowning a winner - because for many people they genuinely are, and picking the one you'll stick with matters more.",
-    "Fixed the old Re-distribute button, which moved your lump sums onto the debts your strategy was already attacking - and could make your plan worse. The optimizer will never recommend a change that costs you money.",
-    "Fixed the Strategy Comparison giving contradictory advice. It compared both strategies against one fixed lump sum allocation, so whichever strategy that allocation happened to suit would win."
+    "New on the Strategy tab: model a 0% balance transfer offer. Tick the balances you're thinking of moving, enter the offer's 0% period, fee and post-promo rate, and see what it works out to for your debts - with the transfer fee counted in.",
+    "It answers the question that actually matters: would you clear the balance before the 0% period ends? If not, it shows how much would still be owed when the rate jumps, and what happens if your extra payment stopped along the way."
   ]
 }

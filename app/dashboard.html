@@ -1302,6 +1302,35 @@
   .tc-life strong { color: var(--text); }
   .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
+  /* v1.29.0 — Balance Transfer Modeller */
+  .xfer-intro { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 16px; }
+  .xfer-sources { display: flex; flex-direction: column; gap: 6px; }
+  .xfer-src {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px; cursor: pointer;
+  }
+  .xfer-src input { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
+  .xfer-src-name { flex: 1; font-weight: 600; font-size: 0.85rem; min-width: 0; }
+  .xfer-src-bal { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+  .xfer-empty { font-size: 0.82rem; color: var(--text-muted); padding: 14px 0; }
+  .xfer-result-card {
+    margin-top: 18px; padding: 16px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  }
+  .xfer-headline {
+    font-family: var(--font-display); font-weight: 800; font-size: 0.95rem;
+    color: var(--accent); line-height: 1.35; margin-bottom: 8px;
+  }
+  .xfer-sub { font-size: 0.85rem; color: var(--text); line-height: 1.5; margin-bottom: 14px; }
+  .xfer-risk { font-size: 0.82rem; line-height: 1.5; padding: 11px 13px; border-radius: var(--radius-sm); margin-bottom: 10px; }
+  .xfer-risk.ok   { background: rgba(0,168,132,0.09);  border: 1px solid rgba(0,168,132,0.3);  color: var(--text-muted); }
+  .xfer-risk.warn { background: rgba(224,72,72,0.09);  border: 1px solid rgba(224,72,72,0.35); color: var(--text-muted); }
+  .xfer-risk strong { color: var(--text); }
+  .xfer-stress { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; padding: 9px 0; border-top: 1px solid var(--border); }
+  .xfer-stress strong { color: var(--text); }
+  .xfer-note { font-size: 0.72rem; color: var(--text-dim, var(--text-muted)); line-height: 1.5; margin-top: 10px; opacity: 0.85; }
+
   /* v1.28.3 — active strategy bar + lump optimizer panel */
   .active-strategy-bar {
     display: flex;
@@ -2579,6 +2608,69 @@
       </div>
     </div>
 
+    <!-- v1.29.0 — Balance Transfer Modeller. A NEUTRAL CALCULATOR, never a
+         recommender: it models the offer the user already has in hand and
+         reports what the math shows. It does not suggest transferring, does not
+         name or rank products, and does not tell anyone what to do with their
+         money. The headline result is the promo-expiry risk, not the saving —
+         a transfer that isn't cleared before 0% ends is exactly how these
+         offers hurt people, and a calculator that buries that is worse than
+         no calculator at all. -->
+    <div class="card" id="transfer-card" data-collapse="transfer" data-collapse-default="closed">
+      <div class="card-title"><div class="dot"></div> &#128179; Balance Transfer Modeller</div>
+
+      <div id="transfer-real">
+        <p class="xfer-intro">
+          Considering a 0% balance transfer offer? Enter its terms and see what the math works out to
+          for your debts &mdash; including whether you&rsquo;d clear it before the 0% period ends.
+        </p>
+
+        <div class="form-field">
+          <label>Move balances from</label>
+          <div id="xfer-sources" class="xfer-sources"></div>
+        </div>
+
+        <div class="form-grid" style="grid-template-columns:1fr 1fr">
+          <div class="form-field">
+            <label>Transfer to</label>
+            <select id="xfer-dest" onchange="renderTransfer()"></select>
+          </div>
+          <div class="form-field">
+            <label>0% period (months)</label>
+            <input type="number" id="xfer-months" value="13" min="1" max="60" step="1" oninput="renderTransfer()" />
+          </div>
+          <div class="form-field">
+            <label>Transfer fee (%)</label>
+            <input type="number" id="xfer-fee" value="5" min="0" max="10" step="0.1" oninput="renderTransfer()" />
+          </div>
+          <div class="form-field">
+            <label>Rate after 0% ends (%)</label>
+            <input type="number" id="xfer-apr" value="24.99" min="0" max="40" step="0.01" oninput="renderTransfer()" />
+          </div>
+        </div>
+
+        <div id="xfer-result"></div>
+      </div>
+
+      <div id="transfer-teaser" class="blur-teaser" style="display:none; cursor:default;">
+        <div class="blur-content">
+          <div class="xfer-result-card">
+            <div class="xfer-headline">Saves $1,240 in interest</div>
+            <div class="xfer-sub">after the transfer fee &mdash; cleared 2 months before 0% ends</div>
+          </div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">Model a 0% balance transfer</div>
+          <div class="lock-card-desc" style="max-width:320px;">
+            See what a 0% offer really works out to for your debts &mdash; fee included, and whether
+            you&rsquo;d clear it before the rate jumps. One-time $12.
+          </div>
+          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
+        </div>
+      </div>
+    </div>
+
     <!-- Payoff order -->
     <div class="card">
       <div class="card-title"><div class="dot"></div> Payoff Order &amp; Timeline</div>
@@ -2885,7 +2977,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.28.5';
+const APP_VERSION = '1.29.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2893,6 +2985,16 @@ const APP_VERSION = '1.28.5';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.29.0',
+    date: 'August 10, 2026',
+    name: 'Balance Transfer Modeller',
+    whatsNew: [
+      'New on the Strategy tab: model a 0% balance transfer offer. Tick the balances you\u2019re thinking of moving, enter the offer\u2019s 0% period, fee and post-promo rate, and see what it works out to for your debts \u2014 with the transfer fee counted in.',
+      'It answers the question that actually matters: would you clear the balance before the 0% period ends? If not, it shows how much would still be owed when the rate jumps, and what happens if your extra payment stopped along the way.'
+    ],
+    fixes: []
+  },
   {
     version: '1.28.5',
     date: 'August 10, 2026',
@@ -4136,7 +4238,15 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     }
 
     totalInterest += monthInterest;
-    monthlyData.push({ month, remaining: balances.reduce((a,d)=>a+d.bal,0), interest: monthInterest });
+    const _row = { month, remaining: balances.reduce((a,d)=>a+d.bal,0), interest: monthInterest };
+    // v1.29.0 — opt-in per-debt snapshot. Off unless a caller asks for it, so
+    // this cannot change any existing result. Used by the balance transfer
+    // modeller to read what's still owed when a 0% window closes.
+    if (opts && opts.trace) {
+      _row.byDebt = {};
+      balances.forEach(function(b){ _row.byDebt[b.id] = b.bal; });
+    }
+    monthlyData.push(_row);
   }
 
   // v1.5.0 — perDebt payload for Strategy timeline (and any future consumer).
@@ -7542,6 +7652,241 @@ function redistributeAutoLumps() {
 let _redistDismissed = false;
 function _resetRedistDismiss() { _redistDismissed = false; }
 function dismissRedistBanner() { _redistDismissed = true; renderStrategy(); }
+// ── v1.29.0 — BALANCE TRANSFER MODELLER ──
+// Neutral calculator. Models a 0% offer the user already has and reports what
+// the math shows for their debts. It does not recommend transferring, does not
+// rank or name products, and never tells anyone what to do with their money.
+//
+// The number that matters most is NOT the interest saved — it's whether the
+// balance is cleared before the 0% window closes. A transfer that outlives its
+// promo dumps the whole remaining balance onto a high rate, which is precisely
+// how these offers hurt people. So the risk is computed alongside the saving
+// and shown with equal weight, plus a stress test at $0 extra payment.
+
+function _xferSelectedSourceIds() {
+  const out = [];
+  document.querySelectorAll('#xfer-sources input[type="checkbox"]').forEach(function(cb) {
+    if (cb.checked) out.push(parseInt(cb.value, 10));
+  });
+  return out;
+}
+
+// Build the post-transfer debt set. Returns null if the inputs don't describe a
+// usable transfer. destId === 'new' creates a hypothetical card.
+function buildTransferScenario(sourceIds, destId, promoMonths, feePct, postApr) {
+  const live = debts.filter(function(d) { return d.balance > 0; });
+  const sources = live.filter(function(d) { return sourceIds.indexOf(d.id) !== -1; });
+  if (!sources.length) return null;
+
+  const moved = sources.reduce(function(s, d) { return s + d.balance; }, 0);
+  if (moved <= 0) return null;
+  const fee = moved * (feePct / 100);
+
+  // Deep copy so the real plan is never touched by modelling.
+  const scenario = JSON.parse(JSON.stringify(debts));
+  sourceIds.forEach(function(id) {
+    const d = scenario.find(function(x) { return x.id === id; });
+    if (d) d.balance = 0;
+  });
+
+  const pe = new Date();
+  pe.setMonth(pe.getMonth() + promoMonths);
+  const promoEnd = pe.toISOString().slice(0, 10);
+
+  let dest;
+  if (destId === 'new') {
+    dest = {
+      id: -999, name: 'Transfer card (new)', type: 'cc',
+      balance: 0, originalBalance: 0,
+      minPayment: 0, transferFee: 0, loanType: 'revolving', includeInStrategy: true
+    };
+    scenario.push(dest);
+  } else {
+    dest = scenario.find(function(x) { return x.id === destId; });
+    if (!dest) return null;
+  }
+
+  // Capture what the destination was actually costing BEFORE the move: a card
+  // sitting at zero isn't costing a minimum payment today, so counting its
+  // nominal minimum would overstate the commitment after the transfer.
+  const destBalanceBefore = dest.balance || 0;
+  dest.balance = round2(dest.balance + moved + fee);
+  dest.originalBalance = round2((dest.originalBalance || 0) + moved + fee);
+  dest.apr = 0;
+  dest.promoApr = 0;
+  dest.hasPromo = true;
+  dest.promoEnd = promoEnd;
+  dest.postPromoApr = postApr;
+  dest.realApr = postApr;
+  dest.regularApr = postApr;
+  // Card minimums are typically ~2% of the balance; keep any existing minimum
+  // if it's already higher so we never model a smaller commitment than today.
+  // Minimum payment: default to the minimums this move REPLACES, so the modelled
+  // monthly commitment is unchanged. Using a flat % of balance instead (the
+  // obvious choice) quietly inflates the result — it credits the transfer with
+  // savings that actually come from paying more each month, not from the 0%
+  // rate. On a real example that turned a break-even offer into a fake $145 win.
+  // Floored at 1% of the balance, which is what a 0% card typically requires.
+  const replacedMins = sources.reduce(function(s2, d) { return s2 + (d.minPayment || 0); }, 0);
+  const keptMin = (destId === 'new' || destBalanceBefore <= 0) ? 0 : (dest.minPayment || 0);
+  dest.minPayment = Math.max(Math.round(keptMin + replacedMins), Math.round((moved + fee) * 0.01));
+  dest._modelledMin = dest.minPayment;
+
+  return { scenario: scenario, moved: moved, fee: fee, dest: dest, promoMonths: promoMonths, promoEnd: promoEnd };
+}
+
+// Run current plan vs transfer scenario at a given extra payment.
+function _xferCompare(built, extra) {
+  const disb = plannedDisbursements();
+  const now = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
+  const then = built.scenario.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
+  const a = simulate(now.map(function(d) { return {...d}; }), extra, 0, strategy, disb);
+  const b = simulate(then.map(function(d) { return {...d}; }), extra, 0, strategy, disb);
+  const destPd = (b.perDebt || []).find(function(p) { return p.id === built.dest.id; });
+  return {
+    before: a, after: b,
+    saved: a.totalInterest - b.totalInterest,
+    destPaidMonth: destPd ? destPd.paidOffMonth : null
+  };
+}
+
+function analyzeTransfer(sourceIds, destId, promoMonths, feePct, postApr) {
+  const built = buildTransferScenario(sourceIds, destId, promoMonths, feePct, postApr);
+  if (!built) return null;
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const main = _xferCompare(built, extra);
+  const stress = _xferCompare(built, 0);   // what if the extra payment stops?
+
+  // Does the transferred balance outlive its 0% window, and by how much?
+  const clearsInTime = main.destPaidMonth !== null && main.destPaidMonth <= promoMonths;
+  let remainingAtExpiry = 0;
+  if (!clearsInTime) {
+    // Re-run capped at the promo window to read the balance still outstanding.
+    const then = built.scenario.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
+    const traced = simulate(then.map(function(d) { return {...d}; }), extra, 0, strategy,
+                            plannedDisbursements(), { trace: true });
+    const atExpiry = (traced.monthlyData || []).find(function(m) { return m.month === promoMonths; });
+    remainingAtExpiry = (atExpiry && atExpiry.byDebt) ? Math.max(0, atExpiry.byDebt[built.dest.id] || 0) : 0;
+  }
+
+  return {
+    moved: built.moved, fee: built.fee, total: built.moved + built.fee,
+    promoMonths: promoMonths, postApr: postApr,
+    saved: main.saved,
+    monthsBefore: main.before.months, monthsAfter: main.after.months,
+    destPaidMonth: main.destPaidMonth,
+    clearsInTime: clearsInTime,
+    remainingAtExpiry: remainingAtExpiry,
+    stressSaved: stress.saved,
+    stressClears: stress.destPaidMonth !== null && stress.destPaidMonth <= promoMonths,
+    stressPaidMonth: stress.destPaidMonth,
+    destName: built.dest.name,
+    assumedMin: built.dest.minPayment,
+    built: built
+  };
+}
+
+// v1.29.0 — Balance transfer UI. Compliance: neutral framing throughout. We
+// describe what the math shows for the offer the user entered; we never advise,
+// never rank products, and never imply they should transfer.
+function renderTransfer() {
+  const card = document.getElementById('transfer-card');
+  if (!card) return;
+  const real = document.getElementById('transfer-real');
+  const teaser = document.getElementById('transfer-teaser');
+  const live = debts.filter(function(d) { return d.balance > 0; });
+
+  if (!isPremium) {
+    if (real) real.style.display = 'none';
+    if (teaser) teaser.style.display = 'block';
+    card.style.display = live.length ? 'block' : 'none';
+    return;
+  }
+  if (real) real.style.display = 'block';
+  if (teaser) teaser.style.display = 'none';
+  card.style.display = live.length ? 'block' : 'none';
+  if (!live.length) return;
+
+  // Source checkboxes — preserve ticks across re-renders.
+  const srcWrap = document.getElementById('xfer-sources');
+  const chosen = _xferSelectedSourceIds();
+  if (srcWrap && srcWrap.dataset.count !== String(live.length)) {
+    srcWrap.innerHTML = live.map(function(d) {
+      return '<label class="xfer-src"><input type="checkbox" value="' + d.id + '" onchange="renderTransfer()"> ' +
+             '<span class="xfer-src-name">' + escapeHtml(d.name) + '</span>' +
+             '<span class="xfer-src-bal">' + fmtDec(d.balance) + ' &middot; ' + (d.apr || 0) + '%</span></label>';
+    }).join('');
+    srcWrap.dataset.count = String(live.length);
+    chosen.forEach(function(id) {
+      const cb = srcWrap.querySelector('input[value="' + id + '"]');
+      if (cb) cb.checked = true;
+    });
+  }
+
+  // Destination options: any card except the ones being moved, plus a new card.
+  const destSel = document.getElementById('xfer-dest');
+  const sources = _xferSelectedSourceIds();
+  if (destSel) {
+    const prev = destSel.value;
+    const opts = debts.filter(function(d) { return sources.indexOf(d.id) === -1; })
+      .map(function(d) { return '<option value="' + d.id + '">' + escapeHtml(d.name) + '</option>'; });
+    destSel.innerHTML = '<option value="new">A new card</option>' + opts.join('');
+    if (prev && destSel.querySelector('option[value="' + prev + '"]')) destSel.value = prev;
+  }
+
+  const out = document.getElementById('xfer-result');
+  if (!out) return;
+  if (!sources.length) {
+    out.innerHTML = '<div class="xfer-empty">Tick the balances you\u2019re thinking of moving to see the numbers.</div>';
+    return;
+  }
+
+  const months = Math.max(1, parseInt(document.getElementById('xfer-months').value, 10) || 12);
+  const feePct = Math.max(0, parseFloat(document.getElementById('xfer-fee').value) || 0);
+  const destRaw = destSel ? destSel.value : 'new';
+  const destId = destRaw === 'new' ? 'new' : parseInt(destRaw, 10);
+  let postApr = parseFloat(document.getElementById('xfer-apr').value);
+  if (isNaN(postApr)) postApr = 24.99;
+
+  const r = analyzeTransfer(sources, destId, months, feePct, postApr);
+  if (!r) { out.innerHTML = '<div class="xfer-empty">Select at least one balance with money on it.</div>'; return; }
+
+  const good = r.saved > 0;
+  const savedLine = good
+    ? 'On these numbers the transfer works out <strong>' + fmt(Math.abs(r.saved)) + ' cheaper</strong> in total interest, after the ' + fmt(r.fee) + ' fee.'
+    : 'On these numbers the transfer works out <strong>' + fmt(Math.abs(r.saved)) + ' more expensive</strong> in total interest once the ' + fmt(r.fee) + ' fee is counted.';
+
+  // The risk block carries equal weight to the saving — deliberately.
+  let risk;
+  if (r.clearsInTime) {
+    risk = '<div class="xfer-risk ok"><strong>&#9989; Cleared before 0% ends.</strong> ' +
+      'The balance reaches zero in month ' + r.destPaidMonth + ', with the 0% period running ' + r.promoMonths + ' months.</div>';
+  } else {
+    risk = '<div class="xfer-risk warn"><strong>&#9888;&#65039; Not cleared before 0% ends.</strong> ' +
+      'At your current payments the balance reaches zero in month ' + (r.destPaidMonth || '\u2014') +
+      ', but the 0% period runs only ' + r.promoMonths + ' months. About <strong>' + fmt(r.remainingAtExpiry) +
+      '</strong> would still be owed when the rate goes to ' + r.postApr + '%.</div>';
+  }
+
+  const stress = '<div class="xfer-stress"><strong>If your extra payment stopped:</strong> ' +
+    (r.stressSaved > 0
+      ? 'the transfer still works out ' + fmt(Math.abs(r.stressSaved)) + ' cheaper, but the balance wouldn\u2019t clear until month ' + (r.stressPaidMonth || '\u2014') + '.'
+      : 'the transfer would cost ' + fmt(Math.abs(r.stressSaved)) + ' more than staying put.') +
+    '</div>';
+
+  out.innerHTML =
+    '<div class="xfer-result-card">' +
+      '<div class="xfer-headline">' + fmtDec(r.moved) + ' moved &middot; ' + fmtDec(r.fee) + ' fee &middot; ' + fmtDec(r.total) + ' on the new balance</div>' +
+      '<div class="xfer-sub">' + savedLine + '</div>' +
+      risk +
+      stress +
+      '<div class="xfer-note">Modelled with a minimum payment of ' + fmtDec(r.assumedMin) + '/mo on the new balance &mdash; the same total ' +
+      'monthly commitment you have on these cards now, so the figures reflect the rate and fee rather than paying more each month. ' +
+      'Assumes you keep paying at least the minimum on everything and add nothing new to the transferred cards. ' +
+      'They describe the offer you entered &mdash; check the terms, since fees, rates and promo lengths vary.</div>' +
+    '</div>';
+}
+
 // ── v1.28.3 — LUMP SUM OPTIMIZER ──
 // The problem this solves: a lump sum and a monthly extra payment do DIFFERENT
 // jobs, and aligning them wastes the lump. The monthly extra already sweeps the
@@ -8039,6 +8384,8 @@ function renderStrategy() {
       if (bestEl) bestEl.classList.add('best');
     }
   }
+
+  renderTransfer(); // v1.29.0 — balance transfer modeller
 
   // v1.28.3 — lump sum optimizer panel. Only ever recommends a change when the
   // optimized allocation actually beats what the user has now, and states the
