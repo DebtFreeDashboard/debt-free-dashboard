@@ -2002,6 +2002,7 @@
     <button class="nav-tab" onclick="showSection('strategy')">Strategy</button>
     <button class="nav-tab" onclick="showSection('whatif')">What If</button>
     <button class="nav-tab" onclick="showSection('milestones')">Wins</button>
+    <button class="nav-tab" onclick="showSection('settings')">Settings</button>
   </div>
 </nav>
 </div><!-- /sticky-top -->
@@ -2131,64 +2132,14 @@
     </div>
 
     <!-- v1.14.0 — Cash-Flow Release card (premium) -->
-    <div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="open" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
-      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
-        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
-        Planned lump sum applied
-      </div>
-      <div id="cashflow-events" style="margin-top:16px;"></div>
-    </div>
+    
     <!-- Cash-Flow teaser (free, blur) -->
-    <div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
-            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
-            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
-          </div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">See your cash come back</div>
-          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- v1.14.0 — Premium Roadmap timeline (premium) -->
-    <div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="open" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
-      <div id="roadmap-track"></div>
-    </div>
+    
     <!-- Roadmap teaser (free, blur) -->
-    <div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">Your full roadmap to zero</div>
-          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Payment Log -->
     <div class="card" id="payment-log-card" style="display:none">
@@ -2359,163 +2310,19 @@
     </div>
 
     <!-- Monthly Budget -->
-    <div class="card" id="budget-card" data-collapse="budget" data-collapse-default="closed">
-      <div class="card-title"><div class="dot"></div> Monthly Payoff Budget</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr">
-        <div class="form-field">
-          <label>Extra Per Month ($)</label>
-          <input type="number" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculate()" onchange="recalculate()" />
-        </div>
-        <div class="form-field field-full">
-          <label>Strategy</label>
-          <select id="strategy-select" onchange="recalculate()">
-            <option value="avalanche">Avalanche &mdash; highest APR</option>
-            <option value="snowball">Snowball &mdash; lowest balance</option>
-            <option value="hybrid">Hybrid &mdash; custom order</option>
-          </select>
-        </div>
-      </div>
-    </div>
+    
 
 
     <!-- Monthly Payment Summary -->
-    <div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
-      <div class="card-title"><div class="dot"></div> Monthly Payment Summary</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
-        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
-          <div class="stat-mini-label">Min Payments Due</div>
-          <div id="summary-min-total" style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent3);">$0</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">across all accounts</div>
-        </div>
-        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
-          <div class="stat-mini-label">Total Monthly Payment</div>
-          <div id="summary-total-payment" style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent);">$0</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">minimums + extra</div>
-        </div>
-      </div>
-    </div>
+    
     <!-- Planned Lump Sums -->
-    <div class="card" id="lump-sum-card" data-collapse="lumps" data-collapse-default="closed" style="display:none">
-      <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments</div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
-      <div id="lump-sum-list"></div>
-      <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-        <button id="lump-mode-auto" onclick="setLumpMode('auto')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--accent);color:#0a0a0f;font-weight:700;letter-spacing:0.05em;">&#9654; Strategy Decides</button>
-        <button id="lump-mode-manual" onclick="setLumpMode('manual')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--card2);color:var(--text-muted);letter-spacing:0.05em;">&#9776; I Choose Debt</button>
-      </div>
-      <div id="lump-debt-field" style="display:none;margin-bottom:12px;">
-        <div class="form-field field-full">
-          <label>Debt Account</label>
-          <select id="lump-debt-select"></select>
-        </div>
-      </div>
-      <div class="form-grid form-grid-action form-grid-lump" style="margin-top:4px;">
-        <div class="form-field">
-          <label>Amount ($)</label>
-          <input type="number" id="lump-amount" placeholder="5000" min="1" step="100" />
-        </div>
-        <div class="form-field">
-          <label>Expected Date</label>
-          <input type="date" id="lump-date" />
-        </div>
-        <div class="form-field form-field-action" style="justify-content:flex-end">
-          <label>&nbsp;</label>
-          <button class="btn btn-primary" onclick="addLumpSum()">Add</button>
-        </div>
-      </div>
-      <div id="lump-auto-hint" style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">The system will allocate this amount across your debts following your current strategy.</div>
-    </div>
+    
 
     <!-- v1.13.0 — Planned Lump Sums teaser (free users, blur style) -->
-    <div class="card" id="lump-sum-teaser" style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
-          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;">
-            <div><div style="font-weight:600;">Tax Refund</div><div style="font-size:0.72rem;color:var(--text-muted);">Apr 2026 · Strategy decides</div></div>
-            <div style="font-family:var(--font-mono);color:var(--accent4);font-weight:700;">$3,000</div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
-            <div><div style="font-weight:600;">Year-End Bonus</div><div style="font-size:0.72rem;color:var(--text-muted);">Dec 2026 · Chase Sapphire</div></div>
-            <div style="font-family:var(--font-mono);color:var(--accent4);font-weight:700;">$5,000</div>
-          </div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">Schedule future windfalls into your plan</div>
-          <div class="lock-card-desc" style="max-width:280px;">Add a bonus or tax refund on a future date and your Freedom Date updates automatically. Unlock everything for a one-time $12.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Backup & Restore -->
-    <div class="card" id="backup-card" data-collapse="backup" data-collapse-default="closed">
-      <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-        <button id="update-btn" class="btn btn-primary" onclick="checkForUpdates()" style="flex:2;min-width:180px;">&#10231; Check for Updates</button>
-        <button class="btn btn-ghost" onclick="openWhatsNewModal()" style="flex:1;min-width:140px;">&#9733; What&#8217;s New</button>
-      </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <button class="btn btn-ghost" onclick="exportData()" style="flex:1;min-width:140px;">&#11015; Export Backup</button>
-        <label class="btn btn-ghost" style="flex:1;min-width:140px;cursor:pointer;text-align:center;">
-          &#11014; Import Backup
-          <input type="file" accept=".json" onchange="importData(event)" style="display:none;" />
-        </label>
-      </div>
-      <!-- v1.13.0 — Theme toggle (free) -->
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-          <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)" style="margin-top:3px;" />
-          <span>
-            <span style="font-size:0.85rem;font-weight:600;">Light theme</span><br/>
-            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Switch between the default dark theme and a light theme.</span>
-          </span>
-        </label>
-      </div>
-      <!-- v1.13.0 — Estimated interest (premium) -->
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-          <input type="checkbox" id="accrual-toggle" onchange="toggleInterestAccrual(this.checked)" style="margin-top:3px;" />
-          <span>
-            <span style="font-size:0.85rem;font-weight:600;">Estimated interest <span class="premium-tag">Premium</span></span><br/>
-            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Automatically add estimated monthly interest to your balances on the 1st of each month, so tracked numbers stay close to your real statements. Promo 0% periods are respected. Your statement is always the source of truth — you can correct any balance in the edit screen.</span>
-          </span>
-        </label>
-      </div>
-      <!-- v1.13.0 — Unlock Premium box -->
-      <div id="unlock-box" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <span style="font-size:0.85rem;font-weight:600;">Premium</span>
-          <span id="premium-badge">★ Unlocked</span>
-        </div>
-        <div id="unlock-pending">
-          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
-            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, the cash-flow release card, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
-          </p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-            <div class="form-field" style="flex:2;min-width:180px;">
-              <label>License key</label>
-              <input type="text" id="license-input" placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX" />
-            </div>
-            <button class="btn btn-ghost" onclick="verifyLicense()" style="flex:1;min-width:120px;">Activate</button>
-          </div>
-          <div id="license-msg" style="margin-top:8px;font-size:0.78rem;font-family:var(--font-mono);"></div>
-        </div>
-        <div id="unlock-confirmed" style="display:none;">
-          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">
-            Premium is active on this device. Thank you for supporting the project! <a href="#" onclick="deactivateLicenseLocally();return false;" style="color:var(--text-dim);">Deactivate on this device</a>
-          </p>
-        </div>
-      </div>
-      <div style="margin-top:12px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
-      <div id="backup-msg" style="margin-top:12px;"></div>
-    </div>
+    
 
   </div>
 
@@ -2585,7 +2392,7 @@
       </div>
       <div class="alert warning" id="no-extra-alert" style="display:none; margin-top:12px; margin-bottom:0">
         <span>👆</span>
-        <span>Strategies look identical because no Extra Monthly Payment is set. <button onclick="document.getElementById('extra-payment').focus(); showSection('dashboard')" style="background:none;border:none;color:var(--accent);font-family:var(--font-mono);font-size:0.78rem;cursor:pointer;text-decoration:underline;padding:0;">Set your monthly extra on Dashboard</button> to see how each strategy compares.</span>
+        <span>Strategies look identical because no Extra Monthly Payment is set. <button onclick="goToBudget()" style="background:none;border:none;color:var(--accent);font-family:var(--font-mono);font-size:0.78rem;cursor:pointer;text-decoration:underline;padding:0;">Set your monthly extra</button> to see how each strategy compares.</span>
       </div>
     </div>
 
@@ -2605,6 +2412,146 @@
       <div class="lump-opt-actions" id="lump-opt-actions">
         <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
         <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-opt-action" onclick="applyOptimizedLumps()">Optimize my lump sums</button>
+      </div>
+    </div>
+
+    <!-- v1.30.0 — moved from Dashboard: these are planning tools, not daily actions -->
+<div class="card" id="budget-card" data-collapse="budget" data-collapse-default="open">
+      <div class="card-title"><div class="dot"></div> Monthly Payoff Budget</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr">
+        <div class="form-field">
+          <label>Extra Per Month ($)</label>
+          <input type="number" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculate()" onchange="recalculate()" />
+        </div>
+        <div class="form-field field-full">
+          <label>Strategy</label>
+          <select id="strategy-select" onchange="recalculate()">
+            <option value="avalanche">Avalanche &mdash; highest APR</option>
+            <option value="snowball">Snowball &mdash; lowest balance</option>
+            <option value="hybrid">Hybrid &mdash; custom order</option>
+          </select>
+        </div>
+      </div>
+    </div>
+<div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
+      <div class="card-title"><div class="dot"></div> Monthly Payment Summary</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
+          <div class="stat-mini-label">Min Payments Due</div>
+          <div id="summary-min-total" style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent3);">$0</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">across all accounts</div>
+        </div>
+        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
+          <div class="stat-mini-label">Total Monthly Payment</div>
+          <div id="summary-total-payment" style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent);">$0</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">minimums + extra</div>
+        </div>
+      </div>
+    </div>
+<div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="open" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
+      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
+        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
+        Planned lump sum applied
+      </div>
+      <div id="cashflow-events" style="margin-top:16px;"></div>
+    </div>
+<div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
+            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
+            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
+          </div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">See your cash come back</div>
+          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+<div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="open" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
+      <div id="roadmap-track"></div>
+    </div>
+<div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">Your full roadmap to zero</div>
+          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+<div class="card" id="lump-sum-card" data-collapse="lumps" data-collapse-default="closed" style="display:none">
+      <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
+      <div id="lump-sum-list"></div>
+      <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+        <button id="lump-mode-auto" onclick="setLumpMode('auto')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--accent);color:#0a0a0f;font-weight:700;letter-spacing:0.05em;">&#9654; Strategy Decides</button>
+        <button id="lump-mode-manual" onclick="setLumpMode('manual')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--card2);color:var(--text-muted);letter-spacing:0.05em;">&#9776; I Choose Debt</button>
+      </div>
+      <div id="lump-debt-field" style="display:none;margin-bottom:12px;">
+        <div class="form-field field-full">
+          <label>Debt Account</label>
+          <select id="lump-debt-select"></select>
+        </div>
+      </div>
+      <div class="form-grid form-grid-action form-grid-lump" style="margin-top:4px;">
+        <div class="form-field">
+          <label>Amount ($)</label>
+          <input type="number" id="lump-amount" placeholder="5000" min="1" step="100" />
+        </div>
+        <div class="form-field">
+          <label>Expected Date</label>
+          <input type="date" id="lump-date" />
+        </div>
+        <div class="form-field form-field-action" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" onclick="addLumpSum()">Add</button>
+        </div>
+      </div>
+      <div id="lump-auto-hint" style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">The system will allocate this amount across your debts following your current strategy.</div>
+    </div>
+<div class="card" id="lump-sum-teaser" style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;">
+            <div><div style="font-weight:600;">Tax Refund</div><div style="font-size:0.72rem;color:var(--text-muted);">Apr 2026 · Strategy decides</div></div>
+            <div style="font-family:var(--font-mono);color:var(--accent4);font-weight:700;">$3,000</div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
+            <div><div style="font-weight:600;">Year-End Bonus</div><div style="font-size:0.72rem;color:var(--text-muted);">Dec 2026 · Chase Sapphire</div></div>
+            <div style="font-family:var(--font-mono);color:var(--accent4);font-weight:700;">$5,000</div>
+          </div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">Schedule future windfalls into your plan</div>
+          <div class="lock-card-desc" style="max-width:280px;">Add a bonus or tax refund on a future date and your Freedom Date updates automatically. Unlock everything for a one-time $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
       </div>
     </div>
 
@@ -2736,7 +2683,7 @@
         </div>
       </div>
       <!-- Teaser shown to free users in place of the lump slider (blur style) -->
-      <div class="blur-teaser" data-teaser style="margin-top:16px" onclick="showSection('dashboard'); setTimeout(function(){ var u=document.getElementById('unlock-box'); if(u) u.scrollIntoView({behavior:'smooth',block:'center'}); }, 120);">
+      <div class="blur-teaser" data-teaser style="margin-top:16px" onclick="goToUnlock()">
         <div class="blur-content">
           <div class="range-label">
             <span>Lump Sum Paydown</span>
@@ -2803,7 +2750,7 @@
     <div class="cta-bar">
       <h3>Every dollar extra matters.</h3>
       <p>Putting just $100 more per month toward your debt can shave years off your payoff date and save thousands in interest.</p>
-      <button class="btn btn-primary" onclick="document.getElementById('extra-payment').focus(); showSection('dashboard')">Set My Monthly Extra →</button>
+      <button class="btn btn-primary" onclick="goToBudget()">Set My Monthly Extra →</button>
     </div>
   </div>
 
@@ -2835,6 +2782,78 @@
       <div class="debt-list" id="paid-debts-list"></div>
     </div>
   </div>
+
+  <!-- v1.30.0 — Settings tab. Backup/restore, theme and premium were sitting on
+       the Dashboard as permanent clutter despite being touched about once. Moving
+       them here keeps the Dashboard to the daily loop. -->
+  <div class="section" id="section-settings">
+<div class="card" id="backup-card" data-collapse="backup" data-collapse-default="open">
+      <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="update-btn" class="btn btn-primary" onclick="checkForUpdates()" style="flex:2;min-width:180px;">&#10231; Check for Updates</button>
+        <button class="btn btn-ghost" onclick="openWhatsNewModal()" style="flex:1;min-width:140px;">&#9733; What&#8217;s New</button>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="exportData()" style="flex:1;min-width:140px;">&#11015; Export Backup</button>
+        <label class="btn btn-ghost" style="flex:1;min-width:140px;cursor:pointer;text-align:center;">
+          &#11014; Import Backup
+          <input type="file" accept=".json" onchange="importData(event)" style="display:none;" />
+        </label>
+      </div>
+      <!-- v1.13.0 — Theme toggle (free) -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)" style="margin-top:3px;" />
+          <span>
+            <span style="font-size:0.85rem;font-weight:600;">Light theme</span><br/>
+            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Switch between the default dark theme and a light theme.</span>
+          </span>
+        </label>
+      </div>
+      <!-- v1.13.0 — Estimated interest (premium) -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="accrual-toggle" onchange="toggleInterestAccrual(this.checked)" style="margin-top:3px;" />
+          <span>
+            <span style="font-size:0.85rem;font-weight:600;">Estimated interest <span class="premium-tag">Premium</span></span><br/>
+            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Automatically add estimated monthly interest to your balances on the 1st of each month, so tracked numbers stay close to your real statements. Promo 0% periods are respected. Your statement is always the source of truth — you can correct any balance in the edit screen.</span>
+          </span>
+        </label>
+      </div>
+      <!-- v1.13.0 — Unlock Premium box -->
+      <div id="unlock-box" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:0.85rem;font-weight:600;">Premium</span>
+          <span id="premium-badge">★ Unlocked</span>
+        </div>
+        <div id="unlock-pending">
+          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
+            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, the cash-flow release card, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+            <div class="form-field" style="flex:2;min-width:180px;">
+              <label>License key</label>
+              <input type="text" id="license-input" placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX" />
+            </div>
+            <button class="btn btn-ghost" onclick="verifyLicense()" style="flex:1;min-width:120px;">Activate</button>
+          </div>
+          <div id="license-msg" style="margin-top:8px;font-size:0.78rem;font-family:var(--font-mono);"></div>
+        </div>
+        <div id="unlock-confirmed" style="display:none;">
+          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">
+            Premium is active on this device. Thank you for supporting the project! <a href="#" onclick="deactivateLicenseLocally();return false;" style="color:var(--text-dim);">Deactivate on this device</a>
+          </p>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
+      <div id="backup-msg" style="margin-top:12px;"></div>
+    </div>
+  </div>
+
 
   <!-- What's New Modal (v1.7.1) -->
   <div id="whatsnew-modal" class="modal-overlay hidden" onclick="closeWhatsNewModal(event)">
@@ -2977,7 +2996,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.29.0';
+const APP_VERSION = '1.30.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2985,6 +3004,18 @@ const APP_VERSION = '1.29.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.30.0',
+    date: 'August 11, 2026',
+    name: 'A cleaner layout',
+    whatsNew: [
+      'The Dashboard is now just your daily view: progress, payoff timeline, logging a payment, your debts, and the ones you\u2019ve beaten. It went from fourteen sections to six.',
+      'Planning tools moved to the Strategy tab, where they belong \u2014 your monthly budget, payment summary, cash-flow release, roadmap, lump sums, and the balance transfer modeller are now together in one place.',
+      'New Settings tab holds backup and restore, theme, premium status and the update check \u2014 things you set once, rather than clutter you scroll past every day.',
+      'Nothing was removed and none of your data or settings changed. Everything is still there, just somewhere more sensible.'
+    ],
+    fixes: []
+  },
   {
     version: '1.29.0',
     date: 'August 10, 2026',
@@ -3545,6 +3576,31 @@ function localDateStr(d) {
 // ═══════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════
+// v1.30.0 — navigation helpers. After the tab restructure, Budget lives on
+// Strategy and the premium unlock box lives on Settings. Routing through these
+// means a future move only needs updating in one place, instead of hunting down
+// every hardcoded showSection('dashboard') that assumed the old layout.
+function goToBudget() {
+  showSection('strategy');
+  if (typeof expandCollapse === 'function') expandCollapse('budget', false);
+  setTimeout(function() {
+    const el = document.getElementById('extra-payment');
+    if (el) {
+      const card = document.getElementById('budget-card');
+      if (card && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (el.focus) el.focus();
+    }
+  }, 140);
+}
+
+function goToUnlock() {
+  showSection('settings');
+  setTimeout(function() {
+    const u = document.getElementById('unlock-box');
+    if (u && u.scrollIntoView) u.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 140);
+}
+
 function showSection(id) {
   // v1.28.1 — a tab change resets scroll context, so bring the FAB back rather
   // than leaving it retracted from the previous section's scroll direction.
@@ -3562,6 +3618,8 @@ function showSection(id) {
     updateWhatIf();
   }
   if (id === 'milestones') renderMilestones();
+  // v1.30.0 — Settings is static markup (backup, theme, premium, update check);
+  // its state is applied by render()/applyPremiumState(), so no render call here.
   if (id === 'strategy') renderStrategy();
 }
 

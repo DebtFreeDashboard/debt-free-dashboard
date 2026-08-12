@@ -1,9 +1,11 @@
 {
-  "version": "1.29.0",
-  "releaseDate": "2026-08-10",
-  "releaseName": "Balance Transfer Modeller",
+  "version": "1.30.0",
+  "releaseDate": "2026-08-11",
+  "releaseName": "A cleaner layout",
   "notes": [
-    "New on the Strategy tab: model a 0% balance transfer offer. Tick the balances you're thinking of moving, enter the offer's 0% period, fee and post-promo rate, and see what it works out to for your debts - with the transfer fee counted in.",
-    "It answers the question that actually matters: would you clear the balance before the 0% period ends? If not, it shows how much would still be owed when the rate jumps, and what happens if your extra payment stopped along the way."
+    "The Dashboard is now just your daily view: progress, payoff timeline, logging a payment, your debts, and the ones you've beaten. It went from fourteen sections to six.",
+    "Planning tools moved to the Strategy tab, where they belong - your monthly budget, payment summary, cash-flow release, roadmap, lump sums, and the balance transfer modeller are now together in one place.",
+    "New Settings tab holds backup and restore, theme, premium status and the update check - things you set once, rather than clutter you scroll past every day.",
+    "Nothing was removed and none of your data or settings changed. Everything is still there, just somewhere more sensible."
   ]
 }
