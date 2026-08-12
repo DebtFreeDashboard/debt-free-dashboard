@@ -1302,6 +1302,17 @@
   .tc-life strong { color: var(--text); }
   .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
+  /* v1.30.1 — True Cost line inside the premium portfolio table */
+  .pf-truecost {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    line-height: 1.35;
+    color: var(--accent4);
+    margin-top: 3px;
+    white-space: normal;
+  }
+  .pf-truecost.warn { color: var(--accent3); }
+
   /* v1.29.0 — Balance Transfer Modeller */
   .xfer-intro { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 16px; }
   .xfer-sources { display: flex; flex-direction: column; gap: 6px; }
@@ -2816,7 +2827,7 @@
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
           <input type="checkbox" id="accrual-toggle" onchange="toggleInterestAccrual(this.checked)" style="margin-top:3px;" />
           <span>
-            <span style="font-size:0.85rem;font-weight:600;">Estimated interest <span class="premium-tag">Premium</span></span><br/>
+            <span style="font-size:0.85rem;font-weight:600;">Estimated interest</span><br/>
             <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Automatically add estimated monthly interest to your balances on the 1st of each month, so tracked numbers stay close to your real statements. Promo 0% periods are respected. Your statement is always the source of truth — you can correct any balance in the edit screen.</span>
           </span>
         </label>
@@ -2996,7 +3007,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.30.0';
+const APP_VERSION = '1.30.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3004,6 +3015,18 @@ const APP_VERSION = '1.30.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.30.1',
+    date: 'August 11, 2026',
+    name: 'Estimated interest is now free',
+    whatsNew: [
+      'Estimated interest is now free for everyone. It was marked Premium but switched on by default for new accounts, so free users could turn it off and never turn it back on \u2014 and their tracked balances would drift away from their real statements. Keeping your numbers accurate matters more than gating it.',
+      'Premium members now see the True Cost figures too \u2014 what each debt costs per day and in total interest at minimum payments \u2014 right in the portfolio table. This was showing on the free debt cards only.'
+    ],
+    fixes: [
+      'Fixed: leaving the minimum payment blank when EDITING a debt now estimates it for you, the same as it always has when adding one. Previously clearing that field left you stuck on an error until you typed a number.'
+    ]
+  },
   {
     version: '1.30.0',
     date: 'August 11, 2026',
@@ -4712,11 +4735,23 @@ function saveEditDebt() {
   const type    = document.getElementById('edit-type').value;
   const balance = parseFloat(document.getElementById('edit-balance').value);
   const apr     = parseFloat(document.getElementById('edit-apr').value);
-  const min     = parseFloat(document.getElementById('edit-min').value);
+  // v1.30.1 — a blank minimum is estimated here exactly as it is when adding a
+  // debt. Previously Add filled it in for you while Edit rejected it, so
+  // clearing the field to re-enter it left you stuck on an error.
+  const minRawEdit = document.getElementById('edit-min').value;
+  const min = (minRawEdit === '' || minRawEdit === null || typeof minRawEdit === 'undefined')
+    ? estimateMinPayment(balance, apr, type)
+    : parseFloat(minRawEdit);
   const hasPromo = document.getElementById('edit-has-promo').checked;
 
-  if (!name || isNaN(balance) || isNaN(apr) || isNaN(min)) {
+  if (!name || isNaN(balance) || isNaN(apr)) {
     alert('Please fill in all fields.'); return;
+  }
+  // A blank minimum was estimated above; a typed-but-invalid one is still rejected.
+  if (isNaN(min) || min < 0) {
+    alert('Minimum payment must be a positive number, or left blank to estimate it.');
+    document.getElementById('edit-min').focus();
+    return;
   }
 
   const safeApr = sanitizeApr(apr);
@@ -6071,15 +6106,12 @@ function processInterestAccrual() {
 // Settings toggle handler. On first enable, immediately accrue the current
 // month and summarize what was added so the feature is never silent.
 function toggleInterestAccrual(on) {
-  // v1.13.0 — paid feature. If a non-premium user flips it on, revert and nudge.
-  if (on && !isPremium) {
-    var t = document.getElementById('accrual-toggle');
-    if (t) t.checked = false;
-    showBackupMsg('ok', 'Estimated interest is a premium feature. Unlock for $12 to enable it.');
-    var box = document.getElementById('unlock-box');
-    if (box && box.scrollIntoView) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    return;
-  }
+  // v1.30.1 — estimated interest is now FREE for everyone. It was gated, but
+  // brand-new users had it enabled by default, so a free user saw a ticked box
+  // labelled "Premium" that they could never switch back on once unticked.
+  // Beyond the confusion, gating it meant free users' balances silently drifted
+  // away from their real statements — an app that shows wrong numbers is a
+  // worse product than one that gives this away.
   interestAccrualEnabled = !!on;
   if (interestAccrualEnabled) {
     const before = accruals.length;
@@ -7148,6 +7180,22 @@ function renderPortfolioTable(list) {
     const d = r.d;
     const orderCell = r.excluded ? '<span style="color:var(--text-dim);">—</span>' : (r.order === Infinity ? '—' : r.order);
     const exclTag = r.excluded ? ' <span class="tag tag-muted" style="font-size:0.55rem;">excluded</span>' : '';
+    // v1.30.1 — True Cost in the premium table. Free users saw the per-day bleed
+    // on their debt cards while paying customers, who get the portfolio table
+    // instead, saw nothing — so the premium view was missing a free feature.
+    // Rendered under the name rather than as an eighth column, which would
+    // crowd the table on a phone.
+    let tcTag = '';
+    const tc = (typeof trueCostOf === 'function') ? trueCostOf(d) : null;
+    if (tc) {
+      if (tc.neverPaysOff) {
+        tcTag = '<div class="pf-truecost warn">' + fmtDec(tc.perDay) + '/day \u00b7 ' +
+                (tc.trapMonth > 0 ? '0% ends soon, minimum won\u2019t cover interest' : 'minimum doesn\u2019t cover interest') + '</div>';
+      } else if (tc.lifetimeInterest !== null) {
+        tcTag = '<div class="pf-truecost">' + fmtDec(tc.perDay) + '/day \u00b7 ' +
+                fmtDec(tc.lifetimeInterest) + ' at minimums</div>';
+      }
+    }
     return '<tr data-id="' + d.id + '"' + (isHybrid ? ' draggable="true" class="pf-row-drag"' : '') + '>' +
       (isHybrid
         ? '<td class="pf-td" style="white-space:nowrap;">' +
@@ -7156,7 +7204,7 @@ function renderPortfolioTable(list) {
           '</td>'
         : '') +
       // v1.28.2 — data-label drives the stacked card layout below 560px.
-      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + '</td>' +
+      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + tcTag + '</td>' +
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
