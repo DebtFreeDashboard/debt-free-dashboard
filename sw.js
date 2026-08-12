@@ -1,10 +1,10 @@
 // DebtFree Dashboard — Service Worker
-// v1.30.1 (Free estimated interest + True Cost in table)
+// v1.30.2 (Clearer promo warning)
 // CACHE_NAME tracks APP_VERSION in dashboard.html — bump both together on every
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.30.1';
+const CACHE_NAME = 'debtfree-1.30.2';
 const CORE_ASSETS = [
   './',
   './dashboard.html',

@@ -1,10 +1,8 @@
 {
-  "version": "1.30.1",
+  "version": "1.30.2",
   "releaseDate": "2026-08-11",
-  "releaseName": "Estimated interest is now free",
+  "releaseName": "Clearer promo warning",
   "notes": [
-    "Estimated interest is now free for everyone. It was marked Premium but switched on by default for new accounts, so free users could turn it off and never turn it back on - and their tracked balances would drift away from their real statements.",
-    "Premium members now see the True Cost figures too - what each debt costs per day and in total interest at minimum payments - right in the portfolio table. This was showing on the free debt cards only.",
-    "Fixed: leaving the minimum payment blank when editing a debt now estimates it for you, the same as it always has when adding one. Previously clearing that field left you stuck on an error until you typed a number."
+    "Fixed confusing wording on 0% cards. A card whose promo runs until Nov 2027 was described as '0% ends soon', which read like an error. It now names the actual month the rate changes - the warning itself was right: after that date the minimum payment on that card won't cover the interest."
   ]
 }

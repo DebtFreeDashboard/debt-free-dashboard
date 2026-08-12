@@ -3007,7 +3007,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.30.1';
+const APP_VERSION = '1.30.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3015,6 +3015,15 @@ const APP_VERSION = '1.30.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.30.2',
+    date: 'August 11, 2026',
+    name: 'Clearer promo warning',
+    whatsNew: [],
+    fixes: [
+      'Fixed confusing wording on 0% cards. A card whose promo runs until Nov 2027 was described as \u201c0% ends soon\u201d, which read like an error. It now names the actual month the rate changes \u2014 the warning itself was right: after that date the minimum payment on that card won\u2019t cover the interest.'
+    ]
+  },
   {
     version: '1.30.1',
     date: 'August 11, 2026',
@@ -7189,8 +7198,21 @@ function renderPortfolioTable(list) {
     const tc = (typeof trueCostOf === 'function') ? trueCostOf(d) : null;
     if (tc) {
       if (tc.neverPaysOff) {
-        tcTag = '<div class="pf-truecost warn">' + fmtDec(tc.perDay) + '/day \u00b7 ' +
-                (tc.trapMonth > 0 ? '0% ends soon, minimum won\u2019t cover interest' : 'minimum doesn\u2019t cover interest') + '</div>';
+        // v1.30.2 — say WHEN the promo ends rather than "soon". A card whose 0%
+        // runs until Nov 2027 was being described as "ending soon", which reads
+        // like a bug and undercuts a warning that is actually correct: after
+        // that date the minimum genuinely won't cover the interest.
+        let trapMsg;
+        if (tc.trapMonth > 0 && tc.promoEnd) {
+          const pe = new Date(tc.promoEnd + 'T00:00:00');
+          const peLabel = isNaN(pe.getTime())
+            ? 'the promo ends'
+            : pe.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+          trapMsg = 'from ' + peLabel + ' the ' + fmtDec(d.minPayment || 0) + ' minimum won\u2019t cover interest';
+        } else {
+          trapMsg = 'minimum doesn\u2019t cover interest';
+        }
+        tcTag = '<div class="pf-truecost warn">' + fmtDec(tc.perDay) + '/day \u00b7 ' + trapMsg + '</div>';
       } else if (tc.lifetimeInterest !== null) {
         tcTag = '<div class="pf-truecost">' + fmtDec(tc.perDay) + '/day \u00b7 ' +
                 fmtDec(tc.lifetimeInterest) + ' at minimums</div>';
