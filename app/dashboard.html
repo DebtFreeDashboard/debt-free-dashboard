@@ -3007,7 +3007,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.30.2';
+const APP_VERSION = '1.30.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3015,6 +3015,27 @@ const APP_VERSION = '1.30.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.30.4',
+    date: 'August 12, 2026',
+    name: 'Sensible lump sum amounts',
+    whatsNew: [],
+    fixes: [
+      'Fixed the Lump Sum Optimizer assigning a debt more money than it owes \u2014 you could see two payments to the same card adding up to far more than its balance. Your totals and your freedom date were still right (the surplus was being carried on to your other debts behind the scenes), but the schedule it showed you didn\u2019t make sense. Each payment is now capped at what that debt will actually owe on that date, with the remainder given to debts that still have a balance.'
+    ]
+  },
+  {
+    version: '1.30.3',
+    date: 'August 11, 2026',
+    name: 'Your list follows your strategy',
+    whatsNew: [
+      'The Next Target card now shows the debt your extra payments are actually attacking. It used to show whichever debt would reach zero soonest \u2014 a different thing, since a card with a big minimum can finish first while your extra money works elsewhere. If another debt will clear before it, the card says so underneath.'
+    ],
+    fixes: [
+      'Fixed: Your Debts now lists in the payoff order your strategy produced, so switching between Snowball and Avalanche visibly re-orders it. It was showing debts in the order you added them, which never changed whichever strategy you picked.',
+      'Fixed: in Hybrid, the up and down arrows could appear to do nothing when a paid-off debt sat between two active ones \u2014 the move was being absorbed by the paid-off account. Arrows now move a debt past it to the next one you can actually see.'
+    ]
+  },
   {
     version: '1.30.2',
     date: 'August 11, 2026',
@@ -6830,21 +6851,33 @@ function renderNextDebt() {
   if (activeDebts.length === 0) { card.style.display = 'none'; return; }
 
   const sim = getPlanSim(); // v1.17.0 — memoized
-  // sim.order is the post-run balances array in strategy order; the first debt
-  // to reach zero is the one with the smallest paidOffMonth. Fall back to the
-  // first in strategy order if timing data isn't present.
-  let target = null;
+
+  // v1.30.3 — the card now leads with the debt the strategy is ATTACKING, i.e.
+  // where every extra dollar actually goes. It previously led with whichever
+  // debt would reach zero soonest, which is a different thing: a card with a
+  // large minimum can self-amortize first while the extra payments work on a
+  // higher-cost balance elsewhere. That made the card look stuck when someone
+  // switched strategy — the headline barely moved even though the plan had
+  // completely changed. "Next target" means where the money is aimed.
+  let target = currentAttackDebt();
+  let targetEta;
+
+  // Timing for whichever debt we're showing, plus which debt actually falls first.
+  let firstToFall = null, firstToFallEta = null;
   if (sim.perDebt && sim.perDebt.length) {
     const withTiming = sim.perDebt.filter(function(p){ return p.paidOffMonth != null; });
     if (withTiming.length) {
       withTiming.sort(function(a,b){ return a.paidOffMonth - b.paidOffMonth; });
-      target = debts.find(function(d){ return d.id === withTiming[0].id; });
-      var targetEta = withTiming[0].paidOffMonth;
+      firstToFall = debts.find(function(d){ return d.id === withTiming[0].id; });
+      firstToFallEta = withTiming[0].paidOffMonth;
+      if (target) {
+        const mine = withTiming.find(function(p){ return p.id === target.id; });
+        if (mine) targetEta = mine.paidOffMonth;
+      }
     }
   }
+  if (!target) { target = firstToFall; targetEta = firstToFallEta; }
   if (!target) {
-    // Fallback: strategy-order first active debt
-    const ordered = sim.order ? sim.order.filter(function(d){ return true; }) : [];
     target = debts.find(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
   }
   if (!target) { card.style.display = 'none'; return; }
@@ -6874,7 +6907,7 @@ function renderNextDebt() {
     const monthName = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     etaEl.textContent = '🎯 On track for ' + monthName + ' · ' + monthsAway(targetEta);
   } else {
-    etaEl.textContent = '🎯 Next debt to fall on your current plan.';
+    etaEl.textContent = '🎯 Where your extra payments are going.';
   }
 
   // v1.24.0 — when the next debt to FALL isn't the debt the strategy is
@@ -6884,9 +6917,15 @@ function renderNextDebt() {
   // now aimed somewhere else.
   const attackEl = document.getElementById('next-debt-attacking');
   if (attackEl) {
-    const atk = currentAttackDebt();
+    const atk = firstToFall;
     if (atk && target && atk.id !== target.id) {
-      attackEl.innerHTML = '&#9889; Your extra payments are attacking: <strong>' + escapeHtml(atk.name) + '</strong>';
+      const fallLabel = (function(){
+        if (typeof firstToFallEta !== 'number' || firstToFallEta <= 0) return '';
+        const fd = new Date(); fd.setMonth(fd.getMonth() + firstToFallEta);
+        return ' (' + fd.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + ')';
+      })();
+      attackEl.innerHTML = '&#9889; <strong>' + escapeHtml(atk.name) + '</strong> will clear first' + fallLabel +
+        ' \u2014 its own minimum gets there sooner.';
       attackEl.style.display = 'block';
     } else {
       attackEl.style.display = 'none';
@@ -6986,7 +7025,35 @@ function renderDebtList() {
 
   // v1.26.0 — the active list shows only live debts; eliminated ones move to the
   // Paid Off card below. The list visibly shrinking IS the reward.
-  const activeList = debts.filter(function(d) { return d.balance > 0; });
+  //
+  // v1.30.3 — and it is now ordered by the payoff order the strategy produced,
+  // so switching Snowball/Avalanche visibly re-orders the list. It used to
+  // render in the order debts were ADDED, which never changed no matter what
+  // strategy was picked — the premium portfolio table re-sorted correctly, so
+  // free users were the ones seeing a static list.
+  //
+  // Hybrid is deliberately excluded: there the debts array IS the user's custom
+  // payoff order, and the up/down controls act on that array, so re-sorting the
+  // display would fight the very thing those buttons change.
+  let activeList = debts.filter(function(d) { return d.balance > 0; });
+  if (strategy !== 'hybrid') {
+    const _sim = getPlanSim();
+    if (_sim && _sim.perDebt && _sim.perDebt.length) {
+      const rank = {};
+      _sim.perDebt.forEach(function(p) {
+        rank[p.id] = (p.paidOffMonth == null) ? Number.MAX_SAFE_INTEGER : p.paidOffMonth;
+      });
+      activeList = activeList.slice().sort(function(a, b) {
+        // Debts excluded from the plan have no payoff month; keep them last.
+        const ra = (a.includeInStrategy === false) ? Number.MAX_SAFE_INTEGER
+                 : (rank[a.id] != null ? rank[a.id] : Number.MAX_SAFE_INTEGER);
+        const rb = (b.includeInStrategy === false) ? Number.MAX_SAFE_INTEGER
+                 : (rank[b.id] != null ? rank[b.id] : Number.MAX_SAFE_INTEGER);
+        if (ra !== rb) return ra - rb;
+        return (b.balance || 0) - (a.balance || 0); // stable-ish tiebreak
+      });
+    }
+  }
   list.innerHTML = activeList.map((d, _i) => {
     const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
@@ -7065,7 +7132,7 @@ function renderDebtList() {
     return `
     <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
-      ${reorderControls(d.id, _i, debts.length)}
+      ${reorderControls(d.id, _i, activeList.length)}
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
       <div class="debt-name">${escapeHtml(d.name)} ${isZero ? '✅' : ''}${promoBadge}${excludedBadge}</div>
       <div class="debt-stats">
@@ -8067,11 +8134,46 @@ function _simWithAllocation(groups, alloc, targets, extra, strat) {
   return simulate(targets.map(function(d) { return {...d}; }), extra, 0, strat, disb);
 }
 
+// v1.30.4 — CAPACITY. How much each debt can actually absorb on each lump date,
+// once earlier lumps and ordinary payments have already reduced it. Without
+// this the optimizer would happily assign a debt more than it owes: the
+// interest math still came out right, because simulate() cascades the excess
+// onward, but the schedule written back to the user named payments far larger
+// than the balances they targeted — e.g. $29,675 aimed at a $22,000 card.
+function _capacityFor(groups, alloc, targets, extra, strat) {
+  const caps = groups.map(function(){ return {}; });
+  for (let gi = 0; gi < groups.length; gi++) {
+    // Everything fixed, plus whatever earlier groups have already been given.
+    const disb = nonAutoDisbursements();
+    for (let k = 0; k < gi; k++) {
+      const a = alloc[k];
+      for (const id in a) {
+        if (a[id] > 0.005) disb.push({ debtId: +id, debtName: '', amount: a[id], date: groups[k].date });
+      }
+    }
+    const traced = simulate(targets.map(function(d){ return {...d}; }), extra, 0, strat || strategy, disb, { trace: true });
+    const m = _monthsUntilDate(groups[gi].date);
+    const row = (traced.monthlyData || []).find(function(x){ return x.month === m; });
+    targets.forEach(function(d) {
+      caps[gi][d.id] = (row && row.byDebt && row.byDebt[d.id] != null)
+        ? Math.max(0, row.byDebt[d.id])
+        : d.balance;
+    });
+  }
+  return caps;
+}
+
+function _monthsUntilDate(ds) {
+  const t = new Date(ds + 'T00:00:00'), n = new Date();
+  if (isNaN(t.getTime())) return 0;
+  return Math.max(0, (t.getFullYear() - n.getFullYear()) * 12 + (t.getMonth() - n.getMonth()));
+}
+
 // A single greedy pass: hand out the money in chunks of `step`, each time
 // placing the chunk wherever it reduces total interest most. Fast, but the
 // answer it lands on depends on the chunk size — which is why it is only a
 // SEED here, never the final answer.
-function _seedAllocation(groups, targets, extra, strat, step) {
+function _seedAllocation(groups, targets, extra, strat, step, caps) {
   const alloc = groups.map(function(){ return {}; });
   targets.forEach(function(d){ alloc.forEach(function(a){ a[d.id] = 0; }); });
   const remaining = groups.map(function(g){ return g.total; });
@@ -8083,6 +8185,8 @@ function _seedAllocation(groups, targets, extra, strat, step) {
       const chunk = Math.min(step, remaining[gi]);
       for (let k = 0; k < targets.length; k++) {
         const id = targets[k].id;
+        // v1.30.4 — never assign a debt more than it can absorb on that date.
+        if (caps && caps[gi] && alloc[gi][id] + chunk > (caps[gi][id] || 0) + 0.5) continue;
         alloc[gi][id] += chunk;
         const r = _simWithAllocation(groups, alloc, targets, extra, strat);
         sims++;
@@ -8101,7 +8205,7 @@ function _seedAllocation(groups, targets, extra, strat, step) {
 // lump date (so each date's total never changes) at decreasing amounts, keeping
 // any shift that lowers total interest. This is what actually finds the good
 // answer — a lone greedy pass routinely leaves several hundred dollars behind.
-function _refineAllocation(groups, alloc, targets, extra, strat, budget) {
+function _refineAllocation(groups, alloc, targets, extra, strat, budget, caps) {
   let best = _simWithAllocation(groups, alloc, targets, extra, strat).totalInterest;
   let sims = 1;
   const grand = groups.reduce(function(s, g){ return s + g.total; }, 0);
@@ -8125,6 +8229,8 @@ function _refineAllocation(groups, alloc, targets, extra, strat, budget) {
             // goes negative, and since the write-back skips non-positive
             // amounts that silently INFLATES the total lump sum.
             if (alloc[gi][src] < delta - 1e-9) break;
+            // v1.30.4 — and never push a debt past what it can absorb.
+            if (caps && caps[gi] && alloc[gi][dst] + delta > (caps[gi][dst] || 0) + 0.5) continue;
             alloc[gi][src] -= delta; alloc[gi][dst] += delta;
             const r = _simWithAllocation(groups, alloc, targets, extra, strat);
             sims++;
@@ -8158,15 +8264,68 @@ function optimizeLumpAllocation(strat, opts) {
 
   let bestInterest = Infinity, bestAlloc = null, sims = 0;
   const found = [];
+  // Capacity baseline: what each debt can absorb with nothing allocated yet.
+  const emptyAlloc = groups.map(function(){ return {}; });
+  targets.forEach(function(d){ emptyAlloc.forEach(function(a){ a[d.id] = 0; }); });
+  let caps = _capacityFor(groups, emptyAlloc, targets, extra, strat);
+
   for (let i = 0; i < divisors.length; i++) {
     const step = Math.max(50, Math.round(grand / divisors[i] / 50) * 50);
-    const sd = _seedAllocation(groups, targets, extra, strat, step);
+    const sd = _seedAllocation(groups, targets, extra, strat, step, caps);
     sims += sd.sims;
-    const rf = _refineAllocation(groups, sd.alloc, targets, extra, strat, budget);
+    // Recompute capacity against the seeded plan: a debt's room on a later date
+    // shrinks once an earlier lump has been aimed at it.
+    const caps2 = _capacityFor(groups, sd.alloc, targets, extra, strat);
+    const rf = _refineAllocation(groups, sd.alloc, targets, extra, strat, budget, caps2);
     sims += rf.sims;
     found.push(rf.best);
     if (rf.best < bestInterest) { bestInterest = rf.best; bestAlloc = rf.alloc; }
   }
+
+  // Enforce capacity, then refine, then enforce again — the refinement moves
+  // money between debts, which changes what each can absorb on later dates, so
+  // the trim has to run LAST for the final schedule to be guaranteed valid.
+  // Group totals are preserved exactly at every step.
+  function _trimToCapacity(alloc) {
+    const caps = _capacityFor(groups, alloc, targets, extra, strat);
+    groups.forEach(function(g, gi) {
+      let spill = 0;
+      targets.forEach(function(d) {
+        const cap = (caps[gi][d.id] != null) ? caps[gi][d.id] : d.balance;
+        const have = alloc[gi][d.id] || 0;
+        if (have > cap + 0.005) { spill += (have - cap); alloc[gi][d.id] = cap; }
+      });
+      if (spill > 0.005) {
+        for (let k = 0; k < targets.length && spill > 0.005; k++) {
+          const d = targets[k];
+          const cap = (caps[gi][d.id] != null) ? caps[gi][d.id] : d.balance;
+          const room = cap - (alloc[gi][d.id] || 0);
+          if (room > 0.005) {
+            const give = Math.min(room, spill);
+            alloc[gi][d.id] = (alloc[gi][d.id] || 0) + give;
+            spill -= give;
+          }
+        }
+        // Every debt full: the remainder rides on the largest balance and
+        // simulate() carries it onward. The group total must never change.
+        if (spill > 0.005) {
+          const biggest = targets.slice().sort(function(a, b){ return (b.balance||0) - (a.balance||0); })[0];
+          if (biggest) alloc[gi][biggest.id] = (alloc[gi][biggest.id] || 0) + spill;
+        }
+      }
+    });
+    return caps;
+  }
+
+  if (bestAlloc) {
+    const caps1 = _trimToCapacity(bestAlloc);
+    const rf2 = _refineAllocation(groups, bestAlloc, targets, extra, strat, budget, caps1);
+    sims += rf2.sims;
+    bestAlloc = rf2.alloc;
+    _trimToCapacity(bestAlloc);   // final word: schedule is valid as shown
+    bestInterest = _simWithAllocation(groups, bestAlloc, targets, extra, strat).totalInterest;
+  }
+
   const spread = Math.max.apply(null, found) - bestInterest;
   const final = _simWithAllocation(groups, bestAlloc, targets, extra, strat);
   return { alloc: bestAlloc, groups: groups, interest: final.totalInterest,
@@ -9435,7 +9594,12 @@ function updateFeePreview() {
 function moveDebt(id, dir) {
   const i = debts.findIndex(function(d){ return d.id === id; });
   if (i === -1) return;
-  const j = i + dir;
+  // v1.30.3 — step to the next VISIBLE (still-active) debt, not the raw array
+  // neighbour. A paid-off debt sitting between two active ones used to absorb
+  // the move: the array changed, the on-screen order didn't, and the button
+  // looked broken.
+  let j = i + dir;
+  while (j >= 0 && j < debts.length && !(debts[j].balance > 0)) j += dir;
   if (j < 0 || j >= debts.length) return;
   const tmp = debts[i]; debts[i] = debts[j]; debts[j] = tmp;
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
@@ -9445,6 +9609,8 @@ function moveDebt(id, dir) {
 // Reorder controls markup, shared by both the card and table renderers.
 function reorderControls(id, idx, total) {
   if (strategy !== 'hybrid') return '';
+  // idx/total are the position within the VISIBLE list, so the first and last
+  // on-screen rows are the ones that disable — matching what moveDebt() does.
   return '<span class="reorder-ctl">' +
     '<button class="reorder-btn" title="Move up" aria-label="Move up"' + (idx === 0 ? ' disabled' : '') +
       ' onclick="event.stopPropagation(); moveDebt(' + id + ', -1)">\u2191</button>' +
@@ -9463,14 +9629,21 @@ function renderHybridOrderList() {
     wrap.innerHTML = '<div class="hybrid-order-empty">Add a debt to set a custom order.</div>';
     return;
   }
-  wrap.innerHTML = debts.map(function(d, i) {
-    const zero = d.balance <= 0;
-    return '<div class="hybrid-order-row' + (zero ? ' is-zero' : '') + '" data-id="' + d.id + '" draggable="true">' +
+  // v1.30.3 — active debts only. Paid-off ones can't hold a place in a payoff
+  // order, and including them made the numbering and the arrow disable-states
+  // disagree with what moveDebt() actually does.
+  const orderable = debts.filter(function(d) { return d.balance > 0; });
+  if (!orderable.length) {
+    wrap.innerHTML = '<div class="hybrid-order-empty">No active debts to order \u2014 every one is paid off.</div>';
+    return;
+  }
+  wrap.innerHTML = orderable.map(function(d, i) {
+    return '<div class="hybrid-order-row" data-id="' + d.id + '" draggable="true">' +
       '<span class="hybrid-order-num">' + (i + 1) + '</span>' +
       '<span class="drag-handle hybrid-drag" title="Drag to reorder"><span></span><span></span><span></span></span>' +
-      '<span class="hybrid-order-name">' + escapeHtml(d.name) + (zero ? ' \u2705' : '') + '</span>' +
+      '<span class="hybrid-order-name">' + escapeHtml(d.name) + '</span>' +
       '<span class="hybrid-order-bal">' + fmtDec(d.balance) + '</span>' +
-      reorderControls(d.id, i, debts.length) +
+      reorderControls(d.id, i, orderable.length) +
     '</div>';
   }).join('');
   initRowDragDrop(wrap.querySelectorAll('.hybrid-order-row'), wrap);

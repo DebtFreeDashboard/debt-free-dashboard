@@ -1,8 +1,9 @@
 {
-  "version": "1.30.2",
-  "releaseDate": "2026-08-11",
-  "releaseName": "Clearer promo warning",
+  "version": "1.30.4",
+  "releaseDate": "2026-08-12",
+  "releaseName": "Sensible lump sum amounts",
   "notes": [
-    "Fixed confusing wording on 0% cards. A card whose promo runs until Nov 2027 was described as '0% ends soon', which read like an error. It now names the actual month the rate changes - the warning itself was right: after that date the minimum payment on that card won't cover the interest."
+    "Fixed the Lump Sum Optimizer assigning a debt more money than it owes - you could see two payments to the same card adding up to far more than its balance. Your totals and your freedom date were still right (the surplus was being carried on to your other debts behind the scenes), but the schedule it showed you didn't make sense. Each payment is now capped at what that debt will actually owe on that date, with the remainder given to debts that still have a balance.",
+    "The optimizer also finds slightly better plans than before, because the freed-up money is now placed deliberately rather than spilling wherever it landed."
   ]
 }
