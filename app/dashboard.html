@@ -1313,6 +1313,25 @@
   }
   .pf-truecost.warn { color: var(--accent3); }
 
+  /* v1.31.0 — Optimized strategy note */
+  .optimized-note {
+    background: rgba(0,168,132,0.08);
+    border: 1px solid rgba(0,168,132,0.3);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .opt-note-title {
+    font-family: var(--font-display); font-weight: 700; font-size: 0.88rem;
+    color: var(--text); margin-bottom: 5px;
+  }
+  .opt-note-body { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+  .opt-note-body strong { color: var(--accent); }
+  .opt-note-basis {
+    font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-muted);
+    opacity: 0.8; margin-top: 7px; line-height: 1.4;
+  }
+
   /* v1.29.0 — Balance Transfer Modeller */
   .xfer-intro { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 16px; }
   .xfer-sources { display: flex; flex-direction: column; gap: 6px; }
@@ -2342,7 +2361,13 @@
     <div class="page-title">Payoff Strategy</div>
     <div class="page-subtitle">Pick your method. See the full payoff order and timeline.</div>
 
+    <div id="optimized-note" class="optimized-note" style="display:none;"></div>
     <div class="strategy-grid">
+      <div class="strategy-card" id="card-optimized" onclick="selectStrategy('optimized')">
+        <div class="strategy-icon">&#129504;</div>
+        <div class="strategy-name">Optimized</div>
+        <div class="strategy-desc">Works out the order that costs you the least, including when 0% rates end.</div>
+      </div>
       <div class="strategy-card selected" id="card-avalanche" onclick="selectStrategy('avalanche')">
         <div class="strategy-icon">🏔️</div>
         <div class="strategy-name">Avalanche</div>
@@ -2437,6 +2462,7 @@
         <div class="form-field field-full">
           <label>Strategy</label>
           <select id="strategy-select" onchange="recalculate()">
+            <option value="optimized">Optimized &mdash; lowest total interest</option>
             <option value="avalanche">Avalanche &mdash; highest APR</option>
             <option value="snowball">Snowball &mdash; lowest balance</option>
             <option value="hybrid">Hybrid &mdash; custom order</option>
@@ -3007,7 +3033,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.30.4';
+const APP_VERSION = '1.31.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3015,6 +3041,26 @@ const APP_VERSION = '1.30.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.31.0',
+    date: 'August 14, 2026',
+    name: 'New: Optimized strategy',
+    whatsNew: [
+      'New strategy: Optimized. Snowball orders your debts by balance and Avalanche by interest rate \u2014 but neither can see that a card sitting at 0% today will charge 27% once its promo ends. Optimized works out the order that actually costs you the least, taking those end dates into account. With seven debts or fewer it checks every possible order, so nothing is missed.',
+      'It tells you honestly how much it saves compared with Snowball or Avalanche \u2014 including when the answer is \u201cabout the same\u201d, because for plenty of people it will be, and then the one you\u2019ll actually stick with is the better plan.',
+      'Optimized is the starting strategy for new accounts. If you already use Snowball, Avalanche or Hybrid, nothing changed \u2014 your strategy is still yours to pick.'
+    ],
+    fixes: []
+  },
+  {
+    version: '1.30.5',
+    date: 'August 14, 2026',
+    name: 'Optimizer accuracy fix',
+    whatsNew: [],
+    fixes: [
+      'Fixed the Lump Sum Optimizer occasionally reporting a worse plan than the one you already have, and showing an impossible negative margin on the strategy comparison. Every option it considers is now measured as the schedule you would actually follow, and your current lump sum arrangement is included as one of the options \u2014 so if nothing beats what you have, it now says so instead of proposing a change that costs you money.'
+    ]
+  },
   {
     version: '1.30.4',
     date: 'August 12, 2026',
@@ -5616,12 +5662,153 @@ function quickLogPayment() {
 // ═══════════════════════════════════════════
 //  STRATEGY SELECTION
 // ═══════════════════════════════════════════
+// ── v1.31.0 — OPTIMIZED STRATEGY ──
+// Snowball ranks by balance; Avalanche ranks by interest rate. Neither can see
+// that a 0% promo card reading "0%" today will cost 27% in four months, so on
+// portfolios with promo balances BOTH routinely pick a worse payoff order than
+// one that simply looks ahead. Measured on a real 5-debt portfolio: the best
+// order cost $1,128 in interest, Snowball $1,322, Avalanche $1,355 — the named
+// strategies were ~$200 worse, and neither could express the right answer.
+//
+// This finds the order that actually costs least, by searching orders and
+// scoring each with the same simulate() everything else uses.
+//   <= 7 active debts : every permutation, so the answer is provably optimal
+//                       (5,040 orders ~0.7s; 8 debts would be 40,320 ~6.6s)
+//   >  7 active debts : seeded local search — very good, not provably best,
+//                       and the UI must not claim otherwise.
+const OPTIMIZED_EXHAUSTIVE_LIMIT = 7;
+
+function _permute(arr) {
+  if (arr.length <= 1) return [arr];
+  const out = [];
+  for (let i = 0; i < arr.length; i++) {
+    const rest = arr.slice(0, i).concat(arr.slice(i + 1));
+    _permute(rest).forEach(function(p) { out.push([arr[i]].concat(p)); });
+  }
+  return out;
+}
+
+function _scoreOrder(orderIds, targets, extra, disb) {
+  const arranged = orderIds.map(function(id) {
+    return targets.find(function(d) { return d.id === id; });
+  }).filter(Boolean);
+  if (arranged.length !== targets.length) return null;
+  return simulate(arranged.map(function(d) { return {...d}; }), extra, 0, 'hybrid', disb);
+}
+
+// Heuristic seeds for the large-portfolio path: rank by the rate that will
+// eventually apply, by how soon interest starts, by balance, and by rate today.
+function _seedOrders(targets) {
+  const byFuture = targets.slice().sort(function(a, b) {
+    const ra = Number(a.postPromoApr != null ? a.postPromoApr : (a.realApr != null ? a.realApr : a.apr)) || 0;
+    const rb = Number(b.postPromoApr != null ? b.postPromoApr : (b.realApr != null ? b.realApr : b.apr)) || 0;
+    return rb - ra;
+  });
+  const byPromoSoonest = targets.slice().sort(function(a, b) {
+    const da = a.hasPromo && a.promoEnd ? new Date(a.promoEnd).getTime() : 0;
+    const db = b.hasPromo && b.promoEnd ? new Date(b.promoEnd).getTime() : 0;
+    return da - db;
+  });
+  const byBalance = targets.slice().sort(function(a, b) { return a.balance - b.balance; });
+  const byRateNow = targets.slice().sort(function(a, b) { return (b.apr || 0) - (a.apr || 0); });
+  return [byFuture, byPromoSoonest, byBalance, byRateNow].map(function(list) {
+    return list.map(function(d) { return d.id; });
+  });
+}
+
+// Returns { order:[ids], interest, months, exhaustive:bool, considered:int } or null.
+function computeOptimizedOrder() {
+  const targets = _activePlanDebts();
+  if (targets.length < 2) return null;
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const disb = plannedDisbursements();
+  const ids = targets.map(function(d) { return d.id; });
+
+  let best = null, considered = 0;
+
+  if (targets.length <= OPTIMIZED_EXHAUSTIVE_LIMIT) {
+    const all = _permute(ids);
+    for (let i = 0; i < all.length; i++) {
+      const r = _scoreOrder(all[i], targets, extra, disb);
+      considered++;
+      if (r && !r.diverged && (!best || r.totalInterest < best.interest - 1e-9)) {
+        best = { order: all[i], interest: r.totalInterest, months: r.months };
+      }
+    }
+    return best ? { order: best.order, interest: best.interest, months: best.months,
+                    exhaustive: true, considered: considered } : null;
+  }
+
+  // Large portfolio: seed, then improve by swapping pairs until nothing helps.
+  _seedOrders(targets).forEach(function(seed) {
+    const r = _scoreOrder(seed, targets, extra, disb);
+    considered++;
+    if (r && !r.diverged && (!best || r.totalInterest < best.interest - 1e-9)) {
+      best = { order: seed.slice(), interest: r.totalInterest, months: r.months };
+    }
+  });
+  if (!best) return null;
+  let improved = true, guard = 0;
+  while (improved && guard++ < 12 && considered < 4000) {
+    improved = false;
+    for (let i = 0; i < best.order.length - 1 && considered < 4000; i++) {
+      for (let j = i + 1; j < best.order.length && considered < 4000; j++) {
+        const cand = best.order.slice();
+        const t = cand[i]; cand[i] = cand[j]; cand[j] = t;
+        const r = _scoreOrder(cand, targets, extra, disb);
+        considered++;
+        if (r && !r.diverged && r.totalInterest < best.interest - 1e-9) {
+          best = { order: cand, interest: r.totalInterest, months: r.months };
+          improved = true;
+        }
+      }
+    }
+  }
+  return { order: best.order, interest: best.interest, months: best.months,
+           exhaustive: false, considered: considered };
+}
+
+// Cached: the search is the most expensive thing on the Strategy tab.
+let _optOrderCache = { key: null, res: null };
+function getOptimizedOrder() {
+  const targets = _activePlanDebts();
+  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const key = JSON.stringify([extra,
+    targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
+    plannedDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })]);
+  if (_optOrderCache.key === key) return _optOrderCache.res;
+  const res = computeOptimizedOrder();
+  _optOrderCache = { key: key, res: res };
+  return res;
+}
+
+// Reorder the debts array into the optimal sequence. simulate() reads array
+// order for 'hybrid'/'optimized', so this IS how the order takes effect.
+function applyOptimizedOrder() {
+  const opt = getOptimizedOrder();
+  if (!opt) return false;
+  const pos = {};
+  opt.order.forEach(function(id, i) { pos[id] = i; });
+  debts.sort(function(a, b) {
+    const pa = pos[a.id] != null ? pos[a.id] : 999;
+    const pb = pos[b.id] != null ? pos[b.id] : 999;
+    return pa - pb;
+  });
+  return true;
+}
+
 function selectStrategy(s) {
   strategy = s;
   document.querySelectorAll('.strategy-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('card-' + s).classList.add('selected');
+  const _card = document.getElementById('card-' + s);
+  if (_card) _card.classList.add('selected');
   document.getElementById('strategy-select').value = s;
   document.getElementById('hybrid-order-note').style.display = s === 'hybrid' ? 'block' : 'none';
+
+  // v1.31.0 — Optimized reorders the debts array into the cheapest sequence.
+  // simulate() reads array order for anything that isn't avalanche/snowball,
+  // so sorting the array IS how the order takes effect.
+  if (s === 'optimized') applyOptimizedOrder();
 
   // Toggle hybrid drag mode.
   // v1.23.2 — CRITICAL FIX: leaving Hybrid used to run debts.sort(by id),
@@ -5635,6 +5822,7 @@ function selectStrategy(s) {
   } else {
     document.body.classList.remove('hybrid-mode');
   }
+  _optOrderCache = { key: null, res: null };
 
   // v1.10.1 — strategy change can make auto-lumps stale; let banner re-evaluate
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
@@ -8262,30 +8450,17 @@ function optimizeLumpAllocation(strat, opts) {
   const divisors = opts.divisors || [7, 10, 14];
   const budget = opts.budget || 2000;
 
-  let bestInterest = Infinity, bestAlloc = null, sims = 0;
-  const found = [];
-  // Capacity baseline: what each debt can absorb with nothing allocated yet.
+  let sims = 0;
+
+  // v1.30.5 — every candidate is scored AFTER being trimmed to capacity, so the
+  // number reported is always the number of a schedule that can actually be
+  // followed. Scoring before the trim (as 1.30.4 did) meant the "best" figure
+  // belonged to an over-allocated plan; trimming it afterwards could push the
+  // real cost above every candidate, producing a negative uncertainty band and
+  // occasionally a recommendation worse than leaving the lumps alone.
   const emptyAlloc = groups.map(function(){ return {}; });
   targets.forEach(function(d){ emptyAlloc.forEach(function(a){ a[d.id] = 0; }); });
-  let caps = _capacityFor(groups, emptyAlloc, targets, extra, strat);
 
-  for (let i = 0; i < divisors.length; i++) {
-    const step = Math.max(50, Math.round(grand / divisors[i] / 50) * 50);
-    const sd = _seedAllocation(groups, targets, extra, strat, step, caps);
-    sims += sd.sims;
-    // Recompute capacity against the seeded plan: a debt's room on a later date
-    // shrinks once an earlier lump has been aimed at it.
-    const caps2 = _capacityFor(groups, sd.alloc, targets, extra, strat);
-    const rf = _refineAllocation(groups, sd.alloc, targets, extra, strat, budget, caps2);
-    sims += rf.sims;
-    found.push(rf.best);
-    if (rf.best < bestInterest) { bestInterest = rf.best; bestAlloc = rf.alloc; }
-  }
-
-  // Enforce capacity, then refine, then enforce again — the refinement moves
-  // money between debts, which changes what each can absorb on later dates, so
-  // the trim has to run LAST for the final schedule to be guaranteed valid.
-  // Group totals are preserved exactly at every step.
   function _trimToCapacity(alloc) {
     const caps = _capacityFor(groups, alloc, targets, extra, strat);
     groups.forEach(function(g, gi) {
@@ -8306,8 +8481,6 @@ function optimizeLumpAllocation(strat, opts) {
             spill -= give;
           }
         }
-        // Every debt full: the remainder rides on the largest balance and
-        // simulate() carries it onward. The group total must never change.
         if (spill > 0.005) {
           const biggest = targets.slice().sort(function(a, b){ return (b.balance||0) - (a.balance||0); })[0];
           if (biggest) alloc[gi][biggest.id] = (alloc[gi][biggest.id] || 0) + spill;
@@ -8317,16 +8490,53 @@ function optimizeLumpAllocation(strat, opts) {
     return caps;
   }
 
-  if (bestAlloc) {
-    const caps1 = _trimToCapacity(bestAlloc);
-    const rf2 = _refineAllocation(groups, bestAlloc, targets, extra, strat, budget, caps1);
+  // Score one candidate end to end: trim, refine under those limits, trim again
+  // (refinement moves money, which changes what later dates can absorb), then
+  // measure. The returned figure always belongs to a valid schedule.
+  function _finish(alloc) {
+    // Refine BEFORE the first trim: trimming a raw seed immediately locks the
+    // search into whatever shape the seed happened to have, and measurably
+    // worse plans come out the other side. Refine, trim, refine again under the
+    // resulting limits, then trim once more so the schedule is valid as shown.
+    const caps0 = _capacityFor(groups, alloc, targets, extra, strat);
+    const rf1 = _refineAllocation(groups, alloc, targets, extra, strat, budget, caps0);
+    sims += rf1.sims;
+    const caps1 = _trimToCapacity(rf1.alloc);
+    const rf2 = _refineAllocation(groups, rf1.alloc, targets, extra, strat, budget, caps1);
     sims += rf2.sims;
-    bestAlloc = rf2.alloc;
-    _trimToCapacity(bestAlloc);   // final word: schedule is valid as shown
-    bestInterest = _simWithAllocation(groups, bestAlloc, targets, extra, strat).totalInterest;
+    _trimToCapacity(rf2.alloc);
+    const res = _simWithAllocation(groups, rf2.alloc, targets, extra, strat);
+    return { alloc: rf2.alloc, interest: res.totalInterest, months: res.months };
   }
 
-  const spread = Math.max.apply(null, found) - bestInterest;
+  const candidates = [];
+
+  // The user's CURRENT allocation is itself a candidate. If nothing beats what
+  // they already have, the honest answer is "leave it alone" — and that can
+  // only be said if it was actually in the running.
+  const currentAlloc = groups.map(function(){ return {}; });
+  targets.forEach(function(d){ currentAlloc.forEach(function(a){ a[d.id] = 0; }); });
+  lumpSums.forEach(function(l) {
+    if (l.mode && l.mode !== 'auto') return;
+    const gi = groups.findIndex(function(g){ return g.date === l.date; });
+    if (gi >= 0 && currentAlloc[gi][l.debtId] != null) currentAlloc[gi][l.debtId] += l.amount;
+  });
+  candidates.push(_finish(currentAlloc));
+
+  for (let i = 0; i < divisors.length; i++) {
+    const step = Math.max(50, Math.round(grand / divisors[i] / 50) * 50);
+    const sd = _seedAllocation(groups, targets, extra, strat, step,
+                               _capacityFor(groups, emptyAlloc, targets, extra, strat));
+    sims += sd.sims;
+    candidates.push(_finish(sd.alloc));
+  }
+
+  candidates.sort(function(a, b){ return a.interest - b.interest; });
+  const bestAlloc = candidates[0].alloc;
+  const bestInterest = candidates[0].interest;
+  const found = candidates.map(function(c){ return c.interest; });
+
+  const spread = Math.max(0, Math.max.apply(null, found) - bestInterest);
   const final = _simWithAllocation(groups, bestAlloc, targets, extra, strat);
   return { alloc: bestAlloc, groups: groups, interest: final.totalInterest,
            months: final.months, spread: spread, sims: sims };
@@ -8669,6 +8879,60 @@ function renderStrategy() {
     if (!_tied) {
       const bestEl = document.getElementById(best === 'Avalanche' ? 'cmp-card-av' : 'cmp-card-sb');
       if (bestEl) bestEl.classList.add('best');
+    }
+  }
+
+  // v1.31.0 — Optimized explanation. States what the math shows for THIS
+  // portfolio and, critically, is honest when the gain is trivial: a strategy
+  // billed as outperforming has to admit when it doesn't, or the big numbers
+  // stop being believable. Only claims optimality when the search was
+  // exhaustive; above that debt count it says "best we found".
+  const _optNote = document.getElementById('optimized-note');
+  if (_optNote) {
+    if (strategy !== 'optimized') {
+      _optNote.style.display = 'none';
+    } else {
+      const oo = getOptimizedOrder();
+      if (!oo) {
+        _optNote.style.display = 'none';
+      } else {
+        const nameById = {};
+        debts.forEach(function(d) { nameById[d.id] = d.name; });
+        const extraNow = parseFloat(document.getElementById('extra-payment').value) || 0;
+        const disbNow = plannedDisbursements();
+        const act = _activePlanDebts();
+        const sbR = simulate(act.map(function(d){ return {...d}; }), extraNow, 0, 'snowball', disbNow);
+        const avR = simulate(act.map(function(d){ return {...d}; }), extraNow, 0, 'avalanche', disbNow);
+        const bestNamed = Math.min(sbR.totalInterest, avR.totalInterest);
+        const bestNamedLabel = (sbR.totalInterest <= avR.totalInterest) ? 'Snowball' : 'Avalanche';
+        const gain = bestNamed - oo.interest;
+        const first = nameById[oo.order[0]] || '';
+        const last = nameById[oo.order[oo.order.length - 1]] || '';
+
+        let headline;
+        if (gain > 25) {
+          headline = 'For your debts this order costs about <strong>' + fmt(gain) +
+            ' less in interest</strong> than ' + bestNamedLabel + '.';
+        } else if (gain > 1) {
+          headline = 'For your debts this comes out within about ' + fmt(Math.max(1, gain)) +
+            ' of ' + bestNamedLabel + ' \u2014 <strong>much the same</strong>. Pick whichever you\u2019ll stick with.';
+        } else {
+          headline = 'For your debts this works out <strong>much the same as ' + bestNamedLabel +
+            '</strong>. Pick whichever you\u2019ll stick with.';
+        }
+
+        const basis = oo.exhaustive
+          ? 'Checked every possible payoff order (' + oo.considered.toLocaleString() + ') for your ' + act.length + ' debts.'
+          : 'Searched ' + oo.considered.toLocaleString() + ' orderings \u2014 the best found, though with this many debts it may not be the very best possible.';
+
+        _optNote.innerHTML =
+          '<div class="opt-note-title">&#129504; Why this order</div>' +
+          '<div class="opt-note-body">' + headline +
+          ' It starts with <strong>' + escapeHtml(first) + '</strong> and leaves <strong>' + escapeHtml(last) +
+          '</strong> for last, taking into account when each 0% rate ends rather than just today\u2019s rate.</div>' +
+          '<div class="opt-note-basis">' + basis + '</div>';
+        _optNote.style.display = 'block';
+      }
     }
   }
 
@@ -9396,6 +9660,12 @@ function exitDemo(persistDismissal) {
 // moves the math; the name field is optional to the engine).
 function startMyNumbers() {
   exitDemo(true);
+  // v1.31.0 — a genuinely new user starts on Optimized. The demo runs on
+  // Snowball because it's a curated illustration with no promo balances, where
+  // Optimized would simply match Avalanche and demonstrate nothing; the moment
+  // someone switches to their own numbers, the better default applies.
+  // Existing users are never touched — see load().
+  selectStrategy('optimized');
   save();
   render();
   showSection('dashboard');
@@ -9495,6 +9765,11 @@ function load() {
     const d = localStorage.getItem('debtfree_debts');
     const p = localStorage.getItem('debtfree_payments');
     const s = localStorage.getItem('debtfree_strategy');
+    // v1.31.0 — Optimized is the default for BRAND-NEW users only (no stored
+    // debts key at all). Anyone with existing data keeps the strategy they
+    // chose: silently switching someone's payoff plan is overriding a decision
+    // they made about their own money, whatever the math says.
+    if (d === null && s === null) strategy = 'optimized';
     const e = localStorage.getItem('debtfree_extra');
     const n = localStorage.getItem('debtfree_nextid');
     // v1.11.0 — accrual ledger + setting.

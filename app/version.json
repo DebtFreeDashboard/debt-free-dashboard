@@ -1,9 +1,11 @@
 {
-  "version": "1.30.4",
-  "releaseDate": "2026-08-12",
-  "releaseName": "Sensible lump sum amounts",
+  "version": "1.31.0",
+  "releaseDate": "2026-08-14",
+  "releaseName": "New: Optimized strategy",
   "notes": [
-    "Fixed the Lump Sum Optimizer assigning a debt more money than it owes - you could see two payments to the same card adding up to far more than its balance. Your totals and your freedom date were still right (the surplus was being carried on to your other debts behind the scenes), but the schedule it showed you didn't make sense. Each payment is now capped at what that debt will actually owe on that date, with the remainder given to debts that still have a balance.",
-    "The optimizer also finds slightly better plans than before, because the freed-up money is now placed deliberately rather than spilling wherever it landed."
+    "New strategy: Optimized. Snowball orders your debts by balance and Avalanche by interest rate - but neither can see that a card sitting at 0% today will charge 27% once its promo ends. Optimized works out the order that actually costs you the least, taking those end dates into account. With seven debts or fewer it checks every possible order, so nothing is missed.",
+    "It tells you honestly how much it saves compared with Snowball or Avalanche - including when the answer is 'about the same', because for plenty of people it will be, and then the one you'll actually stick with is the better plan.",
+    "Optimized is the starting strategy for new accounts. If you already use Snowball, Avalanche or Hybrid, nothing changed - your strategy is still yours to pick.",
+    "Also fixed: the Lump Sum Optimizer could report a worse plan than the one you already have, and show an impossible negative margin. Every option is now measured as the schedule you would actually follow."
   ]
 }
