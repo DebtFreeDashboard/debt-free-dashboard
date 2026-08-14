@@ -9,9 +9,14 @@
 <meta name="apple-mobile-web-app-title" content="DebtFree">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="Your interactive debt payoff command center. Know your freedom date.">
-<link rel="manifest" href="/app/manifest.json">
-<link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
-<link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
+<!-- v1.31.2 — manifest lives at the site root, not under /app/. The old
+     /app/manifest.json path 404s, so installed PWAs were getting no manifest
+     at all: no proper home-screen icon, name or splash screen. -->
+<link rel="manifest" href="/manifest.json">
+<!-- Apple ignores SVG for home-screen icons, so the touch icon must stay PNG. -->
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<link rel="icon" href="/assets/files/debtfree-mark-transparent.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
 <title>DebtFree Dashboard — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
@@ -3044,7 +3049,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.31.1';
+const APP_VERSION = '1.31.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3052,6 +3057,17 @@ const APP_VERSION = '1.31.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.31.2',
+    date: 'August 14, 2026',
+    name: 'New look',
+    whatsNew: [
+      'New DebtFree logo and app icon throughout the app and website.'
+    ],
+    fixes: [
+      'Fixed: the app was pointing at the wrong location for its install settings, so adding DebtFree to your home screen could give you a blank icon and the wrong name. Home-screen installs now pick up the proper icon, name and colours \u2014 if you already added it, remove it and add it again to get the new icon.'
+    ]
+  },
   {
     version: '1.31.1',
     date: 'August 14, 2026',

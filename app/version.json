@@ -1,9 +1,9 @@
 {
-  "version": "1.31.1",
+  "version": "1.31.2",
   "releaseDate": "2026-08-14",
-  "releaseName": "You'll see what's new",
+  "releaseName": "New look",
   "notes": [
-    "Fixed: update notes were not being shown when you opened the app after an update. The check had been switched off by accident since v1.18.0, so unless you went looking under Settings you had no way of knowing what had changed - including fixes that made your numbers more accurate. Opening the app after an update now shows you what changed.",
-    "If several updates have landed since you last looked, the most recent few are shown rather than the entire history, with the rest still available under Settings."
+    "New DebtFree logo and app icon throughout the app and website.",
+    "Fixed: the app was pointing at the wrong location for its install settings, so adding DebtFree to your home screen could give you a blank icon and the wrong name. Home-screen installs now pick up the proper icon, name and colours - if you already added it, remove it and add it again to get the new icon."
   ]
 }
