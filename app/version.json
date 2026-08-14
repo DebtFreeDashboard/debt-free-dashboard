@@ -1,11 +1,9 @@
 {
-  "version": "1.31.0",
+  "version": "1.31.1",
   "releaseDate": "2026-08-14",
-  "releaseName": "New: Optimized strategy",
+  "releaseName": "You'll see what's new",
   "notes": [
-    "New strategy: Optimized. Snowball orders your debts by balance and Avalanche by interest rate - but neither can see that a card sitting at 0% today will charge 27% once its promo ends. Optimized works out the order that actually costs you the least, taking those end dates into account. With seven debts or fewer it checks every possible order, so nothing is missed.",
-    "It tells you honestly how much it saves compared with Snowball or Avalanche - including when the answer is 'about the same', because for plenty of people it will be, and then the one you'll actually stick with is the better plan.",
-    "Optimized is the starting strategy for new accounts. If you already use Snowball, Avalanche or Hybrid, nothing changed - your strategy is still yours to pick.",
-    "Also fixed: the Lump Sum Optimizer could report a worse plan than the one you already have, and show an impossible negative margin. Every option is now measured as the schedule you would actually follow."
+    "Fixed: update notes were not being shown when you opened the app after an update. The check had been switched off by accident since v1.18.0, so unless you went looking under Settings you had no way of knowing what had changed - including fixes that made your numbers more accurate. Opening the app after an update now shows you what changed.",
+    "If several updates have landed since you last looked, the most recent few are shown rather than the entire history, with the rest still available under Settings."
   ]
 }

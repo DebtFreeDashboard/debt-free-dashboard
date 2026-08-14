@@ -1313,6 +1313,17 @@
   }
   .pf-truecost.warn { color: var(--accent3); }
 
+  /* v1.31.1 — "plus N earlier updates" footer in the What's New modal */
+  .whatsnew-more {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 12px 8px 4px;
+    border-top: 1px solid var(--border);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
   /* v1.31.0 — Optimized strategy note */
   .optimized-note {
     background: rgba(0,168,132,0.08);
@@ -3033,7 +3044,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.31.0';
+const APP_VERSION = '1.31.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3041,6 +3052,16 @@ const APP_VERSION = '1.31.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.31.1',
+    date: 'August 14, 2026',
+    name: 'You\u2019ll see what\u2019s new',
+    whatsNew: [],
+    fixes: [
+      'Fixed: update notes were not being shown when you opened the app after an update. The check had been switched off by accident since v1.18.0, so unless you went looking under Settings you had no way of knowing what had changed \u2014 including fixes that made your numbers more accurate. Opening the app after an update now shows you what changed.',
+      'If several updates have landed since you last looked, the most recent few are shown rather than the entire history, with the rest still available under Settings.'
+    ]
+  },
   {
     version: '1.31.0',
     date: 'August 14, 2026',
@@ -3581,11 +3602,16 @@ function renderWhatsNewEntries(entries) {
   }).join('');
 }
 
-function showWhatsNewModal(entries, markSeen) {
+function showWhatsNewModal(entries, markSeen, moreCount) {
   var content = document.getElementById('whatsnew-content');
   var modal   = document.getElementById('whatsnew-modal');
   if (!content || !modal || !entries || !entries.length) return;
-  content.innerHTML = renderWhatsNewEntries(entries);
+  var html = renderWhatsNewEntries(entries);
+  if (moreCount && moreCount > 0) {
+    html += '<div class="whatsnew-more">Plus ' + moreCount + ' earlier update' +
+            (moreCount === 1 ? '' : 's') + ' \u2014 the full history is under Settings &rsaquo; What\u2019s New.</div>';
+  }
+  content.innerHTML = html;
   modal.classList.remove('hidden');
   if (markSeen) {
     try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
@@ -3607,19 +3633,37 @@ function openWhatsNewModal() {
 function checkAndShowWhatsNew() {
   try {
     var lastSeen = null;
-    try { lastSeen = localStorage.getItem('debtfree_last_seen_version'); } catch(e) { lastSeen = null; }
-    var hasDebts = Array.isArray(debts) && debts.length > 0;
-    if (!lastSeen && !hasDebts) {
+    var storedDebts = null;
+    try {
+      lastSeen = localStorage.getItem('debtfree_last_seen_version');
+      storedDebts = localStorage.getItem('debtfree_debts');
+    } catch(e) { lastSeen = null; storedDebts = null; }
+
+    // v1.31.1 — judge "is this a real returning user" by STORED data, not the
+    // in-memory debts array: during the demo that array is full of example
+    // debts, which made a first-time visitor's opening screen a changelog for
+    // features they have never seen. First impressions matter more than notes.
+    var isRealUser = !!storedDebts;
+    if (!lastSeen && !isRealUser) {
       try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
       return;
     }
+    if (_demoMode) return;
+
     var baseline = lastSeen || '0.0.0';
     var unseen = RELEASE_NOTES.filter(function(e){
       return semverCompare(e.version, baseline) > 0;
     });
     if (!unseen.length) return;
     unseen.sort(function(a, b){ return semverCompare(b.version, a.version); });
-    showWhatsNewModal(unseen, /*markSeen*/ true);
+
+    // Someone returning after a long gap (or with no record at all) would
+    // otherwise get every release ever written in one modal. Show the most
+    // recent handful; the full history is still on the Settings tab.
+    var MAX_ON_OPEN = 3;
+    var trimmed = unseen.slice(0, MAX_ON_OPEN);
+    var more = unseen.length - trimmed.length;
+    showWhatsNewModal(trimmed, /*markSeen*/ true, more);
   } catch(e) {
     // never let release notes crash the app
   }
@@ -10222,6 +10266,16 @@ initInAppBanner();
 })();
 
 render();
+
+// v1.31.1 — RESTORED. This call was lost in v1.18.0 when the milestone
+// baseline was added to the boot sequence, so checkAndShowWhatsNew() sat
+// defined-but-never-called for roughly a dozen releases: nobody was shown what
+// changed unless they went digging in Settings. Release notes are how users
+// find out their numbers got more accurate, so this needs to survive.
+// Deferred a tick so it never competes with a milestone celebration.
+setTimeout(function() {
+  try { checkAndShowWhatsNew(); } catch (e) {}
+}, 400);
 </script>
 <script>
 // ── SERVICE WORKER REGISTRATION ──
