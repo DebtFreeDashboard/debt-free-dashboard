@@ -1,9 +1,9 @@
 {
-  "version": "1.28.3",
-  "releaseDate": "2026-08-15",
-  "releaseName": "Correct icon everywhere",
+  "version": "1.31.2",
+  "releaseDate": "2026-08-14",
+  "releaseName": "New look",
   "notes": [
-    "Fixed the app showing an old icon in browser prompts and on the home screen. The app description file was being looked for in the wrong place, so browsers fell back to a stale icon they had cached.",
-    "Fixed offline mode never actually saving a copy of the app. The offline cache was pointed at the wrong path, so opening the app without a connection could fail."
+    "New DebtFree logo and app icon throughout the app and website.",
+    "Fixed: the app was pointing at the wrong location for its install settings, so adding DebtFree to your home screen could give you a blank icon and the wrong name. Home-screen installs now pick up the proper icon, name and colours - if you already added it, remove it and add it again to get the new icon."
   ]
 }
