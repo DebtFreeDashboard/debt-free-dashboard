@@ -1,11 +1,4 @@
-<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="7" fill="#0a0a0f"/>
-  <g transform="translate(4, 4)">
-    <path d="M9 0 L3 0 L3 24 L9 24"  fill="none" stroke="#c8f135" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M15 0 L21 0 L21 24 L15 24" fill="none" stroke="#c8f135" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <rect x="5"  y="2"  width="6" height="19" rx="1.5" fill="#c8f135"/>
-    <rect x="10" y="7"  width="5" height="14" rx="1.5" fill="#c8f135" opacity="0.65"/>
-    <rect x="15" y="13" width="5" height="8"  rx="1.5" fill="#c8f135" opacity="0.32"/>
-    <circle cx="19" cy="22" r="2" fill="#c8f135"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="DebtFree">
+<title>DebtFree</title>
+<g transform="translate(61.44,116.16) scale(0.60800)"><path d="M 552.5 300.0 L 552.5 41.5 A 34.0 34.0 0 0 0 518.5 7.5 L 41.5 7.5 A 34.0 34.0 0 0 0 7.5 41.5 L 7.5 398.5 A 34.0 34.0 0 0 0 41.5 432.5 L 404.0 432.5" fill="none" stroke="#00e5b0" stroke-width="15.0" stroke-linecap="round"/><rect x="96.0" y="124.0" width="62.0" height="248.0" rx="9" fill="#00e5b0" opacity="0.42"/><rect x="184.0" y="203.4" width="62.0" height="168.6" rx="9" fill="#00e5b0" opacity="0.61"/><rect x="272.0" y="265.4" width="62.0" height="106.6" rx="9" fill="#00e5b0" opacity="0.80"/><rect x="360.0" y="315.0" width="62.0" height="57.0" rx="9" fill="#00e5b0" opacity="0.99"/><path d="M 127.0 112.0 C 290.0 124.0, 372.0 296.0, 596.0 424.0" fill="none" stroke="#00e5b0" stroke-width="19" stroke-linecap="round"/><path d="M 622.0 438.9 L 537.0 438.6 L 578.6 365.7 Z" fill="#00e5b0"/></g>
 </svg>

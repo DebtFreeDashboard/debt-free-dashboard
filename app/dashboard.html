@@ -9,13 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="DebtFree">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="Your interactive debt payoff command center. Know your freedom date.">
-<!-- v1.31.2 — manifest lives at the site root, not under /app/. The old
-     /app/manifest.json path 404s, so installed PWAs were getting no manifest
-     at all: no proper home-screen icon, name or splash screen. -->
-<link rel="manifest" href="/manifest.json">
-<!-- Apple ignores SVG for home-screen icons, so the touch icon must stay PNG. -->
+<link rel="manifest" href="/app/manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
-<link rel="icon" href="/assets/files/debtfree-mark-transparent.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
 <title>DebtFree Dashboard — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1307,145 +1303,6 @@
   .tc-life strong { color: var(--text); }
   .tc-promo { color: var(--accent4); font-size: 0.72rem; }
 
-  /* v1.30.1 — True Cost line inside the premium portfolio table */
-  .pf-truecost {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    line-height: 1.35;
-    color: var(--accent4);
-    margin-top: 3px;
-    white-space: normal;
-  }
-  .pf-truecost.warn { color: var(--accent3); }
-
-  /* v1.31.1 — "plus N earlier updates" footer in the What's New modal */
-  .whatsnew-more {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    text-align: center;
-    padding: 12px 8px 4px;
-    border-top: 1px solid var(--border);
-    margin-top: 10px;
-    line-height: 1.5;
-  }
-
-  /* v1.31.0 — Optimized strategy note */
-  .optimized-note {
-    background: rgba(0,168,132,0.08);
-    border: 1px solid rgba(0,168,132,0.3);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    margin-bottom: 14px;
-  }
-  .opt-note-title {
-    font-family: var(--font-display); font-weight: 700; font-size: 0.88rem;
-    color: var(--text); margin-bottom: 5px;
-  }
-  .opt-note-body { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
-  .opt-note-body strong { color: var(--accent); }
-  .opt-note-basis {
-    font-family: var(--font-mono); font-size: 0.66rem; color: var(--text-muted);
-    opacity: 0.8; margin-top: 7px; line-height: 1.4;
-  }
-
-  /* v1.29.0 — Balance Transfer Modeller */
-  .xfer-intro { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 16px; }
-  .xfer-sources { display: flex; flex-direction: column; gap: 6px; }
-  .xfer-src {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 10px 12px; cursor: pointer;
-  }
-  .xfer-src input { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; }
-  .xfer-src-name { flex: 1; font-weight: 600; font-size: 0.85rem; min-width: 0; }
-  .xfer-src-bal { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
-  .xfer-empty { font-size: 0.82rem; color: var(--text-muted); padding: 14px 0; }
-  .xfer-result-card {
-    margin-top: 18px; padding: 16px;
-    background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  }
-  .xfer-headline {
-    font-family: var(--font-display); font-weight: 800; font-size: 0.95rem;
-    color: var(--accent); line-height: 1.35; margin-bottom: 8px;
-  }
-  .xfer-sub { font-size: 0.85rem; color: var(--text); line-height: 1.5; margin-bottom: 14px; }
-  .xfer-risk { font-size: 0.82rem; line-height: 1.5; padding: 11px 13px; border-radius: var(--radius-sm); margin-bottom: 10px; }
-  .xfer-risk.ok   { background: rgba(0,168,132,0.09);  border: 1px solid rgba(0,168,132,0.3);  color: var(--text-muted); }
-  .xfer-risk.warn { background: rgba(224,72,72,0.09);  border: 1px solid rgba(224,72,72,0.35); color: var(--text-muted); }
-  .xfer-risk strong { color: var(--text); }
-  .xfer-stress { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; padding: 9px 0; border-top: 1px solid var(--border); }
-  .xfer-stress strong { color: var(--text); }
-  .xfer-note { font-size: 0.72rem; color: var(--text-dim, var(--text-muted)); line-height: 1.5; margin-top: 10px; opacity: 0.85; }
-
-  /* v1.28.3 — active strategy bar + lump optimizer panel */
-  .active-strategy-bar {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    flex-wrap: wrap;
-    background: rgba(0,168,132,0.09);
-    border: 1px solid rgba(0,168,132,0.3);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    margin-bottom: 10px;
-  }
-  .asb-label {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-  .asb-value {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--accent);
-  }
-  .asb-num { font-family: var(--font-mono); font-weight: 500; font-size: 0.8rem; color: var(--text); }
-  .comparison-note {
-    font-size: 0.74rem;
-    color: var(--text-muted);
-    line-height: 1.45;
-    margin-bottom: 12px;
-  }
-  .comparison-card.is-current { outline: 2px solid rgba(0,168,132,0.55); outline-offset: -2px; }
-  .comparison-card.is-current h4::after {
-    content: ' \2014 YOUR STRATEGY';
-    font-family: var(--font-mono);
-    font-size: 0.55rem;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-  }
-  .lump-opt-panel {
-    border-radius: var(--radius);
-    padding: 14px 16px;
-    margin-bottom: 16px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-  }
-  .lump-opt-panel.opt-available {
-    background: rgba(217,154,31,0.09);
-    border-color: rgba(217,154,31,0.4);
-  }
-  .lump-opt-panel.opt-good {
-    background: rgba(0,168,132,0.07);
-    border-color: rgba(0,168,132,0.25);
-  }
-  .lump-opt-head { display: flex; gap: 10px; align-items: flex-start; }
-  .lump-opt-icon { font-size: 1.2rem; line-height: 1.2; }
-  .lump-opt-title {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.92rem;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .lump-opt-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
-  .lump-opt-text strong { color: var(--accent4); }
-  .opt-good .lump-opt-text strong { color: var(--accent); }
-  .lump-opt-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 12px; }
-
   /* v1.26.0 — Paid Off Debts trophy case */
   /* v1.26.1 — summary stats. Previously three flex columns with min-width:90px:
      on a phone each column shrank below the width of its own number, and since
@@ -2048,7 +1905,6 @@
     <button class="nav-tab" onclick="showSection('strategy')">Strategy</button>
     <button class="nav-tab" onclick="showSection('whatif')">What If</button>
     <button class="nav-tab" onclick="showSection('milestones')">Wins</button>
-    <button class="nav-tab" onclick="showSection('settings')">Settings</button>
   </div>
 </nav>
 </div><!-- /sticky-top -->
@@ -2178,14 +2034,64 @@
     </div>
 
     <!-- v1.14.0 — Cash-Flow Release card (premium) -->
-    
+    <div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="open" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
+      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
+        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
+        Planned lump sum applied
+      </div>
+      <div id="cashflow-events" style="margin-top:16px;"></div>
+    </div>
     <!-- Cash-Flow teaser (free, blur) -->
-    
+    <div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
+            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
+            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
+          </div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">See your cash come back</div>
+          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
 
     <!-- v1.14.0 — Premium Roadmap timeline (premium) -->
-    
+    <div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="open" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
+      <div id="roadmap-track"></div>
+    </div>
     <!-- Roadmap teaser (free, blur) -->
-    
+    <div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">Your full roadmap to zero</div>
+          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
 
     <!-- Payment Log -->
     <div class="card" id="payment-log-card" style="display:none">
@@ -2356,119 +2262,7 @@
     </div>
 
     <!-- Monthly Budget -->
-    
-
-
-    <!-- Monthly Payment Summary -->
-    
-    <!-- Planned Lump Sums -->
-    
-
-    <!-- v1.13.0 — Planned Lump Sums teaser (free users, blur style) -->
-    
-
-    <!-- Backup & Restore -->
-    
-
-  </div>
-
-  <!-- ══════════════════════ STRATEGY ══════════════════════ -->
-  <div class="section" id="section-strategy">
-    <div class="page-title">Payoff Strategy</div>
-    <div class="page-subtitle">Pick your method. See the full payoff order and timeline.</div>
-
-    <div id="optimized-note" class="optimized-note" style="display:none;"></div>
-    <div class="strategy-grid">
-      <div class="strategy-card" id="card-optimized" onclick="selectStrategy('optimized')">
-        <div class="strategy-icon">&#129504;</div>
-        <div class="strategy-name">Optimized</div>
-        <div class="strategy-desc">Works out the order that costs you the least, including when 0% rates end.</div>
-      </div>
-      <div class="strategy-card selected" id="card-avalanche" onclick="selectStrategy('avalanche')">
-        <div class="strategy-icon">🏔️</div>
-        <div class="strategy-name">Avalanche</div>
-        <div class="strategy-desc">Pay highest interest first. Saves the most money overall.</div>
-      </div>
-      <div class="strategy-card" id="card-snowball" onclick="selectStrategy('snowball')">
-        <div class="strategy-icon">⛄</div>
-        <div class="strategy-name">Snowball</div>
-        <div class="strategy-desc">Pay smallest balance first. Quick wins keep you motivated.</div>
-      </div>
-      <div class="strategy-card" id="card-hybrid" onclick="selectStrategy('hybrid')">
-        <div class="strategy-icon">🎯</div>
-        <div class="strategy-name">Hybrid</div>
-        <div class="strategy-desc">You set the order. Maximum control over your plan.</div>
-      </div>
-    </div>
-
-    <!-- Comparison -->
-    <div class="card">
-      <div class="card-title"><div class="dot"></div> Strategy Comparison</div>
-      <!-- v1.28.3 — say plainly which strategy is running before showing any
-           numbers. Users were reading the comparison without realising which
-           card was their own plan. -->
-      <div class="active-strategy-bar" id="active-strategy-bar">
-        <span class="asb-label">Your plan today</span>
-        <span class="asb-value" id="asb-value">—</span>
-      </div>
-      <div class="comparison-note" id="comparison-note"></div>
-      <div class="comparison-grid" id="comparison-grid">
-        <div class="comparison-card" id="cmp-card-av">
-          <h4>🏔️ Avalanche</h4>
-          <div class="big" id="cmp-av-months">—</div>
-          <div class="sub">months to freedom</div>
-          <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-av-int">$— interest</div>
-        </div>
-        <div class="comparison-card" id="cmp-card-sb">
-          <h4>⛄ Snowball</h4>
-          <div class="big" id="cmp-sb-months">—</div>
-          <div class="sub">months to freedom</div>
-          <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-sb-int">$— interest</div>
-        </div>
-        <div class="comparison-card" id="cmp-card-min">
-          <h4>📊 Min Payments Only</h4>
-          <div class="big" id="cmp-min-months">—</div>
-          <div class="sub">months to freedom</div>
-          <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-min-int">$— interest</div>
-        </div>
-      </div>
-      <div class="alert" id="best-strategy-alert" style="display:none; margin-top:12px; margin-bottom:0">
-        <span>💡</span>
-        <span id="best-strategy-text"></span>
-      </div>
-      <!-- v1.24.0 — identical-plan notice: when the selected strategy produces
-           the exact same plan as another, say so instead of looking frozen -->
-      <div class="alert" id="identical-plan-alert" style="display:none; margin-top:12px; margin-bottom:0">
-        <span>&#8644;</span>
-        <span id="identical-plan-text"></span>
-      </div>
-      <div class="alert warning" id="no-extra-alert" style="display:none; margin-top:12px; margin-bottom:0">
-        <span>👆</span>
-        <span>Strategies look identical because no Extra Monthly Payment is set. <button onclick="goToBudget()" style="background:none;border:none;color:var(--accent);font-family:var(--font-mono);font-size:0.78rem;cursor:pointer;text-decoration:underline;padding:0;">Set your monthly extra</button> to see how each strategy compares.</span>
-      </div>
-    </div>
-
-    <!-- v1.28.3 — Lump sum optimizer. Replaces the old "re-distribute to match
-         your strategy" banner, which assumed aligning lumps with the strategy
-         was always better. On real data it could make a plan measurably worse.
-         This panel simulates both ways and only recommends a change when it
-         genuinely saves money — and shows exactly how much. -->
-    <div id="lump-optimizer-panel" class="lump-opt-panel" style="display:none;">
-      <div class="lump-opt-head">
-        <span class="lump-opt-icon">&#127919;</span>
-        <div>
-          <div class="lump-opt-title" id="lump-opt-title">Lump sum placement</div>
-          <div class="lump-opt-text" id="lump-opt-text"></div>
-        </div>
-      </div>
-      <div class="lump-opt-actions" id="lump-opt-actions">
-        <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
-        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-opt-action" onclick="applyOptimizedLumps()">Optimize my lump sums</button>
-      </div>
-    </div>
-
-    <!-- v1.30.0 — moved from Dashboard: these are planning tools, not daily actions -->
-<div class="card" id="budget-card" data-collapse="budget" data-collapse-default="open">
+    <div class="card" id="budget-card" data-collapse="budget" data-collapse-default="closed">
       <div class="card-title"><div class="dot"></div> Monthly Payoff Budget</div>
       <div class="form-grid" style="grid-template-columns:1fr 1fr">
         <div class="form-field">
@@ -2478,7 +2272,6 @@
         <div class="form-field field-full">
           <label>Strategy</label>
           <select id="strategy-select" onchange="recalculate()">
-            <option value="optimized">Optimized &mdash; lowest total interest</option>
             <option value="avalanche">Avalanche &mdash; highest APR</option>
             <option value="snowball">Snowball &mdash; lowest balance</option>
             <option value="hybrid">Hybrid &mdash; custom order</option>
@@ -2486,7 +2279,10 @@
         </div>
       </div>
     </div>
-<div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
+
+
+    <!-- Monthly Payment Summary -->
+    <div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Monthly Payment Summary</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
         <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
@@ -2501,61 +2297,8 @@
         </div>
       </div>
     </div>
-<div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="open" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
-      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
-        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
-        Planned lump sum applied
-      </div>
-      <div id="cashflow-events" style="margin-top:16px;"></div>
-    </div>
-<div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
-            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
-            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
-          </div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">See your cash come back</div>
-          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
-<div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="open" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
-      <div id="roadmap-track"></div>
-    </div>
-<div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">Your full roadmap to zero</div>
-          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
-<div class="card" id="lump-sum-card" data-collapse="lumps" data-collapse-default="closed" style="display:none">
+    <!-- Planned Lump Sums -->
+    <div class="card" id="lump-sum-card" data-collapse="lumps" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments</div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
       <div id="lump-sum-list"></div>
@@ -2585,7 +2328,9 @@
       </div>
       <div id="lump-auto-hint" style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">The system will allocate this amount across your debts following your current strategy.</div>
     </div>
-<div class="card" id="lump-sum-teaser" style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+
+    <!-- v1.13.0 — Planned Lump Sums teaser (free users, blur style) -->
+    <div class="card" id="lump-sum-teaser" style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
       <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
@@ -2608,66 +2353,146 @@
       </div>
     </div>
 
-    <!-- v1.29.0 — Balance Transfer Modeller. A NEUTRAL CALCULATOR, never a
-         recommender: it models the offer the user already has in hand and
-         reports what the math shows. It does not suggest transferring, does not
-         name or rank products, and does not tell anyone what to do with their
-         money. The headline result is the promo-expiry risk, not the saving —
-         a transfer that isn't cleared before 0% ends is exactly how these
-         offers hurt people, and a calculator that buries that is worse than
-         no calculator at all. -->
-    <div class="card" id="transfer-card" data-collapse="transfer" data-collapse-default="closed">
-      <div class="card-title"><div class="dot"></div> &#128179; Balance Transfer Modeller</div>
-
-      <div id="transfer-real">
-        <p class="xfer-intro">
-          Considering a 0% balance transfer offer? Enter its terms and see what the math works out to
-          for your debts &mdash; including whether you&rsquo;d clear it before the 0% period ends.
-        </p>
-
-        <div class="form-field">
-          <label>Move balances from</label>
-          <div id="xfer-sources" class="xfer-sources"></div>
-        </div>
-
-        <div class="form-grid" style="grid-template-columns:1fr 1fr">
-          <div class="form-field">
-            <label>Transfer to</label>
-            <select id="xfer-dest" onchange="renderTransfer()"></select>
-          </div>
-          <div class="form-field">
-            <label>0% period (months)</label>
-            <input type="number" id="xfer-months" value="13" min="1" max="60" step="1" oninput="renderTransfer()" />
-          </div>
-          <div class="form-field">
-            <label>Transfer fee (%)</label>
-            <input type="number" id="xfer-fee" value="5" min="0" max="10" step="0.1" oninput="renderTransfer()" />
-          </div>
-          <div class="form-field">
-            <label>Rate after 0% ends (%)</label>
-            <input type="number" id="xfer-apr" value="24.99" min="0" max="40" step="0.01" oninput="renderTransfer()" />
-          </div>
-        </div>
-
-        <div id="xfer-result"></div>
+    <!-- Backup & Restore -->
+    <div class="card" id="backup-card" data-collapse="backup" data-collapse-default="closed">
+      <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <button id="update-btn" class="btn btn-primary" onclick="checkForUpdates()" style="flex:2;min-width:180px;">&#10231; Check for Updates</button>
+        <button class="btn btn-ghost" onclick="openWhatsNewModal()" style="flex:1;min-width:140px;">&#9733; What&#8217;s New</button>
       </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="exportData()" style="flex:1;min-width:140px;">&#11015; Export Backup</button>
+        <label class="btn btn-ghost" style="flex:1;min-width:140px;cursor:pointer;text-align:center;">
+          &#11014; Import Backup
+          <input type="file" accept=".json" onchange="importData(event)" style="display:none;" />
+        </label>
+      </div>
+      <!-- v1.13.0 — Theme toggle (free) -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)" style="margin-top:3px;" />
+          <span>
+            <span style="font-size:0.85rem;font-weight:600;">Light theme</span><br/>
+            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Switch between the default dark theme and a light theme.</span>
+          </span>
+        </label>
+      </div>
+      <!-- v1.13.0 — Estimated interest (premium) -->
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+          <input type="checkbox" id="accrual-toggle" onchange="toggleInterestAccrual(this.checked)" style="margin-top:3px;" />
+          <span>
+            <span style="font-size:0.85rem;font-weight:600;">Estimated interest <span class="premium-tag">Premium</span></span><br/>
+            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Automatically add estimated monthly interest to your balances on the 1st of each month, so tracked numbers stay close to your real statements. Promo 0% periods are respected. Your statement is always the source of truth — you can correct any balance in the edit screen.</span>
+          </span>
+        </label>
+      </div>
+      <!-- v1.13.0 — Unlock Premium box -->
+      <div id="unlock-box" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:0.85rem;font-weight:600;">Premium</span>
+          <span id="premium-badge">★ Unlocked</span>
+        </div>
+        <div id="unlock-pending">
+          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
+            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, the cash-flow release card, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
+          </p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+            <div class="form-field" style="flex:2;min-width:180px;">
+              <label>License key</label>
+              <input type="text" id="license-input" placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX" />
+            </div>
+            <button class="btn btn-ghost" onclick="verifyLicense()" style="flex:1;min-width:120px;">Activate</button>
+          </div>
+          <div id="license-msg" style="margin-top:8px;font-size:0.78rem;font-family:var(--font-mono);"></div>
+        </div>
+        <div id="unlock-confirmed" style="display:none;">
+          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">
+            Premium is active on this device. Thank you for supporting the project! <a href="#" onclick="deactivateLicenseLocally();return false;" style="color:var(--text-dim);">Deactivate on this device</a>
+          </p>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
+      <div id="backup-msg" style="margin-top:12px;"></div>
+    </div>
 
-      <div id="transfer-teaser" class="blur-teaser" style="display:none; cursor:default;">
-        <div class="blur-content">
-          <div class="xfer-result-card">
-            <div class="xfer-headline">Saves $1,240 in interest</div>
-            <div class="xfer-sub">after the transfer fee &mdash; cleared 2 months before 0% ends</div>
-          </div>
+  </div>
+
+  <!-- ══════════════════════ STRATEGY ══════════════════════ -->
+  <div class="section" id="section-strategy">
+    <div class="page-title">Payoff Strategy</div>
+    <div class="page-subtitle">Pick your method. See the full payoff order and timeline.</div>
+
+    <div class="strategy-grid">
+      <div class="strategy-card selected" id="card-avalanche" onclick="selectStrategy('avalanche')">
+        <div class="strategy-icon">🏔️</div>
+        <div class="strategy-name">Avalanche</div>
+        <div class="strategy-desc">Pay highest interest first. Saves the most money overall.</div>
+      </div>
+      <div class="strategy-card" id="card-snowball" onclick="selectStrategy('snowball')">
+        <div class="strategy-icon">⛄</div>
+        <div class="strategy-name">Snowball</div>
+        <div class="strategy-desc">Pay smallest balance first. Quick wins keep you motivated.</div>
+      </div>
+      <div class="strategy-card" id="card-hybrid" onclick="selectStrategy('hybrid')">
+        <div class="strategy-icon">🎯</div>
+        <div class="strategy-name">Hybrid</div>
+        <div class="strategy-desc">You set the order. Maximum control over your plan.</div>
+      </div>
+    </div>
+
+    <!-- Comparison -->
+    <div class="card">
+      <div class="card-title"><div class="dot"></div> Strategy Comparison</div>
+      <div class="comparison-grid" id="comparison-grid">
+        <div class="comparison-card">
+          <h4>🏔️ Avalanche</h4>
+          <div class="big" id="cmp-av-months">—</div>
+          <div class="sub">months to freedom</div>
+          <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-av-int">$— interest</div>
         </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">&#128274;</div>
-          <div class="lock-card-title">Model a 0% balance transfer</div>
-          <div class="lock-card-desc" style="max-width:320px;">
-            See what a 0% offer really works out to for your debts &mdash; fee included, and whether
-            you&rsquo;d clear it before the rate jumps. One-time $12.
-          </div>
-          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
+        <div class="comparison-card">
+          <h4>⛄ Snowball</h4>
+          <div class="big" id="cmp-sb-months">—</div>
+          <div class="sub">months to freedom</div>
+          <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-sb-int">$— interest</div>
         </div>
+        <div class="comparison-card">
+          <h4>📊 Min Payments Only</h4>
+          <div class="big" id="cmp-min-months">—</div>
+          <div class="sub">months to freedom</div>
+          <div style="margin-top:8px; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted)" id="cmp-min-int">$— interest</div>
+        </div>
+      </div>
+      <div class="alert" id="best-strategy-alert" style="display:none; margin-top:12px; margin-bottom:0">
+        <span>💡</span>
+        <span id="best-strategy-text"></span>
+      </div>
+      <!-- v1.24.0 — identical-plan notice: when the selected strategy produces
+           the exact same plan as another, say so instead of looking frozen -->
+      <div class="alert" id="identical-plan-alert" style="display:none; margin-top:12px; margin-bottom:0">
+        <span>&#8644;</span>
+        <span id="identical-plan-text"></span>
+      </div>
+      <div class="alert warning" id="no-extra-alert" style="display:none; margin-top:12px; margin-bottom:0">
+        <span>👆</span>
+        <span>Strategies look identical because no Extra Monthly Payment is set. <button onclick="document.getElementById('extra-payment').focus(); showSection('dashboard')" style="background:none;border:none;color:var(--accent);font-family:var(--font-mono);font-size:0.78rem;cursor:pointer;text-decoration:underline;padding:0;">Set your monthly extra on Dashboard</button> to see how each strategy compares.</span>
+      </div>
+    </div>
+
+    <!-- v1.10.0 — Lump redistribution banner -->
+    <div id="lump-redist-banner" class="alert warning" style="display:none; margin-bottom:16px; flex-direction:column; align-items:flex-start; gap:10px">
+      <div style="display:flex; align-items:flex-start; gap:8px;">
+        <span>⚠️</span>
+        <span id="lump-redist-text"></span>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; align-self:stretch; justify-content:flex-end;">
+        <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
+        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-redist-action" onclick="applyRedistribution()">Re-distribute</button>
       </div>
     </div>
 
@@ -2736,7 +2561,7 @@
         </div>
       </div>
       <!-- Teaser shown to free users in place of the lump slider (blur style) -->
-      <div class="blur-teaser" data-teaser style="margin-top:16px" onclick="goToUnlock()">
+      <div class="blur-teaser" data-teaser style="margin-top:16px" onclick="showSection('dashboard'); setTimeout(function(){ var u=document.getElementById('unlock-box'); if(u) u.scrollIntoView({behavior:'smooth',block:'center'}); }, 120);">
         <div class="blur-content">
           <div class="range-label">
             <span>Lump Sum Paydown</span>
@@ -2803,7 +2628,7 @@
     <div class="cta-bar">
       <h3>Every dollar extra matters.</h3>
       <p>Putting just $100 more per month toward your debt can shave years off your payoff date and save thousands in interest.</p>
-      <button class="btn btn-primary" onclick="goToBudget()">Set My Monthly Extra →</button>
+      <button class="btn btn-primary" onclick="document.getElementById('extra-payment').focus(); showSection('dashboard')">Set My Monthly Extra →</button>
     </div>
   </div>
 
@@ -2835,78 +2660,6 @@
       <div class="debt-list" id="paid-debts-list"></div>
     </div>
   </div>
-
-  <!-- v1.30.0 — Settings tab. Backup/restore, theme and premium were sitting on
-       the Dashboard as permanent clutter despite being touched about once. Moving
-       them here keeps the Dashboard to the daily loop. -->
-  <div class="section" id="section-settings">
-<div class="card" id="backup-card" data-collapse="backup" data-collapse-default="open">
-      <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-        <button id="update-btn" class="btn btn-primary" onclick="checkForUpdates()" style="flex:2;min-width:180px;">&#10231; Check for Updates</button>
-        <button class="btn btn-ghost" onclick="openWhatsNewModal()" style="flex:1;min-width:140px;">&#9733; What&#8217;s New</button>
-      </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <button class="btn btn-ghost" onclick="exportData()" style="flex:1;min-width:140px;">&#11015; Export Backup</button>
-        <label class="btn btn-ghost" style="flex:1;min-width:140px;cursor:pointer;text-align:center;">
-          &#11014; Import Backup
-          <input type="file" accept=".json" onchange="importData(event)" style="display:none;" />
-        </label>
-      </div>
-      <!-- v1.13.0 — Theme toggle (free) -->
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-          <input type="checkbox" id="theme-toggle" onchange="toggleTheme(this.checked)" style="margin-top:3px;" />
-          <span>
-            <span style="font-size:0.85rem;font-weight:600;">Light theme</span><br/>
-            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Switch between the default dark theme and a light theme.</span>
-          </span>
-        </label>
-      </div>
-      <!-- v1.13.0 — Estimated interest (premium) -->
-      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
-          <input type="checkbox" id="accrual-toggle" onchange="toggleInterestAccrual(this.checked)" style="margin-top:3px;" />
-          <span>
-            <span style="font-size:0.85rem;font-weight:600;">Estimated interest</span><br/>
-            <span style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">Automatically add estimated monthly interest to your balances on the 1st of each month, so tracked numbers stay close to your real statements. Promo 0% periods are respected. Your statement is always the source of truth — you can correct any balance in the edit screen.</span>
-          </span>
-        </label>
-      </div>
-      <!-- v1.13.0 — Unlock Premium box -->
-      <div id="unlock-box" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <span style="font-size:0.85rem;font-weight:600;">Premium</span>
-          <span id="premium-badge">★ Unlocked</span>
-        </div>
-        <div id="unlock-pending">
-          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
-            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, the cash-flow release card, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
-          </p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-            <div class="form-field" style="flex:2;min-width:180px;">
-              <label>License key</label>
-              <input type="text" id="license-input" placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX" />
-            </div>
-            <button class="btn btn-ghost" onclick="verifyLicense()" style="flex:1;min-width:120px;">Activate</button>
-          </div>
-          <div id="license-msg" style="margin-top:8px;font-size:0.78rem;font-family:var(--font-mono);"></div>
-        </div>
-        <div id="unlock-confirmed" style="display:none;">
-          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;">
-            Premium is active on this device. Thank you for supporting the project! <a href="#" onclick="deactivateLicenseLocally();return false;" style="color:var(--text-dim);">Deactivate on this device</a>
-          </p>
-        </div>
-      </div>
-      <div style="margin-top:12px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
-      <div id="backup-msg" style="margin-top:12px;"></div>
-    </div>
-  </div>
-
 
   <!-- What's New Modal (v1.7.1) -->
   <div id="whatsnew-modal" class="modal-overlay hidden" onclick="closeWhatsNewModal(event)">
@@ -3049,7 +2802,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.31.2';
+const APP_VERSION = '1.28.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3057,147 +2810,6 @@ const APP_VERSION = '1.31.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
-  {
-    version: '1.31.2',
-    date: 'August 14, 2026',
-    name: 'New look',
-    whatsNew: [
-      'New DebtFree logo and app icon throughout the app and website.'
-    ],
-    fixes: [
-      'Fixed: the app was pointing at the wrong location for its install settings, so adding DebtFree to your home screen could give you a blank icon and the wrong name. Home-screen installs now pick up the proper icon, name and colours \u2014 if you already added it, remove it and add it again to get the new icon.'
-    ]
-  },
-  {
-    version: '1.31.1',
-    date: 'August 14, 2026',
-    name: 'You\u2019ll see what\u2019s new',
-    whatsNew: [],
-    fixes: [
-      'Fixed: update notes were not being shown when you opened the app after an update. The check had been switched off by accident since v1.18.0, so unless you went looking under Settings you had no way of knowing what had changed \u2014 including fixes that made your numbers more accurate. Opening the app after an update now shows you what changed.',
-      'If several updates have landed since you last looked, the most recent few are shown rather than the entire history, with the rest still available under Settings.'
-    ]
-  },
-  {
-    version: '1.31.0',
-    date: 'August 14, 2026',
-    name: 'New: Optimized strategy',
-    whatsNew: [
-      'New strategy: Optimized. Snowball orders your debts by balance and Avalanche by interest rate \u2014 but neither can see that a card sitting at 0% today will charge 27% once its promo ends. Optimized works out the order that actually costs you the least, taking those end dates into account. With seven debts or fewer it checks every possible order, so nothing is missed.',
-      'It tells you honestly how much it saves compared with Snowball or Avalanche \u2014 including when the answer is \u201cabout the same\u201d, because for plenty of people it will be, and then the one you\u2019ll actually stick with is the better plan.',
-      'Optimized is the starting strategy for new accounts. If you already use Snowball, Avalanche or Hybrid, nothing changed \u2014 your strategy is still yours to pick.'
-    ],
-    fixes: []
-  },
-  {
-    version: '1.30.5',
-    date: 'August 14, 2026',
-    name: 'Optimizer accuracy fix',
-    whatsNew: [],
-    fixes: [
-      'Fixed the Lump Sum Optimizer occasionally reporting a worse plan than the one you already have, and showing an impossible negative margin on the strategy comparison. Every option it considers is now measured as the schedule you would actually follow, and your current lump sum arrangement is included as one of the options \u2014 so if nothing beats what you have, it now says so instead of proposing a change that costs you money.'
-    ]
-  },
-  {
-    version: '1.30.4',
-    date: 'August 12, 2026',
-    name: 'Sensible lump sum amounts',
-    whatsNew: [],
-    fixes: [
-      'Fixed the Lump Sum Optimizer assigning a debt more money than it owes \u2014 you could see two payments to the same card adding up to far more than its balance. Your totals and your freedom date were still right (the surplus was being carried on to your other debts behind the scenes), but the schedule it showed you didn\u2019t make sense. Each payment is now capped at what that debt will actually owe on that date, with the remainder given to debts that still have a balance.'
-    ]
-  },
-  {
-    version: '1.30.3',
-    date: 'August 11, 2026',
-    name: 'Your list follows your strategy',
-    whatsNew: [
-      'The Next Target card now shows the debt your extra payments are actually attacking. It used to show whichever debt would reach zero soonest \u2014 a different thing, since a card with a big minimum can finish first while your extra money works elsewhere. If another debt will clear before it, the card says so underneath.'
-    ],
-    fixes: [
-      'Fixed: Your Debts now lists in the payoff order your strategy produced, so switching between Snowball and Avalanche visibly re-orders it. It was showing debts in the order you added them, which never changed whichever strategy you picked.',
-      'Fixed: in Hybrid, the up and down arrows could appear to do nothing when a paid-off debt sat between two active ones \u2014 the move was being absorbed by the paid-off account. Arrows now move a debt past it to the next one you can actually see.'
-    ]
-  },
-  {
-    version: '1.30.2',
-    date: 'August 11, 2026',
-    name: 'Clearer promo warning',
-    whatsNew: [],
-    fixes: [
-      'Fixed confusing wording on 0% cards. A card whose promo runs until Nov 2027 was described as \u201c0% ends soon\u201d, which read like an error. It now names the actual month the rate changes \u2014 the warning itself was right: after that date the minimum payment on that card won\u2019t cover the interest.'
-    ]
-  },
-  {
-    version: '1.30.1',
-    date: 'August 11, 2026',
-    name: 'Estimated interest is now free',
-    whatsNew: [
-      'Estimated interest is now free for everyone. It was marked Premium but switched on by default for new accounts, so free users could turn it off and never turn it back on \u2014 and their tracked balances would drift away from their real statements. Keeping your numbers accurate matters more than gating it.',
-      'Premium members now see the True Cost figures too \u2014 what each debt costs per day and in total interest at minimum payments \u2014 right in the portfolio table. This was showing on the free debt cards only.'
-    ],
-    fixes: [
-      'Fixed: leaving the minimum payment blank when EDITING a debt now estimates it for you, the same as it always has when adding one. Previously clearing that field left you stuck on an error until you typed a number.'
-    ]
-  },
-  {
-    version: '1.30.0',
-    date: 'August 11, 2026',
-    name: 'A cleaner layout',
-    whatsNew: [
-      'The Dashboard is now just your daily view: progress, payoff timeline, logging a payment, your debts, and the ones you\u2019ve beaten. It went from fourteen sections to six.',
-      'Planning tools moved to the Strategy tab, where they belong \u2014 your monthly budget, payment summary, cash-flow release, roadmap, lump sums, and the balance transfer modeller are now together in one place.',
-      'New Settings tab holds backup and restore, theme, premium status and the update check \u2014 things you set once, rather than clutter you scroll past every day.',
-      'Nothing was removed and none of your data or settings changed. Everything is still there, just somewhere more sensible.'
-    ],
-    fixes: []
-  },
-  {
-    version: '1.29.0',
-    date: 'August 10, 2026',
-    name: 'Balance Transfer Modeller',
-    whatsNew: [
-      'New on the Strategy tab: model a 0% balance transfer offer. Tick the balances you\u2019re thinking of moving, enter the offer\u2019s 0% period, fee and post-promo rate, and see what it works out to for your debts \u2014 with the transfer fee counted in.',
-      'It answers the question that actually matters: would you clear the balance before the 0% period ends? If not, it shows how much would still be owed when the rate jumps, and what happens if your extra payment stopped along the way.'
-    ],
-    fixes: []
-  },
-  {
-    version: '1.28.5',
-    date: 'August 10, 2026',
-    name: 'Lump Sum Optimizer',
-    whatsNew: [
-      'New: your Strategy tab now checks whether your scheduled lump sums are placed as well as they could be. Keeping the same dates and the same total, it searches for the split across your debts that saves the most interest \u2014 and tells you roughly how much you\u2019d save before you change anything.',
-      'The Strategy Comparison now says plainly which strategy you\u2019re on. The bar at the top shows what your plan costs today; each card shows what that strategy could cost at its best.',
-      'When two strategies come out close enough that the difference is within the margin of the comparison, the app now says they\u2019re effectively tied instead of crowning a winner \u2014 because for many people they genuinely are, and picking the one you\u2019ll stick with matters more.'
-    ],
-    fixes: [
-      'Fixed the old Re-distribute button, which moved your lump sums onto the debts your strategy was already attacking \u2014 and could make your plan worse. Your monthly extra is already hitting those debts; a lump sum does more good where the monthly payment won\u2019t reach in time. The optimizer will never recommend a change that costs you money.',
-      'Fixed the Strategy Comparison giving contradictory advice. It compared both strategies against one fixed lump sum allocation, so whichever strategy that allocation happened to suit would win. Each strategy is now shown with your lump sums placed at their best for that strategy.'
-    ]
-  },
-  {
-    version: '1.28.4',
-    date: 'August 10, 2026',
-    name: 'Clearer strategy numbers',
-    whatsNew: [],
-    fixes: [
-      'Fixed confusing labelling on the Strategy tab. The bar at the top shows what your plan costs TODAY, while each strategy card shows what that strategy could cost AT ITS BEST with your lump sums placed optimally \u2014 but both were tagged \u201cYour plan\u201d, so the same strategy appeared to show two different interest totals. The bar now reads \u201cYour plan today\u201d, cards read \u201cinterest at best\u201d, and the note explains the gap between them.'
-    ]
-  },
-  {
-    version: '1.28.3',
-    date: 'August 10, 2026',
-    name: 'Lump Sum Optimizer',
-    whatsNew: [
-      'New: your Strategy tab now checks whether your scheduled lump sums are placed as well as they could be. Keeping the same dates and the same total, it finds the split across your debts that saves the most interest \u2014 and tells you exactly how much you\u2019d save before you change anything.',
-      'The Strategy Comparison now says plainly which strategy you\u2019re on, with your current months and interest right at the top, and marks your plan among the cards.'
-    ],
-    fixes: [
-      'Fixed a real problem with the old Re-distribute button: it moved your lump sums onto the debts your strategy was already attacking, which could make your plan WORSE. Your monthly extra payment is already hitting those debts \u2014 a lump sum does more good where the monthly payment won\u2019t reach in time. The optimizer now handles this properly and will never recommend a change that costs you money.',
-      'Fixed the Strategy Comparison giving contradictory advice. It used to compare both strategies against one fixed lump sum allocation, so whichever strategy that allocation happened to suit would win \u2014 and the recommendation could flip on identical data. Each strategy is now shown with your lump sums placed at their best for that strategy, which is the only fair comparison.'
-    ]
-  },
   {
     version: '1.28.2',
     date: 'August 8, 2026',
@@ -3618,16 +3230,11 @@ function renderWhatsNewEntries(entries) {
   }).join('');
 }
 
-function showWhatsNewModal(entries, markSeen, moreCount) {
+function showWhatsNewModal(entries, markSeen) {
   var content = document.getElementById('whatsnew-content');
   var modal   = document.getElementById('whatsnew-modal');
   if (!content || !modal || !entries || !entries.length) return;
-  var html = renderWhatsNewEntries(entries);
-  if (moreCount && moreCount > 0) {
-    html += '<div class="whatsnew-more">Plus ' + moreCount + ' earlier update' +
-            (moreCount === 1 ? '' : 's') + ' \u2014 the full history is under Settings &rsaquo; What\u2019s New.</div>';
-  }
-  content.innerHTML = html;
+  content.innerHTML = renderWhatsNewEntries(entries);
   modal.classList.remove('hidden');
   if (markSeen) {
     try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
@@ -3649,37 +3256,19 @@ function openWhatsNewModal() {
 function checkAndShowWhatsNew() {
   try {
     var lastSeen = null;
-    var storedDebts = null;
-    try {
-      lastSeen = localStorage.getItem('debtfree_last_seen_version');
-      storedDebts = localStorage.getItem('debtfree_debts');
-    } catch(e) { lastSeen = null; storedDebts = null; }
-
-    // v1.31.1 — judge "is this a real returning user" by STORED data, not the
-    // in-memory debts array: during the demo that array is full of example
-    // debts, which made a first-time visitor's opening screen a changelog for
-    // features they have never seen. First impressions matter more than notes.
-    var isRealUser = !!storedDebts;
-    if (!lastSeen && !isRealUser) {
+    try { lastSeen = localStorage.getItem('debtfree_last_seen_version'); } catch(e) { lastSeen = null; }
+    var hasDebts = Array.isArray(debts) && debts.length > 0;
+    if (!lastSeen && !hasDebts) {
       try { localStorage.setItem('debtfree_last_seen_version', APP_VERSION); } catch(e){}
       return;
     }
-    if (_demoMode) return;
-
     var baseline = lastSeen || '0.0.0';
     var unseen = RELEASE_NOTES.filter(function(e){
       return semverCompare(e.version, baseline) > 0;
     });
     if (!unseen.length) return;
     unseen.sort(function(a, b){ return semverCompare(b.version, a.version); });
-
-    // Someone returning after a long gap (or with no record at all) would
-    // otherwise get every release ever written in one modal. Show the most
-    // recent handful; the full history is still on the Settings tab.
-    var MAX_ON_OPEN = 3;
-    var trimmed = unseen.slice(0, MAX_ON_OPEN);
-    var more = unseen.length - trimmed.length;
-    showWhatsNewModal(trimmed, /*markSeen*/ true, more);
+    showWhatsNewModal(unseen, /*markSeen*/ true);
   } catch(e) {
     // never let release notes crash the app
   }
@@ -3735,31 +3324,6 @@ function localDateStr(d) {
 // ═══════════════════════════════════════════
 //  NAVIGATION
 // ═══════════════════════════════════════════
-// v1.30.0 — navigation helpers. After the tab restructure, Budget lives on
-// Strategy and the premium unlock box lives on Settings. Routing through these
-// means a future move only needs updating in one place, instead of hunting down
-// every hardcoded showSection('dashboard') that assumed the old layout.
-function goToBudget() {
-  showSection('strategy');
-  if (typeof expandCollapse === 'function') expandCollapse('budget', false);
-  setTimeout(function() {
-    const el = document.getElementById('extra-payment');
-    if (el) {
-      const card = document.getElementById('budget-card');
-      if (card && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      if (el.focus) el.focus();
-    }
-  }, 140);
-}
-
-function goToUnlock() {
-  showSection('settings');
-  setTimeout(function() {
-    const u = document.getElementById('unlock-box');
-    if (u && u.scrollIntoView) u.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 140);
-}
-
 function showSection(id) {
   // v1.28.1 — a tab change resets scroll context, so bring the FAB back rather
   // than leaving it retracted from the previous section's scroll direction.
@@ -3777,8 +3341,6 @@ function showSection(id) {
     updateWhatIf();
   }
   if (id === 'milestones') renderMilestones();
-  // v1.30.0 — Settings is static markup (backup, theme, premium, update check);
-  // its state is applied by render()/applyPremiumState(), so no render call here.
   if (id === 'strategy') renderStrategy();
 }
 
@@ -4455,15 +4017,7 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     }
 
     totalInterest += monthInterest;
-    const _row = { month, remaining: balances.reduce((a,d)=>a+d.bal,0), interest: monthInterest };
-    // v1.29.0 — opt-in per-debt snapshot. Off unless a caller asks for it, so
-    // this cannot change any existing result. Used by the balance transfer
-    // modeller to read what's still owed when a 0% window closes.
-    if (opts && opts.trace) {
-      _row.byDebt = {};
-      balances.forEach(function(b){ _row.byDebt[b.id] = b.bal; });
-    }
-    monthlyData.push(_row);
+    monthlyData.push({ month, remaining: balances.reduce((a,d)=>a+d.bal,0), interest: monthInterest });
   }
 
   // v1.5.0 — perDebt payload for Strategy timeline (and any future consumer).
@@ -4871,23 +4425,11 @@ function saveEditDebt() {
   const type    = document.getElementById('edit-type').value;
   const balance = parseFloat(document.getElementById('edit-balance').value);
   const apr     = parseFloat(document.getElementById('edit-apr').value);
-  // v1.30.1 — a blank minimum is estimated here exactly as it is when adding a
-  // debt. Previously Add filled it in for you while Edit rejected it, so
-  // clearing the field to re-enter it left you stuck on an error.
-  const minRawEdit = document.getElementById('edit-min').value;
-  const min = (minRawEdit === '' || minRawEdit === null || typeof minRawEdit === 'undefined')
-    ? estimateMinPayment(balance, apr, type)
-    : parseFloat(minRawEdit);
+  const min     = parseFloat(document.getElementById('edit-min').value);
   const hasPromo = document.getElementById('edit-has-promo').checked;
 
-  if (!name || isNaN(balance) || isNaN(apr)) {
+  if (!name || isNaN(balance) || isNaN(apr) || isNaN(min)) {
     alert('Please fill in all fields.'); return;
-  }
-  // A blank minimum was estimated above; a typed-but-invalid one is still rejected.
-  if (isNaN(min) || min < 0) {
-    alert('Minimum payment must be a positive number, or left blank to estimate it.');
-    document.getElementById('edit-min').focus();
-    return;
   }
 
   const safeApr = sanitizeApr(apr);
@@ -5722,153 +5264,12 @@ function quickLogPayment() {
 // ═══════════════════════════════════════════
 //  STRATEGY SELECTION
 // ═══════════════════════════════════════════
-// ── v1.31.0 — OPTIMIZED STRATEGY ──
-// Snowball ranks by balance; Avalanche ranks by interest rate. Neither can see
-// that a 0% promo card reading "0%" today will cost 27% in four months, so on
-// portfolios with promo balances BOTH routinely pick a worse payoff order than
-// one that simply looks ahead. Measured on a real 5-debt portfolio: the best
-// order cost $1,128 in interest, Snowball $1,322, Avalanche $1,355 — the named
-// strategies were ~$200 worse, and neither could express the right answer.
-//
-// This finds the order that actually costs least, by searching orders and
-// scoring each with the same simulate() everything else uses.
-//   <= 7 active debts : every permutation, so the answer is provably optimal
-//                       (5,040 orders ~0.7s; 8 debts would be 40,320 ~6.6s)
-//   >  7 active debts : seeded local search — very good, not provably best,
-//                       and the UI must not claim otherwise.
-const OPTIMIZED_EXHAUSTIVE_LIMIT = 7;
-
-function _permute(arr) {
-  if (arr.length <= 1) return [arr];
-  const out = [];
-  for (let i = 0; i < arr.length; i++) {
-    const rest = arr.slice(0, i).concat(arr.slice(i + 1));
-    _permute(rest).forEach(function(p) { out.push([arr[i]].concat(p)); });
-  }
-  return out;
-}
-
-function _scoreOrder(orderIds, targets, extra, disb) {
-  const arranged = orderIds.map(function(id) {
-    return targets.find(function(d) { return d.id === id; });
-  }).filter(Boolean);
-  if (arranged.length !== targets.length) return null;
-  return simulate(arranged.map(function(d) { return {...d}; }), extra, 0, 'hybrid', disb);
-}
-
-// Heuristic seeds for the large-portfolio path: rank by the rate that will
-// eventually apply, by how soon interest starts, by balance, and by rate today.
-function _seedOrders(targets) {
-  const byFuture = targets.slice().sort(function(a, b) {
-    const ra = Number(a.postPromoApr != null ? a.postPromoApr : (a.realApr != null ? a.realApr : a.apr)) || 0;
-    const rb = Number(b.postPromoApr != null ? b.postPromoApr : (b.realApr != null ? b.realApr : b.apr)) || 0;
-    return rb - ra;
-  });
-  const byPromoSoonest = targets.slice().sort(function(a, b) {
-    const da = a.hasPromo && a.promoEnd ? new Date(a.promoEnd).getTime() : 0;
-    const db = b.hasPromo && b.promoEnd ? new Date(b.promoEnd).getTime() : 0;
-    return da - db;
-  });
-  const byBalance = targets.slice().sort(function(a, b) { return a.balance - b.balance; });
-  const byRateNow = targets.slice().sort(function(a, b) { return (b.apr || 0) - (a.apr || 0); });
-  return [byFuture, byPromoSoonest, byBalance, byRateNow].map(function(list) {
-    return list.map(function(d) { return d.id; });
-  });
-}
-
-// Returns { order:[ids], interest, months, exhaustive:bool, considered:int } or null.
-function computeOptimizedOrder() {
-  const targets = _activePlanDebts();
-  if (targets.length < 2) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const disb = plannedDisbursements();
-  const ids = targets.map(function(d) { return d.id; });
-
-  let best = null, considered = 0;
-
-  if (targets.length <= OPTIMIZED_EXHAUSTIVE_LIMIT) {
-    const all = _permute(ids);
-    for (let i = 0; i < all.length; i++) {
-      const r = _scoreOrder(all[i], targets, extra, disb);
-      considered++;
-      if (r && !r.diverged && (!best || r.totalInterest < best.interest - 1e-9)) {
-        best = { order: all[i], interest: r.totalInterest, months: r.months };
-      }
-    }
-    return best ? { order: best.order, interest: best.interest, months: best.months,
-                    exhaustive: true, considered: considered } : null;
-  }
-
-  // Large portfolio: seed, then improve by swapping pairs until nothing helps.
-  _seedOrders(targets).forEach(function(seed) {
-    const r = _scoreOrder(seed, targets, extra, disb);
-    considered++;
-    if (r && !r.diverged && (!best || r.totalInterest < best.interest - 1e-9)) {
-      best = { order: seed.slice(), interest: r.totalInterest, months: r.months };
-    }
-  });
-  if (!best) return null;
-  let improved = true, guard = 0;
-  while (improved && guard++ < 12 && considered < 4000) {
-    improved = false;
-    for (let i = 0; i < best.order.length - 1 && considered < 4000; i++) {
-      for (let j = i + 1; j < best.order.length && considered < 4000; j++) {
-        const cand = best.order.slice();
-        const t = cand[i]; cand[i] = cand[j]; cand[j] = t;
-        const r = _scoreOrder(cand, targets, extra, disb);
-        considered++;
-        if (r && !r.diverged && r.totalInterest < best.interest - 1e-9) {
-          best = { order: cand, interest: r.totalInterest, months: r.months };
-          improved = true;
-        }
-      }
-    }
-  }
-  return { order: best.order, interest: best.interest, months: best.months,
-           exhaustive: false, considered: considered };
-}
-
-// Cached: the search is the most expensive thing on the Strategy tab.
-let _optOrderCache = { key: null, res: null };
-function getOptimizedOrder() {
-  const targets = _activePlanDebts();
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const key = JSON.stringify([extra,
-    targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
-    plannedDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })]);
-  if (_optOrderCache.key === key) return _optOrderCache.res;
-  const res = computeOptimizedOrder();
-  _optOrderCache = { key: key, res: res };
-  return res;
-}
-
-// Reorder the debts array into the optimal sequence. simulate() reads array
-// order for 'hybrid'/'optimized', so this IS how the order takes effect.
-function applyOptimizedOrder() {
-  const opt = getOptimizedOrder();
-  if (!opt) return false;
-  const pos = {};
-  opt.order.forEach(function(id, i) { pos[id] = i; });
-  debts.sort(function(a, b) {
-    const pa = pos[a.id] != null ? pos[a.id] : 999;
-    const pb = pos[b.id] != null ? pos[b.id] : 999;
-    return pa - pb;
-  });
-  return true;
-}
-
 function selectStrategy(s) {
   strategy = s;
   document.querySelectorAll('.strategy-card').forEach(c => c.classList.remove('selected'));
-  const _card = document.getElementById('card-' + s);
-  if (_card) _card.classList.add('selected');
+  document.getElementById('card-' + s).classList.add('selected');
   document.getElementById('strategy-select').value = s;
   document.getElementById('hybrid-order-note').style.display = s === 'hybrid' ? 'block' : 'none';
-
-  // v1.31.0 — Optimized reorders the debts array into the cheapest sequence.
-  // simulate() reads array order for anything that isn't avalanche/snowball,
-  // so sorting the array IS how the order takes effect.
-  if (s === 'optimized') applyOptimizedOrder();
 
   // Toggle hybrid drag mode.
   // v1.23.2 — CRITICAL FIX: leaving Hybrid used to run debts.sort(by id),
@@ -5882,7 +5283,6 @@ function selectStrategy(s) {
   } else {
     document.body.classList.remove('hybrid-mode');
   }
-  _optOrderCache = { key: null, res: null };
 
   // v1.10.1 — strategy change can make auto-lumps stale; let banner re-evaluate
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
@@ -6384,12 +5784,15 @@ function processInterestAccrual() {
 // Settings toggle handler. On first enable, immediately accrue the current
 // month and summarize what was added so the feature is never silent.
 function toggleInterestAccrual(on) {
-  // v1.30.1 — estimated interest is now FREE for everyone. It was gated, but
-  // brand-new users had it enabled by default, so a free user saw a ticked box
-  // labelled "Premium" that they could never switch back on once unticked.
-  // Beyond the confusion, gating it meant free users' balances silently drifted
-  // away from their real statements — an app that shows wrong numbers is a
-  // worse product than one that gives this away.
+  // v1.13.0 — paid feature. If a non-premium user flips it on, revert and nudge.
+  if (on && !isPremium) {
+    var t = document.getElementById('accrual-toggle');
+    if (t) t.checked = false;
+    showBackupMsg('ok', 'Estimated interest is a premium feature. Unlock for $12 to enable it.');
+    var box = document.getElementById('unlock-box');
+    if (box && box.scrollIntoView) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
   interestAccrualEnabled = !!on;
   if (interestAccrualEnabled) {
     const before = accruals.length;
@@ -7099,33 +6502,21 @@ function renderNextDebt() {
   if (activeDebts.length === 0) { card.style.display = 'none'; return; }
 
   const sim = getPlanSim(); // v1.17.0 — memoized
-
-  // v1.30.3 — the card now leads with the debt the strategy is ATTACKING, i.e.
-  // where every extra dollar actually goes. It previously led with whichever
-  // debt would reach zero soonest, which is a different thing: a card with a
-  // large minimum can self-amortize first while the extra payments work on a
-  // higher-cost balance elsewhere. That made the card look stuck when someone
-  // switched strategy — the headline barely moved even though the plan had
-  // completely changed. "Next target" means where the money is aimed.
-  let target = currentAttackDebt();
-  let targetEta;
-
-  // Timing for whichever debt we're showing, plus which debt actually falls first.
-  let firstToFall = null, firstToFallEta = null;
+  // sim.order is the post-run balances array in strategy order; the first debt
+  // to reach zero is the one with the smallest paidOffMonth. Fall back to the
+  // first in strategy order if timing data isn't present.
+  let target = null;
   if (sim.perDebt && sim.perDebt.length) {
     const withTiming = sim.perDebt.filter(function(p){ return p.paidOffMonth != null; });
     if (withTiming.length) {
       withTiming.sort(function(a,b){ return a.paidOffMonth - b.paidOffMonth; });
-      firstToFall = debts.find(function(d){ return d.id === withTiming[0].id; });
-      firstToFallEta = withTiming[0].paidOffMonth;
-      if (target) {
-        const mine = withTiming.find(function(p){ return p.id === target.id; });
-        if (mine) targetEta = mine.paidOffMonth;
-      }
+      target = debts.find(function(d){ return d.id === withTiming[0].id; });
+      var targetEta = withTiming[0].paidOffMonth;
     }
   }
-  if (!target) { target = firstToFall; targetEta = firstToFallEta; }
   if (!target) {
+    // Fallback: strategy-order first active debt
+    const ordered = sim.order ? sim.order.filter(function(d){ return true; }) : [];
     target = debts.find(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
   }
   if (!target) { card.style.display = 'none'; return; }
@@ -7155,7 +6546,7 @@ function renderNextDebt() {
     const monthName = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     etaEl.textContent = '🎯 On track for ' + monthName + ' · ' + monthsAway(targetEta);
   } else {
-    etaEl.textContent = '🎯 Where your extra payments are going.';
+    etaEl.textContent = '🎯 Next debt to fall on your current plan.';
   }
 
   // v1.24.0 — when the next debt to FALL isn't the debt the strategy is
@@ -7165,15 +6556,9 @@ function renderNextDebt() {
   // now aimed somewhere else.
   const attackEl = document.getElementById('next-debt-attacking');
   if (attackEl) {
-    const atk = firstToFall;
+    const atk = currentAttackDebt();
     if (atk && target && atk.id !== target.id) {
-      const fallLabel = (function(){
-        if (typeof firstToFallEta !== 'number' || firstToFallEta <= 0) return '';
-        const fd = new Date(); fd.setMonth(fd.getMonth() + firstToFallEta);
-        return ' (' + fd.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + ')';
-      })();
-      attackEl.innerHTML = '&#9889; <strong>' + escapeHtml(atk.name) + '</strong> will clear first' + fallLabel +
-        ' \u2014 its own minimum gets there sooner.';
+      attackEl.innerHTML = '&#9889; Your extra payments are attacking: <strong>' + escapeHtml(atk.name) + '</strong>';
       attackEl.style.display = 'block';
     } else {
       attackEl.style.display = 'none';
@@ -7273,35 +6658,7 @@ function renderDebtList() {
 
   // v1.26.0 — the active list shows only live debts; eliminated ones move to the
   // Paid Off card below. The list visibly shrinking IS the reward.
-  //
-  // v1.30.3 — and it is now ordered by the payoff order the strategy produced,
-  // so switching Snowball/Avalanche visibly re-orders the list. It used to
-  // render in the order debts were ADDED, which never changed no matter what
-  // strategy was picked — the premium portfolio table re-sorted correctly, so
-  // free users were the ones seeing a static list.
-  //
-  // Hybrid is deliberately excluded: there the debts array IS the user's custom
-  // payoff order, and the up/down controls act on that array, so re-sorting the
-  // display would fight the very thing those buttons change.
-  let activeList = debts.filter(function(d) { return d.balance > 0; });
-  if (strategy !== 'hybrid') {
-    const _sim = getPlanSim();
-    if (_sim && _sim.perDebt && _sim.perDebt.length) {
-      const rank = {};
-      _sim.perDebt.forEach(function(p) {
-        rank[p.id] = (p.paidOffMonth == null) ? Number.MAX_SAFE_INTEGER : p.paidOffMonth;
-      });
-      activeList = activeList.slice().sort(function(a, b) {
-        // Debts excluded from the plan have no payoff month; keep them last.
-        const ra = (a.includeInStrategy === false) ? Number.MAX_SAFE_INTEGER
-                 : (rank[a.id] != null ? rank[a.id] : Number.MAX_SAFE_INTEGER);
-        const rb = (b.includeInStrategy === false) ? Number.MAX_SAFE_INTEGER
-                 : (rank[b.id] != null ? rank[b.id] : Number.MAX_SAFE_INTEGER);
-        if (ra !== rb) return ra - rb;
-        return (b.balance || 0) - (a.balance || 0); // stable-ish tiebreak
-      });
-    }
-  }
+  const activeList = debts.filter(function(d) { return d.balance > 0; });
   list.innerHTML = activeList.map((d, _i) => {
     const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
@@ -7380,7 +6737,7 @@ function renderDebtList() {
     return `
     <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
-      ${reorderControls(d.id, _i, activeList.length)}
+      ${reorderControls(d.id, _i, debts.length)}
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
       <div class="debt-name">${escapeHtml(d.name)} ${isZero ? '✅' : ''}${promoBadge}${excludedBadge}</div>
       <div class="debt-stats">
@@ -7504,35 +6861,6 @@ function renderPortfolioTable(list) {
     const d = r.d;
     const orderCell = r.excluded ? '<span style="color:var(--text-dim);">—</span>' : (r.order === Infinity ? '—' : r.order);
     const exclTag = r.excluded ? ' <span class="tag tag-muted" style="font-size:0.55rem;">excluded</span>' : '';
-    // v1.30.1 — True Cost in the premium table. Free users saw the per-day bleed
-    // on their debt cards while paying customers, who get the portfolio table
-    // instead, saw nothing — so the premium view was missing a free feature.
-    // Rendered under the name rather than as an eighth column, which would
-    // crowd the table on a phone.
-    let tcTag = '';
-    const tc = (typeof trueCostOf === 'function') ? trueCostOf(d) : null;
-    if (tc) {
-      if (tc.neverPaysOff) {
-        // v1.30.2 — say WHEN the promo ends rather than "soon". A card whose 0%
-        // runs until Nov 2027 was being described as "ending soon", which reads
-        // like a bug and undercuts a warning that is actually correct: after
-        // that date the minimum genuinely won't cover the interest.
-        let trapMsg;
-        if (tc.trapMonth > 0 && tc.promoEnd) {
-          const pe = new Date(tc.promoEnd + 'T00:00:00');
-          const peLabel = isNaN(pe.getTime())
-            ? 'the promo ends'
-            : pe.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-          trapMsg = 'from ' + peLabel + ' the ' + fmtDec(d.minPayment || 0) + ' minimum won\u2019t cover interest';
-        } else {
-          trapMsg = 'minimum doesn\u2019t cover interest';
-        }
-        tcTag = '<div class="pf-truecost warn">' + fmtDec(tc.perDay) + '/day \u00b7 ' + trapMsg + '</div>';
-      } else if (tc.lifetimeInterest !== null) {
-        tcTag = '<div class="pf-truecost">' + fmtDec(tc.perDay) + '/day \u00b7 ' +
-                fmtDec(tc.lifetimeInterest) + ' at minimums</div>';
-      }
-    }
     return '<tr data-id="' + d.id + '"' + (isHybrid ? ' draggable="true" class="pf-row-drag"' : '') + '>' +
       (isHybrid
         ? '<td class="pf-td" style="white-space:nowrap;">' +
@@ -7541,7 +6869,7 @@ function renderPortfolioTable(list) {
           '</td>'
         : '') +
       // v1.28.2 — data-label drives the stacked card layout below 560px.
-      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + tcTag + '</td>' +
+      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + '</td>' +
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
@@ -8095,603 +7423,6 @@ function redistributeAutoLumps() {
 let _redistDismissed = false;
 function _resetRedistDismiss() { _redistDismissed = false; }
 function dismissRedistBanner() { _redistDismissed = true; renderStrategy(); }
-// ── v1.29.0 — BALANCE TRANSFER MODELLER ──
-// Neutral calculator. Models a 0% offer the user already has and reports what
-// the math shows for their debts. It does not recommend transferring, does not
-// rank or name products, and never tells anyone what to do with their money.
-//
-// The number that matters most is NOT the interest saved — it's whether the
-// balance is cleared before the 0% window closes. A transfer that outlives its
-// promo dumps the whole remaining balance onto a high rate, which is precisely
-// how these offers hurt people. So the risk is computed alongside the saving
-// and shown with equal weight, plus a stress test at $0 extra payment.
-
-function _xferSelectedSourceIds() {
-  const out = [];
-  document.querySelectorAll('#xfer-sources input[type="checkbox"]').forEach(function(cb) {
-    if (cb.checked) out.push(parseInt(cb.value, 10));
-  });
-  return out;
-}
-
-// Build the post-transfer debt set. Returns null if the inputs don't describe a
-// usable transfer. destId === 'new' creates a hypothetical card.
-function buildTransferScenario(sourceIds, destId, promoMonths, feePct, postApr) {
-  const live = debts.filter(function(d) { return d.balance > 0; });
-  const sources = live.filter(function(d) { return sourceIds.indexOf(d.id) !== -1; });
-  if (!sources.length) return null;
-
-  const moved = sources.reduce(function(s, d) { return s + d.balance; }, 0);
-  if (moved <= 0) return null;
-  const fee = moved * (feePct / 100);
-
-  // Deep copy so the real plan is never touched by modelling.
-  const scenario = JSON.parse(JSON.stringify(debts));
-  sourceIds.forEach(function(id) {
-    const d = scenario.find(function(x) { return x.id === id; });
-    if (d) d.balance = 0;
-  });
-
-  const pe = new Date();
-  pe.setMonth(pe.getMonth() + promoMonths);
-  const promoEnd = pe.toISOString().slice(0, 10);
-
-  let dest;
-  if (destId === 'new') {
-    dest = {
-      id: -999, name: 'Transfer card (new)', type: 'cc',
-      balance: 0, originalBalance: 0,
-      minPayment: 0, transferFee: 0, loanType: 'revolving', includeInStrategy: true
-    };
-    scenario.push(dest);
-  } else {
-    dest = scenario.find(function(x) { return x.id === destId; });
-    if (!dest) return null;
-  }
-
-  // Capture what the destination was actually costing BEFORE the move: a card
-  // sitting at zero isn't costing a minimum payment today, so counting its
-  // nominal minimum would overstate the commitment after the transfer.
-  const destBalanceBefore = dest.balance || 0;
-  dest.balance = round2(dest.balance + moved + fee);
-  dest.originalBalance = round2((dest.originalBalance || 0) + moved + fee);
-  dest.apr = 0;
-  dest.promoApr = 0;
-  dest.hasPromo = true;
-  dest.promoEnd = promoEnd;
-  dest.postPromoApr = postApr;
-  dest.realApr = postApr;
-  dest.regularApr = postApr;
-  // Card minimums are typically ~2% of the balance; keep any existing minimum
-  // if it's already higher so we never model a smaller commitment than today.
-  // Minimum payment: default to the minimums this move REPLACES, so the modelled
-  // monthly commitment is unchanged. Using a flat % of balance instead (the
-  // obvious choice) quietly inflates the result — it credits the transfer with
-  // savings that actually come from paying more each month, not from the 0%
-  // rate. On a real example that turned a break-even offer into a fake $145 win.
-  // Floored at 1% of the balance, which is what a 0% card typically requires.
-  const replacedMins = sources.reduce(function(s2, d) { return s2 + (d.minPayment || 0); }, 0);
-  const keptMin = (destId === 'new' || destBalanceBefore <= 0) ? 0 : (dest.minPayment || 0);
-  dest.minPayment = Math.max(Math.round(keptMin + replacedMins), Math.round((moved + fee) * 0.01));
-  dest._modelledMin = dest.minPayment;
-
-  return { scenario: scenario, moved: moved, fee: fee, dest: dest, promoMonths: promoMonths, promoEnd: promoEnd };
-}
-
-// Run current plan vs transfer scenario at a given extra payment.
-function _xferCompare(built, extra) {
-  const disb = plannedDisbursements();
-  const now = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
-  const then = built.scenario.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
-  const a = simulate(now.map(function(d) { return {...d}; }), extra, 0, strategy, disb);
-  const b = simulate(then.map(function(d) { return {...d}; }), extra, 0, strategy, disb);
-  const destPd = (b.perDebt || []).find(function(p) { return p.id === built.dest.id; });
-  return {
-    before: a, after: b,
-    saved: a.totalInterest - b.totalInterest,
-    destPaidMonth: destPd ? destPd.paidOffMonth : null
-  };
-}
-
-function analyzeTransfer(sourceIds, destId, promoMonths, feePct, postApr) {
-  const built = buildTransferScenario(sourceIds, destId, promoMonths, feePct, postApr);
-  if (!built) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const main = _xferCompare(built, extra);
-  const stress = _xferCompare(built, 0);   // what if the extra payment stops?
-
-  // Does the transferred balance outlive its 0% window, and by how much?
-  const clearsInTime = main.destPaidMonth !== null && main.destPaidMonth <= promoMonths;
-  let remainingAtExpiry = 0;
-  if (!clearsInTime) {
-    // Re-run capped at the promo window to read the balance still outstanding.
-    const then = built.scenario.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
-    const traced = simulate(then.map(function(d) { return {...d}; }), extra, 0, strategy,
-                            plannedDisbursements(), { trace: true });
-    const atExpiry = (traced.monthlyData || []).find(function(m) { return m.month === promoMonths; });
-    remainingAtExpiry = (atExpiry && atExpiry.byDebt) ? Math.max(0, atExpiry.byDebt[built.dest.id] || 0) : 0;
-  }
-
-  return {
-    moved: built.moved, fee: built.fee, total: built.moved + built.fee,
-    promoMonths: promoMonths, postApr: postApr,
-    saved: main.saved,
-    monthsBefore: main.before.months, monthsAfter: main.after.months,
-    destPaidMonth: main.destPaidMonth,
-    clearsInTime: clearsInTime,
-    remainingAtExpiry: remainingAtExpiry,
-    stressSaved: stress.saved,
-    stressClears: stress.destPaidMonth !== null && stress.destPaidMonth <= promoMonths,
-    stressPaidMonth: stress.destPaidMonth,
-    destName: built.dest.name,
-    assumedMin: built.dest.minPayment,
-    built: built
-  };
-}
-
-// v1.29.0 — Balance transfer UI. Compliance: neutral framing throughout. We
-// describe what the math shows for the offer the user entered; we never advise,
-// never rank products, and never imply they should transfer.
-function renderTransfer() {
-  const card = document.getElementById('transfer-card');
-  if (!card) return;
-  const real = document.getElementById('transfer-real');
-  const teaser = document.getElementById('transfer-teaser');
-  const live = debts.filter(function(d) { return d.balance > 0; });
-
-  if (!isPremium) {
-    if (real) real.style.display = 'none';
-    if (teaser) teaser.style.display = 'block';
-    card.style.display = live.length ? 'block' : 'none';
-    return;
-  }
-  if (real) real.style.display = 'block';
-  if (teaser) teaser.style.display = 'none';
-  card.style.display = live.length ? 'block' : 'none';
-  if (!live.length) return;
-
-  // Source checkboxes — preserve ticks across re-renders.
-  const srcWrap = document.getElementById('xfer-sources');
-  const chosen = _xferSelectedSourceIds();
-  if (srcWrap && srcWrap.dataset.count !== String(live.length)) {
-    srcWrap.innerHTML = live.map(function(d) {
-      return '<label class="xfer-src"><input type="checkbox" value="' + d.id + '" onchange="renderTransfer()"> ' +
-             '<span class="xfer-src-name">' + escapeHtml(d.name) + '</span>' +
-             '<span class="xfer-src-bal">' + fmtDec(d.balance) + ' &middot; ' + (d.apr || 0) + '%</span></label>';
-    }).join('');
-    srcWrap.dataset.count = String(live.length);
-    chosen.forEach(function(id) {
-      const cb = srcWrap.querySelector('input[value="' + id + '"]');
-      if (cb) cb.checked = true;
-    });
-  }
-
-  // Destination options: any card except the ones being moved, plus a new card.
-  const destSel = document.getElementById('xfer-dest');
-  const sources = _xferSelectedSourceIds();
-  if (destSel) {
-    const prev = destSel.value;
-    const opts = debts.filter(function(d) { return sources.indexOf(d.id) === -1; })
-      .map(function(d) { return '<option value="' + d.id + '">' + escapeHtml(d.name) + '</option>'; });
-    destSel.innerHTML = '<option value="new">A new card</option>' + opts.join('');
-    if (prev && destSel.querySelector('option[value="' + prev + '"]')) destSel.value = prev;
-  }
-
-  const out = document.getElementById('xfer-result');
-  if (!out) return;
-  if (!sources.length) {
-    out.innerHTML = '<div class="xfer-empty">Tick the balances you\u2019re thinking of moving to see the numbers.</div>';
-    return;
-  }
-
-  const months = Math.max(1, parseInt(document.getElementById('xfer-months').value, 10) || 12);
-  const feePct = Math.max(0, parseFloat(document.getElementById('xfer-fee').value) || 0);
-  const destRaw = destSel ? destSel.value : 'new';
-  const destId = destRaw === 'new' ? 'new' : parseInt(destRaw, 10);
-  let postApr = parseFloat(document.getElementById('xfer-apr').value);
-  if (isNaN(postApr)) postApr = 24.99;
-
-  const r = analyzeTransfer(sources, destId, months, feePct, postApr);
-  if (!r) { out.innerHTML = '<div class="xfer-empty">Select at least one balance with money on it.</div>'; return; }
-
-  const good = r.saved > 0;
-  const savedLine = good
-    ? 'On these numbers the transfer works out <strong>' + fmt(Math.abs(r.saved)) + ' cheaper</strong> in total interest, after the ' + fmt(r.fee) + ' fee.'
-    : 'On these numbers the transfer works out <strong>' + fmt(Math.abs(r.saved)) + ' more expensive</strong> in total interest once the ' + fmt(r.fee) + ' fee is counted.';
-
-  // The risk block carries equal weight to the saving — deliberately.
-  let risk;
-  if (r.clearsInTime) {
-    risk = '<div class="xfer-risk ok"><strong>&#9989; Cleared before 0% ends.</strong> ' +
-      'The balance reaches zero in month ' + r.destPaidMonth + ', with the 0% period running ' + r.promoMonths + ' months.</div>';
-  } else {
-    risk = '<div class="xfer-risk warn"><strong>&#9888;&#65039; Not cleared before 0% ends.</strong> ' +
-      'At your current payments the balance reaches zero in month ' + (r.destPaidMonth || '\u2014') +
-      ', but the 0% period runs only ' + r.promoMonths + ' months. About <strong>' + fmt(r.remainingAtExpiry) +
-      '</strong> would still be owed when the rate goes to ' + r.postApr + '%.</div>';
-  }
-
-  const stress = '<div class="xfer-stress"><strong>If your extra payment stopped:</strong> ' +
-    (r.stressSaved > 0
-      ? 'the transfer still works out ' + fmt(Math.abs(r.stressSaved)) + ' cheaper, but the balance wouldn\u2019t clear until month ' + (r.stressPaidMonth || '\u2014') + '.'
-      : 'the transfer would cost ' + fmt(Math.abs(r.stressSaved)) + ' more than staying put.') +
-    '</div>';
-
-  out.innerHTML =
-    '<div class="xfer-result-card">' +
-      '<div class="xfer-headline">' + fmtDec(r.moved) + ' moved &middot; ' + fmtDec(r.fee) + ' fee &middot; ' + fmtDec(r.total) + ' on the new balance</div>' +
-      '<div class="xfer-sub">' + savedLine + '</div>' +
-      risk +
-      stress +
-      '<div class="xfer-note">Modelled with a minimum payment of ' + fmtDec(r.assumedMin) + '/mo on the new balance &mdash; the same total ' +
-      'monthly commitment you have on these cards now, so the figures reflect the rate and fee rather than paying more each month. ' +
-      'Assumes you keep paying at least the minimum on everything and add nothing new to the transferred cards. ' +
-      'They describe the offer you entered &mdash; check the terms, since fees, rates and promo lengths vary.</div>' +
-    '</div>';
-}
-
-// ── v1.28.3 — LUMP SUM OPTIMIZER ──
-// The problem this solves: a lump sum and a monthly extra payment do DIFFERENT
-// jobs, and aligning them wastes the lump. The monthly extra already sweeps the
-// strategy order top-down, so pouring a lump onto the debt it's already
-// attacking mostly pays dollars that were coming anyway. A lump is a one-shot
-// strike, and it earns the most where the monthly sweep won't arrive before the
-// interest does — typically promo balances about to expire and small high-APR
-// cards that would otherwise sit accruing for a year.
-//
-// The old "re-distribute to match your strategy" logic assumed the opposite,
-// and on real data it could make a plan measurably WORSE.
-//
-// Method: greedy marginal allocation. Hand out the money in chunks; at each
-// step try every (debt x lump date) placement and keep whichever reduces total
-// interest most. Greedy finds a very good answer, not a provably perfect one.
-// Every dollar of the original lump totals is preserved; only the split moves.
-
-function autoLumpGroups() {
-  const groups = {};
-  lumpSums.forEach(function(l) {
-    if (l.mode && l.mode !== 'auto') return;   // manual lumps are the user's call
-    if (!groups[l.date]) groups[l.date] = { date: l.date, total: 0, ids: [] };
-    groups[l.date].total += l.amount;
-    groups[l.date].ids.push(l.id);
-  });
-  return Object.keys(groups).sort().map(function(k) { return groups[k]; });
-}
-
-// Disbursements that are NOT auto lumps (pending payments, manual lumps).
-// These are fixed and must survive optimization untouched.
-function nonAutoDisbursements() {
-  const autoIds = {};
-  lumpSums.forEach(function(l) { if (!l.mode || l.mode === 'auto') autoIds[l.id] = true; });
-  return plannedDisbursements().filter(function(x) {
-    return !lumpSums.some(function(l) {
-      return autoIds[l.id] && l.debtId === x.debtId && l.date === x.date &&
-             Math.abs(l.amount - x.amount) < 0.01;
-    });
-  });
-}
-
-function _simWithAllocation(groups, alloc, targets, extra, strat) {
-  const disb = nonAutoDisbursements();
-  groups.forEach(function(g, gi) {
-    const a = alloc[gi];
-    for (const id in a) {
-      if (a[id] > 0) disb.push({ debtId: +id, debtName: '', amount: a[id], date: g.date });
-    }
-  });
-  return simulate(targets.map(function(d) { return {...d}; }), extra, 0, strat, disb);
-}
-
-// v1.30.4 — CAPACITY. How much each debt can actually absorb on each lump date,
-// once earlier lumps and ordinary payments have already reduced it. Without
-// this the optimizer would happily assign a debt more than it owes: the
-// interest math still came out right, because simulate() cascades the excess
-// onward, but the schedule written back to the user named payments far larger
-// than the balances they targeted — e.g. $29,675 aimed at a $22,000 card.
-function _capacityFor(groups, alloc, targets, extra, strat) {
-  const caps = groups.map(function(){ return {}; });
-  for (let gi = 0; gi < groups.length; gi++) {
-    // Everything fixed, plus whatever earlier groups have already been given.
-    const disb = nonAutoDisbursements();
-    for (let k = 0; k < gi; k++) {
-      const a = alloc[k];
-      for (const id in a) {
-        if (a[id] > 0.005) disb.push({ debtId: +id, debtName: '', amount: a[id], date: groups[k].date });
-      }
-    }
-    const traced = simulate(targets.map(function(d){ return {...d}; }), extra, 0, strat || strategy, disb, { trace: true });
-    const m = _monthsUntilDate(groups[gi].date);
-    const row = (traced.monthlyData || []).find(function(x){ return x.month === m; });
-    targets.forEach(function(d) {
-      caps[gi][d.id] = (row && row.byDebt && row.byDebt[d.id] != null)
-        ? Math.max(0, row.byDebt[d.id])
-        : d.balance;
-    });
-  }
-  return caps;
-}
-
-function _monthsUntilDate(ds) {
-  const t = new Date(ds + 'T00:00:00'), n = new Date();
-  if (isNaN(t.getTime())) return 0;
-  return Math.max(0, (t.getFullYear() - n.getFullYear()) * 12 + (t.getMonth() - n.getMonth()));
-}
-
-// A single greedy pass: hand out the money in chunks of `step`, each time
-// placing the chunk wherever it reduces total interest most. Fast, but the
-// answer it lands on depends on the chunk size — which is why it is only a
-// SEED here, never the final answer.
-function _seedAllocation(groups, targets, extra, strat, step, caps) {
-  const alloc = groups.map(function(){ return {}; });
-  targets.forEach(function(d){ alloc.forEach(function(a){ a[d.id] = 0; }); });
-  const remaining = groups.map(function(g){ return g.total; });
-  let sims = 0, guard = 0;
-  while (remaining.some(function(r){ return r > 0.005; }) && guard++ < 600) {
-    let best = null;
-    for (let gi = 0; gi < groups.length; gi++) {
-      if (remaining[gi] <= 0.005) continue;
-      const chunk = Math.min(step, remaining[gi]);
-      for (let k = 0; k < targets.length; k++) {
-        const id = targets[k].id;
-        // v1.30.4 — never assign a debt more than it can absorb on that date.
-        if (caps && caps[gi] && alloc[gi][id] + chunk > (caps[gi][id] || 0) + 0.5) continue;
-        alloc[gi][id] += chunk;
-        const r = _simWithAllocation(groups, alloc, targets, extra, strat);
-        sims++;
-        alloc[gi][id] -= chunk;
-        if (!best || r.totalInterest < best.i - 1e-9) best = { gi: gi, id: id, chunk: chunk, i: r.totalInterest };
-      }
-    }
-    if (!best) break;
-    alloc[best.gi][best.id] += best.chunk;
-    remaining[best.gi] -= best.chunk;
-  }
-  return { alloc: alloc, sims: sims };
-}
-
-// Local refinement: repeatedly try shifting money between debts WITHIN the same
-// lump date (so each date's total never changes) at decreasing amounts, keeping
-// any shift that lowers total interest. This is what actually finds the good
-// answer — a lone greedy pass routinely leaves several hundred dollars behind.
-function _refineAllocation(groups, alloc, targets, extra, strat, budget, caps) {
-  let best = _simWithAllocation(groups, alloc, targets, extra, strat).totalInterest;
-  let sims = 1;
-  const grand = groups.reduce(function(s, g){ return s + g.total; }, 0);
-  const deltas = [grand/25, grand/60, grand/150, grand/400].map(function(x){
-    return Math.max(25, Math.round(x / 25) * 25);
-  });
-  for (let di = 0; di < deltas.length; di++) {
-    const delta = deltas[di];
-    let improved = true, guard = 0;
-    while (improved && sims < budget && guard++ < 12) {
-      improved = false;
-      for (let gi = 0; gi < groups.length; gi++) {
-        for (let si = 0; si < targets.length; si++) {
-          const src = targets[si].id;
-          if (alloc[gi][src] < delta - 1e-9) continue;
-          for (let ti = 0; ti < targets.length; ti++) {
-            const dst = targets[ti].id;
-            if (dst === src || sims >= budget) continue;
-            // Re-check the source EVERY time: an accepted move earlier in this
-            // loop may have drained it below `delta`. Without this the balance
-            // goes negative, and since the write-back skips non-positive
-            // amounts that silently INFLATES the total lump sum.
-            if (alloc[gi][src] < delta - 1e-9) break;
-            // v1.30.4 — and never push a debt past what it can absorb.
-            if (caps && caps[gi] && alloc[gi][dst] + delta > (caps[gi][dst] || 0) + 0.5) continue;
-            alloc[gi][src] -= delta; alloc[gi][dst] += delta;
-            const r = _simWithAllocation(groups, alloc, targets, extra, strat);
-            sims++;
-            if (r.totalInterest < best - 1e-9) { best = r.totalInterest; improved = true; }
-            else { alloc[gi][src] += delta; alloc[gi][dst] -= delta; }
-          }
-        }
-      }
-    }
-  }
-  return { best: best, alloc: alloc, sims: sims };
-}
-
-// Multi-start: seed from a FIXED set of chunk sizes, refine each, keep the best.
-// Fixed seeds matter — they make the result fully deterministic, so the same
-// data always produces the same recommendation. The spread between starts is
-// kept as an honest uncertainty band: this is a heuristic search, not a proof
-// of optimality, and the UI uses that band to avoid reporting search noise as
-// a real difference between strategies.
-function optimizeLumpAllocation(strat, opts) {
-  opts = opts || {};
-  const groups = autoLumpGroups();
-  if (!groups.length) return null;
-  const targets = _activePlanDebts();
-  if (targets.length < 2) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-
-  const grand = groups.reduce(function(s, g){ return s + g.total; }, 0);
-  const divisors = opts.divisors || [7, 10, 14];
-  const budget = opts.budget || 2000;
-
-  let sims = 0;
-
-  // v1.30.5 — every candidate is scored AFTER being trimmed to capacity, so the
-  // number reported is always the number of a schedule that can actually be
-  // followed. Scoring before the trim (as 1.30.4 did) meant the "best" figure
-  // belonged to an over-allocated plan; trimming it afterwards could push the
-  // real cost above every candidate, producing a negative uncertainty band and
-  // occasionally a recommendation worse than leaving the lumps alone.
-  const emptyAlloc = groups.map(function(){ return {}; });
-  targets.forEach(function(d){ emptyAlloc.forEach(function(a){ a[d.id] = 0; }); });
-
-  function _trimToCapacity(alloc) {
-    const caps = _capacityFor(groups, alloc, targets, extra, strat);
-    groups.forEach(function(g, gi) {
-      let spill = 0;
-      targets.forEach(function(d) {
-        const cap = (caps[gi][d.id] != null) ? caps[gi][d.id] : d.balance;
-        const have = alloc[gi][d.id] || 0;
-        if (have > cap + 0.005) { spill += (have - cap); alloc[gi][d.id] = cap; }
-      });
-      if (spill > 0.005) {
-        for (let k = 0; k < targets.length && spill > 0.005; k++) {
-          const d = targets[k];
-          const cap = (caps[gi][d.id] != null) ? caps[gi][d.id] : d.balance;
-          const room = cap - (alloc[gi][d.id] || 0);
-          if (room > 0.005) {
-            const give = Math.min(room, spill);
-            alloc[gi][d.id] = (alloc[gi][d.id] || 0) + give;
-            spill -= give;
-          }
-        }
-        if (spill > 0.005) {
-          const biggest = targets.slice().sort(function(a, b){ return (b.balance||0) - (a.balance||0); })[0];
-          if (biggest) alloc[gi][biggest.id] = (alloc[gi][biggest.id] || 0) + spill;
-        }
-      }
-    });
-    return caps;
-  }
-
-  // Score one candidate end to end: trim, refine under those limits, trim again
-  // (refinement moves money, which changes what later dates can absorb), then
-  // measure. The returned figure always belongs to a valid schedule.
-  function _finish(alloc) {
-    // Refine BEFORE the first trim: trimming a raw seed immediately locks the
-    // search into whatever shape the seed happened to have, and measurably
-    // worse plans come out the other side. Refine, trim, refine again under the
-    // resulting limits, then trim once more so the schedule is valid as shown.
-    const caps0 = _capacityFor(groups, alloc, targets, extra, strat);
-    const rf1 = _refineAllocation(groups, alloc, targets, extra, strat, budget, caps0);
-    sims += rf1.sims;
-    const caps1 = _trimToCapacity(rf1.alloc);
-    const rf2 = _refineAllocation(groups, rf1.alloc, targets, extra, strat, budget, caps1);
-    sims += rf2.sims;
-    _trimToCapacity(rf2.alloc);
-    const res = _simWithAllocation(groups, rf2.alloc, targets, extra, strat);
-    return { alloc: rf2.alloc, interest: res.totalInterest, months: res.months };
-  }
-
-  const candidates = [];
-
-  // The user's CURRENT allocation is itself a candidate. If nothing beats what
-  // they already have, the honest answer is "leave it alone" — and that can
-  // only be said if it was actually in the running.
-  const currentAlloc = groups.map(function(){ return {}; });
-  targets.forEach(function(d){ currentAlloc.forEach(function(a){ a[d.id] = 0; }); });
-  lumpSums.forEach(function(l) {
-    if (l.mode && l.mode !== 'auto') return;
-    const gi = groups.findIndex(function(g){ return g.date === l.date; });
-    if (gi >= 0 && currentAlloc[gi][l.debtId] != null) currentAlloc[gi][l.debtId] += l.amount;
-  });
-  candidates.push(_finish(currentAlloc));
-
-  for (let i = 0; i < divisors.length; i++) {
-    const step = Math.max(50, Math.round(grand / divisors[i] / 50) * 50);
-    const sd = _seedAllocation(groups, targets, extra, strat, step,
-                               _capacityFor(groups, emptyAlloc, targets, extra, strat));
-    sims += sd.sims;
-    candidates.push(_finish(sd.alloc));
-  }
-
-  candidates.sort(function(a, b){ return a.interest - b.interest; });
-  const bestAlloc = candidates[0].alloc;
-  const bestInterest = candidates[0].interest;
-  const found = candidates.map(function(c){ return c.interest; });
-
-  const spread = Math.max(0, Math.max.apply(null, found) - bestInterest);
-  const final = _simWithAllocation(groups, bestAlloc, targets, extra, strat);
-  return { alloc: bestAlloc, groups: groups, interest: final.totalInterest,
-           months: final.months, spread: spread, sims: sims };
-}
-
-// What the plan costs right now, with lumps exactly where they sit.
-function currentPlanInterest(strat) {
-  const targets = _activePlanDebts();
-  if (!targets.length) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const r = simulate(targets.map(function(d) { return {...d}; }), extra, 0,
-                     strat || strategy, plannedDisbursements());
-  return { interest: r.totalInterest, months: r.months };
-}
-
-// Optimization is the most expensive thing the app does; cache on its inputs.
-let _optCache = { key: null, res: null };
-function getOptimizedPlan(strat) {
-  strat = strat || strategy;
-  const targets = _activePlanDebts();
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
-  const key = JSON.stringify([strat, extra,
-    targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
-    autoLumpGroups().map(function(g) { return [g.date, g.total]; }),
-    nonAutoDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })
-  ]);
-  if (_optCache.key === key) return _optCache.res;
-  const res = optimizeLumpAllocation(strat);
-  _optCache = { key: key, res: res };
-  return res;
-}
-
-// Write an optimized allocation back into lumpSums, preserving group totals.
-function applyOptimizedLumps() {
-  const opt = getOptimizedPlan(strategy);
-  if (!opt) return;
-  const cur = currentPlanInterest(strategy);
-  if (cur && opt.interest >= cur.interest - 0.01) return; // never make it worse
-
-  // Safety gate: the money written back must reconcile to the original totals,
-  // to the cent, per lump date. This is the user's real plan — a search bug
-  // must never be able to invent or destroy money on it. If anything fails to
-  // balance we abandon the change and leave their lump sums untouched.
-  for (let gi = 0; gi < opt.groups.length; gi++) {
-    const a = opt.alloc[gi];
-    let sum = 0, negative = false;
-    for (const id in a) {
-      if (a[id] < -0.005) negative = true;
-      if (a[id] > 0) sum += a[id];
-    }
-    if (negative || Math.abs(sum - opt.groups[gi].total) > 0.5) {
-      if (typeof trackShare === 'function') {
-        trackShare('lump_optimize_aborted', { _category: 'planning' });
-      }
-      return;
-    }
-  }
-
-  const nameOf = {};
-  debts.forEach(function(d) { nameOf[d.id] = d.name; });
-
-  const dates = {};
-  opt.groups.forEach(function(g) { dates[g.date] = true; });
-  for (let i = lumpSums.length - 1; i >= 0; i--) {
-    const l = lumpSums[i];
-    if ((!l.mode || l.mode === 'auto') && dates[l.date]) lumpSums.splice(i, 1);
-  }
-  opt.groups.forEach(function(g, gi) {
-    const groupId = Date.now() + gi;
-    const a = opt.alloc[gi];
-    Object.keys(a).forEach(function(id) {
-      if (a[id] <= 0.005) return;
-      lumpSums.push({
-        id: Date.now() + Math.floor(Math.random() * 100000),
-        debtId: +id,
-        debtName: nameOf[+id] || '',
-        amount: round2(a[id]),
-        date: g.date,
-        mode: 'auto',
-        groupId: groupId
-      });
-    });
-  });
-
-  _redistDismissed = false;
-  _optCache = { key: null, res: null };
-  _planSimCache = { key: null, res: null };
-  if (typeof trackShare === 'function') {
-    trackShare('lumps_optimized', { _category: 'planning', saved: Math.round((cur ? cur.interest : 0) - opt.interest) });
-  }
-  save();
-  render();
-  renderStrategy();
-}
-
 function applyRedistribution() {
   _redistDismissed = false;
   redistributeAutoLumps();
@@ -8796,70 +7527,14 @@ function renderStrategy() {
 
   // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
   if (activeDebts.length) {
-    // v1.28.3 — FAIR COMPARISON. Previously both strategies were simulated
-    // against ONE fixed lump-sum allocation. Since lumps are pinned to specific
-    // debts, that allocation suits one strategy better than the other — so the
-    // winner flipped depending on how the lumps happened to be split, and the
-    // card could recommend Avalanche one minute and Snowball the next on
-    // identical data. Now each strategy is shown with the SAME pool of lump
-    // money placed as well as it can be FOR THAT STRATEGY, which is the only
-    // apples-to-apples way to answer "which strategy suits my debts?".
-    const _hasAutoLumps = autoLumpGroups().length > 0;
-    let av, sb, fairBasis = false;
-    if (_hasAutoLumps && activeDebts.length >= 2) {
-      const optAv = getOptimizedPlan('avalanche');
-      const optSb = getOptimizedPlan('snowball');
-      if (optAv && optSb) {
-        av = { months: optAv.months, totalInterest: optAv.interest, perDebt: null };
-        sb = { months: optSb.months, totalInterest: optSb.interest, perDebt: null };
-        fairBasis = true;
-      }
-    }
-    if (!fairBasis) {
-      av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
-      sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
-    }
+    const av = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
+    const sb = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
     // v1.12.0 — min-only column is the do-nothing baseline: no rollover
     const mn = simulate(activeDebts.map(d=>({...d})), 0,     0, 'avalanche', [], { rollover: false });
-
-    // Which plan is the user actually on right now?
-    const _curPlan = currentPlanInterest(strategy);
-    const _asbVal = document.getElementById('asb-value');
-    if (_asbVal) {
-      const _label = strategy === 'hybrid' ? 'Hybrid (custom order)'
-                   : strategy.charAt(0).toUpperCase() + strategy.slice(1);
-      _asbVal.innerHTML = _label + (_curPlan
-        ? ' &middot; <span class="asb-num">' + _curPlan.months + ' months</span> &middot; <span class="asb-num">' +
-          fmt(_curPlan.interest) + ' interest</span>'
-        : '');
-    }
-    const _noteEl = document.getElementById('comparison-note');
-    if (_noteEl) {
-      if (fairBasis && _curPlan) {
-        const _bestForCurrent = (strategy === 'avalanche') ? av.totalInterest
-                              : (strategy === 'snowball') ? sb.totalInterest : null;
-        const _gap = (_bestForCurrent !== null) ? (_curPlan.interest - _bestForCurrent) : 0;
-        _noteEl.innerHTML = 'Each card below shows that strategy <strong>at its best</strong> \u2014 same debts, same extra payment, ' +
-          'with your scheduled lump sums placed as well as possible for it. That\u2019s why these differ from your plan today' +
-          (_gap > 25 ? ': moving your lump sums could close a gap of about ' + fmt(Math.round(_gap/10)*10) + ' without paying a cent more.' : '.');
-      } else {
-        _noteEl.textContent = 'Based on your current plan.';
-      }
-    }
-    ['av','sb','min'].forEach(function(k){
-      const c=document.getElementById('cmp-card-'+k);
-      if (c) c.classList.remove('is-current');
-    });
-    const _curCard = strategy === 'avalanche' ? 'cmp-card-av' : (strategy === 'snowball' ? 'cmp-card-sb' : null);
-    if (_curCard && document.getElementById(_curCard)) document.getElementById(_curCard).classList.add('is-current');
-
-    // v1.28.4 — when the cards show optimized figures they must say so, or the
-    // current-strategy card contradicts the "your plan today" bar above it.
-    const _suffix = fairBasis ? ' interest at best' : ' interest';
     document.getElementById('cmp-av-months').textContent = av.months;
-    document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + _suffix;
+    document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + ' interest';
     document.getElementById('cmp-sb-months').textContent = sb.months;
-    document.getElementById('cmp-sb-int').textContent = fmt(sb.totalInterest) + _suffix;
+    document.getElementById('cmp-sb-int').textContent = fmt(sb.totalInterest) + ' interest';
     document.getElementById('cmp-min-months').textContent = mn.months;
     document.getElementById('cmp-min-int').textContent = fmt(mn.totalInterest) + ' interest';
 
@@ -8873,16 +7548,11 @@ function renderStrategy() {
       return r.perDebt.map(function(p){ return p.id + ':' + p.paidOffMonth; }).sort().join('|') +
              '#' + (r.totalInterest || 0).toFixed(2);
     }
-    // v1.28.3 — this check is about the user's LIVE plan, so it must compare
-    // against simulations that use their CURRENT lump allocation, not the
-    // optimized figures shown in the comparison cards above.
     const stratForCompare = getPlanSim();
     const curSig = _planSig(stratForCompare);
-    const avNow = simulate(activeDebts.map(d=>({...d})), extra, 0, 'avalanche', plannedDisbursements());
-    const sbNow = simulate(activeDebts.map(d=>({...d})), extra, 0, 'snowball', plannedDisbursements());
     const twins = [];
-    if (strategy !== 'avalanche' && curSig && curSig === _planSig(avNow)) twins.push('Avalanche');
-    if (strategy !== 'snowball'  && curSig && curSig === _planSig(sbNow)) twins.push('Snowball');
+    if (strategy !== 'avalanche' && curSig && curSig === _planSig(av)) twins.push('Avalanche');
+    if (strategy !== 'snowball'  && curSig && curSig === _planSig(sb)) twins.push('Snowball');
     const idAlert = document.getElementById('identical-plan-alert');
     const idText  = document.getElementById('identical-plan-text');
     if (idAlert && idText) {
@@ -8900,16 +7570,6 @@ function renderStrategy() {
 
     const best = av.totalInterest <= sb.totalInterest ? 'Avalanche' : 'Snowball';
     const savings = Math.abs(av.totalInterest - sb.totalInterest);
-    // v1.28.5 — the optimizer is a heuristic search, not a proof of optimality.
-    // It reports how much its own starting points disagreed (`spread`); when the
-    // gap between two strategies is inside that band, the "winner" is search
-    // noise rather than a real finding, and saying so is the honest answer.
-    let _band = 0;
-    if (fairBasis) {
-      const _oa = getOptimizedPlan('avalanche'), _ob = getOptimizedPlan('snowball');
-      _band = Math.max((_oa && _oa.spread) || 0, (_ob && _ob.spread) || 0, 25);
-    }
-    const _tied = fairBasis && savings <= _band;
 
     // v1.12.0 — with rollover, strategies can genuinely differ even at $0
     // extra (rolled minimums cascade in strategy order). Show the "set an
@@ -8924,127 +7584,40 @@ function renderStrategy() {
     } else {
       noExtraAlert.style.display = 'none';
       bestAlert.style.display = 'flex';
-      document.getElementById('best-strategy-text').innerHTML = _tied
-        ? 'Avalanche and Snowball come out <strong>effectively tied</strong> for your debts \u2014 about ' +
-          fmt(Math.abs(av.totalInterest - sb.totalInterest)) + ' apart, which is within the margin of this comparison. ' +
-          'Pick whichever you\u2019ll actually stick with.'
-        : 'The <strong>' + best + '</strong> method saves you roughly <strong>' + fmt(savings) +
-          ' more in interest</strong> on your debts' +
-          (fairBasis ? ', comparing each strategy with your lump sums placed at their best.' : '.');
+      document.getElementById('best-strategy-text').textContent =
+        `The ${best} method saves you ${fmt(savings)} more in interest for your current debts.`;
     }
 
-    ['cmp-card-av','cmp-card-sb','cmp-card-min'].forEach(function(id){
-      const c=document.getElementById(id); if (c) c.classList.remove('best');
-    });
-    if (!_tied) {
-      const bestEl = document.getElementById(best === 'Avalanche' ? 'cmp-card-av' : 'cmp-card-sb');
-      if (bestEl) bestEl.classList.add('best');
-    }
+    document.querySelectorAll('.comparison-card').forEach(c => c.classList.remove('best'));
+    if (best === 'Avalanche') document.querySelectorAll('.comparison-card')[0].classList.add('best');
+    else document.querySelectorAll('.comparison-card')[1].classList.add('best');
   }
 
-  // v1.31.0 — Optimized explanation. States what the math shows for THIS
-  // portfolio and, critically, is honest when the gain is trivial: a strategy
-  // billed as outperforming has to admit when it doesn't, or the big numbers
-  // stop being believable. Only claims optimality when the search was
-  // exhaustive; above that debt count it says "best we found".
-  const _optNote = document.getElementById('optimized-note');
-  if (_optNote) {
-    if (strategy !== 'optimized') {
-      _optNote.style.display = 'none';
+  // v1.10.0 — show or hide the lump redistribution banner
+  const _redistBanner = document.getElementById('lump-redist-banner');
+  if (_redistBanner) {
+    if (_redistDismissed) {
+      _redistBanner.style.display = 'none';
     } else {
-      const oo = getOptimizedOrder();
-      if (!oo) {
-        _optNote.style.display = 'none';
-      } else {
-        const nameById = {};
-        debts.forEach(function(d) { nameById[d.id] = d.name; });
-        const extraNow = parseFloat(document.getElementById('extra-payment').value) || 0;
-        const disbNow = plannedDisbursements();
-        const act = _activePlanDebts();
-        const sbR = simulate(act.map(function(d){ return {...d}; }), extraNow, 0, 'snowball', disbNow);
-        const avR = simulate(act.map(function(d){ return {...d}; }), extraNow, 0, 'avalanche', disbNow);
-        const bestNamed = Math.min(sbR.totalInterest, avR.totalInterest);
-        const bestNamedLabel = (sbR.totalInterest <= avR.totalInterest) ? 'Snowball' : 'Avalanche';
-        const gain = bestNamed - oo.interest;
-        const first = nameById[oo.order[0]] || '';
-        const last = nameById[oo.order[oo.order.length - 1]] || '';
-
-        let headline;
-        if (gain > 25) {
-          headline = 'For your debts this order costs about <strong>' + fmt(gain) +
-            ' less in interest</strong> than ' + bestNamedLabel + '.';
-        } else if (gain > 1) {
-          headline = 'For your debts this comes out within about ' + fmt(Math.max(1, gain)) +
-            ' of ' + bestNamedLabel + ' \u2014 <strong>much the same</strong>. Pick whichever you\u2019ll stick with.';
-        } else {
-          headline = 'For your debts this works out <strong>much the same as ' + bestNamedLabel +
-            '</strong>. Pick whichever you\u2019ll stick with.';
-        }
-
-        const basis = oo.exhaustive
-          ? 'Checked every possible payoff order (' + oo.considered.toLocaleString() + ') for your ' + act.length + ' debts.'
-          : 'Searched ' + oo.considered.toLocaleString() + ' orderings \u2014 the best found, though with this many debts it may not be the very best possible.';
-
-        _optNote.innerHTML =
-          '<div class="opt-note-title">&#129504; Why this order</div>' +
-          '<div class="opt-note-body">' + headline +
-          ' It starts with <strong>' + escapeHtml(first) + '</strong> and leaves <strong>' + escapeHtml(last) +
-          '</strong> for last, taking into account when each 0% rate ends rather than just today\u2019s rate.</div>' +
-          '<div class="opt-note-basis">' + basis + '</div>';
-        _optNote.style.display = 'block';
-      }
-    }
-  }
-
-  renderTransfer(); // v1.29.0 — balance transfer modeller
-
-  // v1.28.3 — lump sum optimizer panel. Only ever recommends a change when the
-  // optimized allocation actually beats what the user has now, and states the
-  // saving in dollars. If their current placement is already as good, it says
-  // so rather than nagging them into a worse plan (which the old
-  // "re-distribute to match your strategy" banner could genuinely do).
-  const _optPanel = document.getElementById('lump-optimizer-panel');
-  if (_optPanel) {
-    const _hasLumps = autoLumpGroups().length > 0;
-    if (_redistDismissed || !_hasLumps || activeDebts.length < 2) {
-      _optPanel.style.display = 'none';
-    } else {
-      const _cur = currentPlanInterest(strategy);
-      const _opt = getOptimizedPlan(strategy);
-      const _titleEl = document.getElementById('lump-opt-title');
-      const _txtEl = document.getElementById('lump-opt-text');
-      const _actionsEl = document.getElementById('lump-opt-actions');
-      const _stratLabel = strategy === 'hybrid' ? 'your custom order'
-                        : strategy.charAt(0).toUpperCase() + strategy.slice(1);
-      // Require the gain to clear the search's own uncertainty before suggesting
-      // a change — otherwise we'd be nudging users to churn their plan for noise.
-      const _minGain = Math.max(25, (_opt && _opt.spread) || 0);
-      if (_cur && _opt && _opt.interest < _cur.interest - _minGain) {
-        const _saved = _cur.interest - _opt.interest;
-        const _monthsSaved = _cur.months - _opt.months;
-        _optPanel.className = 'lump-opt-panel opt-available';
-        if (_titleEl) _titleEl.textContent = 'Your lump sums could work harder';
+      const _stale = lumpsNeedRedistribution();
+      if (_stale.length > 0) {
+        const _stratLabel = strategy.charAt(0).toUpperCase() + strategy.slice(1);
+        const _dates = _stale.map(function(s) {
+          const d = new Date(s.date);
+          return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }).join(' and ');
+        const _txtEl = document.getElementById('lump-redist-text');
         if (_txtEl) {
-          // Rounded to the nearest $10 with an explicit "about": the search is a
-          // heuristic, so a to-the-dollar figure would imply precision it
-          // doesn't have.
-          const _shown = Math.max(10, Math.round(_saved / 10) * 10);
-          _txtEl.innerHTML = 'Keeping the same dates and the same total, moving your lump sums to different debts would save you about <strong>' +
-            fmt(_shown) + ' in interest</strong>' +
-            (_monthsSaved > 0 ? ' and <strong>' + _monthsSaved + ' month' + (_monthsSaved !== 1 ? 's' : '') + '</strong>' : '') +
-            ' under ' + _stratLabel + '.';
+          _txtEl.innerHTML = 'Your auto-distributed lump sums for <strong>' + _dates +
+            '</strong> no longer match your current ' + _stratLabel + ' strategy. ' +
+            'Re-distribute keeps the same totals but reallocates per-debt amounts to fit your current debts.';
         }
-        if (_actionsEl) _actionsEl.style.display = 'flex';
+        const _actionBtn = document.getElementById('lump-redist-action');
+        if (_actionBtn) _actionBtn.textContent = 'Re-distribute under ' + _stratLabel;
+        _redistBanner.style.display = 'flex';
       } else {
-        _optPanel.className = 'lump-opt-panel opt-good';
-        if (_titleEl) _titleEl.textContent = 'Your lump sums are well placed';
-        if (_txtEl) {
-          _txtEl.innerHTML = 'We checked other ways to split your scheduled lump sums across your debts &mdash; none beats what you have now under ' +
-            _stratLabel + '. Nothing to change.';
-        }
-        if (_actionsEl) _actionsEl.style.display = 'none';
+        _redistBanner.style.display = 'none';
       }
-      _optPanel.style.display = 'block';
     }
   }
 
@@ -9720,12 +8293,6 @@ function exitDemo(persistDismissal) {
 // moves the math; the name field is optional to the engine).
 function startMyNumbers() {
   exitDemo(true);
-  // v1.31.0 — a genuinely new user starts on Optimized. The demo runs on
-  // Snowball because it's a curated illustration with no promo balances, where
-  // Optimized would simply match Avalanche and demonstrate nothing; the moment
-  // someone switches to their own numbers, the better default applies.
-  // Existing users are never touched — see load().
-  selectStrategy('optimized');
   save();
   render();
   showSection('dashboard');
@@ -9825,11 +8392,6 @@ function load() {
     const d = localStorage.getItem('debtfree_debts');
     const p = localStorage.getItem('debtfree_payments');
     const s = localStorage.getItem('debtfree_strategy');
-    // v1.31.0 — Optimized is the default for BRAND-NEW users only (no stored
-    // debts key at all). Anyone with existing data keeps the strategy they
-    // chose: silently switching someone's payoff plan is overriding a decision
-    // they made about their own money, whatever the math says.
-    if (d === null && s === null) strategy = 'optimized';
     const e = localStorage.getItem('debtfree_extra');
     const n = localStorage.getItem('debtfree_nextid');
     // v1.11.0 — accrual ledger + setting.
@@ -9929,12 +8491,7 @@ function updateFeePreview() {
 function moveDebt(id, dir) {
   const i = debts.findIndex(function(d){ return d.id === id; });
   if (i === -1) return;
-  // v1.30.3 — step to the next VISIBLE (still-active) debt, not the raw array
-  // neighbour. A paid-off debt sitting between two active ones used to absorb
-  // the move: the array changed, the on-screen order didn't, and the button
-  // looked broken.
-  let j = i + dir;
-  while (j >= 0 && j < debts.length && !(debts[j].balance > 0)) j += dir;
+  const j = i + dir;
   if (j < 0 || j >= debts.length) return;
   const tmp = debts[i]; debts[i] = debts[j]; debts[j] = tmp;
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
@@ -9944,8 +8501,6 @@ function moveDebt(id, dir) {
 // Reorder controls markup, shared by both the card and table renderers.
 function reorderControls(id, idx, total) {
   if (strategy !== 'hybrid') return '';
-  // idx/total are the position within the VISIBLE list, so the first and last
-  // on-screen rows are the ones that disable — matching what moveDebt() does.
   return '<span class="reorder-ctl">' +
     '<button class="reorder-btn" title="Move up" aria-label="Move up"' + (idx === 0 ? ' disabled' : '') +
       ' onclick="event.stopPropagation(); moveDebt(' + id + ', -1)">\u2191</button>' +
@@ -9964,21 +8519,14 @@ function renderHybridOrderList() {
     wrap.innerHTML = '<div class="hybrid-order-empty">Add a debt to set a custom order.</div>';
     return;
   }
-  // v1.30.3 — active debts only. Paid-off ones can't hold a place in a payoff
-  // order, and including them made the numbering and the arrow disable-states
-  // disagree with what moveDebt() actually does.
-  const orderable = debts.filter(function(d) { return d.balance > 0; });
-  if (!orderable.length) {
-    wrap.innerHTML = '<div class="hybrid-order-empty">No active debts to order \u2014 every one is paid off.</div>';
-    return;
-  }
-  wrap.innerHTML = orderable.map(function(d, i) {
-    return '<div class="hybrid-order-row" data-id="' + d.id + '" draggable="true">' +
+  wrap.innerHTML = debts.map(function(d, i) {
+    const zero = d.balance <= 0;
+    return '<div class="hybrid-order-row' + (zero ? ' is-zero' : '') + '" data-id="' + d.id + '" draggable="true">' +
       '<span class="hybrid-order-num">' + (i + 1) + '</span>' +
       '<span class="drag-handle hybrid-drag" title="Drag to reorder"><span></span><span></span><span></span></span>' +
-      '<span class="hybrid-order-name">' + escapeHtml(d.name) + '</span>' +
+      '<span class="hybrid-order-name">' + escapeHtml(d.name) + (zero ? ' \u2705' : '') + '</span>' +
       '<span class="hybrid-order-bal">' + fmtDec(d.balance) + '</span>' +
-      reorderControls(d.id, i, orderable.length) +
+      reorderControls(d.id, i, debts.length) +
     '</div>';
   }).join('');
   initRowDragDrop(wrap.querySelectorAll('.hybrid-order-row'), wrap);
@@ -10282,16 +8830,6 @@ initInAppBanner();
 })();
 
 render();
-
-// v1.31.1 — RESTORED. This call was lost in v1.18.0 when the milestone
-// baseline was added to the boot sequence, so checkAndShowWhatsNew() sat
-// defined-but-never-called for roughly a dozen releases: nobody was shown what
-// changed unless they went digging in Settings. Release notes are how users
-// find out their numbers got more accurate, so this needs to survive.
-// Deferred a tick so it never competes with a milestone celebration.
-setTimeout(function() {
-  try { checkAndShowWhatsNew(); } catch (e) {}
-}, 400);
 </script>
 <script>
 // ── SERVICE WORKER REGISTRATION ──
