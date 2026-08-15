@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="DebtFree">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="description" content="Your interactive debt payoff command center. Know your freedom date.">
-<link rel="manifest" href="/app/manifest.json">
+<link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
 <link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
@@ -2802,7 +2802,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.28.2';
+const APP_VERSION = '1.28.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -2810,6 +2810,16 @@ const APP_VERSION = '1.28.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.28.3',
+    date: 'August 15, 2026',
+    name: 'Correct icon everywhere',
+    whatsNew: [],
+    fixes: [
+      'Fixed the app showing an old icon in browser prompts and on the home screen. The app description file was being looked for in the wrong place, so browsers fell back to a stale icon they had cached.',
+      'Fixed offline mode never actually saving a copy of the app. The offline cache was pointed at the wrong path, so opening the app without a connection could fail.'
+    ]
+  },
   {
     version: '1.28.2',
     date: 'August 8, 2026',

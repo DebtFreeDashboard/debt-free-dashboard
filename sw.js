@@ -1,21 +1,20 @@
 // DebtFree Dashboard — Service Worker
-// v1.28.2 (Responsive tables + FAB idle reset)
+// v1.28.3 (Manifest + service worker path fixes)
 // CACHE_NAME tracks APP_VERSION in dashboard.html — bump both together on every
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.28.2';
+const CACHE_NAME = 'debtfree-1.28.3';
 const CORE_ASSETS = [
-  './',
-  './dashboard.html',
-  './manifest.json'
+  '/app/dashboard.html',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(CORE_ASSETS).catch(function() {
-        return cache.add('./dashboard.html').catch(function(){});
+        return cache.add('/app/dashboard.html').catch(function(){});
       });
     })
   );
@@ -51,7 +50,7 @@ self.addEventListener('fetch', function(event) {
         return resp;
       }).catch(function() {
         return caches.match(req).then(function(r) {
-          return r || caches.match('./dashboard.html');
+          return r || caches.match('/app/dashboard.html');
         });
       })
     );
