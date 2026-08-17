@@ -1,8 +1,10 @@
 {
-  "version": "1.31.4",
-  "releaseDate": "2026-08-15",
-  "releaseName": "Logo fix",
+  "version": "1.32.0",
+  "releaseDate": "2026-08-17",
+  "releaseName": "More on every debt",
   "notes": [
-    "Fixed missing logo and site icon. The brand files had been moved to a new folder but the app and website were still pointing at the old one, so the header showed nothing at all. Everything now points to the right place, and if an image ever fails to load the site falls back to the DebtFree name instead of an empty space."
+    "Premium members now see, for every debt, when a 0% rate ends and what it becomes, how much of that debt is already paid off, and the month it will clear. The free debt cards had shown this all along - the premium table did not, so paying members were getting less detail than free users.",
+    "If a 0% period would end before your plan clears that balance, the app now says so on the debt itself, instead of leaving you to work it out.",
+    "Payoff order now shows the month each debt clears rather than just a position number, and 0% badges name the month the rate changes rather than counting down days."
   ]
 }

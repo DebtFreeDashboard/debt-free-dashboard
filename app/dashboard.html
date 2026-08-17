@@ -1329,6 +1329,36 @@
     line-height: 1.5;
   }
 
+  /* v1.32.0 — promo line, payoff date and progress inside the premium table */
+  .pf-promo {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    line-height: 1.4;
+    margin-top: 4px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    white-space: normal;
+  }
+  .pf-promo.promo-ok    { background: rgba(123,94,167,0.12); border: 1px solid rgba(123,94,167,0.30); color: var(--text-muted); }
+  .pf-promo.promo-ok strong    { color: #b79ce0; }
+  .pf-promo.promo-tight { background: rgba(255,209,102,0.10); border: 1px solid rgba(255,209,102,0.38); color: var(--text-muted); }
+  .pf-promo.promo-tight strong { color: var(--accent4); }
+  .pf-promo.promo-risk  { background: rgba(255,107,107,0.10); border: 1px solid rgba(255,107,107,0.40); color: var(--text-muted); }
+  .pf-promo.promo-risk strong  { color: var(--accent3); }
+  .pf-promo.promo-over  { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-muted); }
+
+  .pf-progress { margin-top: 6px; }
+  .pf-progress-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
+  .pf-progress-fill { height: 100%; background: linear-gradient(90deg,#00b88c,var(--accent)); border-radius: 99px; }
+  .pf-progress-meta {
+    display: flex; justify-content: space-between; gap: 8px; margin-top: 4px;
+    font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-dim);
+  }
+  .pf-progress-meta strong { color: var(--accent); }
+
+  .pf-order-rank { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim); }
+  .pf-order-date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); white-space: nowrap; }
+
   /* v1.31.3 — rollover commitment note */
   .rollover-note {
     margin-top: 14px;
@@ -3068,7 +3098,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.31.4';
+const APP_VERSION = '1.32.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3076,6 +3106,17 @@ const APP_VERSION = '1.31.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.32.0',
+    date: 'August 17, 2026',
+    name: 'More on every debt',
+    whatsNew: [
+      'Premium members now see, for every debt, when a 0% rate ends and what it becomes, how much of that debt is already paid off, and the month it will clear. The free debt cards had shown this all along \u2014 the premium table did not, so paying members were getting less detail than free users.',
+      'If a 0% period would end before your plan clears that balance, the app now says so on the debt itself, instead of leaving you to work it out.',
+      'Payoff order now shows the month each debt clears rather than just a position number, and 0% badges name the month the rate changes rather than counting down days.'
+    ],
+    fixes: []
+  },
   {
     version: '1.31.4',
     date: 'August 15, 2026',
@@ -7387,9 +7428,8 @@ function renderDebtList() {
       const isActive = now < promoEndDate;
       const endStr = promoEndDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
       if (isActive) {
-        const msLeft = promoEndDate - now;
-        const daysLeft = Math.ceil(msLeft / (1000*60*60*24));
-        promoBadge = `<span class="tag tag-accent" style="margin-left:6px;font-size:0.58rem;">0% promo · ${daysLeft}d left</span>`;
+        // v1.32.0 — "441d left" is a number nobody can act on. A month is.
+        promoBadge = `<span class="tag tag-accent" style="margin-left:6px;font-size:0.58rem;">0% until ${endStr}</span>`;
         promoInfo = `<div class="debt-stat"><span class="debt-stat-label">After ${endStr}</span><span class="debt-stat-val" style="color:var(--accent3)">${d.postPromoApr}%</span></div>`;
       } else {
         promoBadge = `<span class="tag tag-muted" style="margin-left:6px;font-size:0.58rem;">promo ended</span>`;
@@ -7567,20 +7607,86 @@ function renderPortfolioTable(list) {
     '<th data-k="balance" class="pf-th pf-num">Balance ' + arrow('balance') + '</th>' +
     '<th data-k="apr" class="pf-th pf-num">APR ' + arrow('apr') + '</th>' +
     '<th data-k="min" class="pf-th pf-num">Min ' + arrow('min') + '</th>' +
-    '<th data-k="order" class="pf-th pf-num">Payoff&nbsp;# ' + arrow('order') + '</th>' +
+    '<th data-k="order" class="pf-th pf-num">Clear&nbsp;by ' + arrow('order') + '</th>' +
     '<th data-k="interest" class="pf-th pf-num">Interest ' + arrow('interest') + '</th>' +
     '<th class="pf-th"></th>' +
     '</tr></thead>';
 
   const body = '<tbody>' + rows.map(function(r, i) {
     const d = r.d;
-    const orderCell = r.excluded ? '<span style="color:var(--text-dim);">—</span>' : (r.order === Infinity ? '—' : r.order);
+    // v1.32.0 — a rank tells you nothing you can act on; a date does. The
+    // engine already has the payoff month for every debt, so show it and keep
+    // the rank as a small prefix for anyone reading the order at a glance.
+    let orderCell;
+    if (r.excluded) {
+      orderCell = '<span style="color:var(--text-dim);">—</span>';
+    } else if (r.order === Infinity) {
+      orderCell = '—';
+    } else {
+      const _pd = perDebtMap[d.id];
+      if (_pd && _pd.paidOffMonth != null) {
+        const _fd = new Date();
+        _fd.setMonth(_fd.getMonth() + _pd.paidOffMonth);
+        orderCell = '<span class="pf-order-rank">#' + r.order + '</span> ' +
+                    '<span class="pf-order-date">' + _fd.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + '</span>';
+      } else {
+        orderCell = r.order;
+      }
+    }
     const exclTag = r.excluded ? ' <span class="tag tag-muted" style="font-size:0.55rem;">excluded</span>' : '';
     // v1.30.1 — True Cost in the premium table. Free users saw the per-day bleed
     // on their debt cards while paying customers, who get the portfolio table
     // instead, saw nothing — so the premium view was missing a free feature.
     // Rendered under the name rather than as an eighth column, which would
     // crowd the table on a phone.
+    // v1.32.0 — PARITY. The free debt cards have always shown the promo end
+    // date, the post-promo rate and a progress bar; the premium portfolio table
+    // showed none of them. Paying customers were seeing LESS about their own
+    // debts than free users — the same gap True Cost had in v1.30.1, which was
+    // fixed for that one feature without checking whether the pattern was
+    // broader. It was.
+    let promoTag = '';
+    if (d.hasPromo && d.promoEnd) {
+      const _pe = new Date(d.promoEnd);
+      const _now = new Date();
+      if (!isNaN(_pe.getTime())) {
+        const _endStr = _pe.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        if (_now < _pe) {
+          // Does the plan clear this balance before the rate rises? The app has
+          // always known; it just never said. A photo finish is worth flagging.
+          const _monthsToPromo = (_pe.getFullYear() - _now.getFullYear()) * 12 + (_pe.getMonth() - _now.getMonth());
+          const _pd = perDebtMap[d.id];
+          const _clears = (_pd && _pd.paidOffMonth != null) ? _pd.paidOffMonth : null;
+          let cls = 'promo-ok', tail = '';
+          if (_clears === null || _clears > _monthsToPromo) {
+            cls = 'promo-risk';
+            tail = ' \u00b7 <strong>your plan doesn\u2019t clear it first</strong>';
+          } else if (_monthsToPromo - _clears <= 1) {
+            cls = 'promo-tight';
+            tail = ' \u00b7 cleared with little to spare';
+          }
+          promoTag = '<div class="pf-promo ' + cls + '">0% until <strong>' + _endStr +
+                     '</strong>, then ' + (d.postPromoApr != null ? d.postPromoApr : (d.realApr || 0)) + '%' + tail + '</div>';
+        } else {
+          promoTag = '<div class="pf-promo promo-over">0% ended ' + _endStr + ' \u2014 now ' +
+                     (d.postPromoApr != null ? d.postPromoApr : (d.realApr || 0)) + '%</div>';
+        }
+      }
+    }
+
+    // Progress: how much of this debt is already gone.
+    let progTag = '';
+    if (d.originalBalance > 0 && d.balance > 0) {
+      const _paidOff = Math.max(0, d.originalBalance - d.balance);
+      const _pctPaid = Math.max(0, Math.min(100, (_paidOff / d.originalBalance) * 100));
+      if (_paidOff > 0.5) {
+        progTag = '<div class="pf-progress">' +
+          '<div class="pf-progress-track"><div class="pf-progress-fill" style="width:' + _pctPaid.toFixed(1) + '%"></div></div>' +
+          '<div class="pf-progress-meta"><span><strong>' + Math.round(_pctPaid) + '% paid</strong> of ' + fmtDec(d.originalBalance) + '</span>' +
+          '<span>' + fmtDec(_paidOff) + ' paid down</span></div></div>';
+      }
+    }
+
     let tcTag = '';
     const tc = (typeof trueCostOf === 'function') ? trueCostOf(d) : null;
     if (tc) {
@@ -7613,11 +7719,11 @@ function renderPortfolioTable(list) {
           '</td>'
         : '') +
       // v1.28.2 — data-label drives the stacked card layout below 560px.
-      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + tcTag + '</td>' +
+      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + promoTag + tcTag + progTag + '</td>' +
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
-      '<td class="pf-td pf-num" data-label="Order">' + orderCell + '</td>' +
+      '<td class="pf-td pf-num" data-label="Clear by">' + orderCell + '</td>' +
       '<td class="pf-td pf-num" data-label="Interest">' + fmtDec(r.interest) + '</td>' +
       '<td class="pf-td pf-num pf-actions" style="white-space:nowrap;">' +
         '<button class="btn btn-ghost" style="font-size:0.66rem;padding:4px 9px;" onclick="openEditModal(' + d.id + ')">Edit</button> ' +
