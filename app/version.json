@@ -1,10 +1,9 @@
 {
-  "version": "1.33.0",
+  "version": "1.33.1",
   "releaseDate": "2026-08-17",
-  "releaseName": "Balance transfers counted properly",
+  "releaseName": "Partial transfers",
   "notes": [
-    "You can now tell the app when a closed account was a balance transfer rather than a debt you paid off. Open Paid Off Debts, tap Details on any account, and record where the balance went, how much moved and what the fee was.",
-    "Transferred balances no longer count towards your progress, your total paid off, or your wins - because the money moved rather than left. They appear in their own 'Moved to another account' list instead, with the destination, amount, date and any fee.",
-    "Fixed progress being overstated after a balance transfer. Until now the only way to record one was to mark the old card paid off, which told the app you had cleared debt you had actually just relocated - and your balance had in fact gone up by the transfer fee. If you've done this before, the new Details screen will correct it."
+    "Fixed recording a transfer when you had already paid part of the balance down yourself. Entering an amount smaller than the closed total quietly did nothing, so your progress stayed overstated. The amount you enter is now used exactly, and the screen shows the split as you type - what moved, and what still counts as paid by you.",
+    "Fixed the 'debt eliminated' celebration firing when you recorded a transfer. Moving a balance to another card is not a debt beaten, so it no longer triggers a celebration or a win card."
   ]
 }

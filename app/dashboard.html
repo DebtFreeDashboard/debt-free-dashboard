@@ -1347,6 +1347,12 @@
   .cdm-divider { height: 1px; background: var(--border); margin: 16px 0; }
   .cdm-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 12px; }
   .cdm-toggle { width: 100%; font-size: 0.78rem; }
+  .cdm-hint { font-size: 0.76rem; color: var(--text-muted); line-height: 1.5; margin: 12px 0 4px; }
+  .cdm-hint em { color: var(--text); font-style: normal; font-weight: 600; }
+  .cdm-split { font-family: var(--font-mono); font-size: 0.72rem; margin-top: 4px; line-height: 1.5; }
+  .cdm-split-moved { color: #b79ce0; }
+  .cdm-split-kept { color: var(--accent); }
+  .cdm-split-warn { color: var(--accent3); }
   .cdm-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 16px; }
 
   .paid-off-moved { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
@@ -3140,7 +3146,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.33.0';
+const APP_VERSION = '1.33.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3148,6 +3154,16 @@ const APP_VERSION = '1.33.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.33.1',
+    date: 'August 17, 2026',
+    name: 'Partial transfers',
+    whatsNew: [],
+    fixes: [
+      'Fixed recording a transfer when you had already paid part of the balance down yourself. Entering an amount smaller than the closed total quietly did nothing, so your progress stayed overstated. The amount you enter is now used exactly, and the screen shows the split as you type \u2014 what moved, and what still counts as paid by you.',
+      'Fixed the \u201cdebt eliminated\u201d celebration firing when you recorded a transfer. Moving a balance to another card is not a debt beaten, so it no longer triggers a celebration or a win card.'
+    ]
+  },
   {
     version: '1.33.0',
     date: 'August 17, 2026',
@@ -3946,8 +3962,19 @@ function totalOriginal() { return debts.reduce((a,d)=>a+(isNaN(d.originalBalance
 // went UP by the transfer fee. Payments flagged as transfers are excluded here
 // so progress reflects money that genuinely left your pocket.
 function totalPaid() {
-  return payments.filter(function(p) { return !p.pending && !p.isTransfer; })
-                 .reduce(function(a, p) { return a + p.amount; }, 0);
+  const gross = payments.filter(function(p) { return !p.pending; })
+                        .reduce(function(a, p) { return a + p.amount; }, 0);
+  // v1.33.1 — subtract only the portion of each closed account that was MOVED,
+  // not the whole payoff. The first version flagged entire payment records as
+  // transfers, so a partial transfer (paid some down, moved the rest) matched
+  // no record at all and silently corrected nothing. Subtracting the recorded
+  // amount is exact for partials and leaves payment history untouched.
+  const moved = debts.reduce(function(a, d) {
+    if (!isTransferred(d)) return a;
+    const amt = (d.transferAmount != null) ? d.transferAmount : (d.originalBalance || 0);
+    return a + Math.max(0, amt);
+  }, 0);
+  return Math.max(0, gross - moved);
 }
 
 // Was this debt closed by moving the balance elsewhere rather than paying it?
@@ -3971,11 +3998,13 @@ function milestoneKeysAchieved() {
   const active = debts.filter(function(d){ return d.balance > 0; });
   const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; });
 
-  // Per-debt eliminations
-  paidOff.forEach(function(d){ keys.push('elim:' + d.id); });
+  // Per-debt eliminations. v1.33.1 — a balance that was moved to another card
+  // is not a debt beaten, so it earns no celebration and no win card.
+  paidOff.filter(function(d){ return !isTransferred(d); })
+         .forEach(function(d){ keys.push('elim:' + d.id); });
 
   // Debt-free (had debts, none remain active)
-  if (debts.length && !active.length && debts.some(function(d){ return d.originalBalance > 0; })) {
+  if (debts.length && !active.length && debts.some(function(d){ return d.originalBalance > 0 && !isTransferred(d); })) {
     keys.push('debtfree');
   }
 
@@ -4964,12 +4993,17 @@ function openClosedDebtModal(id) {
       '</div>' +
       '<div class="form-field" id="cdm-other-wrap" style="display:none;"><label>Card name</label>' +
         '<input type="text" id="cdm-other" placeholder="e.g. Citi 0% offer"></div>' +
+      '<p class="cdm-hint">Only the part you <em>moved</em> stops counting as progress. If you paid some of this ' +
+        'balance down yourself before transferring the rest, enter just the transferred amount &mdash; the rest ' +
+        'stays credited to you.</p>' +
       '<div class="form-grid" style="grid-template-columns:1fr 1fr">' +
         '<div class="form-field"><label>Amount moved ($)</label>' +
-          '<input type="number" id="cdm-amount" step="0.01" value="' + (st.totalPaid || d.originalBalance).toFixed(2) + '"></div>' +
+          '<input type="number" id="cdm-amount" step="0.01" min="0" max="' + (st.totalPaid || d.originalBalance).toFixed(2) + '" ' +
+          'value="' + (st.totalPaid || d.originalBalance).toFixed(2) + '" oninput="_cdmPreview()"></div>' +
         '<div class="form-field"><label>Transfer fee ($)</label>' +
-          '<input type="number" id="cdm-fee" step="0.01" value="0"></div>' +
+          '<input type="number" id="cdm-fee" step="0.01" min="0" value="0"></div>' +
       '</div>' +
+      '<div class="cdm-split" id="cdm-split"></div>' +
       '<div class="form-field"><label>Date</label>' +
         '<input type="date" id="cdm-date" value="' + (st.payoffDate || new Date().toISOString().slice(0,10)) + '"></div>' +
       '<div class="cdm-actions">' +
@@ -4978,11 +5012,32 @@ function openClosedDebtModal(id) {
       '</div>' +
     '</div>';
 
+  _cdmPreview();
   const sel = document.getElementById('cdm-dest');
   if (sel) sel.onchange = function() {
     const w = document.getElementById('cdm-other-wrap');
     if (w) w.style.display = (sel.value === '_other') ? 'block' : 'none';
   };
+}
+
+// v1.33.1 — show the split live. "How much of this was actually mine?" is the
+// question the number answers, so the answer should be visible while typing.
+function _cdmPreview() {
+  const d = debts.find(function(x) { return x.id === _cdmId; });
+  const out = document.getElementById('cdm-split');
+  if (!d || !out) return;
+  const st = eliminatedStatsFor(d);
+  const closedTotal = st.totalPaid || d.originalBalance || 0;
+  const amt = parseFloat((document.getElementById('cdm-amount') || {}).value);
+  if (isNaN(amt) || amt < 0) { out.innerHTML = ''; return; }
+  if (amt > closedTotal + 0.005) {
+    out.innerHTML = '<span class="cdm-split-warn">That\u2019s more than the ' + fmtDec(closedTotal) +
+      ' recorded on this account.</span>';
+    return;
+  }
+  const kept = closedTotal - amt;
+  out.innerHTML = '<span class="cdm-split-moved">' + fmtDec(amt) + ' moved</span>' +
+    (kept > 0.005 ? ' &middot; <span class="cdm-split-kept">' + fmtDec(kept) + ' still counts as paid by you</span>' : '');
 }
 
 function closeClosedDebtModal(evt) {
@@ -5010,6 +5065,12 @@ function applyTransferClassification() {
   const fee = parseFloat((document.getElementById('cdm-fee') || {}).value);
   const date = (document.getElementById('cdm-date') || {}).value || new Date().toISOString().slice(0,10);
   if (isNaN(amt) || amt <= 0) { alert('Enter the amount that was moved.'); return; }
+  const _st = eliminatedStatsFor(d);
+  const _closedTotal = _st.totalPaid || d.originalBalance || 0;
+  if (amt > _closedTotal + 0.005) {
+    alert('That\u2019s more than the ' + fmtDec(_closedTotal) + ' recorded on this account. Enter just the amount that moved.');
+    return;
+  }
 
   d.closedAs = 'transferred';
   d.transferTo = destName;
@@ -5017,21 +5078,14 @@ function applyTransferClassification() {
   d.transferFeePaid = isNaN(fee) ? 0 : round2(fee);
   d.transferDate = date;
 
-  // Flag the payment(s) that closed it, so progress stops counting the move as
-  // money paid. Only the transferred amount is reclassified — anything genuinely
-  // paid down before the transfer still counts, which is the honest split.
-  let toFlag = amt;
-  payments.filter(function(p) { return p.debtId === d.id && !p.pending; })
-    .sort(function(a, b) { return (a.date < b.date) ? 1 : -1; })
-    .forEach(function(p) {
-      if (toFlag <= 0.005 || p.isTransfer) return;
-      if (p.amount <= toFlag + 0.005) { p.isTransfer = true; toFlag -= p.amount; }
-    });
-
-  // It was never an elimination, so it must not hold a milestone.
+  // v1.33.1 — the milestone key is KEPT, not removed. Removing it meant the
+  // next render saw an eliminated debt with no recorded milestone and fired the
+  // celebration again — reclassifying a transfer set off a "debt eliminated"
+  // party for a debt that was merely moved. milestoneKeysAchieved() now skips
+  // transferred accounts, and holding the key ensures nothing re-fires.
   const key = 'elim:' + d.id;
-  const i = shownMilestones.indexOf(key);
-  if (i !== -1) { shownMilestones.splice(i, 1); persistMilestones(); }
+  if (shownMilestones.indexOf(key) === -1) { shownMilestones.push(key); }
+  persistMilestones();
 
   if (typeof trackShare === 'function') {
     trackShare('debt_reclassified_transfer', { _category: 'data_quality', amount: Math.round(amt) });
@@ -5046,6 +5100,7 @@ function undoTransferClassification() {
   if (!d) return;
   delete d.closedAs; delete d.transferTo; delete d.transferToId;
   delete d.transferAmount; delete d.transferFeePaid; delete d.transferDate;
+  // Clear any flags left by v1.33.0, which used to mark payment records.
   payments.forEach(function(p) { if (p.debtId === d.id) delete p.isTransfer; });
   save();
   closeClosedDebtModal();
