@@ -1329,6 +1329,19 @@
     line-height: 1.5;
   }
 
+  /* v1.31.3 — rollover commitment note */
+  .rollover-note {
+    margin-top: 14px;
+    padding: 11px 13px;
+    background: rgba(0,168,132,0.07);
+    border: 1px solid rgba(0,168,132,0.22);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .rollover-note strong { color: var(--text); }
+
   /* v1.31.0 — Optimized strategy note */
   .optimized-note {
     background: rgba(0,168,132,0.08);
@@ -2500,6 +2513,12 @@
           <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">minimums + extra</div>
         </div>
       </div>
+      <!-- v1.31.3 — the freedom date assumes this total never drops. As debts
+           clear, their minimums roll into whatever is left rather than returning
+           to your pocket. Nothing enforces that, so it needs saying: a user who
+           eases off once the required minimum falls is on a materially longer
+           plan than the one shown. -->
+      <div class="rollover-note" id="rollover-note"></div>
     </div>
 <div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="open" data-premium data-premium-managed style="display:none">
       <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
@@ -3049,7 +3068,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.31.2';
+const APP_VERSION = '1.31.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3057,6 +3076,18 @@ const APP_VERSION = '1.31.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.31.3',
+    date: 'August 15, 2026',
+    name: 'Promo dates and payment clarity',
+    whatsNew: [
+      'The Monthly Payment Summary now spells out what your freedom date actually assumes: that your total payment stays the same every month, with each cleared debt\u2019s payment rolling into what\u2019s left rather than going back in your pocket. It also shows roughly how many months longer things would take if you eased off instead.'
+    ],
+    fixes: [
+      'Fixed a one-month error on 0% promotional cards. Interest was being added a month early \u2014 a promo running to 31 March was charged the higher rate for the whole of March, when it should still have been 0%. Your forecast had this right, but the interest added to your tracked balances did not, so the two slowly drifted apart. Both now agree.',
+      'The logo on the website header now uses the light version, which sits properly on the page instead of showing as a dark block.'
+    ]
+  },
   {
     version: '1.31.2',
     date: 'August 14, 2026',
@@ -6241,7 +6272,14 @@ function accrualRateFor(d, monthDate) {
     const pe = new Date(d.promoEnd);
     const delta = (pe.getFullYear() - monthDate.getFullYear()) * 12 +
                   (pe.getMonth() - monthDate.getMonth());
-    if (delta > 0) return d.promoApr || 0;
+    // v1.31.3 — a promo runs THROUGH the calendar month it ends in: a rate
+    // ending 2027-03-31 is still 0% for all of March, and the new rate starts
+    // in April. This used to flip on delta > 0, charging the post-promo rate a
+    // month early. simulate() has always used `month <= promoSwitchMonth`, i.e.
+    // the correct rule — so the projection and the interest actually added to
+    // balances disagreed by a month on every promo card, which is exactly the
+    // drift from real statements that interest tracking exists to avoid.
+    if (delta >= 0) return d.promoApr || 0;
     if (d.postPromoApr != null && !isNaN(d.postPromoApr)) return d.postPromoApr;
   }
   if (d.realApr != null && !isNaN(d.realApr)) return d.realApr;
@@ -7198,6 +7236,31 @@ function renderMonthlySummary() {
 
   document.getElementById('summary-min-total').textContent = fmt(totalMin);
   document.getElementById('summary-total-payment').textContent = fmt(totalMonthly);
+
+  // v1.31.3 — spell out the commitment behind the freedom date. Quantify it
+  // where we can: showing what the plan would cost in extra months if someone
+  // stops rolling freed minimums forward is far more persuasive than a caveat.
+  const noteEl = document.getElementById('rollover-note');
+  if (noteEl) {
+    let msg = 'Your plan assumes this <strong>' + fmt(totalMonthly) +
+      '</strong> stays the same every month until you\u2019re debt-free. As each debt clears, ' +
+      'its payment rolls into whatever is left rather than going back in your pocket \u2014 ' +
+      'that rollover is what makes the freedom date work.';
+    try {
+      const plan = getPlanSim();
+      const act = _activePlanDebts();
+      if (plan && act.length > 1) {
+        const noRoll = simulate(act.map(function(d) { return {...d}; }), extra, 0, strategy,
+                                plannedDisbursements(), { rollover: false });
+        const slip = noRoll.months - plan.months;
+        if (slip > 0) {
+          msg += ' If you eased off as minimums fell, the same debts would take about <strong>' +
+            slip + ' month' + (slip === 1 ? '' : 's') + ' longer</strong>.';
+        }
+      }
+    } catch (e) {}
+    noteEl.innerHTML = msg;
+  }
 }
 
 function renderStats() {

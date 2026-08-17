@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "exportDate": "2026-08-06T12:00:00.000Z",
+  "exportDate": "2026-08-15T12:00:00.000Z",
   "debts": [
     {
       "id": 1,
@@ -42,7 +42,7 @@
       "includeInStrategy": true,
       "origPrincipal": 8500,
       "termMonths": 36,
-      "originationDate": "2026-08-06"
+      "originationDate": "2026-08-15"
     }
   ],
   "payments": [],
@@ -58,7 +58,7 @@
       "month": "2026-08",
       "amount": 0,
       "apr": 0,
-      "date": "2026-08-06"
+      "date": "2026-08-15"
     },
     {
       "id": 4,
@@ -67,7 +67,7 @@
       "month": "2026-08",
       "amount": 0,
       "apr": 0,
-      "date": "2026-08-06"
+      "date": "2026-08-15"
     }
   ],
   "adjustments": [],

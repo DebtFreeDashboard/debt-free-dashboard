@@ -1,9 +1,10 @@
 {
-  "version": "1.31.2",
-  "releaseDate": "2026-08-14",
-  "releaseName": "New look",
+  "version": "1.31.3",
+  "releaseDate": "2026-08-15",
+  "releaseName": "Promo dates and payment clarity",
   "notes": [
-    "New DebtFree logo and app icon throughout the app and website.",
-    "Fixed: the app was pointing at the wrong location for its install settings, so adding DebtFree to your home screen could give you a blank icon and the wrong name. Home-screen installs now pick up the proper icon, name and colours - if you already added it, remove it and add it again to get the new icon."
+    "The Monthly Payment Summary now spells out what your freedom date actually assumes: that your total payment stays the same every month, with each cleared debt's payment rolling into what's left rather than going back in your pocket. It also shows roughly how many months longer things would take if you eased off instead.",
+    "Fixed a one-month error on 0% promotional cards. Interest was being added a month early - a promo running to 31 March was charged the higher rate for the whole of March, when it should still have been 0%. Your forecast had this right, but the interest added to your tracked balances did not, so the two slowly drifted apart. Both now agree.",
+    "The logo on the website header now uses the light version, which sits properly on the page instead of showing as a dark block."
   ]
 }
