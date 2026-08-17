@@ -1329,6 +1329,47 @@
     line-height: 1.5;
   }
 
+  /* v1.33.0 — closed-account details + moved-accounts group */
+  .cdm-status {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: 8px 11px; border-radius: var(--radius-sm);
+    margin-bottom: 14px;
+  }
+  .cdm-status.paid  { background: rgba(0,168,132,0.10); border: 1px solid rgba(0,168,132,0.3); color: var(--accent); }
+  .cdm-status.moved { background: rgba(123,94,167,0.12); border: 1px solid rgba(123,94,167,0.35); color: #b79ce0; }
+  .cdm-rows { display: flex; flex-direction: column; gap: 2px; }
+  .cdm-row {
+    display: flex; justify-content: space-between; gap: 12px; padding: 7px 0;
+    border-bottom: 1px solid var(--border); font-size: 0.82rem;
+  }
+  .cdm-row span:first-child { color: var(--text-muted); }
+  .cdm-row span:last-child { font-family: var(--font-mono); color: var(--text); }
+  .cdm-divider { height: 1px; background: var(--border); margin: 16px 0; }
+  .cdm-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 12px; }
+  .cdm-toggle { width: 100%; font-size: 0.78rem; }
+  .cdm-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 16px; }
+
+  .paid-off-moved { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .moved-title {
+    font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #b79ce0; margin-bottom: 6px;
+  }
+  .moved-note { font-size: 0.74rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
+  .moved-note strong { color: var(--accent4); }
+  .moved-item {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: rgba(123,94,167,0.07); border: 1px solid rgba(123,94,167,0.22);
+    border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px;
+  }
+  .moved-main { flex: 1; min-width: 160px; font-size: 0.84rem; color: var(--text-muted); }
+  .moved-main strong { color: var(--text); }
+  .moved-meta { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); white-space: nowrap; }
+  .moved-fee { color: var(--accent4); }
+  .moved-total {
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim);
+    text-align: right; margin-top: 4px;
+  }
+
   /* v1.32.0 — promo line, payoff date and progress inside the premium table */
   .pf-promo {
     font-family: var(--font-mono);
@@ -2396,6 +2437,7 @@
       </div>
       <div class="paid-off-summary" id="paid-off-summary"></div>
       <div class="debt-list" id="paid-off-list"></div>
+      <div class="paid-off-moved" id="paid-off-moved" style="display:none;"></div>
     </div>
 
     <!-- Monthly Budget -->
@@ -3098,7 +3140,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.32.0';
+const APP_VERSION = '1.33.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3106,6 +3148,18 @@ const APP_VERSION = '1.32.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.33.0',
+    date: 'August 17, 2026',
+    name: 'Balance transfers counted properly',
+    whatsNew: [
+      'You can now tell the app when a closed account was a balance transfer rather than a debt you paid off. Open Paid Off Debts, tap Details on any account, and record where the balance went, how much moved and what the fee was.',
+      'Transferred balances no longer count towards your progress, your total paid off, or your wins \u2014 because the money moved rather than left. They appear in their own \u201cMoved to another account\u201d list instead, with the destination, amount, date and any fee.'
+    ],
+    fixes: [
+      'Fixed progress being overstated after a balance transfer. Until now the only way to record one was to mark the old card paid off, which told the app you had cleared debt you had actually just relocated \u2014 and your balance had in fact gone up by the transfer fee. If you\u2019ve done this before, the new Details screen will correct it.'
+    ]
+  },
   {
     version: '1.32.0',
     date: 'August 17, 2026',
@@ -3886,7 +3940,18 @@ function totalBalance() { return debts.filter(d=>d.balance>0).reduce((a,d)=>a+(i
 
 function totalOriginal() { return debts.reduce((a,d)=>a+(isNaN(d.originalBalance) ? 0 : d.originalBalance),0); }
 
-function totalPaid() { return payments.filter(p => !p.pending).reduce((a,p)=>a+p.amount,0); }
+// v1.33.0 — a balance transfer is NOT a payment. Recording one as a payoff told
+// the app you had extinguished debt when you had only relocated it, inflating
+// progress, "total paid off" and the eliminated count while your actual debt
+// went UP by the transfer fee. Payments flagged as transfers are excluded here
+// so progress reflects money that genuinely left your pocket.
+function totalPaid() {
+  return payments.filter(function(p) { return !p.pending && !p.isTransfer; })
+                 .reduce(function(a, p) { return a + p.amount; }, 0);
+}
+
+// Was this debt closed by moving the balance elsewhere rather than paying it?
+function isTransferred(d) { return d && d.closedAs === 'transferred'; }
 
 // ── v1.18.0 — MILESTONE FLYWHEEL ──
 // Fires a celebration + shareable win card at emotional-peak moments, then
@@ -4837,6 +4902,155 @@ function sanitizeApr(val) {
   return val;
 }
 let editingId = null;
+
+// ── v1.33.0 — CLOSED ACCOUNT DETAILS / RECLASSIFY AS TRANSFER ──
+// The data model only ever had one way for a balance to fall: a payment. A
+// balance transfer isn't a payment, it's a move — so recording one as a payoff
+// credited the user with money they never paid. On a real example that showed
+// 48.8% progress and $8,779.91 "paid off" for a transfer where $0 left the
+// user's pocket and the debt actually grew by the $439 fee.
+let _cdmId = null;
+
+function openClosedDebtModal(id) {
+  const d = debts.find(function(x) { return x.id === id; });
+  if (!d) return;
+  _cdmId = id;
+  const _m = document.getElementById('closed-debt-modal');
+  if (_m) _m.classList.remove('hidden');
+  const st = eliminatedStatsFor(d);
+  const title = document.getElementById('cdm-title');
+  const body = document.getElementById('cdm-body');
+  if (title) title.textContent = d.name;
+
+  const when = st.payoffDate
+    ? new Date(st.payoffDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    : '\u2014';
+
+  if (isTransferred(d)) {
+    body.innerHTML =
+      '<div class="cdm-status moved">&#8644; Recorded as a balance transfer</div>' +
+      '<div class="cdm-rows">' +
+        '<div class="cdm-row"><span>Moved to</span><span>' + escapeHtml(d.transferTo || '\u2014') + '</span></div>' +
+        '<div class="cdm-row"><span>Amount moved</span><span>' + fmtDec(d.transferAmount != null ? d.transferAmount : d.originalBalance) + '</span></div>' +
+        '<div class="cdm-row"><span>Date</span><span>' + (d.transferDate || '\u2014') + '</span></div>' +
+        (d.transferFeePaid > 0 ? '<div class="cdm-row"><span>Transfer fee</span><span>' + fmtDec(d.transferFeePaid) + '</span></div>' : '') +
+      '</div>' +
+      '<p class="cdm-note">This balance doesn\u2019t count towards your progress, because it was relocated rather than paid off.</p>' +
+      '<div class="cdm-actions">' +
+        '<button class="btn btn-ghost" onclick="closeClosedDebtModal()">Close</button>' +
+        '<button class="btn btn-ghost" style="color:var(--accent4)" onclick="undoTransferClassification()">Actually, I paid this off</button>' +
+      '</div>';
+    return;
+  }
+
+  // Candidate destinations: any other debt. Free text is allowed for a card
+  // that isn't tracked here.
+  const opts = debts.filter(function(x) { return x.id !== d.id; })
+    .map(function(x) { return '<option value="' + x.id + '">' + escapeHtml(x.name) + '</option>'; }).join('');
+
+  body.innerHTML =
+    '<div class="cdm-status paid">&#127942; Recorded as paid off</div>' +
+    '<div class="cdm-rows">' +
+      '<div class="cdm-row"><span>Original balance</span><span>' + fmtDec(d.originalBalance) + '</span></div>' +
+      (st.interestPaid ? '<div class="cdm-row"><span>Interest paid</span><span>' + fmtDec(st.interestPaid) + '</span></div>' : '') +
+      '<div class="cdm-row"><span>Closed</span><span>' + when + '</span></div>' +
+    '</div>' +
+    '<div class="cdm-divider"></div>' +
+    '<p class="cdm-note">Did you actually move this balance to another card? If so it wasn\u2019t paid off, and counting it as one overstates your progress.</p>' +
+    '<button class="btn btn-ghost cdm-toggle" onclick="document.getElementById(\'cdm-form\').style.display=\'block\'; this.style.display=\'none\';">This was a balance transfer</button>' +
+    '<div id="cdm-form" style="display:none;">' +
+      '<div class="form-field"><label>Moved to</label>' +
+        '<select id="cdm-dest">' + opts + '<option value="_other">Another card (not tracked here)</option></select>' +
+      '</div>' +
+      '<div class="form-field" id="cdm-other-wrap" style="display:none;"><label>Card name</label>' +
+        '<input type="text" id="cdm-other" placeholder="e.g. Citi 0% offer"></div>' +
+      '<div class="form-grid" style="grid-template-columns:1fr 1fr">' +
+        '<div class="form-field"><label>Amount moved ($)</label>' +
+          '<input type="number" id="cdm-amount" step="0.01" value="' + (st.totalPaid || d.originalBalance).toFixed(2) + '"></div>' +
+        '<div class="form-field"><label>Transfer fee ($)</label>' +
+          '<input type="number" id="cdm-fee" step="0.01" value="0"></div>' +
+      '</div>' +
+      '<div class="form-field"><label>Date</label>' +
+        '<input type="date" id="cdm-date" value="' + (st.payoffDate || new Date().toISOString().slice(0,10)) + '"></div>' +
+      '<div class="cdm-actions">' +
+        '<button class="btn btn-ghost" onclick="closeClosedDebtModal()">Cancel</button>' +
+        '<button class="btn btn-primary" onclick="applyTransferClassification()">Record as transfer</button>' +
+      '</div>' +
+    '</div>';
+
+  const sel = document.getElementById('cdm-dest');
+  if (sel) sel.onchange = function() {
+    const w = document.getElementById('cdm-other-wrap');
+    if (w) w.style.display = (sel.value === '_other') ? 'block' : 'none';
+  };
+}
+
+function closeClosedDebtModal(evt) {
+  if (evt && evt.currentTarget && evt.target !== evt.currentTarget) return;
+  const m = document.getElementById('closed-debt-modal');
+  if (m) m.classList.add('hidden');
+  _cdmId = null;
+}
+
+function applyTransferClassification() {
+  const d = debts.find(function(x) { return x.id === _cdmId; });
+  if (!d) return;
+  const sel = document.getElementById('cdm-dest');
+  const destVal = sel ? sel.value : '_other';
+  let destName = '';
+  if (destVal === '_other') {
+    const el = document.getElementById('cdm-other');
+    destName = el && el.value.trim() ? el.value.trim() : 'another card';
+  } else {
+    const t = debts.find(function(x) { return String(x.id) === String(destVal); });
+    destName = t ? t.name : 'another card';
+    d.transferToId = t ? t.id : null;
+  }
+  const amt = parseFloat((document.getElementById('cdm-amount') || {}).value);
+  const fee = parseFloat((document.getElementById('cdm-fee') || {}).value);
+  const date = (document.getElementById('cdm-date') || {}).value || new Date().toISOString().slice(0,10);
+  if (isNaN(amt) || amt <= 0) { alert('Enter the amount that was moved.'); return; }
+
+  d.closedAs = 'transferred';
+  d.transferTo = destName;
+  d.transferAmount = round2(amt);
+  d.transferFeePaid = isNaN(fee) ? 0 : round2(fee);
+  d.transferDate = date;
+
+  // Flag the payment(s) that closed it, so progress stops counting the move as
+  // money paid. Only the transferred amount is reclassified — anything genuinely
+  // paid down before the transfer still counts, which is the honest split.
+  let toFlag = amt;
+  payments.filter(function(p) { return p.debtId === d.id && !p.pending; })
+    .sort(function(a, b) { return (a.date < b.date) ? 1 : -1; })
+    .forEach(function(p) {
+      if (toFlag <= 0.005 || p.isTransfer) return;
+      if (p.amount <= toFlag + 0.005) { p.isTransfer = true; toFlag -= p.amount; }
+    });
+
+  // It was never an elimination, so it must not hold a milestone.
+  const key = 'elim:' + d.id;
+  const i = shownMilestones.indexOf(key);
+  if (i !== -1) { shownMilestones.splice(i, 1); persistMilestones(); }
+
+  if (typeof trackShare === 'function') {
+    trackShare('debt_reclassified_transfer', { _category: 'data_quality', amount: Math.round(amt) });
+  }
+  save();
+  closeClosedDebtModal();
+  render();
+}
+
+function undoTransferClassification() {
+  const d = debts.find(function(x) { return x.id === _cdmId; });
+  if (!d) return;
+  delete d.closedAs; delete d.transferTo; delete d.transferToId;
+  delete d.transferAmount; delete d.transferFeePaid; delete d.transferDate;
+  payments.forEach(function(p) { if (p.debtId === d.id) delete p.isTransfer; });
+  save();
+  closeClosedDebtModal();
+  render();
+}
 
 function openEditModal(id) {
   const d = debts.find(x => x.id === id);
@@ -9385,18 +9599,26 @@ function renderPaidOffDebts() {
   const summaryEl = document.getElementById('paid-off-summary');
   if (!card || !list) return;
 
-  const paid = debts.filter(function(d) { return d.balance <= 0 && d.originalBalance > 0; });
-  if (!paid.length) {
+  const closed = debts.filter(function(d) { return d.balance <= 0 && d.originalBalance > 0; });
+  // v1.33.0 — a card closed by transferring its balance is genuinely closed, and
+  // worth seeing, but it is not a debt you beat. Keeping the two in one list
+  // made the trophy case overstate the win.
+  const paid = closed.filter(function(d) { return !isTransferred(d); });
+  const moved = closed.filter(function(d) { return isTransferred(d); });
+  if (!closed.length) {
     card.style.display = 'none';
     card.dataset.hasContent = '0';
     return;
   }
   card.dataset.hasContent = '1';
   card.style.display = 'block';
-  if (countEl) countEl.textContent = paid.length + (paid.length === 1 ? ' win' : ' wins');
+  if (countEl) {
+    countEl.textContent = paid.length + (paid.length === 1 ? ' win' : ' wins') +
+      (moved.length ? ' \u00b7 ' + moved.length + ' moved' : '');
+  }
 
   const stats = {};
-  paid.forEach(function(d) { stats[d.id] = eliminatedStatsFor(d); });
+  closed.forEach(function(d) { stats[d.id] = eliminatedStatsFor(d); });
 
   // Newest win first; debts with no payoff date sort last.
   const ordered = paid.slice().sort(function(a, b) {
@@ -9442,8 +9664,50 @@ function renderPaidOffDebts() {
       (when ? '<span class="po-date">Paid off ' + when + '</span>' : '') +
       '<div class="debt-stats">' + bits.join('') + '</div>' +
       '<button class="btn btn-ghost po-edit" onclick="openEditModal(' + d.id + ')" title="Reopen this account if you use it again">Edit</button>' +
+      '<button class="btn btn-ghost po-edit" onclick="openClosedDebtModal(' + d.id + ')" title="How was this account closed?">Details</button>' +
     '</div>';
   }).join('');
+
+  // v1.33.0 — accounts closed by moving the balance elsewhere. Shown, because
+  // closing a card is worth seeing, but kept apart from the wins and excluded
+  // from the totals above so progress stays honest.
+  const movedWrap = document.getElementById('paid-off-moved');
+  if (movedWrap) {
+    if (!moved.length) {
+      movedWrap.innerHTML = '';
+      movedWrap.style.display = 'none';
+    } else {
+      const rows = moved.slice().sort(function(a, b) {
+        const da = a.transferDate || '', db = b.transferDate || '';
+        return da < db ? 1 : da > db ? -1 : 0;
+      }).map(function(d) {
+        const amt = (d.transferAmount != null) ? d.transferAmount : d.originalBalance;
+        const when = d.transferDate
+          ? new Date(d.transferDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          : '';
+        const dest = d.transferTo ? escapeHtml(d.transferTo) : 'another account';
+        const feeBit = (d.transferFeePaid > 0)
+          ? ' <span class="moved-fee">+ ' + fmtDec(d.transferFeePaid) + ' fee</span>' : '';
+        return '<div class="moved-item" data-id="' + d.id + '">' +
+          '<div class="moved-main"><strong>' + escapeHtml(d.name) + '</strong> &rarr; ' + dest + '</div>' +
+          '<div class="moved-meta">' + fmtDec(amt) + ' moved' + (when ? ' &middot; ' + when : '') + feeBit + '</div>' +
+          '<button class="btn btn-ghost po-edit" onclick="openClosedDebtModal(' + d.id + ')">Details</button>' +
+        '</div>';
+      }).join('');
+      const totalMoved = moved.reduce(function(s2, d) {
+        return s2 + ((d.transferAmount != null) ? d.transferAmount : d.originalBalance);
+      }, 0);
+      const totalFees = moved.reduce(function(s2, d) { return s2 + (d.transferFeePaid || 0); }, 0);
+      movedWrap.innerHTML =
+        '<div class="moved-title">&#8644; Moved to another account</div>' +
+        '<div class="moved-note">These balances were transferred, not paid off, so they don\u2019t count towards your progress.' +
+        (totalFees > 0 ? ' Transfer fees so far: <strong>' + fmtDec(totalFees) + '</strong>.' : '') + '</div>' +
+        rows +
+        '<div class="moved-total">' + fmtDec(totalMoved) + ' relocated across ' + moved.length +
+        ' account' + (moved.length === 1 ? '' : 's') + '</div>';
+      movedWrap.style.display = 'block';
+    }
+  }
 }
 
 function populateDebtSelects() {
@@ -10563,6 +10827,20 @@ if (isInStandaloneMode() ||
 </script>
 
 <!-- EDIT DEBT MODAL -->
+
+<!-- v1.33.0 — Closed account details. Lets a debt that was closed by moving its
+     balance elsewhere be reclassified, instead of being counted as a debt you
+     beat. Fixes historical data too: the only way to record a transfer used to
+     be "log a payoff", which inflated progress and fired a false celebration. -->
+<div class="modal-overlay hidden" id="closed-debt-modal" onclick="closeClosedDebtModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="cdm-title">Closed account</h3>
+      <button class="modal-close" onclick="closeClosedDebtModal()">&times;</button>
+    </div>
+    <div id="cdm-body"></div>
+  </div>
+</div>
 <div class="modal-overlay hidden" id="edit-modal" onclick="closeEditModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-header">

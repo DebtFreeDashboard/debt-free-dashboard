@@ -1,10 +1,10 @@
 {
-  "version": "1.32.0",
+  "version": "1.33.0",
   "releaseDate": "2026-08-17",
-  "releaseName": "More on every debt",
+  "releaseName": "Balance transfers counted properly",
   "notes": [
-    "Premium members now see, for every debt, when a 0% rate ends and what it becomes, how much of that debt is already paid off, and the month it will clear. The free debt cards had shown this all along - the premium table did not, so paying members were getting less detail than free users.",
-    "If a 0% period would end before your plan clears that balance, the app now says so on the debt itself, instead of leaving you to work it out.",
-    "Payoff order now shows the month each debt clears rather than just a position number, and 0% badges name the month the rate changes rather than counting down days."
+    "You can now tell the app when a closed account was a balance transfer rather than a debt you paid off. Open Paid Off Debts, tap Details on any account, and record where the balance went, how much moved and what the fee was.",
+    "Transferred balances no longer count towards your progress, your total paid off, or your wins - because the money moved rather than left. They appear in their own 'Moved to another account' list instead, with the destination, amount, date and any fee.",
+    "Fixed progress being overstated after a balance transfer. Until now the only way to record one was to mark the old card paid off, which told the app you had cleared debt you had actually just relocated - and your balance had in fact gone up by the transfer fee. If you've done this before, the new Details screen will correct it."
   ]
 }
