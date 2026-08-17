@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="DebtFree">
+<title>DebtFree</title>
+<rect width="512" height="512" rx="112.6" fill="#0a0a0f"/>
+<g transform="translate(76.80,165.04) scale(0.90964)"><rect x="0.0" y="0.0" width="44.0" height="200.0" rx="6" fill="#00e5b0" opacity="0.46"/><rect x="70.0" y="56.0" width="44.0" height="144.0" rx="6" fill="#00e5b0" opacity="0.60"/><rect x="140.0" y="100.0" width="44.0" height="100.0" rx="6" fill="#00e5b0" opacity="0.74"/><rect x="210.0" y="140.0" width="44.0" height="60.0" rx="6" fill="#00e5b0" opacity="0.88"/><rect x="280.0" y="172.0" width="44.0" height="28.0" rx="6" fill="#00e5b0" opacity="1.02"/><circle cx="372.0" cy="178.0" r="22.0" fill="#00e5b0"/></g>
+</svg>

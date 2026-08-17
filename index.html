@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><link rel="icon" href="assets/files/debtfree-mark-transparent.svg" type="image/svg+xml">
+<meta charset="UTF-8"><link rel="icon" href="assets/logo/debtfree-mark-transparent.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1019,6 +1019,13 @@
 
   @media(max-width:600px) {
     nav { padding: 14px 20px; }
+    .nav-brand { display:inline-flex; align-items:center; text-decoration:none; }
+    .nav-brand-fallback {
+      font-family: var(--font-display, system-ui), sans-serif;
+      font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em;
+      color: #12121a; line-height: 1;
+    }
+    .nav-brand-fallback span { color: #00b88c; }
     .hero { padding: 60px 20px 40px; }
     .section { padding: 60px 20px; }
     .pain-section, .preview-section, .math-section, .pricing-section { padding: 60px 20px; }
@@ -1276,9 +1283,17 @@
 
 <!-- NAV -->
 <nav>
-  <img src="assets/files/debtfree-logo-horizontal-light.svg" 
-       alt="DebtFree Dashboard" 
-       style="height:36px; width:auto;">
+  <!-- v1.31.4 — the brand falls back to styled text if the image fails. When
+       assets/files/ was removed the header rendered completely empty, because a
+       broken <img> leaves nothing behind. A missing asset should cost polish,
+       not the brand name. -->
+  <a href="/" class="nav-brand" aria-label="DebtFree Dashboard">
+    <img src="assets/logo/debtfree-logo-horizontal-light.svg"
+         alt="DebtFree Dashboard"
+         style="height:36px; width:auto; display:block;"
+         onerror="this.style.display='none'; var f=this.nextElementSibling; if(f) f.style.display='inline-block';">
+    <span class="nav-brand-fallback" style="display:none;">DebtFree <span>Dashboard</span></span>
+  </a>
   <span class="price-tag">Free to use · Premium $12 one-time</span>
   <div class="nav-buy-group">
     <a href="https://mydebtdashboard.com/app/dashboard.html"
