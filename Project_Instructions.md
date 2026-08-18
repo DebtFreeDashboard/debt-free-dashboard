@@ -94,6 +94,18 @@ Always verify:
   must agree on months and interest for the same inputs.
 - **Both tiers**: premium renders a portfolio table, free renders cards, via
   different code paths. A change to one usually needs the other.
+- **Both debt views**: the free tier renders cards and premium renders the
+  portfolio table, via different code paths. Anything added to one must be
+  checked against the other. True Cost (v1.30.1) and the promo/progress data
+  (v1.32.0) were each built for cards and silently skipped the table, leaving
+  paying users with less information than free ones.
+- **State-meaning changes need a sweep, not a patch.** When a change alters what
+  a debt's state *means* — balance transfers being the example — grep for every
+  site that infers meaning rather than fixing them as they surface. `balance <= 0`
+  is treated as "eliminated" in at least nine places: progress %, totalPaid,
+  the trophy case, the Wins list, the Wins stat cards, milestone keys,
+  celebration payloads, share cards and the payment log. Missing one ships a
+  metric that contradicts the others.
 - **Fixtures**: `test-primary.json` (9 debts, engineered so all three strategies
   diverge, plus promo expiry, a payment trap, an excluded debt, HTML-escaping
   bait, and a paid-off debt) and `test-minimal.json` (first-run states).
