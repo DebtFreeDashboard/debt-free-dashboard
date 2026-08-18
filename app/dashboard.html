@@ -1448,6 +1448,33 @@
   /* v1.29.0 — Balance Transfer Modeller */
   .xfer-intro { font-size: 0.82rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 16px; }
   .xfer-sources { display: flex; flex-direction: column; gap: 6px; }
+  /* v1.34.0 — per-source amount entry for partial transfers */
+  .xfer-src-row { display: flex; flex-direction: column; gap: 0; }
+  .xfer-amt-wrap {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: 6px 0 4px 30px; padding: 8px 10px;
+    background: rgba(0,168,132,0.06); border: 1px solid rgba(0,168,132,0.22);
+    border-radius: var(--radius-sm);
+  }
+  .xfer-amt-label {
+    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-muted); margin: 0;
+  }
+  .xfer-amt {
+    flex: 1; min-width: 110px; padding: 7px 9px; font-family: var(--font-mono);
+    font-size: 0.82rem; background: var(--surface2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  .xfer-amt-all {
+    font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.05em;
+    padding: 6px 10px; border-radius: 6px; cursor: pointer;
+    background: none; color: var(--accent); border: 1px solid rgba(0,168,132,0.4);
+  }
+  .xfer-leftover {
+    font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent4);
+    margin: -4px 0 12px; line-height: 1.5;
+  }
+
   .xfer-src {
     display: flex; align-items: center; gap: 10px;
     background: var(--surface2); border: 1px solid var(--border);
@@ -3160,7 +3187,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.33.3';
+const APP_VERSION = '1.34.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3168,6 +3195,16 @@ const APP_VERSION = '1.33.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.34.0',
+    date: 'August 18, 2026',
+    name: 'Model part of a balance',
+    whatsNew: [
+      'The Balance Transfer Modeller can now move PART of a balance. Tick a debt and enter how much you\u2019d move \u2014 useful when an offer has a limit lower than the balance, which is most of the time. Previously it was all of a card or none of it, so the most common case couldn\u2019t be modelled at all.',
+      'Whatever stays behind is spelled out, with the balance and rate it keeps, so you can see both halves of the decision.'
+    ],
+    fixes: []
+  },
   {
     version: '1.33.3',
     date: 'August 17, 2026',
@@ -8611,6 +8648,13 @@ function dismissRedistBanner() { _redistDismissed = true; renderStrategy(); }
 // how these offers hurt people. So the risk is computed alongside the saving
 // and shown with equal weight, plus a stress test at $0 extra payment.
 
+let _xferAmounts = {};
+function _xferSetAll(id) {
+  const d = debts.find(function(x) { return x.id === id; });
+  const el = document.getElementById('xfer-amt-' + id);
+  if (d && el) { el.value = d.balance.toFixed(2); _xferAmounts[id] = el.value; renderTransfer(); }
+}
+
 function _xferSelectedSourceIds() {
   const out = [];
   document.querySelectorAll('#xfer-sources input[type="checkbox"]').forEach(function(cb) {
@@ -8619,23 +8663,60 @@ function _xferSelectedSourceIds() {
   return out;
 }
 
+// v1.34.0 — sources now carry an AMOUNT, not just a tick. Transfer offers
+// usually come with a limit lower than the balance you want to move, so
+// "move this whole card or nothing" couldn't model the common case: shifting
+// $10,000 of a $20,942 card onto a 0% offer and leaving the rest behind.
+function _xferSelectedSources() {
+  const out = [];
+  document.querySelectorAll('#xfer-sources input[type="checkbox"]').forEach(function(cb) {
+    if (!cb.checked) return;
+    const id = parseInt(cb.value, 10);
+    const d = debts.find(function(x) { return x.id === id; });
+    if (!d) return;
+    const amtEl = document.getElementById('xfer-amt-' + id);
+    let amt = amtEl ? parseFloat(amtEl.value) : d.balance;
+    if (isNaN(amt) || amt <= 0) amt = 0;
+    amt = Math.min(amt, d.balance);   // can't move more than is there
+    out.push({ id: id, amount: amt });
+  });
+  return out;
+}
+
 // Build the post-transfer debt set. Returns null if the inputs don't describe a
 // usable transfer. destId === 'new' creates a hypothetical card.
-function buildTransferScenario(sourceIds, destId, promoMonths, feePct, postApr) {
+// `sources` is [{id, amount}]. An amount equal to the balance clears the card;
+// anything less leaves the remainder behind at its original rate — which is what
+// actually happens when an offer has a limit.
+function buildTransferScenario(sources, destId, promoMonths, feePct, postApr) {
+  if (!sources || !sources.length) return null;
   const live = debts.filter(function(d) { return d.balance > 0; });
-  const sources = live.filter(function(d) { return sourceIds.indexOf(d.id) !== -1; });
-  if (!sources.length) return null;
+  const picked = sources.map(function(sv) {
+    const d = live.find(function(x) { return x.id === sv.id; });
+    if (!d) return null;
+    return { debt: d, amount: Math.max(0, Math.min(sv.amount, d.balance)) };
+  }).filter(function(x) { return x && x.amount > 0.005; });
+  if (!picked.length) return null;
 
-  const moved = sources.reduce(function(s, d) { return s + d.balance; }, 0);
+  const moved = picked.reduce(function(s, x) { return s + x.amount; }, 0);
   if (moved <= 0) return null;
   const fee = moved * (feePct / 100);
 
   // Deep copy so the real plan is never touched by modelling.
   const scenario = JSON.parse(JSON.stringify(debts));
-  sourceIds.forEach(function(id) {
-    const d = scenario.find(function(x) { return x.id === id; });
-    if (d) d.balance = 0;
+  picked.forEach(function(x) {
+    const d = scenario.find(function(y) { return y.id === x.debt.id; });
+    if (!d) return;
+    d.balance = round2(Math.max(0, d.balance - x.amount));
+    // A card left with a remainder keeps its own minimum only if that minimum
+    // still makes sense against the smaller balance; otherwise the model would
+    // overstate what you must pay on the leftover.
+    if (d.balance > 0 && d.originalBalance > 0) {
+      const ratio = d.balance / (x.debt.balance || d.balance);
+      d.minPayment = Math.max(25, Math.round((d.minPayment || 0) * ratio));
+    }
   });
+  const sourceDebts = picked.map(function(x) { return x.debt; });
 
   const pe = new Date();
   pe.setMonth(pe.getMonth() + promoMonths);
@@ -8675,12 +8756,17 @@ function buildTransferScenario(sourceIds, destId, promoMonths, feePct, postApr) 
   // savings that actually come from paying more each month, not from the 0%
   // rate. On a real example that turned a break-even offer into a fake $145 win.
   // Floored at 1% of the balance, which is what a 0% card typically requires.
-  const replacedMins = sources.reduce(function(s2, d) { return s2 + (d.minPayment || 0); }, 0);
+  // Only the share of each source's minimum that moved with the balance.
+  const replacedMins = picked.reduce(function(s2, x) {
+    const share = (x.debt.balance > 0) ? (x.amount / x.debt.balance) : 1;
+    return s2 + (x.debt.minPayment || 0) * Math.min(1, share);
+  }, 0);
   const keptMin = (destId === 'new' || destBalanceBefore <= 0) ? 0 : (dest.minPayment || 0);
   dest.minPayment = Math.max(Math.round(keptMin + replacedMins), Math.round((moved + fee) * 0.01));
   dest._modelledMin = dest.minPayment;
 
-  return { scenario: scenario, moved: moved, fee: fee, dest: dest, promoMonths: promoMonths, promoEnd: promoEnd };
+  return { scenario: scenario, moved: moved, fee: fee, dest: dest, promoMonths: promoMonths,
+           promoEnd: promoEnd, picked: picked, sourceDebts: sourceDebts };
 }
 
 // Run current plan vs transfer scenario at a given extra payment.
@@ -8698,8 +8784,8 @@ function _xferCompare(built, extra) {
   };
 }
 
-function analyzeTransfer(sourceIds, destId, promoMonths, feePct, postApr) {
-  const built = buildTransferScenario(sourceIds, destId, promoMonths, feePct, postApr);
+function analyzeTransfer(sources, destId, promoMonths, feePct, postApr) {
+  const built = buildTransferScenario(sources, destId, promoMonths, feePct, postApr);
   if (!built) return null;
   const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
   const main = _xferCompare(built, extra);
@@ -8760,23 +8846,48 @@ function renderTransfer() {
   const chosen = _xferSelectedSourceIds();
   if (srcWrap && srcWrap.dataset.count !== String(live.length)) {
     srcWrap.innerHTML = live.map(function(d) {
-      return '<label class="xfer-src"><input type="checkbox" value="' + d.id + '" onchange="renderTransfer()"> ' +
+      return '<div class="xfer-src-row">' +
+        '<label class="xfer-src"><input type="checkbox" value="' + d.id + '" onchange="renderTransfer()"> ' +
              '<span class="xfer-src-name">' + escapeHtml(d.name) + '</span>' +
-             '<span class="xfer-src-bal">' + fmtDec(d.balance) + ' &middot; ' + (d.apr || 0) + '%</span></label>';
+             '<span class="xfer-src-bal">' + fmtDec(d.balance) + ' &middot; ' + (d.apr || 0) + '%</span></label>' +
+        '<div class="xfer-amt-wrap" id="xfer-amt-wrap-' + d.id + '" style="display:none;">' +
+          '<label class="xfer-amt-label">Move how much?</label>' +
+          '<input type="number" class="xfer-amt" id="xfer-amt-' + d.id + '" step="0.01" min="0" ' +
+            'max="' + d.balance.toFixed(2) + '" value="' + d.balance.toFixed(2) + '" oninput="renderTransfer()">' +
+          '<button type="button" class="xfer-amt-all" onclick="_xferSetAll(' + d.id + ')">All</button>' +
+        '</div>' +
+      '</div>';
     }).join('');
     srcWrap.dataset.count = String(live.length);
     chosen.forEach(function(id) {
       const cb = srcWrap.querySelector('input[value="' + id + '"]');
       if (cb) cb.checked = true;
     });
+    if (_xferAmounts) {
+      Object.keys(_xferAmounts).forEach(function(id) {
+        const el = document.getElementById('xfer-amt-' + id);
+        if (el) el.value = _xferAmounts[id];
+      });
+    }
   }
+
+  // Reveal the amount box only for ticked sources, and remember what was typed
+  // so a re-render doesn't wipe it.
+  const tickedIds = _xferSelectedSourceIds();
+  live.forEach(function(d) {
+    const wrap = document.getElementById('xfer-amt-wrap-' + d.id);
+    if (wrap) wrap.style.display = (tickedIds.indexOf(d.id) !== -1) ? 'flex' : 'none';
+    const el = document.getElementById('xfer-amt-' + d.id);
+    if (el && tickedIds.indexOf(d.id) !== -1) _xferAmounts[d.id] = el.value;
+  });
 
   // Destination options: any card except the ones being moved, plus a new card.
   const destSel = document.getElementById('xfer-dest');
-  const sources = _xferSelectedSourceIds();
+  const sources = _xferSelectedSources();
   if (destSel) {
     const prev = destSel.value;
-    const opts = debts.filter(function(d) { return sources.indexOf(d.id) === -1; })
+    const srcIds = tickedIds;
+    const opts = debts.filter(function(d) { return srcIds.indexOf(d.id) === -1; })
       .map(function(d) { return '<option value="' + d.id + '">' + escapeHtml(d.name) + '</option>'; });
     destSel.innerHTML = '<option value="new">A new card</option>' + opts.join('');
     if (prev && destSel.querySelector('option[value="' + prev + '"]')) destSel.value = prev;
@@ -8784,7 +8895,7 @@ function renderTransfer() {
 
   const out = document.getElementById('xfer-result');
   if (!out) return;
-  if (!sources.length) {
+  if (!sources.length || sources.every(function(x){ return x.amount <= 0.005; })) {
     out.innerHTML = '<div class="xfer-empty">Tick the balances you\u2019re thinking of moving to see the numbers.</div>';
     return;
   }
@@ -8822,9 +8933,24 @@ function renderTransfer() {
       : 'the transfer would cost ' + fmt(Math.abs(r.stressSaved)) + ' more than staying put.') +
     '</div>';
 
+  // v1.34.0 — spell out what stays behind. A partial transfer leaves a
+  // remainder at the original rate, and that is half the decision.
+  let leftoverLine = '';
+  if (r.built && r.built.picked) {
+    const leftovers = r.built.picked.filter(function(x) { return (x.debt.balance - x.amount) > 0.5; });
+    if (leftovers.length) {
+      leftoverLine = '<div class="xfer-leftover">Stays put: ' +
+        leftovers.map(function(x) {
+          return fmtDec(x.debt.balance - x.amount) + ' on ' + escapeHtml(x.debt.name) +
+                 ' at ' + (x.debt.apr || 0) + '%';
+        }).join(' &middot; ') + '</div>';
+    }
+  }
+
   out.innerHTML =
     '<div class="xfer-result-card">' +
       '<div class="xfer-headline">' + fmtDec(r.moved) + ' moved &middot; ' + fmtDec(r.fee) + ' fee &middot; ' + fmtDec(r.total) + ' on the new balance</div>' +
+      leftoverLine +
       '<div class="xfer-sub">' + savedLine + '</div>' +
       risk +
       stress +

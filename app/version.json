@@ -1,10 +1,9 @@
 {
-  "version": "1.33.3",
-  "releaseDate": "2026-08-17",
-  "releaseName": "Wins counters fixed",
+  "version": "1.34.0",
+  "releaseDate": "2026-08-18",
+  "releaseName": "Model part of a balance",
   "notes": [
-    "Fixed the 'Debts Eliminated' counter at the top of the Wins tab still including balances you had moved to another card. It counted every account sitting at zero, so transfers inflated it even though the list underneath had them correctly separated. It now counts only debts you actually cleared, and says how many were moved.",
-    "Transferred balances are also no longer counted on your shareable progress cards or in celebration messages.",
-    "Fixed the win counter wrapping onto two lines mid-phrase on narrow screens."
+    "The Balance Transfer Modeller can now move PART of a balance. Tick a debt and enter how much you'd move - useful when an offer has a limit lower than the balance, which is most of the time. Previously it was all of a card or none of it, so the most common case couldn't be modelled at all.",
+    "Whatever stays behind is spelled out, with the balance and rate it keeps, so you can see both halves of the decision."
   ]
 }
