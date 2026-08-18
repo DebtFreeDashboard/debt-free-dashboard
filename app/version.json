@@ -1,9 +1,8 @@
 {
-  "version": "1.33.1",
+  "version": "1.33.2",
   "releaseDate": "2026-08-17",
-  "releaseName": "Partial transfers",
+  "releaseName": "Wins tab counts transfers correctly",
   "notes": [
-    "Fixed recording a transfer when you had already paid part of the balance down yourself. Entering an amount smaller than the closed total quietly did nothing, so your progress stayed overstated. The amount you enter is now used exactly, and the screen shows the split as you type - what moved, and what still counts as paid by you.",
-    "Fixed the 'debt eliminated' celebration firing when you recorded a transfer. Moving a balance to another card is not a debt beaten, so it no longer triggers a celebration or a win card."
+    "Fixed the Wins tab still treating transferred balances as debts you had beaten. Accounts closed by moving the balance were listed as 'Paid off' alongside real wins, and could unlock the 'First Debt Eliminated' badge. They are now shown separately and clearly labelled as moved, and only debts you actually cleared count towards your badges."
   ]
 }

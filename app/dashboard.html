@@ -1329,6 +1329,13 @@
     line-height: 1.5;
   }
 
+  /* v1.33.2 — separator in the Wins list for moved accounts */
+  .wins-moved-head {
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: #b79ce0; margin: 14px 0 8px;
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+
   /* v1.33.0 — closed-account details + moved-accounts group */
   .cdm-status {
     font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.05em;
@@ -2928,7 +2935,9 @@
     </div>
 
     <div class="card" id="paid-debts-card" style="display:none">
-      <div class="card-title"><div class="dot"></div> 🎉 Debts Eliminated</div>
+      <div class="card-title"><div class="dot"></div> 🎉 Debts Eliminated
+        <span class="tag tag-muted" id="paid-debts-title" style="margin-left:6px;font-size:0.58rem;"></span>
+      </div>
       <div class="debt-list" id="paid-debts-list"></div>
     </div>
   </div>
@@ -3146,7 +3155,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.33.1';
+const APP_VERSION = '1.33.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3154,6 +3163,15 @@ const APP_VERSION = '1.33.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.33.2',
+    date: 'August 17, 2026',
+    name: 'Wins tab counts transfers correctly',
+    whatsNew: [],
+    fixes: [
+      'Fixed the Wins tab still treating transferred balances as debts you had beaten. Accounts closed by moving the balance were listed as \u201cPaid off\u201d alongside real wins, and could unlock the \u201cFirst Debt Eliminated\u201d badge. They are now shown separately and clearly labelled as moved, and only debts you actually cleared count towards your badges.'
+    ]
+  },
   {
     version: '1.33.1',
     date: 'August 17, 2026',
@@ -3863,7 +3881,10 @@ const MILESTONES_DEF = [
   { id: 'paid_1k',      icon: '🏆', name: '$1,000 Paid Off',       desc: 'Four digits down. You are unstoppable.',      check: () => totalPaid() >= 1000 },
   { id: 'paid_5k',      icon: '🚀', name: '$5,000 Paid Off',       desc: 'Five thousand dollars of freedom earned.',    check: () => totalPaid() >= 5000 },
   { id: 'paid_10k',     icon: '💎', name: '$10,000 Paid Off',      desc: 'You have crossed the five-figure threshold.',  check: () => totalPaid() >= 10000 },
-  { id: 'one_debt_free',icon: '✅', name: 'First Debt Eliminated', desc: 'One down. Feel that weight lift.',            check: () => debts.filter(d => d.balance <= 0).length >= 1 || payments.filter(p=>p.eliminated).length >= 1 },
+  // v1.33.2 — a transferred balance is not an elimination. This checked raw
+  // zero-balance debts AND the `eliminated` payment flag, both of which a
+  // balance transfer sets, so moving a card unlocked "First Debt Eliminated".
+  { id: 'one_debt_free',icon: '✅', name: 'First Debt Eliminated', desc: 'One down. Feel that weight lift.',            check: () => debts.filter(d => d.balance <= 0 && d.originalBalance > 0 && !isTransferred(d)).length >= 1 },
   { id: 'halfway',      icon: '🌙', name: 'Halfway There',         desc: 'More behind you than ahead of you.',          check: () => progressPct() >= 50 },
   { id: 'final_stretch',icon: '🏁', name: 'Final Stretch',        desc: 'Under 25% left to go. Almost there!',         check: () => progressPct() >= 75 },
 ];
@@ -9624,11 +9645,28 @@ function renderMilestones() {
     </div>`;
   }).join('');
 
-  // Paid debts
-  const paidDebts = debts.filter(d=>d.balance<=0);
-  document.getElementById('paid-debts-card').style.display = paidDebts.length ? 'block' : 'none';
-  document.getElementById('paid-debts-list').innerHTML = paidDebts.map(d=>`
-    <div class="debt-item" style="border-color:rgba(0,229,176,0.3); background:rgba(0,229,176,0.03)">
+  // v1.33.2 — this list labelled every zero-balance debt "PAID OFF ✓", including
+  // ones whose balance was merely moved to another card. A transfer is shown,
+  // because closing the account is real, but it is labelled for what it is and
+  // excluded from the win count.
+  const closedAll = debts.filter(function(d){ return d.balance <= 0 && d.originalBalance > 0; });
+  const wonDebts = closedAll.filter(function(d){ return !isTransferred(d); });
+  const movedDebts = closedAll.filter(function(d){ return isTransferred(d); });
+  const pdCard = document.getElementById('paid-debts-card');
+  if (pdCard) pdCard.style.display = closedAll.length ? 'block' : 'none';
+
+  const rowFor = function(d, transferred) {
+    const accent = transferred ? 'rgba(123,94,167,' : 'rgba(0,229,176,';
+    const label = transferred
+      ? 'MOVED &#8644;'
+      : 'PAID OFF ✓';
+    const labelColor = transferred ? '#b79ce0' : 'var(--accent)';
+    const dest = transferred && d.transferTo
+      ? `<div class="debt-stat"><span class="debt-stat-label">Moved to</span><span class="debt-stat-val">${escapeHtml(d.transferTo)}</span></div>` : '';
+    const amt = transferred && d.transferAmount != null
+      ? `<div class="debt-stat"><span class="debt-stat-label">Amount moved</span><span class="debt-stat-val">${fmtDec(d.transferAmount)}</span></div>` : '';
+    return `
+    <div class="debt-item" style="border-color:${accent}0.3); background:${accent}0.03)">
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
       <div class="debt-name">${escapeHtml(d.name)}</div>
       <div class="debt-stats">
@@ -9636,9 +9674,26 @@ function renderMilestones() {
           <span class="debt-stat-label">Original</span>
           <span class="debt-stat-val">${fmtDec(d.originalBalance)}</span>
         </div>
+        ${dest}${amt}
       </div>
-      <span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent)">PAID OFF ✓</span>
-    </div>`).join('');
+      <span style="font-family:var(--font-mono);font-size:0.8rem;color:${labelColor}">${label}</span>
+    </div>`;
+  };
+
+  const pdList = document.getElementById('paid-debts-list');
+  if (pdList) {
+    pdList.innerHTML =
+      wonDebts.map(function(d){ return rowFor(d, false); }).join('') +
+      (movedDebts.length
+        ? '<div class="wins-moved-head">Closed by moving the balance \u2014 not counted as wins</div>' +
+          movedDebts.map(function(d){ return rowFor(d, true); }).join('')
+        : '');
+  }
+  const pdTitle = document.getElementById('paid-debts-title');
+  if (pdTitle) {
+    pdTitle.textContent = wonDebts.length + (wonDebts.length === 1 ? ' debt eliminated' : ' debts eliminated')
+      + (movedDebts.length ? ' \u00b7 ' + movedDebts.length + ' moved' : '');
+  }
 }
 
 // ── v1.26.0 — PAID OFF DEBTS (trophy case) ──
