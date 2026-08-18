@@ -1670,6 +1670,11 @@
 
   /* v1.22.0 — collapsible dashboard cards */
   [data-collapse] > .card-title { cursor: pointer; user-select: none; }
+  /* v1.33.3 — the title row is a non-wrapping flex, so a long count badge broke
+     mid-phrase ("3 WINS ·" on one line, "4 MOVED" on the next). Let the row wrap
+     as a unit and keep the badge itself on a single line. */
+  .card-title { flex-wrap: wrap; row-gap: 4px; }
+  .card-title .tag { white-space: nowrap; flex-shrink: 0; }
   .collapse-chev {
     margin-left: auto;
     color: var(--text-muted);
@@ -2920,12 +2925,12 @@
       <div class="stat-card">
         <div class="stat-label">Debts Eliminated</div>
         <div class="stat-value" id="ms-paid-count">0</div>
-        <div class="stat-sub">accounts at $0</div>
+        <div class="stat-sub" id="ms-paid-sub">accounts cleared</div>
       </div>
       <div class="stat-card info">
         <div class="stat-label">Total Paid Off</div>
         <div class="stat-value" id="ms-total-paid">$0</div>
-        <div class="stat-sub">cumulative payments</div>
+        <div class="stat-sub" id="ms-total-paid-sub">cumulative payments</div>
       </div>
     </div>
 
@@ -3155,7 +3160,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.33.2';
+const APP_VERSION = '1.33.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3163,6 +3168,17 @@ const APP_VERSION = '1.33.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.33.3',
+    date: 'August 17, 2026',
+    name: 'Wins counter fixed',
+    whatsNew: [],
+    fixes: [
+      'Fixed the \u201cDebts Eliminated\u201d counter at the top of the Wins tab still including balances you had moved to another card. It counted every account sitting at zero, so transfers inflated it even though the list underneath had them correctly separated. It now counts only debts you actually cleared, and says how many were moved.',
+      'Transferred balances are also no longer counted on your shareable progress cards or in celebration messages.',
+      'Fixed the win counter wrapping onto two lines mid-phrase on narrow screens.'
+    ]
+  },
   {
     version: '1.33.2',
     date: 'August 17, 2026',
@@ -4017,7 +4033,9 @@ let _milestonesBaselined = false;  // gate: suppress celebrations until first lo
 function milestoneKeysAchieved() {
   const keys = [];
   const active = debts.filter(function(d){ return d.balance > 0; });
-  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; });
+  // v1.33.3 — transferred balances are excluded everywhere a "debt eliminated"
+  // count is derived, including the celebration payloads and the share cards.
+  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); });
 
   // Per-debt eliminations. v1.33.1 — a balance that was moved to another card
   // is not a debt beaten, so it earns no celebration and no win card.
@@ -4045,7 +4063,7 @@ function milestoneKeysAchieved() {
 
 // Human-readable payload for a milestone key → drives celebration + card.
 function milestoneContent(key) {
-  const paidOffCount = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; }).length;
+  const paidOffCount = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); }).length;
   if (key === 'debtfree') {
     return { emoji: '\uD83C\uDF89', headline: 'DEBT-FREE', sub: 'Every debt eliminated. The plan worked.', big: 'Freedom.' };
   }
@@ -5510,7 +5528,7 @@ function celebrateMilestone(key) {
 // competence-first: progress %, debts eliminated, freedom date — never balances.
 function shareProgress() {
   const pct = Math.round(progressPct());
-  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; }).length;
+  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); }).length;
   const active = debts.filter(function(d){ return d.balance > 0; }).length;
 
   let big, sub, emoji;
@@ -5634,7 +5652,7 @@ function drawShareCard(content, format) {
 
   // Stat strip (real data)
   const active = debts.filter(function(d){ return d.balance > 0; }).length;
-  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0; }).length;
+  const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); }).length;
   const plan = getPlanSim();
   let freedom = '\u2014';
   if (plan && !plan.diverged) {
@@ -7643,9 +7661,26 @@ function renderStats() {
   document.getElementById('progress-label-paid').textContent = fmt(paid) + ' paid off';
   document.getElementById('progress-label-left').textContent = fmt(total) + ' remaining';
 
-  // Milestone counts
-  document.getElementById('ms-paid-count').textContent = debts.filter(d=>d.balance<=0).length;
+  // Milestone counts. v1.33.3 — "Debts Eliminated" counted every zero-balance
+  // account, so balances that were merely MOVED to another card still showed as
+  // wins in the headline stat even after the list below them was fixed. It also
+  // counted rows with no original balance at all. Now it counts what it says.
+  const _won = debts.filter(function(d) {
+    return d.balance <= 0 && d.originalBalance > 0 && !isTransferred(d);
+  }).length;
+  const _movedCount = debts.filter(function(d) { return isTransferred(d); }).length;
+  document.getElementById('ms-paid-count').textContent = _won;
+  const _msSub = document.getElementById('ms-paid-sub');
+  if (_msSub) {
+    _msSub.textContent = _movedCount
+      ? 'paid off \u00b7 ' + _movedCount + ' moved, not counted'
+      : (_won === 1 ? 'account cleared' : 'accounts cleared');
+  }
   document.getElementById('ms-total-paid').textContent = fmt(paid);
+  const _tpSub = document.getElementById('ms-total-paid-sub');
+  if (_tpSub) {
+    _tpSub.textContent = _movedCount ? 'money you paid \u2014 excludes transfers' : 'cumulative payments';
+  }
 }
 
 function renderDebtList() {
@@ -8416,7 +8451,9 @@ function renderPaymentLog() {
     }
     const p = row.p;
     const noteTag = p.note ? '<span class="tag tag-accent" style="margin-left:4px">' + p.note + '</span>' : '';
-    const elimTag = p.eliminated ? ' 🎉' : '';
+    // v1.33.3 — no party emoji on the payment that recorded a transfer.
+    const _pd = debts.find(function(x) { return x.id === p.debtId; });
+    const elimTag = (p.eliminated && !(_pd && isTransferred(_pd))) ? ' 🎉' : '';
     const editingThis = editingPaymentId === p.id;
     const isPending = !!p.pending;
     if (editingThis) {
@@ -9691,8 +9728,9 @@ function renderMilestones() {
   }
   const pdTitle = document.getElementById('paid-debts-title');
   if (pdTitle) {
-    pdTitle.textContent = wonDebts.length + (wonDebts.length === 1 ? ' debt eliminated' : ' debts eliminated')
-      + (movedDebts.length ? ' \u00b7 ' + movedDebts.length + ' moved' : '');
+    pdTitle.textContent = movedDebts.length
+      ? wonDebts.length + ' won \u00b7 ' + movedDebts.length + ' moved'
+      : wonDebts.length + ' eliminated';
   }
 }
 
@@ -9723,8 +9761,9 @@ function renderPaidOffDebts() {
   card.dataset.hasContent = '1';
   card.style.display = 'block';
   if (countEl) {
-    countEl.textContent = paid.length + (paid.length === 1 ? ' win' : ' wins') +
-      (moved.length ? ' \u00b7 ' + moved.length + ' moved' : '');
+    countEl.textContent = moved.length
+      ? paid.length + ' won \u00b7 ' + moved.length + ' moved'
+      : paid.length + (paid.length === 1 ? ' win' : ' wins');
   }
 
   const stats = {};

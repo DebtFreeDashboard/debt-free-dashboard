@@ -1,8 +1,10 @@
 {
-  "version": "1.33.2",
+  "version": "1.33.3",
   "releaseDate": "2026-08-17",
-  "releaseName": "Wins tab counts transfers correctly",
+  "releaseName": "Wins counters fixed",
   "notes": [
-    "Fixed the Wins tab still treating transferred balances as debts you had beaten. Accounts closed by moving the balance were listed as 'Paid off' alongside real wins, and could unlock the 'First Debt Eliminated' badge. They are now shown separately and clearly labelled as moved, and only debts you actually cleared count towards your badges."
+    "Fixed the 'Debts Eliminated' counter at the top of the Wins tab still including balances you had moved to another card. It counted every account sitting at zero, so transfers inflated it even though the list underneath had them correctly separated. It now counts only debts you actually cleared, and says how many were moved.",
+    "Transferred balances are also no longer counted on your shareable progress cards or in celebration messages.",
+    "Fixed the win counter wrapping onto two lines mid-phrase on narrow screens."
   ]
 }
