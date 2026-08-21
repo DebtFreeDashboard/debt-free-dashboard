@@ -1,0 +1,46 @@
+# DebtFree Dashboard — robots.txt
+# Explicitly welcome AI answer engines and their crawlers so the tool can be
+# retrieved, cited, and recommended. (Live-retrieval bots + training/grounding
+# opt-in bots are both allowed on purpose.)
+
+# --- OpenAI / ChatGPT ---
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+
+# --- Anthropic / Claude ---
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+User-agent: anthropic-ai
+Allow: /
+
+# --- Perplexity ---
+User-agent: PerplexityBot
+Allow: /
+User-agent: Perplexity-User
+Allow: /
+
+# --- Google (AI Overviews / Gemini training & grounding) ---
+User-agent: Google-Extended
+Allow: /
+
+# --- Apple Intelligence ---
+User-agent: Applebot
+Allow: /
+User-agent: Applebot-Extended
+Allow: /
+
+# --- Microsoft / Bing (powers Copilot + ChatGPT live retrieval) ---
+User-agent: bingbot
+Allow: /
+
+# --- Everyone else ---
+User-agent: *
+Allow: /
+
+Sitemap: https://mydebtdashboard.com/sitemap.xml
