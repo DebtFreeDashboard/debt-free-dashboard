@@ -2332,7 +2332,7 @@
         </div>
         <div class="form-field">
           <label>Amount Paid ($)</label>
-          <input type="number" id="log-amount" placeholder="250" min="0" step="1" />
+          <input type="text" inputmode="decimal" id="log-amount" placeholder="250" min="0" step="1" />
         </div>
         <div class="form-field">
           <label>Date</label>
@@ -2369,11 +2369,11 @@
         </div>
         <div class="form-field">
           <label>Balance ($)</label>
-          <input type="number" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview(); clearFieldError(this);" />
+          <input type="text" inputmode="decimal" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview(); clearFieldError(this);" />
         </div>
         <div class="form-field">
           <label>APR (%)</label>
-          <input type="number" id="debt-apr" placeholder="22.99" min="0" max="100" step="0.01"
+          <input type="text" inputmode="decimal" id="debt-apr" placeholder="22.99" min="0" max="100" step="0.01"
             oninput="validateAprField(this); clearFieldError(this);" onblur="validateAprField(this)" />
           <div id="apr-warning" style="display:none;font-size:0.72rem;color:var(--accent3);margin-top:4px;font-family:var(--font-mono);">
             ⚠ APR over 100% — did you mean to type a decimal? (e.g. 27.49)
@@ -2381,7 +2381,7 @@
         </div>
         <div class="form-field">
           <label>Min Payment ($) <span class="field-optional">optional</span></label>
-          <input type="number" id="debt-min" placeholder="100" min="0" step="1"
+          <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
             oninput="clearFieldError(this)" />
           <div class="field-hint" id="min-hint">Blank = we'll estimate it</div>
         </div>
@@ -2402,7 +2402,7 @@
         <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
           <div class="form-field">
             <label>Promo APR (%)</label>
-            <input type="number" id="debt-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
+            <input type="text" inputmode="decimal" id="debt-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
           </div>
           <div class="form-field">
             <label>Promo End Date</label>
@@ -2410,13 +2410,13 @@
           </div>
           <div class="form-field">
             <label>Post-Promo APR (%)</label>
-            <input type="number" id="debt-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
+            <input type="text" inputmode="decimal" id="debt-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
           </div>
         </div>
         <div class="form-grid" style="grid-template-columns:1fr 2fr; margin-top:10px;">
           <div class="form-field">
             <label>Transfer Fee (%)</label>
-            <input type="number" id="debt-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateFeePreview()" />
+            <input type="text" inputmode="decimal" id="debt-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateFeePreview()" />
           </div>
           <div id="promo-fee-preview" style="display:flex;align-items:flex-end;padding-bottom:10px;">
             <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>
@@ -2442,7 +2442,7 @@
           <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
             <div class="form-field">
               <label>Original Principal ($)</label>
-              <input type="number" id="debt-orig-principal" min="0" step="1" placeholder="25000" />
+              <input type="text" inputmode="decimal" id="debt-orig-principal" min="0" step="1" placeholder="25000" />
             </div>
             <div class="form-field">
               <label>Term (months)</label>
@@ -2603,7 +2603,7 @@
       <div class="form-grid" style="grid-template-columns:1fr 1fr">
         <div class="form-field">
           <label>Extra Per Month ($)</label>
-          <input type="number" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculate()" onchange="recalculate()" />
+          <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculate()" onchange="recalculate()" />
         </div>
         <div class="form-field field-full">
           <label>Strategy</label>
@@ -2708,7 +2708,7 @@
       <div class="form-grid form-grid-action form-grid-lump" style="margin-top:4px;">
         <div class="form-field">
           <label>Amount ($)</label>
-          <input type="number" id="lump-amount" placeholder="5000" min="1" step="100" />
+          <input type="text" inputmode="decimal" id="lump-amount" placeholder="5000" min="1" step="100" />
         </div>
         <div class="form-field">
           <label>Expected Date</label>
@@ -2777,11 +2777,11 @@
           </div>
           <div class="form-field">
             <label>Transfer fee (%)</label>
-            <input type="number" id="xfer-fee" value="5" min="0" max="10" step="0.1" oninput="renderTransfer()" />
+            <input type="text" inputmode="decimal" id="xfer-fee" value="5" min="0" max="10" step="0.1" oninput="renderTransfer()" />
           </div>
           <div class="form-field">
             <label>Rate after 0% ends (%)</label>
-            <input type="number" id="xfer-apr" value="24.99" min="0" max="40" step="0.01" oninput="renderTransfer()" />
+            <input type="text" inputmode="decimal" id="xfer-apr" value="24.99" min="0" max="40" step="0.01" oninput="renderTransfer()" />
           </div>
         </div>
 
@@ -2926,7 +2926,7 @@
         </div>
         <div class="form-field">
           <label>Amount ($)</label>
-          <input type="number" id="wi-windfall-amt" placeholder="1000" min="0" step="100" />
+          <input type="text" inputmode="decimal" id="wi-windfall-amt" placeholder="1000" min="0" step="100" />
         </div>
         <div class="form-field">
           <label>&nbsp;</label>
@@ -3169,7 +3169,7 @@
       </div>
       <div class="form-field">
         <label>Amount Paid ($)</label>
-        <input type="number" id="qlog-amount" placeholder="250" min="0" step="1" />
+        <input type="text" inputmode="decimal" id="qlog-amount" placeholder="250" min="0" step="1" />
       </div>
       <div class="form-field">
         <label>Date</label>
@@ -3187,7 +3187,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.34.0';
+const APP_VERSION = '1.34.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3195,6 +3195,17 @@ const APP_VERSION = '1.34.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.34.1',
+    date: 'August 25, 2026',
+    name: 'Amounts with dollar signs and commas',
+    whatsNew: [],
+    fixes: [
+      'Fixed amounts typed with a dollar sign or commas. Entering \u201c\,000\u201d used to be rejected outright, and \u2014 far worse \u2014 entering \u201c5,000\u201d was silently accepted as five dollars, with no warning and a payoff plan built on the wrong number. Every amount box in the app now reads what you actually typed.',
+      'Fixed the edit screen refusing to save without saying why. If something needed fixing, the message was being shown behind the edit window where you could not see it.',
+      'The prompt for a card\u2019s rate after its 0% period now appears in the form like every other message, instead of as a pop-up.'
+    ]
+  },
   {
     version: '1.34.0',
     date: 'August 18, 2026',
@@ -4013,6 +4024,29 @@ function showSection(id) {
 // v1.23.0 — render-time escaping for user-entered text (debt names). Names go
 // into innerHTML templates in many places; without this, a name containing
 // & < > or quotes renders as markup instead of text.
+// ── v1.34.1 — MONEY / RATE INPUT PARSING ──
+// Every user-entered amount used to go through a bare parseFloat, which is
+// wrong for the way people actually type money:
+//     "$5,000"    -> NaN   (visible error, blocked the add)
+//     "5,000"     -> 5     (SILENT: accepted as five dollars)
+//     "1,200.50"  -> 1     (SILENT: accepted as one dollar)
+// The second and third are far worse than the first: no error is shown, the
+// value is stored, and the whole payoff plan is computed from a number the user
+// never typed. That silently breaks the one promise this product makes.
+// Commas are treated as thousands separators — correct for a US dollar product,
+// though it means a decimal comma ("5,00") reads as 500.
+function parseAmount(raw) {
+  if (raw === null || raw === undefined) return NaN;
+  const cleaned = String(raw).replace(/[$,\s%]/g, '').replace(/[\u00a0\u2009\u202f]/g, '');
+  if (cleaned === '' || cleaned === '-' || cleaned === '.') return NaN;
+  return parseFloat(cleaned);
+}
+
+function parseAmountFrom(id) {
+  const el = document.getElementById(id);
+  return el ? parseAmount(el.value) : NaN;
+}
+
 function escapeHtml(str) {
   return String(str == null ? '' : str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -4214,7 +4248,7 @@ function _simKeyFor(activeDebts, extra, disb, rollover) {
 function getPlanSim() {
   const activeDebts = _activePlanDebts();
   if (!activeDebts.length) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const disb = plannedDisbursements();
   const key = _simKeyFor(activeDebts, extra, disb, true);
   if (_planSimCache.key === key) return _planSimCache.res;
@@ -4797,7 +4831,14 @@ function clearFieldError(el) {
 }
 
 function showFormError(message, focusId) {
-  const box = document.getElementById('add-debt-error');
+  // v1.34.1 — route to whichever form is actually on screen. This only ever
+  // wrote to the add form's box, so an error raised from the edit modal
+  // rendered behind it, invisible: the modal simply refused to save with no
+  // explanation shown.
+  const inEdit = typeof focusId === 'string' && focusId.indexOf('edit-') === 0;
+  const other = document.getElementById(inEdit ? 'add-debt-error' : 'edit-debt-error');
+  if (other) { other.style.display = 'none'; other.innerHTML = ''; }
+  const box = document.getElementById(inEdit ? 'edit-debt-error' : 'add-debt-error');
   if (box) {
     box.innerHTML = '<span>&#9888;</span><span>' + escapeHtml(message) + '</span>';
     box.style.display = 'flex';
@@ -4825,8 +4866,8 @@ function addDebt() {
   if (_demoMode) exitDemo(true);
   const typeEl = document.getElementById('debt-type');
   const type = typeEl.value;
-  const balance = parseFloat(document.getElementById('debt-balance').value);
-  const apr = parseFloat(document.getElementById('debt-apr').value);
+  const balance = parseAmount(document.getElementById('debt-balance').value);
+  const apr = parseAmount(document.getElementById('debt-apr').value);
   const minRaw = document.getElementById('debt-min').value;
   const hasPromo = document.getElementById('debt-has-promo').checked;
 
@@ -4861,7 +4902,7 @@ function addDebt() {
   if (minRaw === '' || minRaw === null || typeof minRaw === 'undefined') {
     min = estimateMinPayment(balance, apr, type);
   } else {
-    min = parseFloat(minRaw);
+    min = parseAmount(minRaw);
     if (isNaN(min) || min < 0) {
       showFormError('Minimum payment must be a positive number, or left blank to estimate it.', 'debt-min');
       return;
@@ -4873,14 +4914,14 @@ function addDebt() {
   let promoApr = null, promoEnd = null, postPromoApr = null, transferFee = 0;
 
   if (hasPromo) {
-    promoApr = parseFloat(document.getElementById('debt-promo-apr').value) || 0;
+    promoApr = parseAmount(document.getElementById('debt-promo-apr').value) || 0;
     promoEnd = document.getElementById('debt-promo-end').value || null;
-    postPromoApr = parseFloat(document.getElementById('debt-post-promo-apr').value);
-    const feeRate = parseFloat(document.getElementById('debt-transfer-fee').value) || 0;
+    postPromoApr = parseAmount(document.getElementById('debt-post-promo-apr').value);
+    const feeRate = parseAmount(document.getElementById('debt-transfer-fee').value) || 0;
     transferFee = Math.round(balance * (feeRate / 100) * 100) / 100;
     finalBalance = balance + transferFee;
     if (isNaN(postPromoApr)) {
-      alert('Please enter the post-promo APR.');
+      showFormError('Enter the rate this card goes to after the 0% period ends, so the plan knows what happens next.', 'debt-post-promo-apr');
       return;
     }
   }
@@ -4892,7 +4933,7 @@ function addDebt() {
   var origPrincEl = document.getElementById('debt-orig-principal');
   var termEl      = document.getElementById('debt-term-months');
   var origDateEl  = document.getElementById('debt-orig-date');
-  var origPrincipal  = origPrincEl && origPrincEl.value ? parseFloat(origPrincEl.value) : null;
+  var origPrincipal  = origPrincEl && origPrincEl.value ? parseAmount(origPrincEl.value) : null;
   var termMonths     = termEl && termEl.value ? parseInt(termEl.value, 10) : null;
   var originationDate = origDateEl && origDateEl.value ? origDateEl.value : null;
   if (origPrincipal !== null && (isNaN(origPrincipal) || origPrincipal <= 0)) origPrincipal = null;
@@ -4985,7 +5026,7 @@ function removeDebt(id) {
 //  APR VALIDATION
 // ═══════════════════════════════════════════
 function validateAprField(input) {
-  const val = parseFloat(input.value);
+  const val = parseAmount(input.value);
   const warningId = input.id === 'debt-apr' ? 'apr-warning' : 'edit-apr-warning';
   const warning = document.getElementById(warningId);
   if (!warning) return;
@@ -5074,10 +5115,10 @@ function openClosedDebtModal(id) {
         'stays credited to you.</p>' +
       '<div class="form-grid" style="grid-template-columns:1fr 1fr">' +
         '<div class="form-field"><label>Amount moved ($)</label>' +
-          '<input type="number" id="cdm-amount" step="0.01" min="0" max="' + (st.totalPaid || d.originalBalance).toFixed(2) + '" ' +
+          '<input type="text" inputmode="decimal" id="cdm-amount" step="0.01" min="0" max="' + (st.totalPaid || d.originalBalance).toFixed(2) + '" ' +
           'value="' + (st.totalPaid || d.originalBalance).toFixed(2) + '" oninput="_cdmPreview()"></div>' +
         '<div class="form-field"><label>Transfer fee ($)</label>' +
-          '<input type="number" id="cdm-fee" step="0.01" min="0" value="0"></div>' +
+          '<input type="text" inputmode="decimal" id="cdm-fee" step="0.01" min="0" value="0"></div>' +
       '</div>' +
       '<div class="cdm-split" id="cdm-split"></div>' +
       '<div class="form-field"><label>Date</label>' +
@@ -5104,7 +5145,7 @@ function _cdmPreview() {
   if (!d || !out) return;
   const st = eliminatedStatsFor(d);
   const closedTotal = st.totalPaid || d.originalBalance || 0;
-  const amt = parseFloat((document.getElementById('cdm-amount') || {}).value);
+  const amt = parseAmount((document.getElementById('cdm-amount') || {}).value);
   if (isNaN(amt) || amt < 0) { out.innerHTML = ''; return; }
   if (amt > closedTotal + 0.005) {
     out.innerHTML = '<span class="cdm-split-warn">That\u2019s more than the ' + fmtDec(closedTotal) +
@@ -5137,8 +5178,8 @@ function applyTransferClassification() {
     destName = t ? t.name : 'another card';
     d.transferToId = t ? t.id : null;
   }
-  const amt = parseFloat((document.getElementById('cdm-amount') || {}).value);
-  const fee = parseFloat((document.getElementById('cdm-fee') || {}).value);
+  const amt = parseAmount((document.getElementById('cdm-amount') || {}).value);
+  const fee = parseAmount((document.getElementById('cdm-fee') || {}).value);
   const date = (document.getElementById('cdm-date') || {}).value || new Date().toISOString().slice(0,10);
   if (isNaN(amt) || amt <= 0) { alert('Enter the amount that was moved.'); return; }
   const _st = eliminatedStatsFor(d);
@@ -5237,8 +5278,17 @@ function openEditModal(id) {
   // Trigger the type-change handler to show/hide the block appropriately
   onDebtTypeChange('edit');
 
+  clearEditFormError();
   document.getElementById('edit-modal').classList.remove('hidden');
   document.getElementById('edit-name').focus();
+}
+
+function clearEditFormError() {
+  const box = document.getElementById('edit-debt-error');
+  if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+  document.querySelectorAll('#edit-modal .field-invalid').forEach(function(el) {
+    el.classList.remove('field-invalid');
+  });
 }
 
 function closeEditModal(e) {
@@ -5261,9 +5311,9 @@ function toggleEditPromoFields() {
 }
 
 function updateEditFeePreview() {
-  const balance = parseFloat(document.getElementById('edit-balance').value) || 0;
+  const balance = parseAmount(document.getElementById('edit-balance').value) || 0;
   const feeEl   = document.getElementById('edit-transfer-fee');
-  const fee     = parseFloat(feeEl.value) || 0;
+  const fee     = parseAmount(feeEl.value) || 0;
   const preview = document.getElementById('edit-promo-fee-preview');
   if (!preview) return;
   // v1.7.2 — mirror saveEditDebt: only show "fee will be added" when the fee
@@ -5295,31 +5345,33 @@ function saveEditDebt() {
 
   const name    = document.getElementById('edit-name').value.trim();
   const type    = document.getElementById('edit-type').value;
-  const balance = parseFloat(document.getElementById('edit-balance').value);
-  const apr     = parseFloat(document.getElementById('edit-apr').value);
+  const balance = parseAmount(document.getElementById('edit-balance').value);
+  const apr     = parseAmount(document.getElementById('edit-apr').value);
   // v1.30.1 — a blank minimum is estimated here exactly as it is when adding a
   // debt. Previously Add filled it in for you while Edit rejected it, so
   // clearing the field to re-enter it left you stuck on an error.
   const minRawEdit = document.getElementById('edit-min').value;
   const min = (minRawEdit === '' || minRawEdit === null || typeof minRawEdit === 'undefined')
     ? estimateMinPayment(balance, apr, type)
-    : parseFloat(minRawEdit);
+    : parseAmount(minRawEdit);
   const hasPromo = document.getElementById('edit-has-promo').checked;
 
   if (!name || isNaN(balance) || isNaN(apr)) {
-    alert('Please fill in all fields.'); return;
+    // v1.34.1 — was alert(): invisible in analytics, so edit failures never
+    // counted, and jarring compared with every other message in the app.
+    showFormError('Fill in the name, balance and APR so the plan can be worked out.',
+      !name ? 'edit-name' : (isNaN(balance) ? 'edit-balance' : 'edit-apr'));
+    return;
   }
   // A blank minimum was estimated above; a typed-but-invalid one is still rejected.
   if (isNaN(min) || min < 0) {
-    alert('Minimum payment must be a positive number, or left blank to estimate it.');
-    document.getElementById('edit-min').focus();
+    showFormError('Enter a minimum payment above zero, or leave it blank and it will be estimated.', 'edit-min');
     return;
   }
 
   const safeApr = sanitizeApr(apr);
   if (safeApr === null) {
-    alert('APR looks incorrect — ' + apr + '% is unusually high. Did you mean ' + (apr / 100).toFixed(2) + '%? Please double-check and re-enter.');
-    document.getElementById('edit-apr').focus();
+    showFormError('That APR looks unusually high at ' + apr + '%. Did you mean ' + (apr / 100).toFixed(2) + '%?', 'edit-apr');
     return;
   }
 
@@ -5327,18 +5379,21 @@ function saveEditDebt() {
   let promoApr = null, promoEnd = null, postPromoApr = null, transferFee = 0;
 
   if (hasPromo) {
-    promoApr     = parseFloat(document.getElementById('edit-promo-apr').value) || 0;
+    promoApr     = parseAmount(document.getElementById('edit-promo-apr').value) || 0;
     promoEnd     = document.getElementById('edit-promo-end').value || null;
-    postPromoApr = parseFloat(document.getElementById('edit-post-promo-apr').value);
+    postPromoApr = parseAmount(document.getElementById('edit-post-promo-apr').value);
     if (isNaN(postPromoApr)) {
-      alert('Please enter the post-promo APR.'); return;
+      // v1.34.1 — was a raw alert(): jarring, and invisible in analytics, so
+      // promo-flow failures never counted towards add_debt_error at all.
+      showFormError('Enter the rate this card goes to after the 0% period ends, so the plan knows what happens next.', 'edit-post-promo-apr');
+      return;
     }
     // v1.7.2 — only recompute the transfer fee when (a) hasPromo was just
     // turned on (fresh BT declaration), or (b) the user explicitly changed
     // the fee % field. Otherwise preserve the stored fee and treat the
     // balance field as the current owed amount.
     var _feeEl = document.getElementById('edit-transfer-fee');
-    var feeRate = parseFloat(_feeEl.value) || 0;
+    var feeRate = parseAmount(_feeEl.value) || 0;
     var _origFeeRate = parseFloat(_feeEl.dataset.originalRate || '0');
     var _origHasPromo = _feeEl.dataset.originalHasPromo === 'true';
     var _feeRateChanged = Math.abs(feeRate - _origFeeRate) > 0.01;
@@ -5381,7 +5436,7 @@ function saveEditDebt() {
   var _eop = document.getElementById('edit-orig-principal');
   var _etm = document.getElementById('edit-term-months');
   var _eod = document.getElementById('edit-orig-date');
-  var _op  = (_eop && _eop.value) ? parseFloat(_eop.value) : null;
+  var _op  = (_eop && _eop.value) ? parseAmount(_eop.value) : null;
   var _tm  = (_etm && _etm.value) ? parseInt(_etm.value, 10) : null;
   d.origPrincipal   = (_op !== null && !isNaN(_op) && _op > 0) ? _op : null;
   d.termMonths      = (_tm !== null && !isNaN(_tm) && _tm > 0 && _tm <= 600) ? _tm : null;
@@ -5487,7 +5542,7 @@ function undoToastPayment(paymentId) {
 
 function logPayment() {
   const debtId = parseInt(document.getElementById('log-debt-select').value);
-  const amount = parseFloat(document.getElementById('log-amount').value);
+  const amount = parseAmount(document.getElementById('log-amount').value);
   const date = document.getElementById('log-date').value || localDateStr();
   const result = logPaymentCore(debtId, amount, date);
   if (result === null) return;
@@ -5844,7 +5899,7 @@ function runDialDate() {
   }
 
   const r = solveForTargetDate(targetMonths);
-  const dashExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const dashExtra = parseAmount(document.getElementById('extra-payment').value) || 0;
 
   if (!r.feasible && r.reason === 'nodebts') {
     out.innerHTML = '<div class="dialdate-note">Add some debts first and this will calculate your target payment.</div>';
@@ -6130,7 +6185,7 @@ function closeQuickLog(e) {
 
 function quickLogPayment() {
   const debtId = parseInt(document.getElementById('qlog-debt-select').value);
-  const amount = parseFloat(document.getElementById('qlog-amount').value);
+  const amount = parseAmount(document.getElementById('qlog-amount').value);
   const date = document.getElementById('qlog-date').value || localDateStr();
   const result = logPaymentCore(debtId, amount, date);
   if (result === null) return;
@@ -6206,7 +6261,7 @@ function _seedOrders(targets) {
 function computeOptimizedOrder() {
   const targets = _activePlanDebts();
   if (targets.length < 2) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const disb = plannedDisbursements();
   const ids = targets.map(function(d) { return d.id; });
 
@@ -6258,7 +6313,7 @@ function computeOptimizedOrder() {
 let _optOrderCache = { key: null, res: null };
 function getOptimizedOrder() {
   const targets = _activePlanDebts();
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const key = JSON.stringify([extra,
     targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
     plannedDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })]);
@@ -6317,7 +6372,7 @@ function selectStrategy(s) {
 }
 
 function recalculate() {
-  extraMonthly = parseFloat(document.getElementById('extra-payment').value) || 0;
+  extraMonthly = parseAmount(document.getElementById('extra-payment').value) || 0;
   strategy = document.getElementById('strategy-select').value;
   save();
   render();
@@ -6418,7 +6473,7 @@ function updateWhatIf() {
     return;
   }
 
-  const dashboardExtra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const dashboardExtra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
   // Baseline: current plan with all planned lump sums, no slider additions.
@@ -7081,7 +7136,7 @@ function calculateLumpAllocation(totalAmount, targetDate) {
   const activeDebts = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
   if (!activeDebts.length) return [];
 
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
 
   // Build starting balances including ALL previously scheduled lump sums
   // that occur BEFORE this new lump sum's date
@@ -7130,7 +7185,7 @@ function calculateLumpAllocation(totalAmount, targetDate) {
 }
 
 function addLumpSum() {
-  const amount = parseFloat(document.getElementById('lump-amount').value);
+  const amount = parseAmount(document.getElementById('lump-amount').value);
   const date = document.getElementById('lump-date').value;
 
   if (isNaN(amount) || amount <= 0) { alert('Enter a valid amount.'); return; }
@@ -7255,7 +7310,7 @@ function saveEditLumpSum(id) {
   if (!l) return;
 
   const newDate = document.getElementById('edit-lump-date-' + id).value;
-  const newAmount = parseFloat(document.getElementById('edit-lump-amount-' + id).value);
+  const newAmount = parseAmount(document.getElementById('edit-lump-amount-' + id).value);
 
   if (!newDate || isNaN(newAmount) || newAmount <= 0) {
     alert('Please enter a valid date and amount.');
@@ -7310,7 +7365,7 @@ function renderLumpSumList() {
       return '<div class="payment-entry" style="margin-bottom:6px;flex-wrap:wrap;gap:8px;align-items:center;">' +
         '<input type="date" id="edit-lump-date-' + l.id + '" value="' + l.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:140px;" />' +
         '<span class="payment-debt">' + escapeHtml(l.debtName) + modeTag + '</span>' +
-        '<input type="number" id="edit-lump-amount-' + l.id + '" value="' + l.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
+        '<input type="text" inputmode="decimal" id="edit-lump-amount-' + l.id + '" value="' + l.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
         '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;opacity:1;" onclick="saveEditLumpSum(' + l.id + ')">Save</button>' +
         '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;opacity:1;" onclick="cancelEditLumpSum()">Cancel</button>' +
         '</div>';
@@ -7352,7 +7407,7 @@ function saveEditPayment(paymentId) {
   if (!p) return;
 
   const newDate = document.getElementById('edit-pay-date').value;
-  const newAmount = parseFloat(document.getElementById('edit-pay-amount').value);
+  const newAmount = parseAmount(document.getElementById('edit-pay-amount').value);
 
   if (!newDate || isNaN(newAmount) || newAmount <= 0) {
     alert('Please enter a valid date and amount.');
@@ -7405,7 +7460,7 @@ function deletePayment(paymentId) {
 
 function applyWindfall() {
   const debtId = parseInt(document.getElementById('wi-windfall-debt').value);
-  const amt = parseFloat(document.getElementById('wi-windfall-amt').value);
+  const amt = parseAmount(document.getElementById('wi-windfall-amt').value);
   if (isNaN(amt) || amt <= 0) return;
 
   const d = debts.find(x=>x.id===debtId);
@@ -7626,7 +7681,7 @@ function renderMonthlySummary() {
   card.style.display = 'block';
 
   const totalMin = activeDebts.reduce(function(a, d) { return a + (d.minPayment || 0); }, 0);
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const totalMonthly = totalMin + extra;
 
   document.getElementById('summary-min-total').textContent = fmt(totalMin);
@@ -7661,7 +7716,7 @@ function renderMonthlySummary() {
 function renderStats() {
   const total = totalBalance();
   const interest = monthlyInterest();
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   // v1.10.3 — Freedom Date / Months Away now respect the payoff plan, so
   // excluded debts (mortgages by default) don't inflate the Dashboard
   // headline. Total Debt and monthly interest still reflect ALL debts.
@@ -7911,7 +7966,7 @@ function setPortfolioSort(key) {
 function renderPortfolioTable(list) {
   // Compute payoff order + interest from a sim over active, included debts
   const activeForSim = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   let perDebtMap = {};
   let orderMap = {};
   if (activeForSim.length) {
@@ -8497,7 +8552,7 @@ function renderPaymentLog() {
       return '<div class="payment-entry" style="flex-wrap:wrap;gap:8px;align-items:center;">' +
         '<input type="date" id="edit-pay-date" value="' + p.date + '" style="font-family:var(--font-mono);font-size:0.78rem;background:var(--input);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);width:130px;" />' +
         '<span class="payment-debt">' + escapeHtml(p.debtName) + noteTag + elimTag + '</span>' +
-        '<input type="number" id="edit-pay-amount" value="' + p.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
+        '<input type="text" inputmode="decimal" id="edit-pay-amount" value="' + p.amount.toFixed(2) + '" min="0.01" step="0.01" style="font-family:var(--font-mono);font-size:0.9rem;background:var(--input);border:1px solid var(--accent);border-radius:6px;padding:4px 8px;color:var(--accent);width:110px;" />' +
         '<button class="btn btn-primary" style="padding:4px 12px;font-size:0.75rem;opacity:1;" onclick="saveEditPayment(' + p.id + ')">Save</button>' +
         '<button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;opacity:1;" onclick="cancelEditPayment()">Cancel</button>' +
         '</div>';
@@ -8675,7 +8730,7 @@ function _xferSelectedSources() {
     const d = debts.find(function(x) { return x.id === id; });
     if (!d) return;
     const amtEl = document.getElementById('xfer-amt-' + id);
-    let amt = amtEl ? parseFloat(amtEl.value) : d.balance;
+    let amt = amtEl ? parseAmount(amtEl.value) : d.balance;
     if (isNaN(amt) || amt <= 0) amt = 0;
     amt = Math.min(amt, d.balance);   // can't move more than is there
     out.push({ id: id, amount: amt });
@@ -8787,7 +8842,7 @@ function _xferCompare(built, extra) {
 function analyzeTransfer(sources, destId, promoMonths, feePct, postApr) {
   const built = buildTransferScenario(sources, destId, promoMonths, feePct, postApr);
   if (!built) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const main = _xferCompare(built, extra);
   const stress = _xferCompare(built, 0);   // what if the extra payment stops?
 
@@ -8901,10 +8956,10 @@ function renderTransfer() {
   }
 
   const months = Math.max(1, parseInt(document.getElementById('xfer-months').value, 10) || 12);
-  const feePct = Math.max(0, parseFloat(document.getElementById('xfer-fee').value) || 0);
+  const feePct = Math.max(0, parseAmount(document.getElementById('xfer-fee').value) || 0);
   const destRaw = destSel ? destSel.value : 'new';
   const destId = destRaw === 'new' ? 'new' : parseInt(destRaw, 10);
-  let postApr = parseFloat(document.getElementById('xfer-apr').value);
+  let postApr = parseAmount(document.getElementById('xfer-apr').value);
   if (isNaN(postApr)) postApr = 24.99;
 
   const r = analyzeTransfer(sources, destId, months, feePct, postApr);
@@ -9135,7 +9190,7 @@ function optimizeLumpAllocation(strat, opts) {
   if (!groups.length) return null;
   const targets = _activePlanDebts();
   if (targets.length < 2) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
 
   const grand = groups.reduce(function(s, g){ return s + g.total; }, 0);
   const divisors = opts.divisors || [7, 10, 14];
@@ -9237,7 +9292,7 @@ function optimizeLumpAllocation(strat, opts) {
 function currentPlanInterest(strat) {
   const targets = _activePlanDebts();
   if (!targets.length) return null;
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const r = simulate(targets.map(function(d) { return {...d}; }), extra, 0,
                      strat || strategy, plannedDisbursements());
   return { interest: r.totalInterest, months: r.months };
@@ -9248,7 +9303,7 @@ let _optCache = { key: null, res: null };
 function getOptimizedPlan(strat) {
   strat = strat || strategy;
   const targets = _activePlanDebts();
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
   const key = JSON.stringify([strat, extra,
     targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
     autoLumpGroups().map(function(g) { return [g.date, g.total]; }),
@@ -9423,7 +9478,7 @@ function renderStrategy() {
   renderHybridOrderList(); // v1.23.2 — keep the Strategy-tab order list in sync
   // v1.7.0 — strategy tab only considers debts in the payoff plan
   const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
-  const extra = parseFloat(document.getElementById('extra-payment').value) || 0;
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
 
   // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
   if (activeDebts.length) {
@@ -9589,7 +9644,7 @@ function renderStrategy() {
       } else {
         const nameById = {};
         debts.forEach(function(d) { nameById[d.id] = d.name; });
-        const extraNow = parseFloat(document.getElementById('extra-payment').value) || 0;
+        const extraNow = parseAmount(document.getElementById('extra-payment').value) || 0;
         const disbNow = plannedDisbursements();
         const act = _activePlanDebts();
         const sbR = simulate(act.map(function(d){ return {...d}; }), extraNow, 0, 'snowball', disbNow);
@@ -10057,7 +10112,7 @@ async function checkForUpdates() {
       payments: payments,
       lumpSums: lumpSums,
       strategy: strategy,
-      extraMonthly: parseFloat(document.getElementById('extra-payment').value) || 0,
+      extraMonthly: parseAmount(document.getElementById('extra-payment').value) || 0,
       nextId: nextId,
       accruals: accruals,
       adjustments: adjustments,
@@ -10622,8 +10677,8 @@ function togglePromoFields() {
 }
 
 function updateFeePreview() {
-  const balance = parseFloat(document.getElementById('debt-balance').value) || 0;
-  const fee = parseFloat(document.getElementById('debt-transfer-fee').value) || 0;
+  const balance = parseAmount(document.getElementById('debt-balance').value) || 0;
+  const fee = parseAmount(document.getElementById('debt-transfer-fee').value) || 0;
   const feeAmt = balance * (fee / 100);
   const preview = document.getElementById('promo-fee-preview');
   if (balance > 0 && fee > 0) {
@@ -11122,6 +11177,9 @@ if (isInStandaloneMode() ||
       <div class="modal-title">Edit Debt</div>
       <button class="modal-close" onclick="closeEditModal()">✕</button>
     </div>
+    <!-- v1.34.1 — the edit modal had no error box, so a validation failure here
+         had nowhere to render. -->
+    <div class="form-error" id="edit-debt-error" style="display:none;"></div>
     <div class="modal-form-grid">
       <div class="form-field" style="grid-column:1/-1">
         <label>Debt Name</label>
@@ -11140,11 +11198,11 @@ if (isInStandaloneMode() ||
       </div>
       <div class="form-field">
         <label>Balance ($)</label>
-        <input type="number" id="edit-balance" min="0" step="1" oninput="updateEditFeePreview()" />
+        <input type="text" inputmode="decimal" id="edit-balance" min="0" step="1" oninput="updateEditFeePreview()" />
       </div>
       <div class="form-field">
         <label>APR (%)</label>
-        <input type="number" id="edit-apr" min="0" max="100" step="0.01"
+        <input type="text" inputmode="decimal" id="edit-apr" min="0" max="100" step="0.01"
           oninput="validateAprField(this)" onblur="validateAprField(this)" />
         <div id="edit-apr-warning" style="display:none;font-size:0.72rem;color:var(--accent3);margin-top:4px;font-family:var(--font-mono);">
           ⚠ APR over 100% — did you mean a decimal? (e.g. 27.49)
@@ -11152,7 +11210,7 @@ if (isInStandaloneMode() ||
       </div>
       <div class="form-field" style="grid-column:1/-1">
         <label>Min Payment ($)</label>
-        <input type="number" id="edit-min" min="0" step="1" />
+        <input type="text" inputmode="decimal" id="edit-min" min="0" step="1" />
       </div>
     </div>
 
@@ -11169,7 +11227,7 @@ if (isInStandaloneMode() ||
       <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:10px;">
         <div class="form-field">
           <label>Promo APR (%)</label>
-          <input type="number" id="edit-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
+          <input type="text" inputmode="decimal" id="edit-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
         </div>
         <div class="form-field">
           <label>Promo End Date</label>
@@ -11177,11 +11235,11 @@ if (isInStandaloneMode() ||
         </div>
         <div class="form-field">
           <label>Post-Promo APR (%)</label>
-          <input type="number" id="edit-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
+          <input type="text" inputmode="decimal" id="edit-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
         </div>
         <div class="form-field">
           <label>Transfer Fee (%)</label>
-          <input type="number" id="edit-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateEditFeePreview()" />
+          <input type="text" inputmode="decimal" id="edit-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateEditFeePreview()" />
         </div>
       </div>
       <div id="edit-promo-fee-preview" style="margin-top:10px;">
@@ -11206,7 +11264,7 @@ if (isInStandaloneMode() ||
         <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
           <div class="form-field">
             <label>Original Principal ($)</label>
-            <input type="number" id="edit-orig-principal" min="0" step="1" />
+            <input type="text" inputmode="decimal" id="edit-orig-principal" min="0" step="1" />
           </div>
           <div class="form-field">
             <label>Term (months)</label>
