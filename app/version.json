@@ -1,10 +1,8 @@
 {
-  "version": "1.34.1",
-  "releaseDate": "2026-08-25",
-  "releaseName": "Amounts with dollar signs and commas",
+  "version": "1.34.2",
+  "releaseDate": "2026-08-26",
+  "releaseName": "Internal fix",
   "notes": [
-    "Fixed amounts pasted or typed with a dollar sign or commas. Copying a balance like \"$8,432.19\" from your bank and pasting it used to leave the box empty, so you got an error telling you to enter a balance you had just entered. Every amount box in the app now accepts what you actually paste.",
-    "Fixed the edit screen refusing to save without saying why. If something needed correcting, the message was being drawn behind the edit window where you could not see it.",
-    "Messages about a missing rate or an unusual APR now appear in the form like every other message, instead of as a pop-up."
+    "Internal change only - nothing to see. Corrects how a diagnostic detail is recorded so problems adding a debt can be tracked down faster."
   ]
 }
