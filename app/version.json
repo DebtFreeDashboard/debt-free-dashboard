@@ -1,9 +1,10 @@
 {
-  "version": "1.35.1",
+  "version": "1.36.0",
   "releaseDate": "2026-08-26",
   "releaseName": "Internal fix",
   "notes": [
-    "Google Drive backup is paused while we finish setting it up with Google.",
-    "Export Backup and Import Backup in Settings are unchanged and work as always."
+    "Back up your debts, payments and progress to your own Google Drive in one tap.",
+    "Restore everything on a new phone or a second device, with Undo if you restore by mistake.",
+    "Your backup stays in your Drive \u2014 DebtFree has no server and never sees your numbers."
   ]
 }

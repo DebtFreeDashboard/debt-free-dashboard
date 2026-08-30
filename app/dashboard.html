@@ -3228,7 +3228,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.35.1';
+const APP_VERSION = '1.36.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3236,6 +3236,17 @@ const APP_VERSION = '1.35.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.36.0',
+    date: 'August 30, 2026',
+    name: 'Google Drive backup is live',
+    whatsNew: [
+      'Back up everything \u2014 your debts, payments and progress \u2014 to your own Google Drive in one tap. The cloud icon at the top of the screen shows whether your latest changes are saved yet: green means backed up, amber means you have changes that are not.',
+      'New phone, or want your numbers on a second device? Tap Restore and it all comes back. If you restore by mistake, Undo puts your previous data straight back.',
+      'Your backup goes to your own Google Drive and nowhere else. DebtFree has no server and never sees your numbers, and the app can only touch the single backup file it creates \u2014 nothing else in your Drive.'
+    ],
+    fixes: []
+  },
   {
     version: '1.35.1',
     date: 'August 29, 2026',
@@ -10252,14 +10263,16 @@ function showBackupMsg(type, text) {
 // costs an occasional extra consent tap and buys never having a long-lived
 // credential sitting in storage.
 
-// v1.35.1 — OFF until the Google OAuth app is out of "Testing" status.
-// While it is in Testing, only accounts on Google's test-user list can
-// consent; everyone else gets a 403 the instant they pick an account. The
-// code below is finished and tested -- it is the Google Cloud consent
-// screen that isn't (needs a published privacy policy, a verified domain,
-// and the app moved to production). Flip this to true once that is done;
-// nothing else needs to change.
-const DRIVE_ENABLED = false;
+// v1.36.0 — ON. The Google OAuth app is published (In production), the
+// domain is verified in Search Console, and privacy.html is live and
+// linked from the home page -- the three things Google gates consent on.
+//
+// Kept as a flag rather than deleted: this is the kill switch. If Google
+// ever un-verifies the domain (verification currently rides on the
+// Analytics gtag staying installed) or the consent screen breaks, set
+// this to false and ship -- the button disappears cleanly and the file
+// Export/Import path in Settings is unaffected.
+const DRIVE_ENABLED = true;
 
 const DRIVE_CLIENT_ID = '331659346374-ido67fl1ttemavnsurd6l5ra5rm19774.apps.googleusercontent.com';
 const DRIVE_SCOPE     = 'https://www.googleapis.com/auth/drive.file';
