@@ -2194,7 +2194,7 @@
   <!-- v1.35.0 - reachable from every tab. The dot is the point: a
        timestamp alone doesn't tell you whether it matters, but "there are
        changes not in your backup" does. -->
-  <button class="drive-hdr-btn" id="drive-btn" aria-label="Backup status"
+  <button class="drive-hdr-btn" id="drive-btn" aria-label="Backup status" style="display:none"
           onclick="driveBackupNow()">
     <span class="drive-hdr-icon">&#9729;</span><span class="drive-dot never" id="drive-dot"></span>
   </button>
@@ -3228,7 +3228,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.35.0';
+const APP_VERSION = '1.35.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3236,6 +3236,16 @@ const APP_VERSION = '1.35.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.35.1',
+    date: 'August 29, 2026',
+    name: 'Google Drive backup paused',
+    whatsNew: [],
+    fixes: [
+      'The new Google Drive backup button is switched off for now. Google still has our app marked as unreleased, so signing in was failing for everyone \u2014 rather than leave a button that could not work, it is hidden until that is sorted out.',
+      'Nothing else changed, and nothing was lost. Export Backup and Import Backup in Settings work exactly as they always have.'
+    ]
+  },
   {
     version: '1.35.0',
     date: 'August 29, 2026',
@@ -10242,6 +10252,15 @@ function showBackupMsg(type, text) {
 // costs an occasional extra consent tap and buys never having a long-lived
 // credential sitting in storage.
 
+// v1.35.1 — OFF until the Google OAuth app is out of "Testing" status.
+// While it is in Testing, only accounts on Google's test-user list can
+// consent; everyone else gets a 403 the instant they pick an account. The
+// code below is finished and tested -- it is the Google Cloud consent
+// screen that isn't (needs a published privacy policy, a verified domain,
+// and the app moved to production). Flip this to true once that is done;
+// nothing else needs to change.
+const DRIVE_ENABLED = false;
+
 const DRIVE_CLIENT_ID = '331659346374-ido67fl1ttemavnsurd6l5ra5rm19774.apps.googleusercontent.com';
 const DRIVE_SCOPE     = 'https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILENAME  = 'debtfree-backup.json';
@@ -10362,7 +10381,7 @@ function driveFindFileId() {
 }
 
 function driveBackupNow() {
-  if (_driveBusy) return;
+  if (!DRIVE_ENABLED || _driveBusy) return;
   if (typeof _demoMode !== 'undefined' && _demoMode) {
     driveToast('warn', 'This is example data. Add your own debts first.');
     return;
@@ -10406,7 +10425,7 @@ function driveBackupNow() {
 }
 
 function driveRestoreNow() {
-  if (_driveBusy) return;
+  if (!DRIVE_ENABLED || _driveBusy) return;
   const st = driveState();
   const warn = st.status === 'never'
     ? 'This will replace everything currently on this device with the backup in your Google Drive.'
@@ -10450,6 +10469,13 @@ function driveUndoRestore() {
 }
 
 function updateDriveUI() {
+  if (!DRIVE_ENABLED) {
+    const b = document.getElementById('drive-btn');
+    const c = document.getElementById('drive-card');
+    if (b) b.style.display = 'none';
+    if (c) c.style.display = 'none';
+    return;
+  }
   const st = driveState();
   const dot = document.getElementById('drive-dot');
   const btn = document.getElementById('drive-btn');
