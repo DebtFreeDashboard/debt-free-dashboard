@@ -4,7 +4,7 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.34.2';
+const CACHE_NAME = 'debtfree-1.35.0';
 const CORE_ASSETS = [
   './',
   './dashboard.html',
@@ -39,6 +39,17 @@ self.addEventListener('fetch', function(event) {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
+
+  // v1.35.0 — never cache Google identity or Drive traffic. The handler
+  // below is cache-first for non-HTML GETs, which would pin the Drive
+  // file-list response forever: after one backup the app would keep
+  // seeing a stale answer about whether a backup exists. Fonts stay
+  // cached (different host) so offline is unaffected.
+  if (url.hostname === 'accounts.google.com' ||
+      url.hostname === 'oauth2.googleapis.com' ||
+      url.hostname === 'www.googleapis.com' ||
+      url.hostname === 'apis.google.com') return;
+
   const isHTML = req.mode === 'navigate' ||
                  (req.headers.get('accept') || '').includes('text/html') ||
                  url.pathname.endsWith('.html');

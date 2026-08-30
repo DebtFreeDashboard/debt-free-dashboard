@@ -2131,6 +2131,28 @@
   }
 
   .comparison-card.best h4 { color: var(--accent); }
+
+/* v1.35.0 — Google Drive backup */
+.drive-hdr-btn{background:none;border:0;padding:6px 8px;cursor:pointer;display:flex;align-items:center;gap:6px;
+  color:inherit;font:inherit;border-radius:8px;}
+.drive-hdr-btn:hover{background:rgba(127,127,127,.12);}
+.drive-hdr-icon{font-size:1.05rem;line-height:1;}
+.drive-dot{width:8px;height:8px;border-radius:50%;background:#9aa0a6;flex:0 0 8px;}
+.drive-dot.ok{background:#2e9e5b;}
+.drive-dot.stale{background:#e0a030;}
+.drive-dot.never{background:#9aa0a6;}
+.drive-dot.busy{background:#4a90d9;animation:drivePulse 1s infinite;}
+@keyframes drivePulse{0%,100%{opacity:1}50%{opacity:.3}}
+.drive-card.quiet{padding:10px 14px;font-size:.85rem;opacity:.75;display:flex;align-items:center;gap:10px;
+  flex-wrap:wrap;justify-content:space-between;}
+.drive-card.loud{border-left:3px solid #e0a030;}
+.drive-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.drive-card.quiet .drive-card-actions{margin-top:0;}
+.drive-toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:24px;z-index:9999;
+  padding:11px 16px;border-radius:10px;font-size:.9rem;max-width:90vw;opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .2s;background:#1f6f43;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.25);}
+.drive-toast.warn{background:#8a4b12;}
+.drive-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 
 <!-- Google Analytics (GA4) -->
@@ -2169,6 +2191,13 @@
     <span class="install-link-icon">⤓</span>
     <span class="install-link-text">Install app</span>
   </a>
+  <!-- v1.35.0 - reachable from every tab. The dot is the point: a
+       timestamp alone doesn't tell you whether it matters, but "there are
+       changes not in your backup" does. -->
+  <button class="drive-hdr-btn" id="drive-btn" aria-label="Backup status"
+          onclick="driveBackupNow()">
+    <span class="drive-hdr-icon">&#9729;</span><span class="drive-dot never" id="drive-dot"></span>
+  </button>
 </header>
 
 <nav class="tab-nav">
@@ -2277,6 +2306,18 @@
     </div>
 
     <!-- v1.13.0 — Debt-Free Progress hero (free) -->
+    <!-- v1.35.0 — loud until there's a healthy backup, then it collapses
+         to a single quiet line so it stops competing with the progress
+         card it sits above. -->
+    <div class="card drive-card loud" id="drive-card" style="display:none">
+      <div id="drive-card-line">Your data is only on this device.</div>
+      <div class="drive-card-actions">
+        <button class="btn" id="drive-card-action" onclick="driveBackupNow()">Back up to Google Drive</button>
+        <button class="btn btn-ghost" onclick="driveRestoreNow()">Restore</button>
+        <button class="btn btn-ghost" id="drive-undo-btn" onclick="driveUndoRestore()" style="display:none">Undo restore</button>
+      </div>
+    </div>
+
     <div class="card" id="overall-progress-card" style="display:none">
       <div class="hero-progress">
         <div class="hero-progress-label">Debt-Free Progress</div>
@@ -3187,7 +3228,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.34.2';
+const APP_VERSION = '1.35.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3195,6 +3236,19 @@ const APP_VERSION = '1.34.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.35.0',
+    date: 'August 29, 2026',
+    name: 'Back up to your own Google Drive',
+    whatsNew: [
+      'You can now save a copy of your debts, payments and progress straight to your own Google Drive, in one tap. The cloud icon at the top of the screen shows whether your latest changes are backed up yet.',
+      'Moving to a new phone or want your numbers on a second device? Tap Restore and everything comes back exactly as it was.',
+      'Your backup goes into your own Google Drive and nowhere else \u2014 DebtFree has no server and never sees your numbers. The app can only touch the one backup file it creates, nothing else in your Drive.'
+    ],
+    fixes: [
+      'If you restore by mistake, an Undo button puts your previous data straight back.'
+    ]
+  },
   {
     version: '1.34.2',
     date: 'August 26, 2026',
@@ -10170,17 +10224,269 @@ function showBackupMsg(type, text) {
   msg.appendChild(el);
 }
 
-function exportData() {
-  // v1.27.0 — Backup & Restore is visible (collapsed) on the cold-start
-  // screen, so a curious first-time visitor can reach Export while the
-  // example is still on screen. exportData() reads the live `debts` array,
-  // which in demo mode holds the sample rows — without this guard they'd
-  // download a backup file full of debts that were never theirs.
-  if (_demoMode) {
-    showBackupMsg('warn', 'This is example data, so there is nothing to back up yet. Tap "Start with my numbers" to add your own debts first.');
+// ═══════════════════════════════════════════
+//  GOOGLE DRIVE BACKUP  (v1.35.0)
+// ═══════════════════════════════════════════
+// One tap writes the same payload exportData() produces into a file in
+// the user's OWN Google Drive. There is no DebtFree server and this does
+// not create one: the `drive.file` scope grants access ONLY to files this
+// app itself created, so the app cannot see anything else in the account,
+// and the backup never passes through anything we run.
+//
+// This is deliberately manual, not sync. Two devices editing offline would
+// need real conflict resolution across every key below, and last-write-wins
+// on a payment ledger silently destroys data. Explicit backup has no merge
+// problem because the user chooses the direction.
+//
+// Access tokens are held in memory only and expire in about an hour. That
+// costs an occasional extra consent tap and buys never having a long-lived
+// credential sitting in storage.
+
+const DRIVE_CLIENT_ID = '331659346374-ido67fl1ttemavnsurd6l5ra5rm19774.apps.googleusercontent.com';
+const DRIVE_SCOPE     = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILENAME  = 'debtfree-backup.json';
+const LS_DRIVE_FILEID = 'debtfree_drive_fileid';
+const LS_DRIVE_AT     = 'debtfree_drive_last_backup';
+const LS_DRIVE_HASH   = 'debtfree_drive_last_hash';
+const LS_DRIVE_UNDO   = 'debtfree_drive_undo';
+
+let _driveToken = null;
+let _driveBusy  = false;
+
+// Cheap content fingerprint. Only ever compared against itself, so it needs
+// to be stable and fast, not cryptographic.
+function driveHash(str) {
+  let h = 5381;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return String(h >>> 0);
+}
+
+// Hash the backup payload with the timestamp stripped — otherwise every
+// call looks different and the app would always claim unsaved changes.
+function driveCurrentHash() {
+  const d = buildBackupPayload();
+  delete d.exportDate;
+  return driveHash(JSON.stringify(d));
+}
+
+function driveState() {
+  const at = localStorage.getItem(LS_DRIVE_AT);
+  if (!at) return { status: 'never' };
+  const stale = localStorage.getItem(LS_DRIVE_HASH) !== driveCurrentHash();
+  return { status: stale ? 'stale' : 'ok', at: at };
+}
+
+function driveAgo(iso) {
+  const mins = Math.floor((Date.now() - Date.parse(iso)) / 60000);
+  if (mins < 1)  return 'just now';
+  if (mins < 60) return mins + (mins === 1 ? ' minute ago' : ' minutes ago');
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)  return hrs + (hrs === 1 ? ' hour ago' : ' hours ago');
+  const days = Math.floor(hrs / 24);
+  return days + (days === 1 ? ' day ago' : ' days ago');
+}
+
+function driveToast(kind, text) {
+  let t = document.getElementById('drive-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'drive-toast';
+    t.className = 'drive-toast';
+    document.body.appendChild(t);
+  }
+  t.className = 'drive-toast ' + (kind === 'warn' ? 'warn' : 'ok') + ' show';
+  t.textContent = text;
+  clearTimeout(t._h);
+  t._h = setTimeout(function(){ t.className = 'drive-toast'; }, 4200);
+}
+
+// Google Identity Services is loaded lazily, on first use only. Pulling it
+// at page load would put a third-party script in the critical path of an
+// app whose whole point is working offline.
+function driveLoadGis() {
+  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+  return new Promise(function(resolve, reject) {
+    const el = document.createElement('script');
+    el.src = 'https://accounts.google.com/gsi/client';
+    el.async = true;
+    el.onload = resolve;
+    el.onerror = function(){ reject(new Error('Could not reach Google. Check your connection.')); };
+    document.head.appendChild(el);
+    setTimeout(function(){ reject(new Error('Google sign-in timed out.')); }, 20000);
+  });
+}
+
+function driveAuth() {
+  if (_driveToken) return Promise.resolve(_driveToken);
+  return driveLoadGis().then(function() {
+    return new Promise(function(resolve, reject) {
+      const client = google.accounts.oauth2.initTokenClient({
+        client_id: DRIVE_CLIENT_ID,
+        scope: DRIVE_SCOPE,
+        callback: function(resp) {
+          if (resp && resp.access_token) { _driveToken = resp.access_token; resolve(_driveToken); }
+          else reject(new Error('Google sign-in was cancelled.'));
+        },
+        error_callback: function(){ reject(new Error('Google sign-in was cancelled.')); }
+      });
+      client.requestAccessToken();
+    });
+  });
+}
+
+// A 401 means the in-memory token aged out. Drop it and re-auth once,
+// rather than surfacing an error the user can do nothing useful with.
+function driveFetch(url, opts, retried) {
+  opts = opts || {};
+  return driveAuth().then(function(tok) {
+    opts.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + tok });
+    return fetch(url, opts);
+  }).then(function(res) {
+    if (res.status === 401 && !retried) { _driveToken = null; return driveFetch(url, opts, true); }
+    if (!res.ok) throw new Error('Google Drive returned ' + res.status);
+    return res;
+  });
+}
+
+function driveFindFileId() {
+  const cached = localStorage.getItem(LS_DRIVE_FILEID);
+  if (cached) return Promise.resolve(cached);
+  const q = encodeURIComponent("name='" + DRIVE_FILENAME + "' and trashed=false");
+  return driveFetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&spaces=drive&fields=files(id)')
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      const id = j.files && j.files.length ? j.files[0].id : null;
+      if (id) localStorage.setItem(LS_DRIVE_FILEID, id);
+      return id;
+    });
+}
+
+function driveBackupNow() {
+  if (_driveBusy) return;
+  if (typeof _demoMode !== 'undefined' && _demoMode) {
+    driveToast('warn', 'This is example data. Add your own debts first.');
     return;
   }
-  const data = {
+  _driveBusy = true;
+  updateDriveUI();
+  const payload = buildBackupPayload();
+  const body = JSON.stringify(payload, null, 2);
+
+  driveFindFileId().then(function(id) {
+    const meta = { name: DRIVE_FILENAME, mimeType: 'application/json' };
+    const boundary = 'dfd' + Date.now();
+    const multipart =
+      '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(meta) +
+      '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' +
+      body + '\r\n--' + boundary + '--';
+    const url = id
+      ? 'https://www.googleapis.com/upload/drive/v3/files/' + id + '?uploadType=multipart&fields=id'
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id';
+    return driveFetch(url, {
+      method: id ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'multipart/related; boundary=' + boundary },
+      body: multipart
+    });
+  }).then(function(r){ return r.json(); })
+    .then(function(j) {
+      if (j && j.id) localStorage.setItem(LS_DRIVE_FILEID, j.id);
+      const d = JSON.parse(body); delete d.exportDate;
+      localStorage.setItem(LS_DRIVE_HASH, driveHash(JSON.stringify(d)));
+      localStorage.setItem(LS_DRIVE_AT, new Date().toISOString());
+      driveToast('ok', 'Backed up to your Google Drive.');
+    })
+    .catch(function(err) {
+      // A stale cached file id (user deleted the file in Drive) is the one
+      // failure worth self-healing: forget it so the next tap re-creates.
+      if (/40[34]/.test(err.message)) localStorage.removeItem(LS_DRIVE_FILEID);
+      driveToast('warn', err.message || 'Backup failed.');
+    })
+    .then(function(){ _driveBusy = false; updateDriveUI(); });
+}
+
+function driveRestoreNow() {
+  if (_driveBusy) return;
+  const st = driveState();
+  const warn = st.status === 'never'
+    ? 'This will replace everything currently on this device with the backup in your Google Drive.'
+    : 'This will replace everything on this device with your Drive backup' +
+      (st.status === 'stale' ? ' — and this device has changes that are NOT in that backup, which will be lost.' : '.');
+  if (!confirm(warn + '\n\nA snapshot of the current data is saved first, so you can undo this.\n\nContinue?')) return;
+
+  _driveBusy = true;
+  updateDriveUI();
+  // Snapshot BEFORE touching anything. Restore is the only destructive
+  // action in the app, and it sits one tap from a routine one.
+  try { localStorage.setItem(LS_DRIVE_UNDO, JSON.stringify(buildBackupPayload())); } catch(e) {}
+
+  driveFindFileId().then(function(id) {
+    if (!id) throw new Error('No backup found in your Google Drive yet.');
+    return driveFetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media');
+  }).then(function(r){ return r.json(); })
+    .then(function(data) {
+      applyBackupPayload(data);
+      const d = JSON.parse(JSON.stringify(data)); delete d.exportDate;
+      localStorage.setItem(LS_DRIVE_HASH, driveHash(JSON.stringify(d)));
+      driveToast('ok', 'Restored from your Google Drive.');
+    })
+    .catch(function(err) {
+      if (/40[34]/.test(err.message)) localStorage.removeItem(LS_DRIVE_FILEID);
+      driveToast('warn', err.message || 'Restore failed. Nothing was changed.');
+    })
+    .then(function(){ _driveBusy = false; updateDriveUI(); });
+}
+
+function driveUndoRestore() {
+  const raw = localStorage.getItem(LS_DRIVE_UNDO);
+  if (!raw) { driveToast('warn', 'Nothing to undo.'); return; }
+  if (!confirm('Put back the data that was on this device before the restore?')) return;
+  try {
+    applyBackupPayload(JSON.parse(raw));
+    localStorage.removeItem(LS_DRIVE_UNDO);
+    driveToast('ok', 'Previous data put back.');
+    updateDriveUI();
+  } catch(e) { driveToast('warn', 'Could not undo.'); }
+}
+
+function updateDriveUI() {
+  const st = driveState();
+  const dot = document.getElementById('drive-dot');
+  const btn = document.getElementById('drive-btn');
+  const card = document.getElementById('drive-card');
+  const line = document.getElementById('drive-card-line');
+  const act = document.getElementById('drive-card-action');
+  const undo = document.getElementById('drive-undo-btn');
+
+  if (btn) btn.setAttribute('aria-label',
+    st.status === 'ok' ? 'Backed up ' + driveAgo(st.at) :
+    st.status === 'stale' ? 'Changes not backed up' : 'Not backed up yet');
+  if (dot) dot.className = 'drive-dot ' + (_driveBusy ? 'busy' : st.status);
+
+  if (card) {
+    card.style.display = '';
+    card.className = 'card drive-card ' + (st.status === 'ok' ? 'quiet' : 'loud');
+    if (line) {
+      line.innerHTML =
+        _driveBusy ? 'Working…' :
+        st.status === 'never' ? '<strong>Your data is only on this device.</strong> One tap saves a copy to your own Google Drive.' :
+        st.status === 'stale' ? '<strong>Changes since your last backup.</strong> Last saved ' + driveAgo(st.at) + '.' :
+        'Backed up to your Google Drive ' + driveAgo(st.at) + '.';
+    }
+    if (act) act.textContent = _driveBusy ? 'Working…' :
+      (st.status === 'never' ? 'Back up to Google Drive' : 'Back up now');
+    if (act) act.disabled = !!_driveBusy;
+  }
+  if (undo) undo.style.display = localStorage.getItem(LS_DRIVE_UNDO) ? '' : 'none';
+}
+
+// v1.35.0 — One payload builder, used by BOTH the file export and the
+// Google Drive backup. They must never drift: a Drive backup that carried
+// a different set of keys than the file export would restore into a
+// half-populated ledger, and balance = originalBalance + accruals +
+// adjustments - payments would quietly stop holding.
+function buildBackupPayload() {
+  return {
     version: 2,   // v1.11.0 — v2 adds accruals/adjustments/interestAccrualEnabled
     exportDate: new Date().toISOString(),
     debts: debts,
@@ -10197,6 +10503,19 @@ function exportData() {
     // shared, and we don't want it to become a way to hand out premium.
     theme: theme
   };
+}
+
+function exportData() {
+  // v1.27.0 — Backup & Restore is visible (collapsed) on the cold-start
+  // screen, so a curious first-time visitor can reach Export while the
+  // example is still on screen. exportData() reads the live `debts` array,
+  // which in demo mode holds the sample rows — without this guard they'd
+  // download a backup file full of debts that were never theirs.
+  if (_demoMode) {
+    showBackupMsg('warn', 'This is example data, so there is nothing to back up yet. Tap "Start with my numbers" to add your own debts first.');
+    return;
+  }
+  const data = buildBackupPayload();
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -10216,8 +10535,22 @@ function importData(event) {
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const data = JSON.parse(e.target.result);
-      if (!data.debts || !Array.isArray(data.debts)) {
+      applyBackupPayload(JSON.parse(e.target.result));
+    } catch(err) {
+      showBackupMsg('warn', 'Could not read backup file. Make sure it is a valid DebtFree export.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// v1.35.0 — Everything that turns a parsed backup into live state, split
+// out of importData so the Drive restore path runs the identical code:
+// same sanitisation, same milestone re-baselining, same save(). A second
+// implementation for Drive is exactly how the two would drift apart.
+// Throws on anything that isn't a real backup, so callers can report it.
+function applyBackupPayload(data) {
+      if (!data || !data.debts || !Array.isArray(data.debts)) {
         throw new Error('Invalid file');
       }
       // v1.6.0 — run imported debts through the same sanitization
@@ -10272,12 +10605,6 @@ function importData(event) {
       persistMilestones();
       _milestonesBaselined = true;
       render();
-    } catch(err) {
-      showBackupMsg('warn', 'Could not read backup file. Make sure it is a valid DebtFree export.');
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
 }
 // v1.6.0 — Shared sanitization helper used by load() and importData().
 // Backfills fields that old backups may be missing (postPromoApr, promoApr,
@@ -10534,6 +10861,9 @@ function startMyNumbers() {
 }
 
 function save() {
+  // v1.35.0 — the backup indicator is derived from a hash of the current
+  // data, so it has to be recomputed whenever the data changes.
+  setTimeout(function(){ try { updateDriveUI(); } catch(e) {} }, 0);
   // v1.27.0 — demo data is display-only. Writing it would make example
   // debts indistinguishable from the user's own on the next visit and
   // would contaminate backup exports.
@@ -11074,6 +11404,7 @@ initInAppBanner();
 })();
 
 render();
+try { updateDriveUI(); } catch(e) {}
 
 // v1.31.1 — RESTORED. This call was lost in v1.18.0 when the milestone
 // baseline was added to the boot sequence, so checkAndShowWhatsNew() sat
