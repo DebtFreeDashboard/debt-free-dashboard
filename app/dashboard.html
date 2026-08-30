@@ -3228,7 +3228,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.36.0';
+const APP_VERSION = '1.36.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3236,6 +3236,16 @@ const APP_VERSION = '1.36.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.36.1',
+    date: 'August 30, 2026',
+    name: 'Drive backup now works in the installed app',
+    whatsNew: [],
+    fixes: [
+      'Backing up to Google Drive did not work if you had added DebtFree to your home screen \u2014 signing in appeared to succeed and then simply returned you to the dashboard. Sign-in now happens in the app itself instead of a pop-up window, which fixes it.',
+      'The cloud backup icon at the top of the screen was not appearing at all. It is back.'
+    ]
+  },
   {
     version: '1.36.0',
     date: 'August 30, 2026',
@@ -10332,49 +10342,103 @@ function driveToast(kind, text) {
   t._h = setTimeout(function(){ t.className = 'drive-toast'; }, 4200);
 }
 
-// Google Identity Services is loaded lazily, on first use only. Pulling it
-// at page load would put a third-party script in the critical path of an
-// app whose whole point is working offline.
-function driveLoadGis() {
-  if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
-  return new Promise(function(resolve, reject) {
-    const el = document.createElement('script');
-    el.src = 'https://accounts.google.com/gsi/client';
-    el.async = true;
-    el.onload = resolve;
-    el.onerror = function(){ reject(new Error('Could not reach Google. Check your connection.')); };
-    document.head.appendChild(el);
-    setTimeout(function(){ reject(new Error('Google sign-in timed out.')); }, 20000);
+// ── Auth: full-page redirect, not a popup ──
+// v1.36.1 — this was a popup (Google Identity Services) and it did not work
+// in the installed iOS PWA. iOS opens a popup in a separate web view with no
+// window.opener back to the app, so Google authorised fine, the popup closed,
+// and the callback holding the token never fired in the page that asked for
+// it. The user just landed back on the dashboard with nothing changed.
+//
+// A top-level redirect stays inside the PWA's own web view and returns to an
+// in-scope URL, so it survives standalone mode. It costs a page reload, which
+// is a fair price for a manual action that works everywhere. One path for all
+// contexts -- desktop, Safari, installed PWA -- rather than branching on
+// display-mode and maintaining two flows.
+//
+// Requires 'https://mydebtdashboard.com/app/dashboard.html' to be registered
+// as an Authorized redirect URI on the OAuth client (JavaScript origins alone
+// are not enough for this flow).
+const DRIVE_REDIRECT_URI = 'https://mydebtdashboard.com/app/dashboard.html';
+const LS_DRIVE_PENDING   = 'debtfree_drive_pending';
+
+// Leaves the page. Whatever the user was doing is recorded first, and picked
+// up again by driveHandleRedirect() when Google sends them back.
+function driveStartAuth(intent) {
+  const state = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  try {
+    localStorage.setItem(LS_DRIVE_PENDING, JSON.stringify({ intent: intent, state: state, at: Date.now() }));
+  } catch (e) {}
+  const p = new URLSearchParams({
+    client_id: DRIVE_CLIENT_ID,
+    redirect_uri: DRIVE_REDIRECT_URI,
+    response_type: 'token',
+    scope: DRIVE_SCOPE,
+    state: state,
+    include_granted_scopes: 'true',
+    prompt: 'select_account'
   });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + p.toString();
 }
 
-function driveAuth() {
-  if (_driveToken) return Promise.resolve(_driveToken);
-  return driveLoadGis().then(function() {
-    return new Promise(function(resolve, reject) {
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: DRIVE_CLIENT_ID,
-        scope: DRIVE_SCOPE,
-        callback: function(resp) {
-          if (resp && resp.access_token) { _driveToken = resp.access_token; resolve(_driveToken); }
-          else reject(new Error('Google sign-in was cancelled.'));
-        },
-        error_callback: function(){ reject(new Error('Google sign-in was cancelled.')); }
-      });
-      client.requestAccessToken();
-    });
-  });
+// Returns true if we already hold a usable token. Otherwise it starts the
+// redirect and returns false -- the caller must stop, because the page is
+// on its way out.
+function driveEnsureToken(intent) {
+  if (_driveToken) return true;
+  driveStartAuth(intent);
+  return false;
+}
+
+// Called once at startup. Reads the token Google put in the URL fragment,
+// scrubs it from the address bar, and resumes whatever the user asked for.
+function driveHandleRedirect() {
+  let pending = null;
+  try { pending = JSON.parse(localStorage.getItem(LS_DRIVE_PENDING) || 'null'); } catch (e) {}
+
+  const hash = window.location.hash || '';
+  if (hash.indexOf('access_token=') === -1) {
+    // Back with no token: cancelled, denied, or the flow broke. Clear the
+    // stale intent so a later tap starts clean instead of resuming a ghost.
+    if (pending) {
+      localStorage.removeItem(LS_DRIVE_PENDING);
+      if (Date.now() - (pending.at || 0) < 300000) {
+        driveToast('warn', 'Google sign-in did not complete. Nothing was changed.');
+      }
+    }
+    return;
+  }
+
+  const params = new URLSearchParams(hash.slice(1));
+  const token  = params.get('access_token');
+  const state  = params.get('state');
+  // Strip the token from the URL before anything else can read or log it.
+  try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) {}
+  localStorage.removeItem(LS_DRIVE_PENDING);
+
+  if (!pending || !state || pending.state !== state) {
+    driveToast('warn', 'Google sign-in could not be verified. Please try again.');
+    return;
+  }
+  _driveToken = token;
+  if (pending.intent === 'restore') driveRestoreDo();
+  else driveBackupNow();
 }
 
 // A 401 means the in-memory token aged out. Drop it and re-auth once,
 // rather than surfacing an error the user can do nothing useful with.
-function driveFetch(url, opts, retried) {
+function driveFetch(url, opts, intent) {
   opts = opts || {};
-  return driveAuth().then(function(tok) {
-    opts.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + tok });
-    return fetch(url, opts);
-  }).then(function(res) {
-    if (res.status === 401 && !retried) { _driveToken = null; return driveFetch(url, opts, true); }
+  opts.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + _driveToken });
+  return fetch(url, opts).then(function(res) {
+    // Tokens last about an hour and are held in memory only. There is no
+    // silent refresh in this flow, so an expired token means going back
+    // through Google -- which navigates away, hence the never-resolving
+    // promise: the page is leaving.
+    if (res.status === 401) {
+      _driveToken = null;
+      driveStartAuth(intent || 'backup');
+      return new Promise(function(){});
+    }
     if (!res.ok) throw new Error('Google Drive returned ' + res.status);
     return res;
   });
@@ -10399,6 +10463,7 @@ function driveBackupNow() {
     driveToast('warn', 'This is example data. Add your own debts first.');
     return;
   }
+  if (!driveEnsureToken('backup')) return;   // page is navigating to Google
   _driveBusy = true;
   updateDriveUI();
   const payload = buildBackupPayload();
@@ -10445,7 +10510,13 @@ function driveRestoreNow() {
     : 'This will replace everything on this device with your Drive backup' +
       (st.status === 'stale' ? ' — and this device has changes that are NOT in that backup, which will be lost.' : '.');
   if (!confirm(warn + '\n\nA snapshot of the current data is saved first, so you can undo this.\n\nContinue?')) return;
+  // Confirm first, then authorise. On return driveHandleRedirect() calls
+  // driveRestoreDo() directly so the user is not asked to confirm twice.
+  if (!driveEnsureToken('restore')) return;
+  driveRestoreDo();
+}
 
+function driveRestoreDo() {
   _driveBusy = true;
   updateDriveUI();
   // Snapshot BEFORE touching anything. Restore is the only destructive
@@ -10497,6 +10568,10 @@ function updateDriveUI() {
   const act = document.getElementById('drive-card-action');
   const undo = document.getElementById('drive-undo-btn');
 
+  // v1.36.1 — the markup carries style="display:none" so the icon never
+  // flashes before the flag is read; this is the line that puts it back.
+  // Its absence is why the header icon stayed invisible in 1.36.0.
+  if (btn) btn.style.display = '';
   if (btn) btn.setAttribute('aria-label',
     st.status === 'ok' ? 'Backed up ' + driveAgo(st.at) :
     st.status === 'stale' ? 'Changes not backed up' : 'Not backed up yet');
@@ -10902,7 +10977,8 @@ function startMyNumbers() {
 function save() {
   // v1.35.0 — the backup indicator is derived from a hash of the current
   // data, so it has to be recomputed whenever the data changes.
-  setTimeout(function(){ try { updateDriveUI(); } catch(e) {} }, 0);
+  setTimeout(function(){ try { updateDriveUI(); } catch(e) {}
+try { if (DRIVE_ENABLED) driveHandleRedirect(); } catch(e) {} }, 0);
   // v1.27.0 — demo data is display-only. Writing it would make example
   // debts indistinguishable from the user's own on the next visit and
   // would contaminate backup exports.
