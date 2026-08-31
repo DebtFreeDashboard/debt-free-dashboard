@@ -4,7 +4,7 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.36.1';
+const CACHE_NAME = 'debtfree-1.36.2';
 const CORE_ASSETS = [
   './',
   './dashboard.html',

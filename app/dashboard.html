@@ -3228,7 +3228,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.36.1';
+const APP_VERSION = '1.36.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3236,6 +3236,17 @@ const APP_VERSION = '1.36.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.36.2',
+    date: 'August 30, 2026',
+    name: 'Planned lump sums stay in sync',
+    whatsNew: [],
+    fixes: [
+      'If you plan more than one lump sum \u2014 a bonus, a tax refund \u2014 the later one is split across your debts based on what you will still owe by then. Adding an earlier lump sum afterwards used to leave that split out of date, so it could still point money at a card the earlier payment had already cleared.',
+      'The Strategy tab already had a banner to spot this and fix it in one tap, but it only worked on the Avalanche and Snowball strategies. On Optimized and Custom Order it never appeared. It now works on all four.',
+      'Your payoff date and interest totals were always calculated correctly \u2014 this affects the plan you see for where each lump sum goes, not the maths behind it.'
+    ]
+  },
   {
     version: '1.36.1',
     date: 'August 30, 2026',
@@ -8683,7 +8694,15 @@ function renderPaymentLog() {
 // in hybrid mode (auto-allocator doesn't apply there) and when there are
 // no auto groups.
 function lumpsNeedRedistribution() {
-  if (strategy !== 'avalanche' && strategy !== 'snowball') return [];
+  // v1.36.2 — this used to gate on avalanche/snowball, which silently
+  // disabled stale-lump detection for the other two strategies. There
+  // was never a reason for it: calculateLumpAllocation() is strategy-
+  // agnostic, because projectBalancesAt() sorts for avalanche/snowball
+  // and uses debts-array order for optimized/hybrid -- and for those two
+  // the array order IS the plan order (see applyOptimizedOrder). The
+  // effect was that anyone on 'optimized', the option listed first, kept
+  // a lump-sum split calculated before their other lumps existed, with
+  // no banner and no way to fix it.
   // Group auto-mode lumps by groupId
   const autoGroups = {};
   lumpSums.forEach(function(l) {
@@ -8731,7 +8750,7 @@ function lumpsNeedRedistribution() {
 // each stale auto group, oldest date first so later groups\u2019 calculations
 // account for earlier groups\u2019 redistributed amounts.
 function redistributeAutoLumps() {
-  if (strategy !== 'avalanche' && strategy !== 'snowball') return false;
+  // v1.36.2 — no strategy is excluded; see lumpsNeedRedistribution().
   // Snapshot current auto groups by groupId, sorted by date asc
   const autoGroups = {};
   lumpSums.forEach(function(l) {
