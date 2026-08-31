@@ -1,8 +1,8 @@
 {
-  "version": "1.36.3",
+  "version": "1.36.4",
   "releaseDate": "2026-08-26",
   "releaseName": "Internal fix",
   "notes": [
-    "The Strategy tab now spots a planned lump sum aimed at a debt that will already be paid off, and offers to re-split it."
+    "Lump sum splits now add up to exactly the amount you entered, to the penny."
   ]
 }

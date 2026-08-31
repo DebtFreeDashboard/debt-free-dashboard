@@ -3231,7 +3231,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.36.3';
+const APP_VERSION = '1.36.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3239,6 +3239,15 @@ const APP_VERSION = '1.36.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.36.4',
+    date: 'August 30, 2026',
+    name: 'Lump sum splits add up to the penny',
+    whatsNew: [],
+    fixes: [
+      'When a lump sum was split across several debts, the individual amounts could add up to a cent more or less than the lump sum itself. They now always match exactly.'
+    ]
+  },
   {
     version: '1.36.3',
     date: 'August 30, 2026',
@@ -7302,13 +7311,21 @@ function calculateLumpAllocation(totalAmount, targetDate) {
     return { debtId: d.id, debtName: d.name, projBal: d.balance, apr: d.apr };
   });
 
-  // Allocate the lump sum in strategy order
+  // Allocate the lump sum in strategy order.
+  //
+  // v1.36.4 — round to cents BEFORE decrementing, not after. Previously each
+  // allocation was rounded for display while `remaining` was reduced by the
+  // unrounded amount, so the rounded lines could sum to a cent more or less
+  // than the lump itself ($20,000.01 on a real four-way split). Keeping
+  // `remaining` exact in cents at every step makes the parts add up to the
+  // whole by construction.
   const allocations = [];
-  let remaining = totalAmount;
-  for (let i = 0; i < allocationBase.length && remaining > 0; i++) {
-    const pay = Math.min(remaining, allocationBase[i].projBal);
-    allocations.push({ debtId: allocationBase[i].debtId, debtName: allocationBase[i].debtName, amount: Math.round(pay * 100) / 100 });
-    remaining -= pay;
+  let remaining = Math.round(totalAmount * 100) / 100;
+  for (let i = 0; i < allocationBase.length && remaining > 0.004; i++) {
+    const pay = Math.round(Math.min(remaining, allocationBase[i].projBal) * 100) / 100;
+    if (pay <= 0) continue;
+    allocations.push({ debtId: allocationBase[i].debtId, debtName: allocationBase[i].debtName, amount: pay });
+    remaining = Math.round((remaining - pay) * 100) / 100;
   }
   return { allocations: allocations, leftover: Math.max(0, Math.round(remaining * 100) / 100) };
 }
