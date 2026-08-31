@@ -2634,7 +2634,10 @@
       </div>
       <div class="lump-opt-actions" id="lump-opt-actions">
         <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
-        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-opt-action" onclick="applyOptimizedLumps()">Optimize my lump sums</button>
+        <!-- v1.36.3 — no inline onclick: this button's action depends on which
+             state the panel is in (re-split a stale plan vs optimize a valid
+             one), so renderStrategy() assigns both label and handler. -->
+        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-opt-action">Optimize my lump sums</button>
       </div>
     </div>
 
@@ -3228,7 +3231,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.36.2';
+const APP_VERSION = '1.36.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3236,6 +3239,16 @@ const APP_VERSION = '1.36.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.36.3',
+    date: 'August 30, 2026',
+    name: 'Spots a lump sum aimed at a debt that will be gone',
+    whatsNew: [],
+    fixes: [
+      'If you plan two lump sums, the later one is split across what you will still owe by then \u2014 but adding an earlier one afterwards could leave it pointing at a card the earlier payment clears. The Strategy tab now notices and offers to re-split it, keeping the same dates and totals.',
+      'This is separate from the existing check, which only looks at whether a different split would save interest. It would not \u2014 the plan still costs the same \u2014 so it stayed quiet while the instruction itself was impossible to follow.'
+    ]
+  },
   {
     version: '1.36.2',
     date: 'August 30, 2026',
@@ -9157,6 +9170,62 @@ function renderTransfer() {
 // interest most. Greedy finds a very good answer, not a provably perfect one.
 // Every dollar of the original lump totals is preserved; only the split moves.
 
+
+// v1.36.3 — Lump lines pointed at debts that will already be gone.
+//
+// The optimizer panel below only speaks up when re-splitting would SAVE
+// INTEREST. That is the right test for "could this plan be better", but it
+// is blind to "is this plan possible": simulate() cascades an overpayment
+// onto the next debt, so a lump aimed at a debt that will be at zero costs
+// nothing in interest and the panel stays quiet. The user is still left
+// holding an instruction they cannot carry out on the day.
+//
+// This checks actionability, not optimality. It only fires on a factual
+// impossibility, never on a preference, so it does not reintroduce the
+// nagging the v1.28.3 rewrite removed.
+//
+// The projection is set up the same way calculateLumpAllocation() does it.
+// Deliberately duplicated rather than inferred from that function's output:
+// a debt missing from its allocations could mean "already clear" OR "the
+// money ran out before reaching it", and only the first is worth warning
+// about.
+function staleLumpTargets() {
+  const out = [];
+  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const active = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
+  if (!active.length) return out;
+
+  autoLumpGroups().forEach(function(g) {
+    const today = new Date();
+    const lDate = new Date(g.date);
+    const todayNorm = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthsUntil = Math.max(1,
+      (lDate.getFullYear() - todayNorm.getFullYear()) * 12 +
+      (lDate.getMonth() - todayNorm.getMonth()));
+
+    const starting = active.map(function(d) {
+      return { id: d.id, name: d.name, bal: d.balance, apr: d.apr,
+               realApr: d.realApr || d.apr, minPayment: d.minPayment,
+               hasPromo: d.hasPromo, promoApr: d.promoApr,
+               postPromoApr: d.postPromoApr, promoEnd: d.promoEnd };
+    });
+    const prior = lumpSums.filter(function(l) { return l.date < g.date; });
+    let projected;
+    try { projected = projectBalancesAt(starting, monthsUntil, extra, prior); }
+    catch (e) { return; }
+    const bal = (projected && projected.balanceMap) || {};
+
+    lumpSums.forEach(function(l) {
+      if (l.mode && l.mode !== 'auto') return;      // manual lumps are the user's call
+      if (l.date !== g.date) return;
+      if ((bal[l.debtId] || 0) < 0.5) {
+        out.push({ date: g.date, debtName: l.debtName, amount: l.amount });
+      }
+    });
+  });
+  return out;
+}
+
 function autoLumpGroups() {
   const groups = {};
   lumpSums.forEach(function(l) {
@@ -9829,7 +9898,28 @@ function renderStrategy() {
       // Require the gain to clear the search's own uncertainty before suggesting
       // a change — otherwise we'd be nudging users to churn their plan for noise.
       const _minGain = Math.max(25, (_opt && _opt.spread) || 0);
-      if (_cur && _opt && _opt.interest < _cur.interest - _minGain) {
+      const _actBtn = document.getElementById('lump-opt-action');
+      // v1.36.3 — an unactionable line outranks an interest saving: a plan you
+      // cannot follow is a worse problem than one that could be slightly better.
+      const _stale = staleLumpTargets();
+      if (_stale.length) {
+        _optPanel.className = 'lump-opt-panel opt-available';
+        if (_titleEl) _titleEl.textContent = _stale.length > 1
+          ? 'Some lump sums point at debts that will be gone'
+          : 'A lump sum points at a debt that will be gone';
+        if (_txtEl) {
+          const _names = _stale.map(function(x) {
+            return '<strong>' + escapeHtml(x.debtName) + '</strong> (' + fmt(x.amount) + ')';
+          }).join(', ');
+          _txtEl.innerHTML = _names + ' will already be paid off before ' +
+            'the lump sum lands, so that money has nowhere to go as written. ' +
+            'Re-splitting keeps the same dates and the same totals, and moves it ' +
+            'onto the debts you will actually still owe.';
+        }
+        if (_actBtn) { _actBtn.textContent = 'Re-split my lump sums'; _actBtn.onclick = applyRedistribution; }
+        if (_actionsEl) _actionsEl.style.display = 'flex';
+      } else if (_cur && _opt && _opt.interest < _cur.interest - _minGain) {
+        if (_actBtn) { _actBtn.textContent = 'Optimize my lump sums'; _actBtn.onclick = applyOptimizedLumps; }
         const _saved = _cur.interest - _opt.interest;
         const _monthsSaved = _cur.months - _opt.months;
         _optPanel.className = 'lump-opt-panel opt-available';
@@ -9847,6 +9937,7 @@ function renderStrategy() {
         if (_actionsEl) _actionsEl.style.display = 'flex';
       } else {
         _optPanel.className = 'lump-opt-panel opt-good';
+        if (_actBtn) { _actBtn.textContent = 'Optimize my lump sums'; _actBtn.onclick = applyOptimizedLumps; }
         if (_titleEl) _titleEl.textContent = 'Your lump sums are well placed';
         if (_txtEl) {
           _txtEl.innerHTML = 'We checked other ways to split your scheduled lump sums across your debts &mdash; none beats what you have now under ' +

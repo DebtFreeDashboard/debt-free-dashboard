@@ -1,9 +1,8 @@
 {
-  "version": "1.36.2",
+  "version": "1.36.3",
   "releaseDate": "2026-08-26",
   "releaseName": "Internal fix",
   "notes": [
-    "Planned lump sums no longer keep an out-of-date split after you add an earlier one.",
-    "The one-tap fix banner now works on every strategy, not just Avalanche and Snowball."
+    "The Strategy tab now spots a planned lump sum aimed at a debt that will already be paid off, and offers to re-split it."
   ]
 }
