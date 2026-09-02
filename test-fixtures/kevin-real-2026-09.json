@@ -1,0 +1,963 @@
+{
+  "version": 2,
+  "exportDate": "2026-09-02T12:51:10.210Z",
+  "debts": [
+    {
+      "id": 3,
+      "name": "Discover",
+      "type": "cc",
+      "balance": 20352.1,
+      "originalBalance": 23857.69,
+      "apr": 15.49,
+      "realApr": 15.49,
+      "regularApr": 15.49,
+      "minPayment": 420,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null,
+      "originalApr": 15.49
+    },
+    {
+      "id": 17,
+      "name": "Amazon Promo",
+      "type": "cc",
+      "balance": 9242.72,
+      "originalBalance": 9742.72,
+      "apr": 0,
+      "realApr": 27.99,
+      "regularApr": 27.99,
+      "minPayment": 250,
+      "promoApr": 0,
+      "promoEnd": "2027-03-31",
+      "postPromoApr": 27.99,
+      "transferFee": 374.72,
+      "hasPromo": true,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null
+    },
+    {
+      "id": 15,
+      "name": "Citi Promo",
+      "type": "cc",
+      "balance": 7992,
+      "originalBalance": 13390,
+      "apr": 0,
+      "realApr": 21.49,
+      "regularApr": 21.49,
+      "minPayment": 80,
+      "promoApr": 0,
+      "promoEnd": "2027-11-01",
+      "postPromoApr": 21.49,
+      "transferFee": 390,
+      "hasPromo": true,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null
+    },
+    {
+      "id": 19,
+      "name": "BOA Promo",
+      "type": "cc",
+      "balance": 8870,
+      "originalBalance": 9870,
+      "apr": 0,
+      "realApr": 26.99,
+      "regularApr": 26.99,
+      "minPayment": 250,
+      "promoApr": 0,
+      "promoEnd": "2027-05-31",
+      "postPromoApr": 26.99,
+      "transferFee": 470,
+      "hasPromo": true,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null
+    },
+    {
+      "id": 37,
+      "name": "BoA Kevin Promo",
+      "type": "cc",
+      "balance": 16590,
+      "originalBalance": 16590,
+      "apr": 0,
+      "realApr": 23.99,
+      "regularApr": 23.99,
+      "minPayment": 165,
+      "promoApr": 0,
+      "promoEnd": "2028-04-30",
+      "postPromoApr": 23.99,
+      "transferFee": 790,
+      "hasPromo": true,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null
+    },
+    {
+      "id": 1,
+      "name": "Fidelity Visa",
+      "type": "cc",
+      "balance": 0,
+      "originalBalance": 8594.42,
+      "apr": 17.49,
+      "realApr": 17.49,
+      "regularApr": 17.49,
+      "minPayment": 174,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null,
+      "originalApr": 17.49,
+      "transferToId": 3,
+      "closedAs": "transferred",
+      "transferTo": "Discover",
+      "transferAmount": 8720.42,
+      "transferFeePaid": 425,
+      "transferDate": "2026-07-22"
+    },
+    {
+      "id": 5,
+      "name": "Disney Chase",
+      "type": "cc",
+      "balance": 0,
+      "originalBalance": 4500,
+      "apr": 11.99,
+      "realApr": 11.99,
+      "regularApr": 11.99,
+      "minPayment": 328,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null,
+      "transferToId": 37,
+      "closedAs": "transferred",
+      "transferTo": "BoA Kevin Promo",
+      "transferAmount": 4579.49,
+      "transferFeePaid": 275,
+      "transferDate": "2026-08-13"
+    },
+    {
+      "id": 7,
+      "name": "Disney Visa",
+      "type": "cc",
+      "balance": 0,
+      "originalBalance": 5511.67,
+      "apr": 26.49,
+      "realApr": 26.49,
+      "regularApr": 26.49,
+      "minPayment": 200,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null,
+      "originalApr": 26.49
+    },
+    {
+      "id": 9,
+      "name": "Amazon",
+      "type": "cc",
+      "balance": 0,
+      "originalBalance": 696.62,
+      "apr": 27.49,
+      "realApr": 27.49,
+      "regularApr": 27.49,
+      "minPayment": 35,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null
+    },
+    {
+      "id": 11,
+      "name": "USAA AMEX",
+      "type": "cc",
+      "balance": 0,
+      "originalBalance": 9691.5,
+      "apr": 0,
+      "realApr": 29.4,
+      "regularApr": 29.4,
+      "minPayment": 225,
+      "promoApr": 0,
+      "promoEnd": "2027-09-30",
+      "postPromoApr": 29.4,
+      "transferFee": 461.5,
+      "hasPromo": true,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null,
+      "originalApr": 29.4
+    },
+    {
+      "id": 13,
+      "name": "Apple",
+      "type": "cc",
+      "balance": 0,
+      "originalBalance": 1283.16,
+      "apr": 25.49,
+      "realApr": 25.49,
+      "regularApr": 25.49,
+      "minPayment": 65,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null,
+      "originalApr": 25.49,
+      "transferToId": 11,
+      "closedAs": "transferred",
+      "transferTo": "USAA AMEX",
+      "transferAmount": 1602.78,
+      "transferFeePaid": 75,
+      "transferDate": "2026-08-11"
+    },
+    {
+      "id": 34,
+      "name": "BoA Kevin",
+      "type": "cc",
+      "balance": 0,
+      "originalBalance": 7741,
+      "apr": 24.49,
+      "realApr": 24.49,
+      "regularApr": 24.49,
+      "minPayment": 250,
+      "promoApr": null,
+      "promoEnd": null,
+      "postPromoApr": null,
+      "transferFee": 0,
+      "hasPromo": false,
+      "loanType": "revolving",
+      "includeInStrategy": true,
+      "origPrincipal": null,
+      "termMonths": null,
+      "originationDate": null,
+      "originalApr": 24.49,
+      "transferToId": 11,
+      "closedAs": "transferred",
+      "transferTo": "USAA AMEX",
+      "transferAmount": 7741,
+      "transferFeePaid": 375,
+      "transferDate": "2026-08-11"
+    }
+  ],
+  "payments": [
+    {
+      "id": 1781730658015,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "amount": 250,
+      "date": "2026-06-17",
+      "eliminated": false
+    },
+    {
+      "id": 1781730707852,
+      "debtId": 13,
+      "debtName": "Apple",
+      "amount": 363.87,
+      "date": "2026-06-17",
+      "eliminated": false
+    },
+    {
+      "id": 1781732488110,
+      "debtId": 9,
+      "debtName": "Amazon",
+      "amount": 696.62,
+      "date": "2026-06-17",
+      "eliminated": true
+    },
+    {
+      "id": 1782942133161,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "amount": 250,
+      "date": "2026-07-01",
+      "eliminated": false
+    },
+    {
+      "id": 1782959279020,
+      "debtId": 3,
+      "debtName": "Discover",
+      "amount": 2000,
+      "date": "2026-07-01",
+      "eliminated": false
+    },
+    {
+      "id": 1782959991611,
+      "debtId": 1,
+      "debtName": "Fidelity Visa",
+      "amount": 126,
+      "date": "2026-07-01",
+      "eliminated": false
+    },
+    {
+      "id": 1782960131452,
+      "debtId": 5,
+      "debtName": "Disney Chase",
+      "amount": 328,
+      "date": "2026-07-01",
+      "eliminated": false
+    },
+    {
+      "id": 1782960242922,
+      "debtId": 7,
+      "debtName": "Disney Visa",
+      "amount": 125,
+      "date": "2026-07-01",
+      "eliminated": false
+    },
+    {
+      "id": 1782960352795,
+      "debtId": 11,
+      "debtName": "USAA AMEX",
+      "amount": 105,
+      "date": "2026-07-01",
+      "eliminated": false
+    },
+    {
+      "id": 1783026836117,
+      "debtId": 13,
+      "debtName": "Apple",
+      "amount": 200,
+      "date": "2026-07-02",
+      "eliminated": false
+    },
+    {
+      "id": 1783114196562,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "amount": 134,
+      "date": "2026-07-03",
+      "eliminated": false
+    },
+    {
+      "id": 1784149476207,
+      "debtId": 17,
+      "debtName": "Amazon Promo",
+      "amount": 250,
+      "date": "2026-07-15",
+      "eliminated": false
+    },
+    {
+      "id": 1784773350404,
+      "debtId": 5,
+      "debtName": "Disney Chase",
+      "amount": 760.58,
+      "date": "2026-07-22",
+      "eliminated": false
+    },
+    {
+      "id": 1784777049862,
+      "debtId": 1,
+      "debtName": "Fidelity Visa",
+      "amount": 8594.42,
+      "date": "2026-07-22",
+      "eliminated": true
+    },
+    {
+      "id": 1784777072917,
+      "debtId": 11,
+      "debtName": "USAA AMEX",
+      "amount": 1876.88,
+      "date": "2026-07-22",
+      "eliminated": true
+    },
+    {
+      "id": 1784777094795,
+      "debtId": 7,
+      "debtName": "Disney Visa",
+      "amount": 5511.67,
+      "date": "2026-07-22",
+      "eliminated": true
+    },
+    {
+      "id": 1785343126331,
+      "debtId": 3,
+      "debtName": "Discover",
+      "amount": 700,
+      "date": "2026-07-29",
+      "eliminated": false
+    },
+    {
+      "id": 1785343151105,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "amount": 264,
+      "date": "2026-07-29",
+      "eliminated": false
+    },
+    {
+      "id": 1785343197040,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "amount": 250,
+      "date": "2026-07-29",
+      "eliminated": false
+    },
+    {
+      "id": 1786500772796,
+      "debtId": 34,
+      "debtName": "BoA Kevin",
+      "amount": 7741,
+      "date": "2026-08-11",
+      "eliminated": true,
+      "isTransfer": true
+    },
+    {
+      "id": 1786500814324,
+      "debtId": 13,
+      "debtName": "Apple",
+      "amount": 1038.91,
+      "date": "2026-08-11",
+      "eliminated": true
+    },
+    {
+      "id": 1786619910765,
+      "debtId": 17,
+      "debtName": "Amazon Promo",
+      "amount": 250,
+      "date": "2026-08-13",
+      "eliminated": false
+    },
+    {
+      "id": 1786669642575,
+      "debtId": 5,
+      "debtName": "Disney Chase",
+      "amount": 3490.91,
+      "date": "2026-08-13",
+      "eliminated": true
+    },
+    {
+      "id": 1786669713982,
+      "debtId": 11,
+      "debtName": "USAA AMEX",
+      "amount": 9691.5,
+      "date": "2026-08-13",
+      "eliminated": true
+    },
+    {
+      "id": 1786669785338,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "amount": 5000,
+      "date": "2026-08-17",
+      "eliminated": false
+    },
+    {
+      "id": 1786997774145,
+      "debtId": 3,
+      "debtName": "Discover",
+      "amount": 800,
+      "date": "2026-08-17",
+      "eliminated": false
+    },
+    {
+      "id": 1787704523266,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "amount": 250,
+      "date": "2026-08-25",
+      "eliminated": false
+    },
+    {
+      "id": 1787706899919,
+      "debtId": 3,
+      "debtName": "Discover",
+      "amount": 300,
+      "date": "2026-08-25",
+      "eliminated": false
+    },
+    {
+      "id": 1787912525636,
+      "debtId": 3,
+      "debtName": "Discover",
+      "amount": 550,
+      "date": "2026-08-28",
+      "eliminated": false
+    }
+  ],
+  "lumpSums": [
+    {
+      "id": 1786670095281,
+      "debtId": 3,
+      "debtName": "Discover",
+      "amount": 15000,
+      "date": "2026-12-18",
+      "mode": "auto",
+      "groupId": 1786670057715
+    },
+    {
+      "id": 1788203909497,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "amount": 3983.14,
+      "date": "2027-03-12",
+      "mode": "auto",
+      "groupId": 1786670057716
+    },
+    {
+      "id": 1788203909498,
+      "debtId": 17,
+      "debtName": "Amazon Promo",
+      "amount": 7492.72,
+      "date": "2027-03-12",
+      "mode": "auto",
+      "groupId": 1786670057716
+    },
+    {
+      "id": 1788203909499,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "amount": 7120,
+      "date": "2027-03-12",
+      "mode": "auto",
+      "groupId": 1786670057716
+    },
+    {
+      "id": 1788203909500,
+      "debtId": 37,
+      "debtName": "BoA Kevin Promo",
+      "amount": 1404.14,
+      "date": "2027-03-12",
+      "mode": "auto",
+      "groupId": 1786670057716
+    }
+  ],
+  "rolledMinimums": [
+    {
+      "debtId": 7,
+      "amount": 200,
+      "since": "2026-09-02",
+      "keep": false
+    },
+    {
+      "debtId": 9,
+      "amount": 35,
+      "since": "2026-09-02",
+      "keep": false
+    },
+    {
+      "debtId": 11,
+      "amount": 225,
+      "since": "2026-09-02",
+      "keep": false
+    }
+  ],
+  "strategy": "optimized",
+  "extraMonthly": 1000,
+  "nextId": 55,
+  "accruals": [
+    {
+      "id": 2,
+      "debtId": 1,
+      "debtName": "Fidelity Visa",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 4,
+      "debtId": 3,
+      "debtName": "Discover",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 6,
+      "debtId": 5,
+      "debtName": "Disney Chase",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 8,
+      "debtId": 7,
+      "debtName": "Disney Visa",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 10,
+      "debtId": 9,
+      "debtName": "Amazon",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 12,
+      "debtId": 11,
+      "debtName": "USAA AMEX",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 14,
+      "debtId": 13,
+      "debtName": "Apple",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 16,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 18,
+      "debtId": 17,
+      "debtName": "Amazon Promo",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 20,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "month": "2026-06",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-06-12"
+    },
+    {
+      "id": 21,
+      "debtId": 1,
+      "debtName": "Fidelity Visa",
+      "month": "2026-07",
+      "amount": 65.29,
+      "apr": 17.49,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 22,
+      "debtId": 3,
+      "debtName": "Discover",
+      "month": "2026-07",
+      "amount": 307.96,
+      "apr": 15.49,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 23,
+      "debtId": 5,
+      "debtName": "Disney Chase",
+      "month": "2026-07",
+      "amount": 44.96,
+      "apr": 11.99,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 24,
+      "debtId": 7,
+      "debtName": "Disney Visa",
+      "month": "2026-07",
+      "amount": 82.09,
+      "apr": 26.49,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 25,
+      "debtId": 11,
+      "debtName": "USAA AMEX",
+      "month": "2026-07",
+      "amount": 39.24,
+      "apr": 29.4,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 26,
+      "debtId": 13,
+      "debtName": "Apple",
+      "month": "2026-07",
+      "amount": 19.53,
+      "apr": 25.49,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 27,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "month": "2026-07",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 28,
+      "debtId": 17,
+      "debtName": "Amazon Promo",
+      "month": "2026-07",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 29,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "month": "2026-07",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-07-01"
+    },
+    {
+      "id": 35,
+      "debtId": 34,
+      "debtName": "BoA Kevin",
+      "month": "2026-07",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-07-22"
+    },
+    {
+      "id": 38,
+      "debtId": 37,
+      "debtName": "BoA Kevin Promo",
+      "month": "2026-07",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-07-22"
+    },
+    {
+      "id": 39,
+      "debtId": 3,
+      "debtName": "Discover",
+      "month": "2026-08",
+      "amount": 277.09,
+      "apr": 15.49,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 40,
+      "debtId": 5,
+      "debtName": "Disney Chase",
+      "month": "2026-08",
+      "amount": 34.53,
+      "apr": 11.99,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 41,
+      "debtId": 13,
+      "debtName": "Apple",
+      "month": "2026-08",
+      "amount": 21.61,
+      "apr": 25.49,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 42,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "month": "2026-08",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 43,
+      "debtId": 17,
+      "debtName": "Amazon Promo",
+      "month": "2026-08",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 44,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "month": "2026-08",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 45,
+      "debtId": 34,
+      "debtName": "BoA Kevin",
+      "month": "2026-08",
+      "amount": 57.21,
+      "apr": 24.49,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 46,
+      "debtId": 37,
+      "debtName": "BoA Kevin Promo",
+      "month": "2026-08",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 49,
+      "debtId": 11,
+      "debtName": "USAA AMEX",
+      "month": "2026-08",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-08-01"
+    },
+    {
+      "id": 50,
+      "debtId": 3,
+      "debtName": "Discover",
+      "month": "2026-09",
+      "amount": 259.36,
+      "apr": 15.49,
+      "date": "2026-09-01"
+    },
+    {
+      "id": 51,
+      "debtId": 17,
+      "debtName": "Amazon Promo",
+      "month": "2026-09",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-09-01"
+    },
+    {
+      "id": 52,
+      "debtId": 15,
+      "debtName": "Citi Promo",
+      "month": "2026-09",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-09-01"
+    },
+    {
+      "id": 53,
+      "debtId": 19,
+      "debtName": "BOA Promo",
+      "month": "2026-09",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-09-01"
+    },
+    {
+      "id": 54,
+      "debtId": 37,
+      "debtName": "BoA Kevin Promo",
+      "month": "2026-09",
+      "amount": 0,
+      "apr": 0,
+      "date": "2026-09-01"
+    }
+  ],
+  "adjustments": [
+    {
+      "id": 30,
+      "debtId": 7,
+      "amount": -82.09,
+      "date": "2026-07-01",
+      "note": "Manual balance correction"
+    },
+    {
+      "id": 31,
+      "debtId": 11,
+      "amount": 65.76,
+      "date": "2026-07-22",
+      "note": "Manual balance correction"
+    },
+    {
+      "id": 32,
+      "debtId": 13,
+      "amount": 278.48,
+      "date": "2026-07-22",
+      "note": "Manual balance correction"
+    },
+    {
+      "id": 33,
+      "debtId": 1,
+      "amount": 60.71,
+      "date": "2026-07-22",
+      "note": "Manual balance correction"
+    },
+    {
+      "id": 36,
+      "debtId": 7,
+      "amount": 125,
+      "date": "2026-07-22",
+      "note": "Manual balance correction"
+    },
+    {
+      "id": 47,
+      "debtId": 34,
+      "amount": -57.21,
+      "date": "2026-08-10",
+      "note": "Manual balance correction"
+    },
+    {
+      "id": 48,
+      "debtId": 11,
+      "amount": 1876.88,
+      "date": "2026-08-11",
+      "note": "Manual balance correction"
+    }
+  ],
+  "interestAccrualEnabled": true,
+  "theme": "light"
+}
