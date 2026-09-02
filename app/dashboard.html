@@ -1791,40 +1791,81 @@
   .range-wrap { padding: 8px 0; }
 
   /* Styled range slider — works natively, looks custom */
+  /* v1.39.0 — What-If sliders rebuilt for thumbs.
+     The input is 44px tall (the hit area); the visible 6px track is drawn on
+     the track pseudo-element from --wi-fill, which updateSliderFill() sets.
+     touch-action:none stops a slightly diagonal drag from turning into a
+     page scroll — that was the "it won't stay where I let go" complaint:
+     Safari took the gesture and dropped the thumb wherever it was. */
   input[type=range].wi-slider {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
+    height: 44px;
+    background: transparent;
+    outline: none;
+    margin: 4px 0 0;
+    cursor: pointer;
+    touch-action: none;
+    --wi-fill: var(--border);
+  }
+  input[type=range].wi-slider::-webkit-slider-runnable-track {
     height: 6px;
     border-radius: 3px;
-    background: var(--border);
-    outline: none;
-    margin: 14px 0 6px;
-    cursor: pointer;
+    background: var(--wi-fill);
+  }
+  input[type=range].wi-slider::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--wi-fill);
   }
   input[type=range].wi-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
+    margin-top: -12px;             /* (6px track - 30px thumb) / 2 */
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    box-shadow: 0 0 0 3px rgba(0,229,176,0.25);
+    box-shadow: 0 0 0 4px rgba(0,229,176,0.22);
     transition: box-shadow 0.15s;
   }
-  input[type=range].wi-slider::-webkit-slider-thumb:hover {
-    box-shadow: 0 0 0 5px rgba(0,229,176,0.35);
+  input[type=range].wi-slider::-webkit-slider-thumb:hover,
+  input[type=range].wi-slider:active::-webkit-slider-thumb {
+    box-shadow: 0 0 0 7px rgba(0,229,176,0.32);
   }
   input[type=range].wi-slider::-moz-range-thumb {
-    width: 22px;
-    height: 22px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
     border: none;
-    box-shadow: 0 0 0 3px rgba(0,229,176,0.25);
+    box-shadow: 0 0 0 4px rgba(0,229,176,0.22);
   }
+  /* value box + nudge buttons + preset chips */
+  .wi-stepper { display: inline-flex; align-items: center; gap: 4px; }
+  .wi-nudge {
+    width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card2); color: var(--text); font-size: 1.05rem; line-height: 1;
+    cursor: pointer; font-family: var(--font-mono);
+  }
+  .wi-nudge:active { background: var(--surface2); }
+  .wi-value {
+    width: 96px; text-align: center; font-family: var(--font-mono); font-weight: 600;
+    font-size: 0.85rem; padding: 6px 4px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card2); color: var(--accent);
+  }
+  .wi-value.lump { color: var(--accent4); }
+  .wi-value:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .wi-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .wi-chip {
+    font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card2); color: var(--text-muted); cursor: pointer;
+  }
+  .wi-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,176,0.08); }
+  .wi-chip.lump.active { border-color: var(--accent4); color: var(--accent4); background: rgba(201,168,76,0.10); }
   input[type=range].wi-slider.lump::-webkit-slider-thumb {
     background: var(--accent4);
     box-shadow: 0 0 0 3px rgba(201,168,76,0.25);
@@ -2647,7 +2688,20 @@
       <div class="form-grid" style="grid-template-columns:1fr 1fr">
         <div class="form-field">
           <label>Extra Per Month ($)</label>
-          <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculateDebounced()" onchange="recalculate()" />
+          <!-- v1.39.0 — nudge buttons and presets beside the box; same treatment
+               as the What-If controls. The box keeps its id: sixteen plan sites
+               and the video recorder read it. -->
+          <div class="wi-stepper" style="width:100%;">
+            <button type="button" class="wi-nudge" onclick="budgetNudge(-1)" aria-label="$25 less">&minus;</button>
+            <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" style="flex:1;min-width:0;" oninput="recalculateDebounced()" onchange="recalculate()" />
+            <button type="button" class="wi-nudge" onclick="budgetNudge(1)" aria-label="$25 more">+</button>
+          </div>
+          <div class="wi-chips" id="budget-chips">
+            <button type="button" class="wi-chip" data-v="100" onclick="budgetSet(100)">$100</button>
+            <button type="button" class="wi-chip" data-v="250" onclick="budgetSet(250)">$250</button>
+            <button type="button" class="wi-chip" data-v="500" onclick="budgetSet(500)">$500</button>
+            <button type="button" class="wi-chip" data-v="1000" onclick="budgetSet(1000)">$1,000</button>
+          </div>
         </div>
         <div class="form-field field-full">
           <label>Strategy</label>
@@ -2899,25 +2953,49 @@
       <div class="card-title"><div class="dot"></div> Scenario Modeler</div>
 
       <div class="range-wrap">
-        <div class="range-label">
+        <div class="range-label" style="align-items:center;">
           <span>Additional Monthly Payment (on top of your current plan)</span>
-          <span style="color:var(--accent); font-weight:500" id="wi-extra-label">$0/mo</span>
+          <span class="wi-stepper">
+            <button type="button" class="wi-nudge" onclick="wiNudge('extra', -1)" aria-label="$25 less">&minus;</button>
+            <input type="text" inputmode="numeric" id="wi-extra-value" class="wi-value" value="$0/mo" aria-label="Additional monthly payment" onfocus="wiValueFocus('extra')" onchange="wiValueCommit('extra', this.value)" onkeydown="if (event.key === 'Enter') this.blur();" />
+            <button type="button" class="wi-nudge" onclick="wiNudge('extra', 1)" aria-label="$25 more">+</button>
+          </span>
         </div>
-        <input type="range" id="wi-extra" class="wi-slider" min="0" max="2000" step="25" value="0" />
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:2px;">
-          <span>$0</span><span>$500</span><span>$1,000</span><span>$1,500</span><span>$2,000</span>
+        <!-- v1.39.0 — $50 notches (was $25: 80 stops across a phone-width track
+             is ~4px each). The box and the nudge buttons handle anything finer. -->
+        <input type="range" id="wi-extra" class="wi-slider" min="0" max="2000" step="50" value="0" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:-6px;">
+          <span>$0</span><span id="wi-extra-t1">$500</span><span id="wi-extra-t2">$1,000</span><span id="wi-extra-t3">$1,500</span><span id="wi-extra-t4">$2,000</span>
+        </div>
+        <div class="wi-chips" id="wi-extra-chips">
+          <button type="button" class="wi-chip" data-v="50" onclick="wiSet('extra', 50)">$50</button>
+          <button type="button" class="wi-chip" data-v="100" onclick="wiSet('extra', 100)">$100</button>
+          <button type="button" class="wi-chip" data-v="200" onclick="wiSet('extra', 200)">$200</button>
+          <button type="button" class="wi-chip" data-v="500" onclick="wiSet('extra', 500)">$500</button>
+          <button type="button" class="wi-chip" data-v="0" onclick="wiSet('extra', 0)">Reset</button>
         </div>
       </div>
 
       <!-- v1.13.0 — Lump Sum Paydown is a premium feature (Option B split) -->
       <div class="range-wrap" style="margin-top:16px" data-premium>
-        <div class="range-label">
+        <div class="range-label" style="align-items:center;">
           <span>Lump Sum Paydown <span class="premium-tag">Premium</span></span>
-          <span style="color:var(--accent4); font-weight:500" id="wi-lump-label">$0</span>
+          <span class="wi-stepper">
+            <button type="button" class="wi-nudge" onclick="wiNudge('lump', -1)" aria-label="$250 less">&minus;</button>
+            <input type="text" inputmode="numeric" id="wi-lump-value" class="wi-value lump" value="$0" aria-label="Lump sum amount" onfocus="wiValueFocus('lump')" onchange="wiValueCommit('lump', this.value)" onkeydown="if (event.key === 'Enter') this.blur();" />
+            <button type="button" class="wi-nudge" onclick="wiNudge('lump', 1)" aria-label="$250 more">+</button>
+          </span>
         </div>
-        <input type="range" id="wi-lump" class="wi-slider lump" min="0" max="20000" step="250" value="0" />
-        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:2px;">
+        <input type="range" id="wi-lump" class="wi-slider lump" min="0" max="20000" step="500" value="0" />
+        <div style="display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:0.62rem;color:var(--text-muted);margin-top:-6px;">
           <span>$0</span><span id="wi-lump-t1"></span><span id="wi-lump-t2"></span><span id="wi-lump-t3"></span><span id="wi-lump-t4"></span>
+        </div>
+        <div class="wi-chips" id="wi-lump-chips">
+          <button type="button" class="wi-chip lump" data-v="1000" onclick="wiSet('lump', 1000)">$1,000</button>
+          <button type="button" class="wi-chip lump" data-v="2500" onclick="wiSet('lump', 2500)">$2,500</button>
+          <button type="button" class="wi-chip lump" data-v="5000" onclick="wiSet('lump', 5000)">$5,000</button>
+          <button type="button" class="wi-chip lump" data-v="10000" onclick="wiSet('lump', 10000)">$10,000</button>
+          <button type="button" class="wi-chip lump" data-v="0" onclick="wiSet('lump', 0)">Reset</button>
         </div>
         <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:6px;font-style:italic;">
           Applied today, on top of any planned lump sums you’ve scheduled.
@@ -3241,7 +3319,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.38.1';
+const APP_VERSION = '1.39.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3249,6 +3327,21 @@ const APP_VERSION = '1.38.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.39.0',
+    date: 'September 2, 2026',
+    name: 'What-If controls you can actually land on',
+    whatsNew: [
+      'The What-If sliders now have a number you can tap and type, plus \u2212 and + buttons for $25 (or $250 on the lump sum) at a time. Drag to explore, type to be exact.',
+      'One-tap presets under each slider \u2014 $50, $100, $200, $500 for the monthly amount; $1,000, $2,500, $5,000, $10,000 for a lump sum \u2014 for the numbers most people actually want to try.',
+      'The Monthly Payoff Budget field on the Strategy tab has the same \u2212 / + buttons and presets.'
+    ],
+    fixes: [
+      'The sliders no longer lose their position when your thumb drifts slightly off the track. A near-vertical drag used to be read as scrolling the page, which dropped the slider wherever it was \u2014 that was the \u201cit won\u2019t stay where I let go\u201d problem.',
+      'The slider thumbs are bigger and stop at $50 / $500 notches instead of $25 / $250, so each stop is wide enough to hit on a phone. Anything finer is one tap on the number or the \u2212 / + buttons.',
+      'Typing an amount larger than the slider\u2019s range extends the range instead of capping your number.'
+    ]
+  },
   {
     version: '1.38.1',
     date: 'September 1, 2026',
@@ -6798,8 +6891,9 @@ function recalculateDebounced() {
 function resetWiInputs() {
   var ex = document.getElementById('wi-extra');
   var lp = document.getElementById('wi-lump');
-  if (ex) { ex.value = 0; updateSliderFill('wi-extra', 'var(--accent)'); }
+  if (ex) { ex.value = 0; delete ex.dataset.exact; updateSliderFill('wi-extra', 'var(--accent)'); }
   if (lp) {
+    delete lp.dataset.exact;
     // Set lump slider max to total remaining debt so full payoff is reachable
     var totalBal = debts.filter(function(d){ return d.balance > 0; })
                         .reduce(function(a, d){ return a + d.balance; }, 0);
@@ -6813,10 +6907,11 @@ function resetWiInputs() {
     var t2 = document.getElementById('wi-lump-t2');
     var t3 = document.getElementById('wi-lump-t3');
     var t4 = document.getElementById('wi-lump-t4');
-    if (t1) t1.textContent = fmtTick(Math.round(sliderMax * 0.25 / 250) * 250);
-    if (t2) t2.textContent = fmtTick(Math.round(sliderMax * 0.50 / 250) * 250);
-    if (t3) t3.textContent = fmtTick(Math.round(sliderMax * 0.75 / 250) * 250);
+    if (t1) t1.textContent = fmtTick(Math.round(sliderMax * 0.25 / 500) * 500);
+    if (t2) t2.textContent = fmtTick(Math.round(sliderMax * 0.50 / 500) * 500);
+    if (t3) t3.textContent = fmtTick(Math.round(sliderMax * 0.75 / 500) * 500);
     if (t4) t4.textContent = fmtTick(sliderMax);
+    wiMarkChips('lump');
   }
 }
 
@@ -6824,7 +6919,112 @@ function updateSliderFill(id, color) {
   var el = document.getElementById(id);
   if (!el) return;
   var pct = ((el.value - el.min) / (el.max - el.min)) * 100;
-  el.style.background = 'linear-gradient(to right, ' + color + ' ' + pct + '%, var(--border) ' + pct + '%)';
+  // v1.39.0 — the track is a pseudo-element now (so the input can be 44px tall
+  // for thumbs while the visible track stays 6px); fill goes through a CSS var.
+  el.style.setProperty('--wi-fill', 'linear-gradient(to right, ' + color + ' ' + pct + '%, var(--border) ' + pct + '%)');
+}
+
+// ═══════════════════════════════════════════
+//  v1.39.0 — WHAT-IF CONTROLS: slider + exact box + nudges + presets
+// ═══════════════════════════════════════════
+// The slider is for exploring — drag and watch the date move. It snaps to
+// $50 / $500 notches so a thumb can actually land on one. Exact amounts come
+// from the box (tap the number, type) or the −/+ nudges ($25 / $250). The
+// EXACT value lives in data-exact on the slider; the slider's own value is
+// only the nearest notch. wiGet() is the single read path — updateWhatIf()
+// and render() use it, never the raw slider value. Dragging the slider
+// clears data-exact (the notch IS the value again).
+const WI_CFG = {
+  extra: { slider: 'wi-extra', box: 'wi-extra-value', chips: 'wi-extra-chips', nudge: 25,  color: 'var(--accent)',
+           show: function(v){ return v > 0 ? '+' + fmt(v) + '/mo' : '$0/mo'; } },
+  lump:  { slider: 'wi-lump',  box: 'wi-lump-value',  chips: 'wi-lump-chips',  nudge: 250, color: 'var(--accent4)',
+           show: function(v){ return fmt(v); } }
+};
+function wiGet(k) {
+  const el = document.getElementById(WI_CFG[k].slider);
+  if (!el) return 0;
+  const ex = el.dataset.exact;
+  if (ex != null && ex !== '') return Math.max(0, parseFloat(ex) || 0);
+  return Math.max(0, parseInt(el.value, 10) || 0);
+}
+function wiSet(k, v) {
+  const c = WI_CFG[k], el = document.getElementById(c.slider);
+  if (!el) return;
+  v = Math.max(0, Math.round(parseFloat(v) || 0));
+  if (v > parseFloat(el.max)) {
+    // Typed past the end of the track: grow the track rather than clamp the
+    // user's number. Ticks follow.
+    el.max = Math.ceil(v / (k === 'lump' ? 1000 : 500)) * (k === 'lump' ? 1000 : 500);
+    wiRefreshTicks(k);
+  }
+  el.dataset.exact = String(v);
+  el.value = v;                      // the browser snaps this to the nearest notch
+  updateSliderFill(c.slider, c.color);
+  wiSyncBox(k);
+  wiMarkChips(k);
+  updateWhatIf();
+  if (typeof trackShare === 'function') trackShare('whatif_set', { control: k, value: v });
+}
+function wiNudge(k, dir) { wiSet(k, wiGet(k) + dir * WI_CFG[k].nudge); }
+function wiSyncBox(k) {
+  const box = document.getElementById(WI_CFG[k].box);
+  if (!box || document.activeElement === box) return;
+  box.value = WI_CFG[k].show(wiGet(k));
+}
+function wiValueFocus(k) {
+  const box = document.getElementById(WI_CFG[k].box);
+  if (!box) return;
+  const v = wiGet(k);
+  box.value = v > 0 ? String(v) : '';
+  try { box.select(); } catch (e) {}
+}
+function wiValueCommit(k, str) {
+  const v = parseAmount(str);
+  wiSet(k, isNaN(v) ? 0 : v);
+  const box = document.getElementById(WI_CFG[k].box);
+  if (box) box.blur();
+  wiSyncBox(k);
+}
+function wiMarkChips(k) {
+  const wrap = document.getElementById(WI_CFG[k].chips);
+  if (!wrap) return;
+  const v = wiGet(k), max = parseFloat((document.getElementById(WI_CFG[k].slider) || {}).max) || Infinity;
+  wrap.querySelectorAll('.wi-chip').forEach(function(b) {
+    const bv = parseFloat(b.dataset.v);
+    b.classList.toggle('active', bv === v && v > 0);
+    // a preset beyond the end of the track is noise
+    b.style.display = (bv > max) ? 'none' : '';
+  });
+}
+function wiRefreshTicks(k) {
+  const el = document.getElementById(WI_CFG[k].slider);
+  if (!el) return;
+  const max = parseFloat(el.max) || 0;
+  const fmtTick = function(v) { return v >= 1000 ? '$' + (Math.round(v / 100) / 10).toString().replace(/\.0$/, '') + 'k' : '$' + v; };
+  const step = k === 'lump' ? 500 : 50;
+  [1, 2, 3, 4].forEach(function(i) {
+    const t = document.getElementById(WI_CFG[k].slider + '-t' + i);
+    if (t) t.textContent = fmtTick(i === 4 ? max : Math.round(max * i / 4 / step) * step);
+  });
+}
+
+// v1.39.0 — Monthly Payoff Budget: nudges and presets around the real field.
+function budgetSet(v) {
+  const el = document.getElementById('extra-payment');
+  if (!el) return;
+  el.value = Math.max(0, Math.round(parseFloat(v) || 0));
+  recalculate();
+  budgetMarkChips();
+}
+function budgetNudge(dir) {
+  const cur = parseAmount((document.getElementById('extra-payment') || {}).value) || 0;
+  budgetSet(cur + dir * 25);
+}
+function budgetMarkChips() {
+  const wrap = document.getElementById('budget-chips');
+  if (!wrap) return;
+  const v = parseAmount((document.getElementById('extra-payment') || {}).value) || 0;
+  wrap.querySelectorAll('.wi-chip').forEach(function(b) { b.classList.toggle('active', parseFloat(b.dataset.v) === v); });
 }
 
 function initWiSliders() {
@@ -6839,13 +7039,17 @@ function initWiSliders() {
     // simulations behind updateWhatIf are debounced so dragging stays smooth
     // on mobile. 'change'/'touchend' fire immediately for the settled value.
     let _wiDebounce = null;
+    const _k = cfg.id === 'wi-extra' ? 'extra' : 'lump';
     function onInput() {
+      delete el.dataset.exact;             // v1.39.0 — the notch is the value again
       updateSliderFill(cfg.id, cfg.color);
+      wiSyncBox(_k); wiMarkChips(_k);
       clearTimeout(_wiDebounce);
       _wiDebounce = setTimeout(updateWhatIf, 120);
     }
     function onSettle() {
       updateSliderFill(cfg.id, cfg.color);
+      wiSyncBox(_k); wiMarkChips(_k);
       clearTimeout(_wiDebounce);
       updateWhatIf();
     }
@@ -6864,11 +7068,11 @@ function updateWhatIf() {
   const wiLumpEl  = document.getElementById('wi-lump');
   if (!wiExtraEl || !wiLumpEl) return;
 
-  const sliderExtra = parseInt(wiExtraEl.value) || 0;
-  const lump        = parseInt(wiLumpEl.value)  || 0;
+  const sliderExtra = wiGet('extra');   // v1.39.0 — exact value, not the notch
+  const lump        = wiGet('lump');
 
-  document.getElementById('wi-extra-label').textContent = sliderExtra > 0 ? '+' + fmt(sliderExtra) + '/mo' : '$0/mo';
-  document.getElementById('wi-lump-label').textContent  = fmt(lump);
+  wiSyncBox('extra');
+  wiSyncBox('lump');
 
   // v1.7.0 — What-If reflects the payoff plan, so excluded debts skip
   const activeDebts = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
@@ -7916,9 +8120,10 @@ function render() {
   // Keep What If in sync — only update if sliders are at zero to avoid disrupting active scenario
   const wiExtra = document.getElementById('wi-extra');
   const wiLump  = document.getElementById('wi-lump');
-  if (wiExtra && wiLump && parseInt(wiExtra.value) === 0 && parseInt(wiLump.value) === 0) {
+  if (wiExtra && wiLump && wiGet('extra') === 0 && wiGet('lump') === 0) {
     updateWhatIf();
   }
+  budgetMarkChips();   // v1.39.0
 
   // v1.18.0 — flywheel: check for newly-crossed milestones after each render.
   // Suppressed during the initial load (see _milestonesBaselined) so importing

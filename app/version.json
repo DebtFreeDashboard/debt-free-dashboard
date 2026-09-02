@@ -1,10 +1,10 @@
 {
-  "version": "1.38.1",
-  "releaseDate": "2026-09-01",
-  "releaseName": "Rolled-over minimums, where the total is",
+  "version": "1.39.0",
+  "releaseDate": "2026-09-02",
+  "releaseName": "What-If controls you can actually land on",
   "notes": [
-    "The rolled-over minimum switches moved from Settings into the Monthly Payment Summary on the Strategy tab, next to the total they change.",
-    "Your plan now starts from the current month, so the Freedom Date reads the same on the 1st, after you pay, and at the end of the month. Only paying more or less than the plan moves it.",
-    "When you pay a debt off, its minimum keeps flowing to your next debt, as the plan has always assumed. One tap in the celebration keeps the money instead; change it any time in the Monthly Payment Summary."
+    "What-If sliders now have a tap-to-type number, − / + buttons and one-tap presets — drag to explore, type to be exact.",
+    "Sliders no longer lose their position when your thumb drifts off the track, and the stops are wide enough to hit on a phone.",
+    "The Monthly Payoff Budget field has the same − / + buttons and presets."
   ]
 }
