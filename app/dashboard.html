@@ -2674,6 +2674,8 @@
           <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">minimums + extra</div>
         </div>
       </div>
+      <!-- v1.38.0 — where the extra comes from when minimums have rolled over -->
+      <div id="summary-rolled" style="display:none;font-size:0.78rem;color:var(--text-muted);margin-top:10px;text-align:center;"></div>
       <!-- v1.31.3 — the freedom date assumes this total never drops. As debts
            clear, their minimums roll into whatever is left rather than returning
            to your pocket. Nothing enforces that, so it needs saying: a user who
@@ -3046,6 +3048,12 @@
           </span>
         </label>
       </div>
+      <!-- v1.38.0 — rolled-over minimums from eliminated debts -->
+      <div id="rolled-settings" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <div style="font-size:0.85rem;font-weight:600;">Rolled-over minimums</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;margin:2px 0 6px;">When a debt is paid off, its minimum payment keeps flowing to the next debt in your plan — that is what your Freedom Date assumes. Untick one to keep that money instead; the plan shrinks by that amount.</div>
+        <div id="rolled-list"></div>
+      </div>
       <!-- v1.13.0 — Estimated interest (premium) -->
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
@@ -3178,6 +3186,8 @@
     <div id="celebrate-emoji" style="font-size:4rem;line-height:1;margin-bottom:8px;">\uD83C\uDF89</div>
     <div id="celebrate-headline" style="font-family:var(--font-display);font-weight:800;font-size:1.5rem;margin-bottom:6px;"></div>
     <div id="celebrate-sub" style="color:var(--text-muted);font-size:0.9rem;margin-bottom:18px;"></div>
+    <!-- v1.38.0 — what happens to the freed minimum -->
+    <div id="celebrate-roll" style="display:none;font-size:0.82rem;color:var(--text-muted);background:var(--card2);border-radius:10px;padding:10px 12px;margin:-6px 0 16px;line-height:1.45;"></div>
     <img id="share-card-preview" alt="Your shareable win card" style="width:100%;border-radius:14px;border:1px solid var(--border);margin-bottom:14px;" />
     <div class="seg-toggle" style="display:inline-flex;gap:2px;margin-bottom:16px;background:var(--surface2);border-radius:10px;padding:3px;">
       <button id="fmt-square" class="seg-btn seg-active" onclick="switchCardFormat('square')">Square</button>
@@ -3231,7 +3241,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.37.0';
+const APP_VERSION = '1.38.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3239,6 +3249,24 @@ const APP_VERSION = '1.37.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.38.0',
+    date: 'September 1, 2026',
+    name: 'Your Freedom Date stops moving on the 1st of the month',
+    whatsNew: [
+      'Your plan now starts from the current month. Until now the projection began next month, so from the 1st until you logged a payment the app assumed you were skipping this month \u2014 the Freedom Date slid a month later, then slid back once you paid. It now reads the same on the 1st, after you pay, and at the end of the month. Logging a payment moves your progress, not your date; only paying more or less than the plan moves the date.',
+      'When you pay a debt off, its minimum payment now keeps flowing to your next debt \u2014 which is what your Freedom Date has always assumed, but the projection quietly dropped it the moment the debt was really gone, so every win pushed your date out. The celebration tells you where the money goes, and one tap keeps it instead if that is what you are doing. You can change your mind any time under Settings.',
+      'The Monthly Payment Summary now shows where your extra comes from: your own amount plus anything rolled over from debts you have beaten. That total stays the same as debts fall, exactly as the plan describes.'
+    ],
+    fixes: [
+      'Months away now counts from today. A plan whose last payment is this month says \u201cthis month\u201d, not \u201c1 month away\u201d.',
+      'A planned lump sum dated this month is no longer treated as extra money on top of your regular payment when you have already logged that payment.',
+      'A payment you have scheduled for later this month counts as this month\u2019s payment, instead of being added on top of it.',
+      'The Monthly Payment Summary no longer counts the minimum of a debt you have excluded from your plan, such as a mortgage.',
+      'Interest already added to a balance on the 1st is no longer projected a second time for the same month.',
+      'Your \u201cInterest Saved\u201d figure may be noticeably higher since 1.37.0. It compares your plan against paying only minimums, and that comparison now uses the real minimum on 0% cards too \u2014 which, once the promotional rate ends, barely covers the interest. Doing nothing was always this expensive; the app just understated it.'
+    ]
+  },
   {
     version: '1.37.0',
     date: 'September 1, 2026',
@@ -4068,6 +4096,9 @@ let payoffChart = null;
 let nextId = 1;
 // v1.11.0 — interest auto-accrual ledger
 let accruals = [];               // { id, debtId, debtName, month:"YYYY-MM", amount, apr, date }
+// v1.38.0 — minimums that keep flowing after their debt is gone.
+// { debtId, amount, since:"YYYY-MM-DD", keep:bool }. See rolledOverTotal().
+let rolledMinimums = [];
 let adjustments = [];            // { id, debtId, amount(signed), date, note }
 let interestAccrualEnabled = false; // default OFF for existing users; load() turns ON for brand-new users
 
@@ -4227,6 +4258,87 @@ function totalPaid() {
 // Was this debt closed by moving the balance elsewhere rather than paying it?
 function isTransferred(d) { return d && d.closedAs === 'transferred'; }
 
+// ═══════════════════════════════════════════
+//  v1.38.0 — ROLLED-OVER MINIMUMS
+// ═══════════════════════════════════════════
+// The rollover model (v1.12.0) assumes that when a debt clears, its minimum
+// keeps flowing to the next debt — the Monthly Payment Summary says so in
+// words. But the engine only ever saw ACTIVE debts, so the moment a debt
+// really hit zero its minimum vanished from the projection and the Freedom
+// Date slipped. Every real win moved the goalposts.
+//
+// Now a debt that is eliminated (paid to zero, not transferred, in the plan)
+// gets a rolled-minimum entry from that day forward, and planExtra() adds it
+// to the user's own extra. The user can keep the money instead — one tap in
+// the celebration, or later — which sets keep:true and the plan shrinks
+// honestly. Only payoffs from now on are rolled: whatever a user had already
+// folded into their extra before this version stays theirs (see seeding in
+// load()/applyBackupPayload()). Reopening a debt (a 0% transfer onto an old
+// card) drops its entry; the minimum is due again.
+function rolledEntryFor(d) { return rolledMinimums.find(function(r){ return r.debtId === d.id; }); }
+function rolledEligible(d) {
+  return d && d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d) && d.includeInStrategy !== false;
+}
+// Keep the list in step with reality. Called from render(); cheap.
+function syncRolledMinimums(seedAsKept) {
+  const byId = {};
+  debts.forEach(function(d){ byId[d.id] = d; });
+  // drop entries whose debt is gone, reopened, or reclassified as a transfer
+  rolledMinimums = rolledMinimums.filter(function(r){ return rolledEligible(byId[r.debtId]); });
+  // add newly-eliminated debts
+  debts.forEach(function(d) {
+    if (!rolledEligible(d) || rolledEntryFor(d)) return;
+    rolledMinimums.push({ debtId: d.id, amount: Math.max(0, parseFloat(d.minPayment) || 0), since: localDateStr(), keep: !!seedAsKept });
+  });
+}
+function rolledOverTotal() {
+  return rolledMinimums.reduce(function(s, r){ return s + (r.keep ? 0 : (r.amount || 0)); }, 0);
+}
+// The extra the PLAN runs on: the user's own extra plus rolled minimums.
+function planExtra() {
+  const el = document.getElementById('extra-payment');
+  return (parseAmount(el ? el.value : extraMonthly) || 0) + rolledOverTotal();
+}
+function toggleRolledMinimum(debtId) {
+  const r = rolledMinimums.find(function(x){ return x.debtId === debtId; });
+  if (!r) return;
+  r.keep = !r.keep;
+  save(); render();
+  renderCelebrateRoll(debtId);
+  renderRolledSettings();
+}
+// The line in the celebration modal: says where the freed minimum goes, and
+// offers the other choice. Descriptive, not advisory.
+function renderCelebrateRoll(debtId) {
+  const box = document.getElementById('celebrate-roll');
+  if (!box) return;
+  const d = debtId != null ? debts.find(function(x){ return x.id === debtId; }) : null;
+  const r = d ? rolledEntryFor(d) : null;
+  if (!d || !r || !(r.amount > 0)) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  const name = escapeHtml(d.name), amt = fmt(r.amount);
+  box.innerHTML = r.keep
+    ? name + '\u2019s ' + amt + '/mo minimum is no longer due. Your plan keeps your extra at ' + fmt(parseAmount(document.getElementById('extra-payment').value) || 0) + '.' +
+      ' <button class="btn btn-ghost" style="font-size:0.72rem;padding:3px 10px;margin-left:6px;" onclick="toggleRolledMinimum(' + d.id + ')">Roll it into the plan</button>'
+    : name + '\u2019s ' + amt + '/mo minimum now rolls to your next debt \u2014 your total monthly payment stays the same, which is what your Freedom Date assumes.' +
+      ' <button class="btn btn-ghost" style="font-size:0.72rem;padding:3px 10px;margin-left:6px;" onclick="toggleRolledMinimum(' + d.id + ')">Keep it instead</button>';
+  box.style.display = 'block';
+}
+// Settings: every rolled/kept minimum with its switch.
+function renderRolledSettings() {
+  const wrap = document.getElementById('rolled-settings');
+  const list = document.getElementById('rolled-list');
+  if (!wrap || !list) return;
+  const rows = rolledMinimums.map(function(r){ const d = debts.find(function(x){ return x.id === r.debtId; }); return d ? { r: r, d: d } : null; }).filter(Boolean);
+  if (!rows.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = rows.map(function(x) {
+    return '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 0;">' +
+      '<input type="checkbox" ' + (x.r.keep ? '' : 'checked') + ' onchange="toggleRolledMinimum(' + x.d.id + ')" />' +
+      '<span style="flex:1;font-size:0.82rem;">' + escapeHtml(x.d.name) + ' <span style="color:var(--text-muted);">\u00b7 ' + fmt(x.r.amount) + '/mo</span></span>' +
+      '<span style="font-size:0.72rem;color:var(--text-muted);">' + (x.r.keep ? 'kept' : 'rolled into plan') + '</span></label>';
+  }).join('');
+}
+
 // ── v1.18.0 — MILESTONE FLYWHEEL ──
 // Fires a celebration + shareable win card at emotional-peak moments, then
 // records the milestone so it never re-triggers on reload. Framing is
@@ -4354,7 +4466,12 @@ function plannedDisbursements() {
   });
   payments.forEach(function(p) {
     if (p.pending && validIds.has(p.debtId)) {
-      out.push({ debtId: p.debtId, debtName: p.debtName, amount: p.amount, date: p.date });
+      // v1.38.0 — tagged: a pending payment dated this month is the user's
+      // planned payment, not an extra lump. currentMonthLedger() counts it as
+      // paid (so month 1's minimum is netted) and simulate() still applies it
+      // to the balance in month 1; _netMonthOne() must not also treat it as a
+      // lump to net against, or the money would be counted once and paid never.
+      out.push({ debtId: p.debtId, debtName: p.debtName, amount: p.amount, date: p.date, pending: true });
     }
   });
   return out;
@@ -4374,8 +4491,16 @@ let _baseSimCache = { key: null, res: null };
 function _activePlanDebts() {
   return debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
 }
+// v1.38.0 — anchored simulations also depend on WHICH month it is and on what
+// the ledger says about it (payments logged, interest posted). Neither shows
+// up in balances when a 0% card rolls into a new month, so without this a
+// page left open across the 1st served January's answer in February.
+function _ledgerKey() {
+  const l = currentMonthLedger();
+  return monthKeyOf(new Date()) + '|' + JSON.stringify(l.paid) + '|' + Object.keys(l.accrued).sort().join(',');
+}
 function _simKeyFor(activeDebts, extra, disb, rollover) {
-  return JSON.stringify([strategy, extra, rollover,
+  return JSON.stringify([strategy, extra, rollover, _ledgerKey(),
     activeDebts.map(function(d){ return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoApr, d.promoEnd, d.postPromoApr]; }),
     disb.map(function(l){ return [l.debtId, l.amount, l.date]; })
   ]);
@@ -4387,7 +4512,7 @@ function _simKeyFor(activeDebts, extra, disb, rollover) {
 function getPlanSim() {
   const activeDebts = _activePlanDebts();
   if (!activeDebts.length) return null;
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   const disb = plannedDisbursements();
   const key = _simKeyFor(activeDebts, extra, disb, true);
   if (_planSimCache.key === key) return _planSimCache.res;
@@ -4571,6 +4696,89 @@ function badgeLabel(type) {
 // ═══════════════════════════════════════════
 //  PAYOFF SIMULATION
 // ═══════════════════════════════════════════
+// ═══════════════════════════════════════════
+//  v1.38.0 — PLAN MONTHS ARE ANCHORED TO THE CURRENT CALENDAR MONTH
+// ═══════════════════════════════════════════
+// Until 1.37 the engine's "month 1" was NEXT calendar month. It knew nothing
+// about the payment log, so from the 1st of a month until the user logged a
+// payment it silently assumed the current month was being skipped: interest
+// had posted, no payment was modelled, and the Freedom Date slid a month
+// later — then slid back once payments were logged. Every user, every month.
+// A plan that hadn't changed read "Aug 2027" on 30 August and "Oct 2027" on
+// 1 September.
+//
+// Now month 1 IS the current month, and the engine reads the ledger for it:
+//   - Month 1's payment on each debt is what the plan calls for, MINUS what
+//     is already logged this month. Nothing logged yet -> the full planned
+//     payment is assumed to still be coming. Fully logged -> month 1 pays
+//     nothing more (it is already in the balance). Same date either way.
+//   - Overpaying shows immediately (real money off the balance). Underpaying
+//     changes nothing until the month rolls, when the shortfall is simply a
+//     higher balance than planned.
+//   - Month 1 adds no interest to a debt whose accrual for this month has
+//     already posted to the ledger — otherwise the 1st double-charged.
+//
+// Consequences for indexing, applied everywhere a date becomes a month:
+//   plan month N  <->  calendar month (current + N - 1)
+//   a lump dated this month lands in month 1 (was: clamped to 1 anyway)
+//   a promo ending this month is still 0% in month 1 (switch index = delta+1)
+//   payoff in month N  ->  date = current month + (N-1), "N-1 months away"
+//   ("this month" when N = 1 — monthsAway() already handles 0).
+// Payments count toward a month by their PAYMENT DATE, not the day they were
+// typed in. Paying next month's bill early reads as an overpayment now and an
+// unpaid month later — a wash, and one tap on the date fixes it.
+function _monthDelta(dateLike) {
+  const t = (dateLike instanceof Date) ? dateLike : new Date(String(dateLike).length === 10 ? dateLike + 'T00:00:00' : dateLike);
+  if (isNaN(t.getTime())) return 0;
+  const n = new Date();
+  return (t.getFullYear() - n.getFullYear()) * 12 + (t.getMonth() - n.getMonth());
+}
+// Simulation month a dated event (lump, pending payment) lands in. Never < 1.
+function planMonthIndex(dateLike) { return Math.max(1, _monthDelta(dateLike) + 1); }
+// Last simulation month in which a promo is still active. 0 = already over.
+function promoSwitchIndex(promoEnd) { return Math.max(0, _monthDelta(promoEnd) + 1); }
+// Calendar date (1st of month) for plan month N.
+function planMonthDate(n) { const t = new Date(); return new Date(t.getFullYear(), t.getMonth() + (Math.max(1, n | 0) - 1), 1); }
+// "Months away" for a payoff in plan month N.
+function planMonthsAway(n) { return Math.max(0, (n | 0) - 1); }
+// What the ledger already says about the current calendar month.
+function currentMonthLedger() {
+  const ym = monthKeyOf(new Date());
+  const paid = {}, accrued = {};
+  (payments || []).forEach(function(p) {
+    // Pending entries dated this month are counted as paid AND still applied as
+    // disbursements in month 1 by simulate(), so they net to exactly the planned
+    // payment rather than double-counting.
+    if (String(p.date || '').slice(0, 7) !== ym) return;
+    paid[p.debtId] = (paid[p.debtId] || 0) + (parseFloat(p.amount) || 0);
+  });
+  (accruals || []).forEach(function(a) { if (a.month === ym) accrued[a.debtId] = true; });
+  return { paid: paid, accrued: accrued };
+}
+// Net this month's logged payments against month 1's plan, per debt, in
+// this order: the planned minimum first, then any lump sum dated this month
+// aimed at that debt (mutated in place in `lumpsMonthOne`), then whatever is
+// left over counts as extra already delivered. Returns the minimum already
+// covered per debt and the aggregate extra already paid.
+function _netMonthOne(rows, lumpsMonthOne, ledger) {
+  const minCovered = {};
+  let extraAlreadyPaid = 0;
+  rows.forEach(function(d) {
+    let left = ledger.paid[d.id] || 0;
+    if (left <= 0) return;
+    const minPlanned = minDueFor(d, 1);
+    const useMin = Math.min(left, minPlanned);
+    minCovered[d.id] = useMin; left -= useMin;
+    (lumpsMonthOne || []).forEach(function(l) {
+      if (left <= 0 || l.pending || l.debtId !== d.id || l.amount <= 0) return;
+      const useLump = Math.min(left, l.amount);
+      l.amount -= useLump; left -= useLump;
+    });
+    if (left > 0) extraAlreadyPaid += left;
+  });
+  return { minCovered: minCovered, extraAlreadyPaid: extraAlreadyPaid };
+}
+
 // v1.37.0 — Minimum-payment floor, promo-aware.
 //
 // The simulator has always floored a debt's minimum payment to "one month of
@@ -4617,14 +4825,9 @@ function computePassiveInterestCost(d, horizonMonths, plannedLumps, simStartDate
   if (bal <= 0) return 0;
   let interestAccrued = 0;
 
-  // Pre-compute promo switch month (mirrors simulate())
+  // Pre-compute promo switch month (mirrors simulate()). v1.38.0 — anchored.
   let promoSwitchMonth = null;
-  if (d.promoEnd) {
-    const pEnd = new Date(d.promoEnd);
-    promoSwitchMonth = Math.max(0,
-      (pEnd.getFullYear() - simStartDate.getFullYear()) * 12 +
-      (pEnd.getMonth() - simStartDate.getMonth()));
-  }
+  if (d.promoEnd) promoSwitchMonth = promoSwitchIndex(d.promoEnd);
 
   // v1.37.0 — promo-aware minimum floor (see minPaymentFloors)
   const _floors = minPaymentFloors(d);
@@ -4635,10 +4838,7 @@ function computePassiveInterestCost(d, horizonMonths, plannedLumps, simStartDate
   if (plannedLumps && plannedLumps.length) {
     plannedLumps.forEach(function(l) {
       if (l.debtId !== d.id) return;
-      const lDate = new Date(l.date);
-      const m = Math.max(1,
-        (lDate.getFullYear() - simStartDate.getFullYear()) * 12 +
-        (lDate.getMonth() - simStartDate.getMonth()));
+      const m = planMonthIndex(l.date);   // v1.38.0 — anchored
       lumpByMonth[m] = (lumpByMonth[m] || 0) + l.amount;
     });
   }
@@ -4721,12 +4921,9 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   const lumpByMonth = {};
   if (plannedLumps && plannedLumps.length) {
     plannedLumps.forEach(function(l) {
-      const lDate = new Date(l.date);
-      const diffMonths = Math.max(1,
-        (lDate.getFullYear() - simStartDate.getFullYear()) * 12 +
-        (lDate.getMonth() - simStartDate.getMonth()));
+      const diffMonths = planMonthIndex(l.date);   // v1.38.0 — anchored
       if (!lumpByMonth[diffMonths]) lumpByMonth[diffMonths] = [];
-      lumpByMonth[diffMonths].push({ debtId: l.debtId, amount: l.amount });
+      lumpByMonth[diffMonths].push({ debtId: l.debtId, amount: l.amount, pending: !!l.pending });
     });
   }
 
@@ -4749,13 +4946,9 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     // depending on what day of the year the simulation ran, occasionally
     // causing the promo APR switch and a planned lump to land in different
     // months than each other.
+    // v1.38.0 — anchored: a promo ending this month is still 0% in month 1.
     let promoSwitchMonth = null;
-    if (d.promoEnd) {
-      const promoEndDate = new Date(d.promoEnd);
-      promoSwitchMonth = Math.max(0,
-        (promoEndDate.getFullYear() - simStartDate.getFullYear()) * 12 +
-        (promoEndDate.getMonth() - simStartDate.getMonth()));
-    }
+    if (d.promoEnd) promoSwitchMonth = promoSwitchIndex(d.promoEnd);
 
     return {
       ...d,
@@ -4820,6 +5013,17 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   const MAX_MONTHS = 600;
   const MAX_INTEREST = 10000000; // $10M cap — if exceeded something is wrong
 
+  // v1.38.0 — month 1 is the current month; read what the ledger already
+  // shows for it. Per debt: how much has been paid, and whether this month's
+  // interest has posted. Surplus already delivered = anything paid over a
+  // debt's planned minimum, in aggregate; it has hit the balances, so the
+  // month-1 extra is reduced by it. opts.anchor === false disables this for
+  // callers that need a pure forward projection.
+  const _anchor = !(opts && opts.anchor === false);
+  const _ledger = _anchor ? currentMonthLedger() : { paid: {}, accrued: {} };
+  const _net = _anchor ? _netMonthOne(balances, lumpByMonth[1], _ledger) : { minCovered: {}, extraAlreadyPaid: 0 };
+  const _extraAlreadyPaid = _net.extraAlreadyPaid;
+
   while (balances.some(d=>d.bal>0.01) && month < MAX_MONTHS && totalInterest < MAX_INTEREST) {
     month++;
     let monthInterest = 0;
@@ -4828,6 +5032,7 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     // user's extra payment; with rollover on, the minimum payments of every
     // already-paid-off debt are added to it (stacking as more debts die).
     let surplus = extraPerMonth;
+    if (month === 1 && _extraAlreadyPaid > 0) surplus = Math.max(0, surplus - _extraAlreadyPaid);
     if (doRollover) {
       for (let d of balances) {
         if (d.bal <= 0) surplus += minDueFor(d, month);
@@ -4847,16 +5052,22 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
           : (d.postPromoApr || d.realApr || d.apr);
         effectiveApr = (!isNaN(rawApr) && rawApr >= 0 && rawApr <= 100) ? rawApr : 0;
       }
-      const interest = d.bal * (effectiveApr / 100 / 12);
+      // v1.38.0 — month 1: skip interest the ledger has already posted, and
+      // net the planned minimum against what is already logged this month.
+      const _postedAlready = (month === 1 && _ledger.accrued[d.id]);
+      const interest = _postedAlready ? 0 : d.bal * (effectiveApr / 100 / 12);
       monthInterest += interest;
       d.interestPaid += interest;              // v1.5.0 — per-debt tracking
       d.bal += interest;
-      const minDue = minDueFor(d, month);
+      const minPlanned = minDueFor(d, month);
+      const minDue = (month === 1) ? Math.max(0, minPlanned - (_net.minCovered[d.id] || 0)) : minPlanned;
       const payment = Math.min(d.bal, minDue);
       d.bal -= payment;
       d.bal = Math.max(0, d.bal);
       // v1.12.0 — same-month overflow: in the month a debt dies, the unused
-      // remainder of its final minimum payment cascades instead of vanishing
+      // remainder of its final minimum payment cascades instead of vanishing.
+      // Measured against what was actually due this month (netted in month 1):
+      // a minimum the user has already paid is not money left to cascade.
       if (doRollover && payment < minDue) surplus += (minDue - payment);
     }
 
@@ -5780,6 +5991,7 @@ function celebrateMilestone(key) {
   document.getElementById('celebrate-emoji').textContent = content.emoji;
   document.getElementById('celebrate-headline').textContent = content.headline;
   document.getElementById('celebrate-sub').textContent = content.sub;
+  renderCelebrateRoll(key.indexOf('elim:') === 0 ? parseInt(key.split(':')[1], 10) : null);   // v1.38.0
 
   _celebrateContent = content;      // v1.19.0
   _cardFormat = 'square';
@@ -5929,7 +6141,7 @@ function drawShareCard(content, format) {
   const plan = getPlanSim();
   let freedom = '\u2014';
   if (plan && !plan.diverged) {
-    const fd = new Date(); fd.setMonth(fd.getMonth() + plan.months);
+    const fd = planMonthDate(plan.months);
     freedom = fd.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   } else if (!active) { freedom = 'DONE'; }
   ctx.textAlign = 'center';
@@ -6044,7 +6256,7 @@ function openDialDate() {
     const plan = getPlanSim();
     const target = document.getElementById('dialdate-target');
     if (plan && !plan.diverged) {
-      const fd = new Date(); fd.setMonth(fd.getMonth() + plan.months);
+      const fd = planMonthDate(plan.months);
       target.value = fd.getFullYear() + '-' + String(fd.getMonth()+1).padStart(2,'0');
     }
     runDialDate();
@@ -6071,8 +6283,9 @@ function runDialDate() {
   // Convert YYYY-MM to a month count from now
   const parts = target.value.split('-');
   const ty = parseInt(parts[0], 10), tm = parseInt(parts[1], 10) - 1;
-  const now = new Date();
-  const targetMonths = (ty - now.getFullYear()) * 12 + (tm - now.getMonth());
+  // v1.38.0 — anchored: being debt-free BY a calendar month means paying off
+  // in plan month (delta + 1); the current month is a legal target.
+  const targetMonths = _monthDelta(new Date(ty, tm, 1)) + 1;
 
   if (targetMonths < 1) {
     out.innerHTML = '<div class="dialdate-note warn">Pick a date in the future.</div>';
@@ -6080,14 +6293,14 @@ function runDialDate() {
   }
 
   const r = solveForTargetDate(targetMonths);
-  const dashExtra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const dashExtra = planExtra();   // v1.38.0 — user's extra + rolled minimums
 
   if (!r.feasible && r.reason === 'nodebts') {
     out.innerHTML = '<div class="dialdate-note">Add some debts first and this will calculate your target payment.</div>';
     return;
   }
   if (!r.feasible && r.reason === 'sooner') {
-    const fd = new Date(); fd.setMonth(fd.getMonth() + r.minMonths);
+    const fd = planMonthDate(r.minMonths);
     const soonest = fd.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     out.innerHTML =
       '<div class="dialdate-result-card">' +
@@ -6100,7 +6313,7 @@ function runDialDate() {
   // Feasible
   const extra = r.extra;
   const delta = extra - dashExtra;
-  const targetLabelD = new Date(); targetLabelD.setMonth(targetLabelD.getMonth() + targetMonths);
+  const targetLabelD = planMonthDate(targetMonths);
   const targetLabel = targetLabelD.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   let compare = '';
@@ -6126,6 +6339,9 @@ function runDialDate() {
 
 // Push the solved extra into the real plan (the dashboard extra-payment field).
 function applyDialExtra(extra) {
+  // v1.38.0 — the solver works in plan extra (own extra + rolled minimums);
+  // the field holds only the user's own part.
+  extra = Math.max(0, Math.round((extra - rolledOverTotal()) * 100) / 100);
   const field = document.getElementById('extra-payment');
   if (!field) return;
   field.value = extra;
@@ -6442,7 +6658,7 @@ function _seedOrders(targets) {
 function computeOptimizedOrder() {
   const targets = _activePlanDebts();
   if (targets.length < 2) return null;
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   const disb = plannedDisbursements();
   const ids = targets.map(function(d) { return d.id; });
 
@@ -6494,8 +6710,8 @@ function computeOptimizedOrder() {
 let _optOrderCache = { key: null, res: null };
 function getOptimizedOrder() {
   const targets = _activePlanDebts();
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
-  const key = JSON.stringify([extra,
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
+  const key = JSON.stringify([extra, _ledgerKey(),
     targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
     plannedDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })]);
   if (_optOrderCache.key === key) return _optOrderCache.res;
@@ -6668,7 +6884,7 @@ function updateWhatIf() {
     return;
   }
 
-  const dashboardExtra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const dashboardExtra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   const scenarioExtra  = dashboardExtra + sliderExtra;
 
   // Baseline: current plan with all planned lump sums, no slider additions.
@@ -6693,12 +6909,10 @@ function updateWhatIf() {
   const intSaved    = baseline.totalInterest - scenarioInterest;
 
   // Build date strings
-  var baseDate = new Date();
-  baseDate.setMonth(baseDate.getMonth() + baseline.months);
+  var baseDate = planMonthDate(baseline.months);
   var baseDateStr = baseDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
 
-  var scenDate = new Date();
-  scenDate.setMonth(scenDate.getMonth() + scenarioMonths);
+  var scenDate = planMonthDate(scenarioMonths);
   var scenDateStr = scenDate.toLocaleDateString('en-US', {month:'short', year:'numeric'});
 
   // Check if scenario pays off all debt immediately or very quickly
@@ -6722,12 +6936,12 @@ function updateWhatIf() {
   } else if (monthsSaved > 0) {
     timeSavedDisplay = monthsSaved + ' mo';
     freedomDisplay   = scenDateStr;
-    monthsLeftDisplay = scenarioMonths + ' months remaining';
+    monthsLeftDisplay = planMonthsAway(scenarioMonths) + ' months remaining';
     newDateDisplay   = 'vs. your current plan (' + baseDateStr + ')';
   } else if (sliderExtra > 0 || lump > 0) {
     timeSavedDisplay = '0 mo';
     freedomDisplay   = scenDateStr;
-    monthsLeftDisplay = scenarioMonths + ' months remaining';
+    monthsLeftDisplay = planMonthsAway(scenarioMonths) + ' months remaining';
     // ── v1.5.0 ── Simplified.  The previous sum-of-lumps vs sum-of-balances
     // check ignored which debt each lump targeted (a $10k lump on a $1k card
     // plus a $9k card balance would falsely pass) and ignored future interest
@@ -6742,7 +6956,7 @@ function updateWhatIf() {
   } else {
     timeSavedDisplay = '—';
     freedomDisplay   = baseDateStr;
-    monthsLeftDisplay = baseline.months + ' months remaining';
+    monthsLeftDisplay = planMonthsAway(baseline.months) + ' months remaining';
     newDateDisplay   = 'Move the sliders above to model a scenario';
   }
 
@@ -6751,7 +6965,7 @@ function updateWhatIf() {
     'wi-total-int':   fmt(scenarioInterest),
     'wi-int-saved':   fmt(Math.max(0, intSaved)),
     'wi-freedom':     (sliderExtra === 0 && lump === 0) ? baseDateStr : freedomDisplay,
-    'wi-months-left': (sliderExtra === 0 && lump === 0) ? baseline.months + ' months remaining' : monthsLeftDisplay,
+    'wi-months-left': (sliderExtra === 0 && lump === 0) ? planMonthsAway(baseline.months) + ' months remaining' : monthsLeftDisplay,
     'wi-time-saved':  (sliderExtra === 0 && lump === 0) ? '—' : timeSavedDisplay,
     'wi-new-date':    (sliderExtra === 0 && lump === 0) ? 'Move the sliders to model a scenario' : newDateDisplay
   };
@@ -7206,13 +7420,10 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
   const lumpByMonth = {};
   if (previousLumps && previousLumps.length) {
     previousLumps.forEach(function(l) {
-      const lDate = new Date(l.date);
-      const mth = Math.max(1,
-        (lDate.getFullYear() - todayNormalized.getFullYear()) * 12 +
-        (lDate.getMonth() - todayNormalized.getMonth()));
+      const mth = planMonthIndex(l.date);   // v1.38.0 — anchored
       if (mth <= targetMonth) {
         if (!lumpByMonth[mth]) lumpByMonth[mth] = [];
-        lumpByMonth[mth].push({ debtId: l.debtId, amount: l.amount });
+        lumpByMonth[mth].push({ debtId: l.debtId, amount: l.amount, pending: !!l.pending });
       }
     });
   }
@@ -7224,12 +7435,7 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
     // v1.37.0 — promo-aware minimum floor, mirroring simulate()
     const _floors = minPaymentFloors(Object.assign({}, d, { apr: safeApr, balance: safeBal }));
     let promoSwitchMonth = null;
-    if (d.promoEnd) {
-      const pEnd = new Date(d.promoEnd);
-      promoSwitchMonth = Math.max(0,
-        (pEnd.getFullYear() - todayNormalized.getFullYear()) * 12 +
-        (pEnd.getMonth() - todayNormalized.getMonth()));
-    }
+    if (d.promoEnd) promoSwitchMonth = promoSwitchIndex(d.promoEnd);   // v1.38.0 — anchored
     return {
       id: d.id,
       name: d.name,
@@ -7263,8 +7469,12 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
 
   const MAX_MONTHS = 600;
   const cap = Math.min(targetMonth, MAX_MONTHS);
+  // v1.38.0 — month 1 is the current month; mirror simulate()'s ledger netting.
+  const _ledger = currentMonthLedger();
+  const _net = _netMonthOne(sim, lumpByMonth[1], _ledger);
+  const _extraAlreadyPaid = _net.extraAlreadyPaid;
   for (let month = 1; month <= cap; month++) {
-    let extraLeft = extra;
+    let extraLeft = (month === 1) ? Math.max(0, extra - _extraAlreadyPaid) : extra;
     // Accrue interest and apply min payments
     for (let i = 0; i < sim.length; i++) {
       const d = sim[i];
@@ -7278,9 +7488,10 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
           : (d.postPromoApr || d.realApr || d.apr);
         effectiveApr = (!isNaN(rawApr) && rawApr >= 0 && rawApr <= 100) ? rawApr : 0;
       }
-      const interest = d.bal * (effectiveApr / 100 / 12);
+      const interest = (month === 1 && _ledger.accrued[d.id]) ? 0 : d.bal * (effectiveApr / 100 / 12);
       d.bal += interest;
-      const minPay = Math.min(d.bal, minDueFor(d, month));
+      const _due = (month === 1) ? Math.max(0, minDueFor(d, 1) - (_net.minCovered[d.id] || 0)) : minDueFor(d, month);
+      const minPay = Math.min(d.bal, _due);
       d.bal = Math.max(0, d.bal - minPay);
     }
     // Apply extra to focus debt
@@ -7318,19 +7529,14 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
 }
 
 function calculateLumpAllocation(totalAmount, targetDate) {
-  const today = new Date();
-  const lDate = new Date(targetDate);
-  // v1.5.0 — calendar-accurate month delta
-  const todayNorm = new Date(today.getFullYear(), today.getMonth(), 1);
-  const monthsUntil = Math.max(1,
-    (lDate.getFullYear() - todayNorm.getFullYear()) * 12 +
-    (lDate.getMonth() - todayNorm.getMonth()));
+  // v1.5.0 — calendar-accurate month delta. v1.38.0 — anchored plan index.
+  const monthsUntil = planMonthIndex(targetDate);
 
   // v1.7.0 — lump sums only cascade through debts in the payoff plan
   const activeDebts = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
   if (!activeDebts.length) return [];
 
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
 
   // Build starting balances including ALL previously scheduled lump sums
   // that occur BEFORE this new lump sum's date
@@ -7696,6 +7902,8 @@ function undoWindfall(paymentId) {
 //  RENDER
 // ═══════════════════════════════════════════
 function render() {
+  syncRolledMinimums();    // v1.38.0 — keep rolled minimums in step with payoffs
+  renderRolledSettings();
   renderStats();
   renderNextDebt();        // v1.13.0
   renderDebtList();
@@ -7840,10 +8048,9 @@ function renderNextDebt() {
   // the two cards read as one system. Worst case measured at 42 chars.
   const etaEl = document.getElementById('next-debt-eta');
   if (typeof targetEta === 'number' && targetEta > 0) {
-    const d = new Date();
-    d.setMonth(d.getMonth() + targetEta);
+    const d = planMonthDate(targetEta);
     const monthName = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    etaEl.textContent = '🎯 On track for ' + monthName + ' · ' + monthsAway(targetEta);
+    etaEl.textContent = '🎯 On track for ' + monthName + ' · ' + monthsAway(planMonthsAway(targetEta));
   } else {
     etaEl.textContent = '🎯 Where your extra payments are going.';
   }
@@ -7859,7 +8066,7 @@ function renderNextDebt() {
     if (atk && target && atk.id !== target.id) {
       const fallLabel = (function(){
         if (typeof firstToFallEta !== 'number' || firstToFallEta <= 0) return '';
-        const fd = new Date(); fd.setMonth(fd.getMonth() + firstToFallEta);
+        const fd = planMonthDate(firstToFallEta);
         return ' (' + fd.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + ')';
       })();
       attackEl.innerHTML = '&#9889; <strong>' + escapeHtml(atk.name) + '</strong> will clear first' + fallLabel +
@@ -7882,12 +8089,32 @@ function renderMonthlySummary() {
   }
   card.style.display = 'block';
 
-  const totalMin = activeDebts.reduce(function(a, d) { return a + (d.minPayment || 0); }, 0);
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  // v1.38.0 — minimums of the debts the PLAN simulates (a mortgage excluded
+  // from the strategy is paid, but it is not part of this commitment), plus
+  // the user's own extra, plus minimums rolled over from debts already gone.
+  const planDebts = _activePlanDebts();
+  const totalMin = planDebts.reduce(function(a, d) { return a + (d.minPayment || 0); }, 0);
+  const ownExtra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const rolled = rolledOverTotal();
+  const extra = ownExtra + rolled;
   const totalMonthly = totalMin + extra;
 
   document.getElementById('summary-min-total').textContent = fmt(totalMin);
   document.getElementById('summary-total-payment').textContent = fmt(totalMonthly);
+  const rolledEl = document.getElementById('summary-rolled');
+  if (rolledEl) {
+    if (rolled > 0) {
+      const names = rolledMinimums.filter(function(r){ return !r.keep; }).map(function(r){
+        const d = debts.find(function(x){ return x.id === r.debtId; });
+        return (d ? escapeHtml(d.name) : 'a paid-off debt') + ' (' + fmt(r.amount) + ')';
+      });
+      rolledEl.innerHTML = 'Extra ' + fmt(ownExtra) + ' + ' + fmt(rolled) + ' rolled over from ' + names.join(', ') +
+        ' <button class="btn btn-ghost" style="font-size:0.68rem;padding:2px 8px;margin-left:6px;" onclick="showSection(\'settings\')" title="Manage in Settings">change</button>';
+      rolledEl.style.display = 'block';
+    } else {
+      rolledEl.style.display = 'none';
+    }
+  }
 
   // v1.31.3 — spell out the commitment behind the freedom date. Quantify it
   // where we can: showing what the plan would cost in extra months if someone
@@ -7918,7 +8145,7 @@ function renderMonthlySummary() {
 function renderStats() {
   const total = totalBalance();
   const interest = monthlyInterest();
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   // v1.10.3 — Freedom Date / Months Away now respect the payoff plan, so
   // excluded debts (mortgages by default) don't inflate the Dashboard
   // headline. Total Debt and monthly interest still reflect ALL debts.
@@ -7931,12 +8158,11 @@ function renderStats() {
     // v1.17.0 — memoized: shared plan sim + cached no-rollover baseline
     const res = getPlanSim();
     const minRes = getBaselineSim();
-    const freeDate = new Date();
-    freeDate.setMonth(freeDate.getMonth() + res.months);
+    const freeDate = planMonthDate(res.months);
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
     // v1.28.0 — was `res.months + ' months away'`, which rendered the
     // ungrammatical "1 months away" in the final month of a payoff.
-    document.getElementById('stat-months').textContent = monthsAway(res.months);
+    document.getElementById('stat-months').textContent = monthsAway(planMonthsAway(res.months));
     const saved = Math.max(0, minRes.totalInterest - res.totalInterest);
     document.getElementById('stat-saved').textContent = fmt(saved);
   } else {
@@ -8168,7 +8394,7 @@ function setPortfolioSort(key) {
 function renderPortfolioTable(list) {
   // Compute payoff order + interest from a sim over active, included debts
   const activeForSim = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   let perDebtMap = {};
   let orderMap = {};
   if (activeForSim.length) {
@@ -8244,8 +8470,7 @@ function renderPortfolioTable(list) {
     } else {
       const _pd = perDebtMap[d.id];
       if (_pd && _pd.paidOffMonth != null) {
-        const _fd = new Date();
-        _fd.setMonth(_fd.getMonth() + _pd.paidOffMonth);
+        const _fd = planMonthDate(_pd.paidOffMonth);
         orderCell = '<span class="pf-order-rank">#' + r.order + '</span> ' +
                     '<span class="pf-order-date">' + _fd.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + '</span>';
       } else {
@@ -8273,7 +8498,9 @@ function renderPortfolioTable(list) {
         if (_now < _pe) {
           // Does the plan clear this balance before the rate rises? The app has
           // always known; it just never said. A photo finish is worth flagging.
-          const _monthsToPromo = (_pe.getFullYear() - _now.getFullYear()) * 12 + (_pe.getMonth() - _now.getMonth());
+          // v1.38.0 — anchored: the promo is still 0% through plan month
+          // promoSwitchIndex(); clearing in that month is in time.
+          const _monthsToPromo = promoSwitchIndex(d.promoEnd);
           const _pd = perDebtMap[d.id];
           const _clears = (_pd && _pd.paidOffMonth != null) ? _pd.paidOffMonth : null;
           let cls = 'promo-ok', tail = '';
@@ -8492,7 +8719,7 @@ function computeReleaseEvents() {
     if (p.paidOffMonth == null) return;
     const debt = debts.find(function(d){ return d.id === p.id; });
     if (!debt) return;
-    const date = new Date(now.getFullYear(), now.getMonth() + p.paidOffMonth, 1);
+    const date = planMonthDate(p.paidOffMonth);   // v1.38.0 — anchored
     events.push({
       id: p.id,
       name: debt.name,
@@ -8532,9 +8759,8 @@ function computeReleaseEvents() {
   const lumpByMonth = {};
   plannedDisbursements().forEach(function(l){
     if (!l.date) return;
-    const ld = new Date(l.date);
-    const mi = (ld.getFullYear() - now.getFullYear()) * 12 + (ld.getMonth() - now.getMonth());
-    if (mi < 0 || mi > sim.months) return; // only within the payoff horizon
+    const mi = planMonthIndex(l.date);   // v1.38.0 — anchored
+    if (mi > sim.months) return; // only within the payoff horizon
     lumpByMonth[mi] = (lumpByMonth[mi] || 0) + (l.amount || 0);
   });
   const lumpMarkers = Object.keys(lumpByMonth).map(function(k){
@@ -8573,10 +8799,10 @@ function renderCashflow() {
   let obligation = data.startObligation;
   const eventsByMonth = {};
   data.events.forEach(function(ev){ eventsByMonth[ev.month] = ev; });
-  for (let m = 0; m <= data.totalMonths; m++) {
+  // v1.38.0 — plan month m is calendar month (current + m - 1); label index m-1.
+  for (let m = 1; m <= data.totalMonths; m++) {
     if (eventsByMonth[m]) obligation = eventsByMonth[m].remainingObligation;
-    const d = new Date(now.getFullYear(), now.getMonth() + m, 1);
-    labels.push(monthLabel(d));
+    labels.push(monthLabel(planMonthDate(m)));
     series.push(obligation);
   }
 
@@ -8605,8 +8831,9 @@ function renderCashflow() {
       const top = yScale.getPixelForValue(yScale.max);
       const bot = yScale.getPixelForValue(0);
       markers.forEach(function(mk) {
-        if (mk.month < 0 || mk.month >= chart.data.labels.length) return;
-        const px = xScale.getPixelForValue(mk.month);
+        const _xi = mk.month - 1;   // v1.38.0 — labels start at plan month 1
+        if (_xi < 0 || _xi >= chart.data.labels.length) return;
+        const px = xScale.getPixelForValue(_xi);
         ctx.save();
         ctx.setLineDash([4, 3]);
         ctx.strokeStyle = amber;
@@ -8704,8 +8931,7 @@ function renderRoadmap() {
       '</div></div>';
   }).join('');
   // Final debt-free milestone
-  const now = new Date();
-  const freeDate = new Date(now.getFullYear(), now.getMonth() + data.totalMonths, 1);
+  const freeDate = planMonthDate(data.totalMonths);   // v1.38.0 — anchored
   html += '<div class="roadmap-step">' +
     '<div class="roadmap-node roadmap-node--final"></div>' +
     '<div class="roadmap-step-body">' +
@@ -8983,9 +9209,15 @@ function buildTransferScenario(sources, destId, promoMonths, feePct, postApr) {
   });
   const sourceDebts = picked.map(function(x) { return x.debt; });
 
+  // v1.38.0 — anchored months: plan month 1 is the current month, and a
+  // promo runs THROUGH the month it ends in. A 12-month 0% period opened this
+  // month therefore ends in month 12 (current + 11), so the end date is
+  // promoMonths - 1 months out. Keeps destPaidMonth <= promoMonths and the
+  // month-promoMonths balance read below meaning what they say.
   const pe = new Date();
-  pe.setMonth(pe.getMonth() + promoMonths);
-  const promoEnd = pe.toISOString().slice(0, 10);
+  pe.setDate(1);
+  pe.setMonth(pe.getMonth() + promoMonths - 1);
+  const promoEnd = localDateStr(pe);
 
   let dest;
   if (destId === 'new') {
@@ -9052,7 +9284,7 @@ function _xferCompare(built, extra) {
 function analyzeTransfer(sources, destId, promoMonths, feePct, postApr) {
   const built = buildTransferScenario(sources, destId, promoMonths, feePct, postApr);
   if (!built) return null;
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   const main = _xferCompare(built, extra);
   const stress = _xferCompare(built, 0);   // what if the extra payment stops?
 
@@ -9264,17 +9496,12 @@ function renderTransfer() {
 // about.
 function staleLumpTargets() {
   const out = [];
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   const active = debts.filter(function(d) { return d.balance > 0 && d.includeInStrategy !== false; });
   if (!active.length) return out;
 
   autoLumpGroups().forEach(function(g) {
-    const today = new Date();
-    const lDate = new Date(g.date);
-    const todayNorm = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthsUntil = Math.max(1,
-      (lDate.getFullYear() - todayNorm.getFullYear()) * 12 +
-      (lDate.getMonth() - todayNorm.getMonth()));
+    const monthsUntil = planMonthIndex(g.date);   // v1.38.0 — anchored
 
     const starting = active.map(function(d) {
       return { id: d.id, name: d.name, bal: d.balance, apr: d.apr,
@@ -9364,9 +9591,9 @@ function _capacityFor(groups, alloc, targets, extra, strat) {
 }
 
 function _monthsUntilDate(ds) {
-  const t = new Date(ds + 'T00:00:00'), n = new Date();
-  if (isNaN(t.getTime())) return 0;
-  return Math.max(0, (t.getFullYear() - n.getFullYear()) * 12 + (t.getMonth() - n.getMonth()));
+  // v1.38.0 — the simulation month the lump lands in (anchored), so the
+  // capacity read below lines up with where simulate() applies it.
+  return planMonthIndex(ds);
 }
 
 // A single greedy pass: hand out the money in chunks of `step`, each time
@@ -9456,7 +9683,7 @@ function optimizeLumpAllocation(strat, opts) {
   if (!groups.length) return null;
   const targets = _activePlanDebts();
   if (targets.length < 2) return null;
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
 
   const grand = groups.reduce(function(s, g){ return s + g.total; }, 0);
   const divisors = opts.divisors || [7, 10, 14];
@@ -9558,7 +9785,7 @@ function optimizeLumpAllocation(strat, opts) {
 function currentPlanInterest(strat) {
   const targets = _activePlanDebts();
   if (!targets.length) return null;
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   const r = simulate(targets.map(function(d) { return {...d}; }), extra, 0,
                      strat || strategy, plannedDisbursements());
   return { interest: r.totalInterest, months: r.months };
@@ -9579,8 +9806,8 @@ let _optCache = new Map();
 function getOptimizedPlan(strat) {
   strat = strat || strategy;
   const targets = _activePlanDebts();
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
-  const key = JSON.stringify([strat, extra,
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
+  const key = JSON.stringify([strat, extra, _ledgerKey(),
     targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; }),
     autoLumpGroups().map(function(g) { return [g.date, g.total]; }),
     nonAutoDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })
@@ -9755,7 +9982,7 @@ function renderStrategy() {
   renderHybridOrderList(); // v1.23.2 — keep the Strategy-tab order list in sync
   // v1.7.0 — strategy tab only considers debts in the payoff plan
   const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
-  const extra = parseAmount(document.getElementById('extra-payment').value) || 0;
+  const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
 
   // Comparison — pass deep copies so sort inside simulate doesn't affect other calls
   if (activeDebts.length) {
@@ -9792,7 +10019,7 @@ function renderStrategy() {
       const _label = strategy === 'hybrid' ? 'Hybrid (custom order)'
                    : strategy.charAt(0).toUpperCase() + strategy.slice(1);
       _asbVal.innerHTML = _label + (_curPlan
-        ? ' &middot; <span class="asb-num">' + _curPlan.months + ' months</span> &middot; <span class="asb-num">' +
+        ? ' &middot; <span class="asb-num">' + planMonthsAway(_curPlan.months) + ' months</span> &middot; <span class="asb-num">' +
           fmt(_curPlan.interest) + ' interest</span>'
         : '');
     }
@@ -9819,11 +10046,11 @@ function renderStrategy() {
     // v1.28.4 — when the cards show optimized figures they must say so, or the
     // current-strategy card contradicts the "your plan today" bar above it.
     const _suffix = fairBasis ? ' interest at best' : ' interest';
-    document.getElementById('cmp-av-months').textContent = av.months;
+    document.getElementById('cmp-av-months').textContent = planMonthsAway(av.months);   // v1.38.0 — months from today
     document.getElementById('cmp-av-int').textContent = fmt(av.totalInterest) + _suffix;
-    document.getElementById('cmp-sb-months').textContent = sb.months;
+    document.getElementById('cmp-sb-months').textContent = planMonthsAway(sb.months);
     document.getElementById('cmp-sb-int').textContent = fmt(sb.totalInterest) + _suffix;
-    document.getElementById('cmp-min-months').textContent = mn.months;
+    document.getElementById('cmp-min-months').textContent = planMonthsAway(mn.months);
     document.getElementById('cmp-min-int').textContent = fmt(mn.totalInterest) + ' interest';
 
     // v1.24.0 — identical-plan detection. Two plans are "the same" when every
@@ -9921,7 +10148,7 @@ function renderStrategy() {
       } else {
         const nameById = {};
         debts.forEach(function(d) { nameById[d.id] = d.name; });
-        const extraNow = parseAmount(document.getElementById('extra-payment').value) || 0;
+        const extraNow = planExtra();   // v1.38.0 — user's extra + rolled minimums
         const disbNow = plannedDisbursements();
         const act = _activePlanDebts();
         const sbR = simulate(act.map(function(d){ return {...d}; }), extraNow, 0, 'snowball', disbNow);
@@ -10103,8 +10330,7 @@ function renderStrategy() {
   tbody.innerHTML = sorted.map((d, i) => {
     const pd = perDebtMap[d.id];
     const payoffMonth = (pd && pd.paidOffMonth) ? pd.paidOffMonth : overallMonths;
-    const date = new Date();
-    date.setMonth(date.getMonth() + payoffMonth);
+    const date = planMonthDate(payoffMonth);   // v1.38.0 — anchored
     const debtInterest = pd ? pd.interestPaid : 0;
     const reason = _reasons[i];
 
@@ -10115,8 +10341,7 @@ function renderStrategy() {
       const spd = schedPerDebt[d.id];
       const schedMonth = (spd && spd.paidOffMonth) ? spd.paidOffMonth : schedMonths;
       if (schedMonth > payoffMonth + 1) {
-        const sDate = new Date();
-        sDate.setMonth(sDate.getMonth() + schedMonth);
+        const sDate = planMonthDate(schedMonth);   // v1.38.0 — anchored
         schedCell = '<div style="font-size:0.65rem;color:var(--text-dim);margin-top:2px;">scheduled: ' +
           sDate.toLocaleDateString('en-US',{month:'short',year:'numeric'}) + '</div>';
       }
@@ -10412,6 +10637,7 @@ async function checkForUpdates() {
       lumpSums: lumpSums,
       strategy: strategy,
       extraMonthly: parseAmount(document.getElementById('extra-payment').value) || 0,
+      rolledMinimums: rolledMinimums,   // v1.38.0
       nextId: nextId,
       accruals: accruals,
       adjustments: adjustments,
@@ -10800,6 +11026,7 @@ function buildBackupPayload() {
     debts: debts,
     payments: payments,
     lumpSums: lumpSums,
+    rolledMinimums: rolledMinimums,   // v1.38.0
     strategy: strategy,
     extraMonthly: extraMonthly,
     nextId: nextId,
@@ -10868,6 +11095,10 @@ function applyBackupPayload(data) {
       debts = sanitizeDebts(data.debts || []);
       payments = data.payments || [];
       lumpSums = data.lumpSums || [];
+      // v1.38.0 — a backup from an older version has no rolled list: seed its
+      // paid-off debts as kept so the restored plan matches what it showed.
+      if (Array.isArray(data.rolledMinimums)) { rolledMinimums = data.rolledMinimums; }
+      else { rolledMinimums = []; syncRolledMinimums(true); }
       strategy = data.strategy || 'avalanche';
       extraMonthly = data.extraMonthly || 0;
       nextId = data.nextId || (debts.length ? Math.max(...debts.map(function(d){ return d.id; })) + 1 : 1);
@@ -11195,6 +11426,7 @@ try { if (DRIVE_ENABLED) driveHandleRedirect(); } catch(e) {} }, 0);
     localStorage.setItem('debtfree_extra', extraMonthly);
     localStorage.setItem('debtfree_nextid', nextId);
     localStorage.setItem('debtfree_lumpsums', JSON.stringify(lumpSums));
+    localStorage.setItem('debtfree_rolled', JSON.stringify(rolledMinimums)); // v1.38.0
     // v1.11.0 — accrual ledger + setting
     localStorage.setItem('debtfree_accruals', JSON.stringify(accruals));
     localStorage.setItem('debtfree_adjustments', JSON.stringify(adjustments));
@@ -11234,6 +11466,7 @@ function load() {
         debts = sanitizeDebts(data.debts);
         payments = data.payments || [];
         lumpSums = data.lumpSums || [];
+        if (Array.isArray(data.rolledMinimums)) rolledMinimums = data.rolledMinimums;   // v1.38.0
         strategy = data.strategy || 'avalanche';
         extraMonthly = data.extraMonthly || 0;
         nextId = data.nextId || (debts.length ? Math.max(...debts.map(d => d.id)) + 1 : 1);
@@ -11309,6 +11542,13 @@ function load() {
     // overwrites localStorage with an empty array — wiping all planned lump sums.
     const ls = localStorage.getItem('debtfree_lumpsums');
     if (ls) { try { lumpSums = JSON.parse(ls); } catch(e) { lumpSums = []; } }
+    // v1.38.0 — rolled minimums. First run on this version: seed every debt
+    // that is ALREADY paid off as kept (not rolled), so nothing a user had
+    // folded into their extra before now is counted twice. From here on,
+    // new payoffs roll by default.
+    const rl = localStorage.getItem('debtfree_rolled');
+    if (rl !== null) { try { rolledMinimums = JSON.parse(rl) || []; } catch(e) { rolledMinimums = []; } }
+    else { rolledMinimums = []; syncRolledMinimums(true); }
     // Now safe to call selectStrategy — lumpSums is populated before any save() fires
     if (s) { document.getElementById('strategy-select').value = s; selectStrategy(s); }
 

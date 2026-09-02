@@ -1,10 +1,10 @@
 {
-  "version": "1.37.0",
+  "version": "1.38.0",
   "releaseDate": "2026-09-01",
-  "releaseName": "Your Freedom Date now uses the payments you actually make",
+  "releaseName": "Your Freedom Date stops moving on the 1st of the month",
   "notes": [
-    "Projections on 0% promotional cards now use the minimum payment you entered while the rate is 0%, instead of a higher post-promo figure from day one. Your Freedom Date may move later; it was optimistic before.",
-    "Restoring a backup on a new device no longer replays celebrations for debts you already eliminated.",
-    "The Strategy tab no longer freezes while you type a monthly budget, and refreshes several times faster."
+    "Your plan now starts from the current month, so the Freedom Date reads the same on the 1st, after you pay, and at the end of the month. Only paying more or less than the plan moves it.",
+    "When you pay a debt off, its minimum keeps flowing to your next debt, as the plan has always assumed. One tap in the celebration keeps the money instead; change it any time in Settings.",
+    "The Monthly Payment Summary shows your own extra plus anything rolled over from debts you have beaten."
   ]
 }
