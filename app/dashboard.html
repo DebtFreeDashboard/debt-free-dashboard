@@ -2674,8 +2674,14 @@
           <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">minimums + extra</div>
         </div>
       </div>
-      <!-- v1.38.0 — where the extra comes from when minimums have rolled over -->
-      <div id="summary-rolled" style="display:none;font-size:0.78rem;color:var(--text-muted);margin-top:10px;text-align:center;"></div>
+      <!-- v1.38.1 — rolled-over minimums live here, next to the total they change.
+           (Moved from Settings: this is a plan decision revisited at every payoff,
+           and the total it changes is the one two lines above.) -->
+      <div id="summary-rolled" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+        <div style="font-size:0.78rem;font-weight:600;margin-bottom:2px;">Where the extra comes from</div>
+        <div id="summary-rolled-line" style="font-size:0.75rem;color:var(--text-muted);line-height:1.45;margin-bottom:6px;"></div>
+        <div id="rolled-list"></div>
+      </div>
       <!-- v1.31.3 — the freedom date assumes this total never drops. As debts
            clear, their minimums roll into whatever is left rather than returning
            to your pocket. Nothing enforces that, so it needs saying: a user who
@@ -3048,12 +3054,6 @@
           </span>
         </label>
       </div>
-      <!-- v1.38.0 — rolled-over minimums from eliminated debts -->
-      <div id="rolled-settings" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-        <div style="font-size:0.85rem;font-weight:600;">Rolled-over minimums</div>
-        <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;margin:2px 0 6px;">When a debt is paid off, its minimum payment keeps flowing to the next debt in your plan — that is what your Freedom Date assumes. Untick one to keep that money instead; the plan shrinks by that amount.</div>
-        <div id="rolled-list"></div>
-      </div>
       <!-- v1.13.0 — Estimated interest (premium) -->
       <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
@@ -3241,7 +3241,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.38.0';
+const APP_VERSION = '1.38.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3250,12 +3250,21 @@ const APP_VERSION = '1.38.0';
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
   {
+    version: '1.38.1',
+    date: 'September 1, 2026',
+    name: 'Rolled-over minimums, where the total is',
+    whatsNew: [],
+    fixes: [
+      'The switches for rolled-over minimums have moved out of Settings and into the Monthly Payment Summary on the Strategy tab, right under the total they change. Tick or untick a paid-off debt and the total and your Freedom Date update on the spot.'
+    ]
+  },
+  {
     version: '1.38.0',
     date: 'September 1, 2026',
     name: 'Your Freedom Date stops moving on the 1st of the month',
     whatsNew: [
       'Your plan now starts from the current month. Until now the projection began next month, so from the 1st until you logged a payment the app assumed you were skipping this month \u2014 the Freedom Date slid a month later, then slid back once you paid. It now reads the same on the 1st, after you pay, and at the end of the month. Logging a payment moves your progress, not your date; only paying more or less than the plan moves the date.',
-      'When you pay a debt off, its minimum payment now keeps flowing to your next debt \u2014 which is what your Freedom Date has always assumed, but the projection quietly dropped it the moment the debt was really gone, so every win pushed your date out. The celebration tells you where the money goes, and one tap keeps it instead if that is what you are doing. You can change your mind any time under Settings.',
+      'When you pay a debt off, its minimum payment now keeps flowing to your next debt \u2014 which is what your Freedom Date has always assumed, but the projection quietly dropped it the moment the debt was really gone, so every win pushed your date out. The celebration tells you where the money goes, and one tap keeps it instead if that is what you are doing. You can change your mind any time in the Monthly Payment Summary on the Strategy tab.',
       'The Monthly Payment Summary now shows where your extra comes from: your own amount plus anything rolled over from debts you have beaten. That total stays the same as debts fall, exactly as the plan describes.'
     ],
     fixes: [
@@ -4303,9 +4312,8 @@ function toggleRolledMinimum(debtId) {
   const r = rolledMinimums.find(function(x){ return x.debtId === debtId; });
   if (!r) return;
   r.keep = !r.keep;
-  save(); render();
+  save(); render();               // summary + totals + Freedom Date update in place
   renderCelebrateRoll(debtId);
-  renderRolledSettings();
 }
 // The line in the celebration modal: says where the freed minimum goes, and
 // offers the other choice. Descriptive, not advisory.
@@ -4323,21 +4331,8 @@ function renderCelebrateRoll(debtId) {
       ' <button class="btn btn-ghost" style="font-size:0.72rem;padding:3px 10px;margin-left:6px;" onclick="toggleRolledMinimum(' + d.id + ')">Keep it instead</button>';
   box.style.display = 'block';
 }
-// Settings: every rolled/kept minimum with its switch.
-function renderRolledSettings() {
-  const wrap = document.getElementById('rolled-settings');
-  const list = document.getElementById('rolled-list');
-  if (!wrap || !list) return;
-  const rows = rolledMinimums.map(function(r){ const d = debts.find(function(x){ return x.id === r.debtId; }); return d ? { r: r, d: d } : null; }).filter(Boolean);
-  if (!rows.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  list.innerHTML = rows.map(function(x) {
-    return '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:6px 0;">' +
-      '<input type="checkbox" ' + (x.r.keep ? '' : 'checked') + ' onchange="toggleRolledMinimum(' + x.d.id + ')" />' +
-      '<span style="flex:1;font-size:0.82rem;">' + escapeHtml(x.d.name) + ' <span style="color:var(--text-muted);">\u00b7 ' + fmt(x.r.amount) + '/mo</span></span>' +
-      '<span style="font-size:0.72rem;color:var(--text-muted);">' + (x.r.keep ? 'kept' : 'rolled into plan') + '</span></label>';
-  }).join('');
-}
+// v1.38.1 — the list moved into the Monthly Payment Summary (renderMonthlySummary).
+function renderRolledSettings() { /* kept so existing call sites stay valid */ }
 
 // ── v1.18.0 — MILESTONE FLYWHEEL ──
 // Fires a celebration + shareable win card at emotional-peak moments, then
@@ -8101,18 +8096,26 @@ function renderMonthlySummary() {
 
   document.getElementById('summary-min-total').textContent = fmt(totalMin);
   document.getElementById('summary-total-payment').textContent = fmt(totalMonthly);
+  // v1.38.1 — the rolled-minimum switches sit here, beside the total they change.
+  // Shown whenever there is at least one eliminated debt to decide about.
   const rolledEl = document.getElementById('summary-rolled');
-  if (rolledEl) {
-    if (rolled > 0) {
-      const names = rolledMinimums.filter(function(r){ return !r.keep; }).map(function(r){
-        const d = debts.find(function(x){ return x.id === r.debtId; });
-        return (d ? escapeHtml(d.name) : 'a paid-off debt') + ' (' + fmt(r.amount) + ')';
-      });
-      rolledEl.innerHTML = 'Extra ' + fmt(ownExtra) + ' + ' + fmt(rolled) + ' rolled over from ' + names.join(', ') +
-        ' <button class="btn btn-ghost" style="font-size:0.68rem;padding:2px 8px;margin-left:6px;" onclick="showSection(\'settings\')" title="Manage in Settings">change</button>';
-      rolledEl.style.display = 'block';
-    } else {
+  const rolledLine = document.getElementById('summary-rolled-line');
+  const rolledList = document.getElementById('rolled-list');
+  if (rolledEl && rolledLine && rolledList) {
+    const rows = rolledMinimums.map(function(r){ const d = debts.find(function(x){ return x.id === r.debtId; }); return d ? { r: r, d: d } : null; }).filter(Boolean);
+    if (!rows.length) {
       rolledEl.style.display = 'none';
+    } else {
+      rolledEl.style.display = 'block';
+      rolledLine.innerHTML = 'Your extra: <strong>' + fmt(ownExtra) + '</strong>' +
+        (rolled > 0 ? ' + <strong>' + fmt(rolled) + '</strong> rolled over from debts you have paid off = <strong>' + fmt(extra) + '</strong>/mo.' : '.') +
+        ' A ticked debt\u2019s old minimum keeps flowing to the next debt in your plan \u2014 the total above stays the same as debts fall, which is what your Freedom Date assumes. Untick it to keep that money instead.';
+      rolledList.innerHTML = rows.map(function(x) {
+        return '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:5px 0;">' +
+          '<input type="checkbox" ' + (x.r.keep ? '' : 'checked') + ' onchange="toggleRolledMinimum(' + x.d.id + ')" />' +
+          '<span style="flex:1;font-size:0.8rem;">' + escapeHtml(x.d.name) + ' <span style="color:var(--text-muted);">\u00b7 ' + fmt(x.r.amount) + '/mo</span></span>' +
+          '<span style="font-size:0.7rem;color:var(--text-muted);">' + (x.r.keep ? 'kept' : 'rolled into plan') + '</span></label>';
+      }).join('');
     }
   }
 
