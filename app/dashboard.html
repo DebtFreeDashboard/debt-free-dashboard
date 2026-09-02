@@ -1863,6 +1863,7 @@
   .wi-chip {
     font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 12px; border-radius: 999px;
     border: 1px solid var(--border); background: var(--card2); color: var(--text-muted); cursor: pointer;
+    white-space: nowrap;
   }
   .wi-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,176,0.08); }
   .wi-chip.lump.active { border-color: var(--accent4); color: var(--accent4); background: rgba(201,168,76,0.10); }
@@ -2991,10 +2992,11 @@
           <span>$0</span><span id="wi-lump-t1"></span><span id="wi-lump-t2"></span><span id="wi-lump-t3"></span><span id="wi-lump-t4"></span>
         </div>
         <div class="wi-chips" id="wi-lump-chips">
-          <button type="button" class="wi-chip lump" data-v="1000" onclick="wiSet('lump', 1000)">$1,000</button>
-          <button type="button" class="wi-chip lump" data-v="2500" onclick="wiSet('lump', 2500)">$2,500</button>
-          <button type="button" class="wi-chip lump" data-v="5000" onclick="wiSet('lump', 5000)">$5,000</button>
-          <button type="button" class="wi-chip lump" data-v="10000" onclick="wiSet('lump', 10000)">$10,000</button>
+          <!-- v1.39.1 — short labels so all five fit one row on a 390px phone -->
+          <button type="button" class="wi-chip lump" data-v="1000" onclick="wiSet('lump', 1000)">$1k</button>
+          <button type="button" class="wi-chip lump" data-v="2500" onclick="wiSet('lump', 2500)">$2.5k</button>
+          <button type="button" class="wi-chip lump" data-v="5000" onclick="wiSet('lump', 5000)">$5k</button>
+          <button type="button" class="wi-chip lump" data-v="10000" onclick="wiSet('lump', 10000)">$10k</button>
           <button type="button" class="wi-chip lump" data-v="0" onclick="wiSet('lump', 0)">Reset</button>
         </div>
         <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:6px;font-style:italic;">
@@ -3319,7 +3321,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.39.0';
+const APP_VERSION = '1.39.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3327,6 +3329,13 @@ const APP_VERSION = '1.39.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.39.1',
+    date: 'September 2, 2026',
+    name: 'Lump sum presets on one row',
+    whatsNew: [],
+    fixes: [ 'The lump sum preset buttons no longer wrap onto a second line on a phone.' ]
+  },
   {
     version: '1.39.0',
     date: 'September 2, 2026',
