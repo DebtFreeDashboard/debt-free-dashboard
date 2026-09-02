@@ -2647,7 +2647,7 @@
       <div class="form-grid" style="grid-template-columns:1fr 1fr">
         <div class="form-field">
           <label>Extra Per Month ($)</label>
-          <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculate()" onchange="recalculate()" />
+          <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" oninput="recalculateDebounced()" onchange="recalculate()" />
         </div>
         <div class="form-field field-full">
           <label>Strategy</label>
@@ -3231,7 +3231,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.36.4';
+const APP_VERSION = '1.37.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3239,6 +3239,18 @@ const APP_VERSION = '1.36.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.37.0',
+    date: 'September 1, 2026',
+    name: 'Your Freedom Date now uses the payments you actually make',
+    whatsNew: [],
+    fixes: [
+      'If you have a 0% promotional card, the app was quietly assuming you pay more towards it each month than the minimum you entered \u2014 it was using the payment the card would need after its 0% period ends, right from today. On real data that added about $230 a month the plan did not actually have, and made the Freedom Date one to two months earlier than the payments support. The projection now uses your real minimum while the rate is 0%, and only raises it once the promotional rate ends. Your date may move later as a result; the number was optimistic before, and it is honest now. The Monthly Payment Summary and the projection finally agree on what you pay each month.',
+      'Restoring a backup on a new device \u2014 from Google Drive or a file \u2014 no longer celebrates debts you eliminated months ago. The celebration you have earned is saved for your next real win.',
+      'Typing in the Monthly Payoff Budget field on the Strategy tab could freeze the screen for several seconds on a phone, because every keystroke re-ran the whole tab. It now waits until you stop typing.',
+      'The Strategy tab re-calculated the lump sum optimizer up to five times on every refresh. It now remembers the answer, so the tab opens and updates several times faster.'
+    ]
+  },
   {
     version: '1.36.4',
     date: 'August 30, 2026',
@@ -4559,6 +4571,41 @@ function badgeLabel(type) {
 // ═══════════════════════════════════════════
 //  PAYOFF SIMULATION
 // ═══════════════════════════════════════════
+// v1.37.0 — Minimum-payment floor, promo-aware.
+//
+// The simulator has always floored a debt's minimum payment to "one month of
+// interest + $1", so a stored minimum too small to cover interest can't make
+// the balance run away and trip the $10M cap. For 0% promo cards the floor
+// was computed against the POST-promo APR and applied from month 1 — while
+// the card was still at 0%. A card with an $80 minimum and a 21% go-to rate
+// was modelled as paying $144/month for the whole promo. On real data that
+// inflated the assumed monthly commitment by $232 and made the Freedom Date
+// two months optimistic, while the Monthly Payment Summary quoted the real
+// figure — the screen and the engine disagreed about how much the user pays.
+//
+// Now: two floors per debt. `now` uses the current APR (0 during a promo, so
+// the stored minimum is honoured); `post` uses the post-promo APR and takes
+// over from the switch month, which is when runaway interest actually becomes
+// possible. minDueFor() picks the right one for a given simulation month.
+// Used by simulate(), computePassiveInterestCost() and projectBalancesAt() —
+// all three must agree or the tabs drift apart.
+function minPaymentFloors(d) {
+  const bal = Math.max(0, (d.balance != null ? d.balance : d.bal) || 0);
+  const rawMin = d.minPayment || 25;
+  const curApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
+  const postApr = (d.hasPromo && d.postPromoApr && !isNaN(d.postPromoApr) && d.postPromoApr > curApr)
+    ? d.postPromoApr : curApr;
+  const floor = function(apr) {
+    const monthInterest = bal * (apr / 100 / 12);
+    return rawMin <= monthInterest ? monthInterest + 1 : rawMin;
+  };
+  return { now: floor(curApr), post: floor(postApr) };
+}
+function minDueFor(d, month) {
+  const promoActive = (d.promoSwitchMonth !== null && d.promoSwitchMonth !== undefined && month <= d.promoSwitchMonth);
+  return promoActive ? d.minNow : d.minPost;
+}
+
 // v1.8.0 — Smart Avalanche helpers
 //
 // computePassiveInterestCost simulates one debt forward through `horizonMonths`
@@ -4579,12 +4626,9 @@ function computePassiveInterestCost(d, horizonMonths, plannedLumps, simStartDate
       (pEnd.getMonth() - simStartDate.getMonth()));
   }
 
-  // safeMinPayment to prevent runaway interest in passive sim
-  const worstApr = (d.hasPromo && d.postPromoApr && !isNaN(d.postPromoApr) && d.postPromoApr > (d.apr || 0))
-    ? d.postPromoApr : (d.apr || 0);
-  const worstMinInterest = bal * (worstApr / 100 / 12);
-  const rawMin = d.minPayment || 25;
-  const safeMin = rawMin <= worstMinInterest ? worstMinInterest + 1 : rawMin;
+  // v1.37.0 — promo-aware minimum floor (see minPaymentFloors)
+  const _floors = minPaymentFloors(d);
+  const _pd = { promoSwitchMonth: promoSwitchMonth, minNow: _floors.now, minPost: _floors.post };
 
   // Build lump-by-month map for THIS debt only
   const lumpByMonth = {};
@@ -4611,7 +4655,7 @@ function computePassiveInterestCost(d, horizonMonths, plannedLumps, simStartDate
     const interest = bal * (effectiveApr / 100 / 12);
     interestAccrued += interest;
     bal += interest;
-    bal = Math.max(0, bal - safeMin);
+    bal = Math.max(0, bal - minDueFor(_pd, month));
     if (lumpByMonth[month]) bal = Math.max(0, bal - lumpByMonth[month]);
   }
   return interestAccrued;
@@ -4692,14 +4736,11 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
     const safeBalance = Math.max(0, d.balance);
 
-    // Use worst-case APR for safeMinPayment — for promo debts that's postPromoApr.
-    // This prevents runaway interest after conversion when the stored minPayment
-    // is too low to cover post-promo monthly interest (causes the $10M cap to fire).
-    const worstApr = (d.hasPromo && d.postPromoApr && !isNaN(d.postPromoApr) && d.postPromoApr > safeApr)
-      ? d.postPromoApr : safeApr;
-    const worstMinInterest = safeBalance * (worstApr / 100 / 12);
-    const rawMin = d.minPayment || 25;
-    const safeMinPayment = rawMin <= worstMinInterest ? worstMinInterest + 1 : rawMin;
+    // v1.37.0 — promo-aware minimum floor. `now` honours the stored minimum
+    // while a 0% promo is running; `post` (floored to post-promo interest +
+    // $1, so runaway interest still can't trip the $10M cap) takes over from
+    // the switch month. See minPaymentFloors() for the history.
+    const _floors = minPaymentFloors(d);
 
     // Pre-compute promo switch month — the month number at which promo ends.
     // v1.10.3 — switched from 30.44-day approximation to calendar-month delta
@@ -4720,7 +4761,9 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       ...d,
       apr: safeApr,
       bal: safeBalance,
-      minPayment: safeMinPayment,
+      minPayment: _floors.now,
+      minNow: _floors.now,
+      minPost: _floors.post,
       promoSwitchMonth: promoSwitchMonth,
       // v1.5.0 — per-debt tracking so renderStrategy can drop its inline loops
       paidOffMonth: null,
@@ -4787,7 +4830,7 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     let surplus = extraPerMonth;
     if (doRollover) {
       for (let d of balances) {
-        if (d.bal <= 0) surplus += (d.minPayment || 25);
+        if (d.bal <= 0) surplus += minDueFor(d, month);
       }
     }
 
@@ -4808,7 +4851,7 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
       monthInterest += interest;
       d.interestPaid += interest;              // v1.5.0 — per-debt tracking
       d.bal += interest;
-      const minDue = d.minPayment || 25;
+      const minDue = minDueFor(d, month);
       const payment = Math.min(d.bal, minDue);
       d.bal -= payment;
       d.bal = Math.max(0, d.bal);
@@ -6510,10 +6553,24 @@ function selectStrategy(s) {
 }
 
 function recalculate() {
+  clearTimeout(_recalcTimer);
   extraMonthly = parseAmount(document.getElementById('extra-payment').value) || 0;
   strategy = document.getElementById('strategy-select').value;
   save();
   render();
+}
+
+// v1.37.0 — the Monthly Payoff Budget field used to run recalculate() on every
+// keystroke. On the Strategy tab that is a full renderStrategy() — comparison
+// cards, lump optimizer, roadmap, cash-flow — per character: typing "1250"
+// measured 1.7 s and 29,000 simulations on desktop, several seconds of frozen
+// UI on a phone. Same pattern the What-If sliders adopted in v1.17.0: settle
+// for 300 ms, then recalculate once. `change` (blur / Enter) still runs
+// recalculate() immediately for the settled value.
+let _recalcTimer = null;
+function recalculateDebounced() {
+  clearTimeout(_recalcTimer);
+  _recalcTimer = setTimeout(recalculate, 300);
 }
 
 // ═══════════════════════════════════════════
@@ -7164,11 +7221,8 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
   const sim = startingBalances.map(function(d) {
     const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
     const safeBal = Math.max(0, d.bal || 0);
-    const worstApr = (d.hasPromo && d.postPromoApr && !isNaN(d.postPromoApr) && d.postPromoApr > safeApr)
-      ? d.postPromoApr : safeApr;
-    const worstMinInterest = safeBal * (worstApr / 100 / 12);
-    const rawMin = d.minPayment || 25;
-    const safeMinPayment = rawMin <= worstMinInterest ? worstMinInterest + 1 : rawMin;
+    // v1.37.0 — promo-aware minimum floor, mirroring simulate()
+    const _floors = minPaymentFloors(Object.assign({}, d, { apr: safeApr, balance: safeBal }));
     let promoSwitchMonth = null;
     if (d.promoEnd) {
       const pEnd = new Date(d.promoEnd);
@@ -7185,7 +7239,9 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
       postPromoApr: d.postPromoApr || null,
       promoApr: d.promoApr || null,
       hasPromo: d.hasPromo === true,
-      minPayment: safeMinPayment,
+      minPayment: _floors.now,
+      minNow: _floors.now,
+      minPost: _floors.post,
       promoSwitchMonth: promoSwitchMonth
     };
   });
@@ -7224,7 +7280,7 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
       }
       const interest = d.bal * (effectiveApr / 100 / 12);
       d.bal += interest;
-      const minPay = Math.min(d.bal, d.minPayment || 25);
+      const minPay = Math.min(d.bal, minDueFor(d, month));
       d.bal = Math.max(0, d.bal - minPay);
     }
     // Apply extra to focus debt
@@ -9509,7 +9565,17 @@ function currentPlanInterest(strat) {
 }
 
 // Optimization is the most expensive thing the app does; cache on its inputs.
-let _optCache = { key: null, res: null };
+// v1.37.0 — was a single-slot cache. renderStrategy() asks for avalanche,
+// snowball, avalanche again, snowball again, then the active strategy, so
+// every call evicted the one before it and the ~1,000-simulation optimizer
+// ran up to five times per Strategy render (5,110 simulations / 418 ms on
+// a 5-debt plan; several seconds on a phone), and render() re-runs the
+// Strategy tab on every data change while it is open. A small keyed cache
+// makes the second and later renders of the same state ~8 simulations.
+// The key already encodes every input the optimizer reads, so entries can
+// never be stale; the size cap just bounds memory.
+const _OPT_CACHE_MAX = 12;
+let _optCache = new Map();
 function getOptimizedPlan(strat) {
   strat = strat || strategy;
   const targets = _activePlanDebts();
@@ -9519,9 +9585,10 @@ function getOptimizedPlan(strat) {
     autoLumpGroups().map(function(g) { return [g.date, g.total]; }),
     nonAutoDisbursements().map(function(x) { return [x.debtId, x.amount, x.date]; })
   ]);
-  if (_optCache.key === key) return _optCache.res;
+  if (_optCache.has(key)) return _optCache.get(key);
   const res = optimizeLumpAllocation(strat);
-  _optCache = { key: key, res: res };
+  if (_optCache.size >= _OPT_CACHE_MAX) _optCache.delete(_optCache.keys().next().value);
+  _optCache.set(key, res);
   return res;
 }
 
@@ -9578,7 +9645,7 @@ function applyOptimizedLumps() {
   });
 
   _redistDismissed = false;
-  _optCache = { key: null, res: null };
+  _optCache.clear();
   _planSimCache = { key: null, res: null };
   if (typeof trackShare === 'function') {
     trackShare('lumps_optimized', { _category: 'planning', saved: Math.round((cur ? cur.interest : 0) - opt.interest) });
@@ -10824,8 +10891,26 @@ function applyBackupPayload(data) {
         theme = data.theme;
         applyTheme();
       }
+      // v1.18.0 — re-baseline the flywheel to the imported state, so a
+      // mid-journey restore doesn't fire a storm of retroactive celebrations.
+      // Only milestones crossed AFTER the import will celebrate.
+      //
+      // v1.37.0 — MOVED ABOVE selectStrategy(). selectStrategy() calls
+      // recalculate() -> render() -> checkMilestones(), so with the baseline
+      // sitting six lines further down, a restore onto a fresh device (the
+      // Drive "new phone" path, and file Import) celebrated a debt eliminated
+      // months ago before the baseline ever ran — confetti for Disney Visa,
+      // paid off in July, on the 1st of September. The baseline now runs
+      // against the imported data before anything can render.
+      // The baseline's interest-saved thresholds read the extra-payment field,
+      // so the form is populated first; selectStrategy() (which renders) last.
       document.getElementById('extra-payment').value = extraMonthly || '';
       document.getElementById('strategy-select').value = strategy;
+      _milestonesBaselined = false;
+      shownMilestones = milestoneKeysAchieved();
+      persistMilestones();
+      _milestonesBaselined = true;
+
       selectStrategy(strategy);
       // After import, clear any stale sessionStorage backups and set session flag.
       // sessionStorage is written fresh by save() below, so no stale data can linger.
@@ -10838,13 +10923,6 @@ function applyBackupPayload(data) {
         sessionStorage.removeItem('debtfree_lumpsums_bak');
       } catch(e) {}
       save();
-      // v1.18.0 — re-baseline the flywheel to the imported state, so a
-      // mid-journey restore doesn't fire a storm of retroactive celebrations.
-      // Only milestones crossed AFTER the import will celebrate.
-      _milestonesBaselined = false;
-      shownMilestones = milestoneKeysAchieved();
-      persistMilestones();
-      _milestonesBaselined = true;
       render();
 }
 // v1.6.0 — Shared sanitization helper used by load() and importData().

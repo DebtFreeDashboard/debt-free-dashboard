@@ -1,8 +1,10 @@
 {
-  "version": "1.36.4",
-  "releaseDate": "2026-08-26",
-  "releaseName": "Internal fix",
+  "version": "1.37.0",
+  "releaseDate": "2026-09-01",
+  "releaseName": "Your Freedom Date now uses the payments you actually make",
   "notes": [
-    "Lump sum splits now add up to exactly the amount you entered, to the penny."
+    "Projections on 0% promotional cards now use the minimum payment you entered while the rate is 0%, instead of a higher post-promo figure from day one. Your Freedom Date may move later; it was optimistic before.",
+    "Restoring a backup on a new device no longer replays celebrations for debts you already eliminated.",
+    "The Strategy tab no longer freezes while you type a monthly budget, and refreshes several times faster."
   ]
 }
