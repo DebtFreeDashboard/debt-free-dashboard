@@ -2955,7 +2955,7 @@
 
       <div class="range-wrap">
         <div class="range-label" style="align-items:center;">
-          <span>Additional Monthly Payment (on top of your current plan)</span>
+          <span>Additional Monthly Payment</span>
           <span class="wi-stepper">
             <button type="button" class="wi-nudge" onclick="wiNudge('extra', -1)" aria-label="$25 less">&minus;</button>
             <input type="text" inputmode="numeric" id="wi-extra-value" class="wi-value" value="$0/mo" aria-label="Additional monthly payment" onfocus="wiValueFocus('extra')" onchange="wiValueCommit('extra', this.value)" onkeydown="if (event.key === 'Enter') this.blur();" />
@@ -2969,11 +2969,15 @@
           <span>$0</span><span id="wi-extra-t1">$500</span><span id="wi-extra-t2">$1,000</span><span id="wi-extra-t3">$1,500</span><span id="wi-extra-t4">$2,000</span>
         </div>
         <div class="wi-chips" id="wi-extra-chips">
-          <button type="button" class="wi-chip" data-v="50" onclick="wiSet('extra', 50)">$50</button>
-          <button type="button" class="wi-chip" data-v="100" onclick="wiSet('extra', 100)">$100</button>
-          <button type="button" class="wi-chip" data-v="200" onclick="wiSet('extra', 200)">$200</button>
-          <button type="button" class="wi-chip" data-v="500" onclick="wiSet('extra', 500)">$500</button>
-          <button type="button" class="wi-chip" data-v="0" onclick="wiSet('extra', 0)">Reset</button>
+          <!-- ids: the video recorder taps these (preflight verifies #ids only) -->
+          <button type="button" class="wi-chip" id="wi-extra-chip-50" data-v="50" onclick="wiSet('extra', 50)">$50</button>
+          <button type="button" class="wi-chip" id="wi-extra-chip-100" data-v="100" onclick="wiSet('extra', 100)">$100</button>
+          <button type="button" class="wi-chip" id="wi-extra-chip-200" data-v="200" onclick="wiSet('extra', 200)">$200</button>
+          <button type="button" class="wi-chip" id="wi-extra-chip-500" data-v="500" onclick="wiSet('extra', 500)">$500</button>
+          <button type="button" class="wi-chip" id="wi-extra-chip-0" data-v="0" onclick="wiSet('extra', 0)">Reset</button>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:6px;font-style:italic;">
+          On top of the extra payment already in your plan.
         </div>
       </div>
 
@@ -2993,11 +2997,11 @@
         </div>
         <div class="wi-chips" id="wi-lump-chips">
           <!-- v1.39.1 — short labels so all five fit one row on a 390px phone -->
-          <button type="button" class="wi-chip lump" data-v="1000" onclick="wiSet('lump', 1000)">$1k</button>
-          <button type="button" class="wi-chip lump" data-v="2500" onclick="wiSet('lump', 2500)">$2.5k</button>
-          <button type="button" class="wi-chip lump" data-v="5000" onclick="wiSet('lump', 5000)">$5k</button>
-          <button type="button" class="wi-chip lump" data-v="10000" onclick="wiSet('lump', 10000)">$10k</button>
-          <button type="button" class="wi-chip lump" data-v="0" onclick="wiSet('lump', 0)">Reset</button>
+          <button type="button" class="wi-chip lump" id="wi-lump-chip-1000" data-v="1000" onclick="wiSet('lump', 1000)">$1k</button>
+          <button type="button" class="wi-chip lump" id="wi-lump-chip-2500" data-v="2500" onclick="wiSet('lump', 2500)">$2.5k</button>
+          <button type="button" class="wi-chip lump" id="wi-lump-chip-5000" data-v="5000" onclick="wiSet('lump', 5000)">$5k</button>
+          <button type="button" class="wi-chip lump" id="wi-lump-chip-10000" data-v="10000" onclick="wiSet('lump', 10000)">$10k</button>
+          <button type="button" class="wi-chip lump" id="wi-lump-chip-0" data-v="0" onclick="wiSet('lump', 0)">Reset</button>
         </div>
         <div style="font-family:var(--font-mono);font-size:0.62rem;color:var(--text-dim);margin-top:6px;font-style:italic;">
           Applied today, on top of any planned lump sums you’ve scheduled.
@@ -3321,7 +3325,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.39.1';
+const APP_VERSION = '1.39.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3329,6 +3333,13 @@ const APP_VERSION = '1.39.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.39.2',
+    date: 'September 2, 2026',
+    name: 'Tidier What-If labels',
+    whatsNew: [],
+    fixes: [ 'The monthly slider\u2019s label no longer wraps onto three lines beside the controls; the explanation now sits under the presets, the same as the lump sum section.' ]
+  },
   {
     version: '1.39.1',
     date: 'September 2, 2026',
