@@ -2754,7 +2754,7 @@
       </div>
       <div id="cashflow-events" style="margin-top:16px;"></div>
     </div>
-<div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+<div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('cashflow');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
       <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
@@ -2782,7 +2782,7 @@
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
       <div id="roadmap-track"></div>
     </div>
-<div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+<div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('roadmap');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
       <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
@@ -2909,7 +2909,7 @@
             See what a 0% offer really works out to for your debts &mdash; fee included, and whether
             you&rsquo;d clear it before the rate jumps. One-time $12.
           </div>
-          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
+          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-transfer')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
         </div>
       </div>
     </div>
@@ -3159,7 +3159,7 @@
             DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, the cash-flow release card, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
+            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('settings')" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
             <div class="form-field" style="flex:2;min-width:180px;">
@@ -3256,7 +3256,7 @@
           <div class="lock-card-desc" style="max-width:300px;">
             Pick any target date and instantly see the exact monthly payment to hit it. Unlock the full planning suite for a one-time $12.
           </div>
-          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
+          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-dialdate')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
         </div>
       </div>
     </div>
@@ -3325,7 +3325,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.39.2';
+const APP_VERSION = '1.39.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3333,6 +3333,13 @@ const APP_VERSION = '1.39.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.39.3',
+    date: 'September 4, 2026',
+    name: 'Finding the rough edges sooner',
+    whatsNew: [],
+    fixes: [ 'Nothing looks or works differently in this release. It only improves the anonymous, aggregate counts that show which parts of the app trip people up \u2014 so rough edges get spotted and fixed faster. Counts only: your balances, rates, payments and dates are never part of it.' ]
+  },
   {
     version: '1.39.2',
     date: 'September 2, 2026',
@@ -5319,7 +5326,11 @@ function clearFieldError(el) {
   if (box) box.style.display = 'none';
 }
 
-function showFormError(message, focusId) {
+// v1.39.3 — errField lets the REPORTED field differ from the FOCUSED one.
+// Validation short-circuits on the first failure, so a completely blank form
+// always reported 'debt-balance' — blending "balance is confusing" with
+// "clicked the button to see what happens". Those need opposite fixes.
+function showFormError(message, focusId, errField) {
   // v1.34.1 — route to whichever form is actually on screen. This only ever
   // wrote to the add form's box, so an error raised from the edit modal
   // rendered behind it, invisible: the modal simply refused to save with no
@@ -5347,12 +5358,15 @@ function showFormError(message, focusId) {
     // event came back "(not set)" and the segmentation was unusable. Sending
     // both means whichever dimension exists gets populated, and it stays
     // correct if the other one is ever registered too.
-    const _errField = focusId || 'unknown';
+    const _errField = errField || focusId || 'unknown';
     trackShare('add_debt_error', {
       _category: 'activation',
       field: _errField,
       error_field: _errField,
-      context: (typeof focusId === 'string' && focusId.indexOf('edit-') === 0) ? 'edit' : 'add'
+      context: (typeof focusId === 'string' && focusId.indexOf('edit-') === 0) ? 'edit' : 'add',
+      // Which save attempt this was, so "fumbled once then fine" is
+      // distinguishable from "hit the wall and gave up".
+      attempt: _addAttempts || 1
     });
   }
 }
@@ -5380,9 +5394,18 @@ function addDebt() {
     name = (opt && opt.textContent) ? opt.textContent.trim() : 'Debt';
   }
 
+  _addAttempts++;
+
+  // v1.39.3 — an untouched form is exploration, not a usability failure.
+  const _blankForm = !nameRaw
+    && String(document.getElementById('debt-balance').value || '').trim() === ''
+    && String(document.getElementById('debt-apr').value || '').trim() === ''
+    && String(minRaw || '').trim() === '';
+
   // Required, one at a time, so the user is told exactly what to fix.
   if (isNaN(balance) || balance <= 0) {
-    showFormError('Enter the current balance to see your payoff date.', 'debt-balance');
+    showFormError('Enter the current balance to see your payoff date.', 'debt-balance',
+      _blankForm ? 'empty-form' : null);
     return;
   }
   if (isNaN(apr)) {
@@ -5392,7 +5415,9 @@ function addDebt() {
 
   const safeApr = sanitizeApr(apr);
   if (safeApr === null) {
-    showFormError('That APR looks too high — ' + apr + '%. Did you mean ' + (apr / 100).toFixed(2) + '%?', 'debt-apr');
+    // Split from a plain missing APR: this is the "typed 2399 for 23.99" trap,
+    // which needs input help, not a nudge to fill the field in.
+    showFormError('That APR looks too high — ' + apr + '%. Did you mean ' + (apr / 100).toFixed(2) + '%?', 'debt-apr', 'debt-apr-too-high');
     return;
   }
 
@@ -5472,9 +5497,15 @@ function addDebt() {
       debt_type: type,
       // v1.28.0 — how often the removed requirements would have blocked this
       min_estimated: (minRaw === '' || minRaw === null || typeof minRaw === 'undefined') ? 'yes' : 'no',
-      name_defaulted: nameRaw ? 'no' : 'yes'
+      name_defaulted: nameRaw ? 'no' : 'yes',
+      // v1.39.3 — >1 means this debt only landed after at least one error.
+      attempt: _addAttempts || 1
     });
   }
+  // The next debt starts its own attempt/started cycle.
+  _addAttempts = 0;
+  _addStarted = false;
+
   if (interestAccrualEnabled) {
     const _now = new Date();
     accruals.push({
@@ -6069,6 +6100,39 @@ let _celebrateContent = null;  // v1.19.0 — held so the format toggle can redr
 // v1.20.0 — flywheel analytics. Safe no-op if gtag isn't loaded (offline PWA).
 // Lets us see whether the flywheel actually spins: do people open cards, switch
 // formats, share vs save, and does milestone vs on-demand drive more sharing.
+// ══════════════════════════════════════════════════════════════════════
+// v1.39.3 — activation + revenue funnel instrumentation.
+// Principle: anything we must be able to read WITHOUT registering a GA4
+// custom dimension gets its own event NAME. Parameters are for the extra
+// slice, never for the headline number. (A parameter that was never
+// registered in Admin > Custom definitions reports as "(not set)" — that
+// mistake cost us the whole add_debt_error segmentation before v1.34.2.)
+// ══════════════════════════════════════════════════════════════════════
+let _addAttempts = 0;      // save attempts on the add form, this session
+let _addStarted = false;   // has the user typed into the add form yet
+const _trackedOnce = {};   // one-shot dedupe for impression events
+
+// Impressions fire from render(), which runs many times per session. Without
+// this the teaser counts would measure re-renders, not people.
+function trackOnce(key, action, params) {
+  if (_trackedOnce[key]) return;
+  _trackedOnce[key] = true;
+  trackShare(action, params);
+}
+
+function trackBuyClick(placement) {
+  trackShare('buy_clicked', {
+    _category: 'revenue',
+    placement: placement,
+    debt_count: debts.length,
+    is_premium: isPremium ? 'yes' : 'no'
+  });
+}
+
+function trackTeaserClick(placement) {
+  trackShare('teaser_click', { _category: 'revenue', placement: placement });
+}
+
 function trackShare(action, params) {
   try {
     if (typeof gtag === 'function') {
@@ -7262,7 +7326,16 @@ function applyDataCardVisibility() {
     const real = document.getElementById(pair[0]);
     const teaser = document.getElementById(pair[1]);
     if (real) real.style.display = (isPremium && hasActive && real.dataset.hasContent !== '0') ? 'block' : 'none';
-    if (teaser) teaser.style.display = (!isPremium && hasActive) ? 'block' : 'none';
+    const showTeaser = (!isPremium && hasActive);
+    if (teaser) teaser.style.display = showTeaser ? 'block' : 'none';
+    // v1.39.3 — how many free users with real data ever SEE the upsell.
+    // Deduped: this function runs on every render.
+    if (showTeaser) {
+      trackOnce('teaser:' + pair[1], 'teaser_shown', {
+        _category: 'revenue',
+        placement: pair[1].replace('-teaser', '')
+      });
+    }
   });
 }
 
@@ -7288,14 +7361,19 @@ async function verifyLicense() {
       render();
       msg.textContent = '✓ Premium unlocked. Thank you for supporting the project!';
       msg.style.color = 'var(--accent)';
+      trackShare('license_activated', { _category: 'revenue', debt_count: debts.length });
     } else {
       msg.textContent = (data && data.message) ? data.message : 'That key could not be verified.';
       msg.style.color = 'var(--accent3)';
+      // Someone has paid and cannot get in. This is the most expensive
+      // silent failure in the product, so it gets its own event name.
+      trackShare('license_invalid', { _category: 'revenue' });
     }
   } catch (e) {
     // Network/CORS/offline — distinguish from an invalid key so the user knows to retry
     msg.textContent = 'Couldn\u2019t reach Gumroad to verify. Check your connection and try again.';
     msg.style.color = 'var(--accent3)';
+    trackShare('license_error', { _category: 'revenue' });
   }
 }
 
@@ -12166,6 +12244,26 @@ if (_shouldSeedDemo()) seedDemo();
 
 // v1.25.0 — warn if we're inside a social app's in-app browser
 initInAppBanner();
+
+// v1.39.3 — the missing denominator. We could count successful adds and
+// blocked adds, but not how many people STARTED, so no completion rate could
+// be worked out. Fires on the first keystroke into the add form rather than
+// on the card opening, because the card auto-opens on a first run — an
+// expand is not intent, typing is. Delegated so new fields are covered
+// automatically.
+(function trackAddDebtStart() {
+  const card = document.getElementById('add-debt-card');
+  if (!card) return;
+  card.addEventListener('input', function() {
+    if (_addStarted) return;
+    _addStarted = true;
+    trackShare('add_debt_started', {
+      _category: 'activation',
+      debt_count: debts.length,
+      is_first: debts.length === 0 ? 'yes' : 'no'
+    });
+  }, { passive: true });
+})();
 
 // v1.25.0 — record how this visitor arrived, once per session, so acquisition
 // source is attached to the activation funnel (debt_added) in GA4 rather than

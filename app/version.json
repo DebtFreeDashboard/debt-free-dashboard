@@ -1,10 +1,10 @@
 {
-  "version": "1.39.2",
-  "releaseDate": "2026-09-02",
-  "releaseName": "What-If controls you can actually land on",
+  "version": "1.39.3",
+  "releaseDate": "2026-09-04",
+  "releaseName": "Finding the rough edges sooner",
   "notes": [
-    "What-If sliders now have a tap-to-type number, − / + buttons and one-tap presets — drag to explore, type to be exact.",
-    "Sliders no longer lose their position when your thumb drifts off the track, and the stops are wide enough to hit on a phone.",
-    "The Monthly Payoff Budget field has the same − / + buttons and presets."
+    "Nothing looks or works differently in this release.",
+    "It only improves the anonymous, aggregate counts that show which parts of the app trip people up — so rough edges get spotted and fixed faster.",
+    "Counts only: your balances, rates, payments and dates are never part of it."
   ]
 }
