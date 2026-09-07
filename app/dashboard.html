@@ -1044,16 +1044,18 @@
   .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
   .chips.hidden { display: none; }
   .chip {
-    display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; min-height: 30px;
+    display: inline-flex; flex-direction: row; align-items: center; gap: 5px;
+    padding: 5px 10px; min-height: 30px; flex: 0 0 auto; max-width: 100%;
     border-radius: 99px; font-size: 0.75rem; line-height: 1.3; cursor: pointer;
     border: 1px solid var(--border2); background: var(--surface2); color: var(--text-dim);
     font-family: inherit; text-align: left;
   }
-  .chip .chip-i { font-size: 0.85rem; filter: grayscale(1) opacity(0.5); }
+  .chip .chip-i { font-size: 0.85rem; filter: grayscale(1) opacity(0.5); flex: none; line-height: 1; }
+  .chip .chip-t { min-width: 0; }
   .chip.got { border-color: rgba(0,229,176,0.45); color: var(--text); background: rgba(0,229,176,0.07); }
   .chip.got .chip-i { filter: none; }
-  .chip.upnext { border-color: var(--accent4); color: var(--text); }
-  .chip.upnext .chip-i { filter: none; }
+  .chip.is-next { border-color: var(--accent4); color: var(--text); }
+  .chip.is-next .chip-i { filter: none; }
   .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   [data-theme="light"] .chip.got { border-color: rgba(0,168,132,0.5); background: rgba(0,168,132,0.08); }
 
@@ -3395,7 +3397,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.40.0';
+const APP_VERSION = '1.40.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3403,6 +3405,13 @@ const APP_VERSION = '1.40.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.1',
+    date: 'September 7, 2026',
+    name: 'Tidier milestone chips',
+    whatsNew: [],
+    fixes: [ 'On a phone, a milestone sitting at the end of a row could split its icon onto one line and its name onto the next. Every milestone now stays on a single line.' ]
+  },
   {
     version: '1.40.0',
     date: 'September 7, 2026',
@@ -11234,9 +11243,10 @@ function renderMilestones() {
       const open = mine.filter(function(b){ return badgeIsEarned(b.id) || nextIds[b.id]; });
       const rest = mine.filter(function(b){ return !badgeIsEarned(b.id) && !nextIds[b.id]; });
       const chip = function(b){
-        const cls = badgeIsEarned(b.id) ? 'chip got' : (nextIds[b.id] ? 'chip upnext' : 'chip');
+        const cls = badgeIsEarned(b.id) ? 'chip got' : (nextIds[b.id] ? 'chip is-next' : 'chip');
         return '<button type="button" class="' + cls + '" onclick="showBadgeDetail(\'' + b.id + '\')">' +
-               '<span class="chip-i">' + b.icon + '</span>' + escapeHtml(b.name) + '</button>';
+               '<span class="chip-i">' + b.icon + '</span>' +
+               '<span class="chip-t">' + escapeHtml(b.name) + '</span></button>';
       };
 
       return '<div class="btrack">' +

@@ -1,12 +1,8 @@
 {
-  "version": "1.40.0",
+  "version": "1.40.1",
   "releaseDate": "2026-09-07",
-  "releaseName": "Wins worth coming back for",
+  "releaseName": "Tidier milestone chips",
   "notes": [
-    "The Wins tab has 65 milestones now, up from 9 — and they are sized to your debt, not to round dollar amounts. Someone paying off $6,000 and someone paying off $60,000 reach them at the same rate.",
-    "Up Next sits at the top and shows the three closest, with exactly how far away each one is.",
-    "Some arrive without a payment at all — a run of months in a row, your biggest month of the last twelve, interest your plan avoids, and every month you pull your debt-free date earlier.",
-    "A missed month never breaks a run on its own. Life happens, and one is quietly forgiven.",
-    "Milestones you had already reached are marked as earned when you update, with no pile of pop-ups for things that happened months ago. All of it is free."
+    "On a phone, some milestones were splitting their icon onto one line and their name onto the next. Every milestone now sits on a single line."
   ]
 }
