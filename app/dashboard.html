@@ -1009,7 +1009,69 @@
   .whatif-result.positive .value { color: var(--accent); }
   .whatif-result.negative .value { color: var(--accent3); }
 
-  /* ─── MILESTONES ─── */
+  /* ─── v1.40.0 · UP NEXT ─── */
+  /* The reward lands and the pace collapses unless the next goal is already
+     named and measured. This card is that, pinned above everything. */
+  .upnext { display: flex; flex-direction: column; gap: 12px; }
+  .upnext-row { display: grid; grid-template-columns: auto 1fr auto; gap: 11px; align-items: center; }
+  .upnext-ico {
+    width: 34px; height: 34px; border-radius: 10px; background: var(--surface3);
+    display: grid; place-items: center; font-size: 1rem; flex: none;
+  }
+  .upnext-name { font-size: 0.86rem; font-weight: 500; line-height: 1.25; }
+  .upnext-track {
+    height: 4px; background: var(--surface3); border-radius: 99px;
+    margin-top: 6px; overflow: hidden;
+  }
+  .upnext-fill { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .upnext-gap {
+    font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent);
+    text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+
+  /* ─── v1.40.0 · BADGE TRACKS ─── */
+  .btrack + .btrack { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .btrack-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .btrack-head h4 { font-size: 0.9rem; font-weight: 700; margin: 0; }
+  .btrack-count {
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .btrack-why { font-size: 0.73rem; color: var(--text-dim); margin: 2px 0 9px; line-height: 1.4; }
+  .btrack-bar { height: 3px; background: var(--surface3); border-radius: 99px; overflow: hidden; margin-bottom: 11px; }
+  .btrack-bar span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
+  .chips.hidden { display: none; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; min-height: 30px;
+    border-radius: 99px; font-size: 0.75rem; line-height: 1.3; cursor: pointer;
+    border: 1px solid var(--border2); background: var(--surface2); color: var(--text-dim);
+    font-family: inherit; text-align: left;
+  }
+  .chip .chip-i { font-size: 0.85rem; filter: grayscale(1) opacity(0.5); }
+  .chip.got { border-color: rgba(0,229,176,0.45); color: var(--text); background: rgba(0,229,176,0.07); }
+  .chip.got .chip-i { filter: none; }
+  .chip.upnext { border-color: var(--accent4); color: var(--text); }
+  .chip.upnext .chip-i { filter: none; }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-theme="light"] .chip.got { border-color: rgba(0,168,132,0.5); background: rgba(0,168,132,0.08); }
+
+  .chip-more {
+    margin-top: 10px; width: 100%; background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px;
+    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; cursor: pointer;
+  }
+  .chip-more:hover { color: var(--text); border-color: var(--border2); }
+  .chip-detail {
+    font-size: 0.76rem; color: var(--text-muted); line-height: 1.45;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 9px 11px; margin-top: 10px;
+  }
+  .chip-detail b { color: var(--text); font-weight: 600; }
+
+  /* ─── MILESTONES (legacy list styles, still used by the eliminated card) ─── */
   .milestone-list { display: flex; flex-direction: column; gap: 10px; }
 
   .milestone {
@@ -3091,15 +3153,23 @@
         <div class="stat-sub" id="ms-paid-sub">accounts cleared</div>
       </div>
       <div class="stat-card info">
-        <div class="stat-label">Total Paid Off</div>
-        <div class="stat-value" id="ms-total-paid">$0</div>
-        <div class="stat-sub" id="ms-total-paid-sub">cumulative payments</div>
+        <div class="stat-label">Balance Gone</div>
+        <div class="stat-value" id="ms-total-paid">0%</div>
+        <div class="stat-sub" id="ms-total-paid-sub">of what you started with</div>
       </div>
     </div>
 
+    <div class="next-debt-card card" id="upnext-card" style="display:none">
+      <div class="next-debt-flag">&#9656; UP NEXT</div>
+      <div class="upnext" id="upnext-list"></div>
+    </div>
+
     <div class="card">
-      <div class="card-title"><div class="dot"></div> Achievement Badges</div>
-      <div class="milestone-list" id="milestone-list"></div>
+      <div class="card-title"><div class="dot"></div> Achievement Badges
+        <span class="tag tag-muted" id="badge-total" style="margin-left:6px;font-size:0.58rem;"></span>
+      </div>
+      <div id="badge-tracks"></div>
+      <div class="chip-detail" id="chip-detail" style="display:none"></div>
     </div>
 
     <div class="card" id="paid-debts-card" style="display:none">
@@ -3325,7 +3395,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.39.4';
+const APP_VERSION = '1.40.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3333,6 +3403,23 @@ const APP_VERSION = '1.39.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.0',
+    date: 'September 7, 2026',
+    name: 'Wins worth coming back for',
+    whatsNew: [
+      'The Wins tab has 65 milestones now, up from 9 \u2014 and they are sized to your debt, not to round dollar amounts. Someone paying off $6,000 and someone paying off $60,000 now reach them at the same rate.',
+      'Up Next sits at the top and shows the three closest, with exactly how far away each one is. When you reach one, the next appears straight away.',
+      'Milestones are grouped four ways: showing up month after month, ground actually covered, what your plan is buying you, and building or adjusting the plan itself.',
+      'Some arrive without a payment at all \u2014 a run of months in a row, your biggest month of the last twelve, interest your plan avoids, and every month you pull your debt-free date earlier.',
+      'A missed month never breaks a run on its own. Life happens, and one is quietly forgiven.',
+      'All of it is free.'
+    ],
+    fixes: [
+      'Milestones you had already reached are marked as earned when you update, without a pile of celebration pop-ups for things that happened months ago.',
+      'The Wins tab and the celebration pop-ups now come from the same list, so anything worth celebrating also appears on the tab.'
+    ]
+  },
   {
     version: '1.39.4',
     date: 'September 7, 2026',
@@ -4249,29 +4336,361 @@ let isPremium = false;          // unlocked via Gumroad license verification
 let licenseKey = '';            // stored after successful verify, for display
 let theme = 'dark';             // 'dark' (default) | 'light'
 
-// v1.39.4 — a badge, once earned, stays earned. These checks are evaluated
-// live on every render, so the progressPct() correction would otherwise take
-// "Halfway There" back off a user who had already unlocked it — which reads as
-// lost data, exactly what the release note promises did not happen.
-// shownMilestones already persists the matching celebration key.
-function badgeEarned(key, liveCheck) {
-  return liveCheck || (Array.isArray(shownMilestones) && shownMilestones.indexOf(key) !== -1);
+// ══════════════════════════════════════════════════════════════════════
+//  v1.40.0 — THE BADGE ENGINE
+//
+//  Replaces MILESTONES_DEF, which had two problems. Its thresholds were
+//  ABSOLUTE DOLLARS ($500/$1k/$5k/$10k), so they didn't scale: on $40,000 at
+//  22% paying $1,000/mo — a 73-month payoff — every one was earned by month
+//  10, then 43 months passed with nothing. And it was a second, separate
+//  system from milestoneKeysAchieved(), so interest milestones celebrated but
+//  never appeared on the Wins tab, while the dollar badges appeared but never
+//  celebrated.
+//
+//  Now: ONE list. Every badge is a fraction of the user's OWN debt, a count of
+//  their own actions, or a change against their own earlier plan — nothing is
+//  denominated in absolute dollars, so a $6k debt and a $60k debt earn at the
+//  same rate.
+//
+//  Each badge: { id, track, icon, name, desc, got(), near() }
+//    got()  — true when earned. Evaluated live; stickiness comes from the
+//             persisted earned list, so a badge never un-earns.
+//    near() — {have, need, text} for the "Up next" card, or null if it can't
+//             be sensibly measured. `text` is the remaining distance.
+//
+//  TRACKS  a = showing up · b = ground covered · c = what the plan buys ·
+//          d = the plan itself
+// ══════════════════════════════════════════════════════════════════════
+
+const BADGE_TRACKS = [
+  { id:'a', name:'Consistency',              blurb:'Earned by turning up, not by the size of the payment.' },
+  { id:'b', name:'Real progress',            blurb:'Steps sized to your own debt, so they arrive at the same rate for everyone.' },
+  { id:'c', name:'What the plan is buying you', blurb:'These move when the balance barely does.' },
+  { id:'d', name:'Setting up and adjusting', blurb:'For building the plan and changing it when life does.' }
+];
+
+// ── Month keys: which calendar months show real movement ──
+// A payment is the obvious evidence. A downward ADJUSTMENT counts too: a user
+// who keeps their balance current without logging a formal payment is still
+// paying, and a consistency badge that ignored them would punish bookkeeping
+// style rather than measure progress.
+function _monthKey(dateStr) { return String(dateStr || '').slice(0, 7); }
+function _thisMonthKey() { return localDateStr().slice(0, 7); }
+function _monthAdd(key, n) {
+  const y = parseInt(key.slice(0,4),10), m = parseInt(key.slice(5,7),10) - 1 + n;
+  const d = new Date(y, m, 1);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function _monthDiff(a, b) {   // months from a to b
+  return (parseInt(b.slice(0,4),10)*12 + parseInt(b.slice(5,7),10))
+       - (parseInt(a.slice(0,4),10)*12 + parseInt(a.slice(5,7),10));
 }
 
-const MILESTONES_DEF = [
-  { id: 'first_debt',   icon: '🎯', name: 'First Debt Added',      desc: 'You have committed. The journey starts now.', check: () => debts.length >= 1 },
-  { id: 'first_payment',icon: '💸', name: 'First Payment Logged',  desc: 'Money moving in the right direction.',        check: () => payments.length >= 1 },
-  { id: 'paid_500',     icon: '💪', name: '$500 Paid Off',         desc: 'Five hundred dollars of payments made.',      check: () => totalPaid() >= 500 },
-  { id: 'paid_1k',      icon: '🏆', name: '$1,000 Paid Off',       desc: 'A thousand dollars of payments made.',        check: () => totalPaid() >= 1000 },
-  { id: 'paid_5k',      icon: '🚀', name: '$5,000 Paid Off',       desc: 'Five thousand dollars of payments made.',     check: () => totalPaid() >= 5000 },
-  { id: 'paid_10k',     icon: '💎', name: '$10,000 Paid Off',      desc: 'You have crossed the five-figure threshold.',  check: () => totalPaid() >= 10000 },
-  // v1.33.2 — a transferred balance is not an elimination. This checked raw
-  // zero-balance debts AND the `eliminated` payment flag, both of which a
-  // balance transfer sets, so moving a card unlocked "First Debt Eliminated".
-  { id: 'one_debt_free',icon: '✅', name: 'First Debt Eliminated', desc: 'One down. Feel that weight lift.',            check: () => debts.filter(d => d.balance <= 0 && d.originalBalance > 0 && !isTransferred(d)).length >= 1 },
-  { id: 'halfway',      icon: '🌙', name: 'Halfway There',         desc: 'Half the starting balance is gone.',          check: () => badgeEarned('pct:50', progressPct() >= 50) },
-  { id: 'final_stretch',icon: '🏁', name: 'Final Stretch',        desc: 'Three quarters of the balance is gone.',      check: () => badgeEarned('pct:75', progressPct() >= 75) },
-];
+function activeMonths() {
+  const set = {};
+  payments.forEach(function(p){ if (!p.pending && p.amount > 0) set[_monthKey(p.date)] = true; });
+  (adjustments || []).forEach(function(a){ if (a.amount < 0) set[_monthKey(a.date)] = true; });
+  return Object.keys(set).filter(function(k){ return k.length === 7; }).sort();
+}
+
+// Consecutive months with movement, counting back from the most recent one.
+// The CURRENT month never breaks a streak — it may simply not have happened
+// yet. One silent grace month is allowed per twelve: a missed month in this
+// product usually means someone could not pay, and there is no version of
+// punishing that which ends well.
+function paymentStreak() {
+  const months = activeMonths();
+  if (!months.length) return { length: 0, last: null, usedGrace: false };
+  const now = _thisMonthKey();
+  let cursor = months[months.length - 1];
+  // A gap of more than one month, ending before last month, is a broken streak.
+  if (_monthDiff(cursor, now) > 1) return { length: 0, last: cursor, usedGrace: false };
+  const have = {}; months.forEach(function(m){ have[m] = true; });
+  const earliest = months[0];
+  let len = 0, graceLeft = 1, guard = 0;
+  while (guard++ < 600) {
+    if (have[cursor]) { len++; }
+    else if (graceLeft > 0 && len > 0 && _monthDiff(earliest, cursor) > 0) { graceLeft--; }
+    else break;
+    cursor = _monthAdd(cursor, -1);
+  }
+  return { length: len, last: months[months.length - 1], usedGrace: graceLeft === 0 };
+}
+
+function paymentCount() {
+  return payments.filter(function(p){ return !p.pending && p.amount > 0; }).length;
+}
+
+// Net balance movement in one month: payments less any interest that accrued
+// in the same month, so "best month" measures debt removed, not money spent.
+function monthNet(key) {
+  let net = 0;
+  payments.forEach(function(p){ if (!p.pending && _monthKey(p.date) === key) net += p.amount; });
+  (accruals || []).forEach(function(a){ if (_monthKey(a.date) === key) net -= a.amount; });
+  return net;
+}
+
+// Best month in the TRAILING TWELVE, not all time. An exceptional month — a
+// tax refund, a bonus, a payoff — would otherwise make the badge unwinnable
+// for the rest of the journey, which is the opposite of the point.
+function bestMonthRecent() {
+  const now = _thisMonthKey();
+  let bestKey = null, bestVal = 0;
+  activeMonths().forEach(function(k){
+    const age = _monthDiff(k, now);
+    if (age < 0 || age > 11) return;
+    const v = monthNet(k);
+    if (v > bestVal) { bestVal = v; bestKey = k; }
+  });
+  return { month: bestKey, amount: bestVal, count: activeMonths().filter(function(k){
+    const age = _monthDiff(k, now); return age >= 0 && age <= 11;
+  }).length };
+}
+
+// "On plan" for a COMPLETED month: paid at least the minimums due plus the
+// extra the user set. Evaluated against today's figures — historical minimums
+// aren't recorded — so raising your extra can retire an older month. Erring
+// that way is deliberate: it under-awards rather than over-claims.
+function monthlyTarget() {
+  const active = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
+  const mins = active.reduce(function(a, d){
+    const f = (typeof minPaymentFloors === 'function') ? minPaymentFloors(d) : null;
+    const due = f && isFinite(f.now) ? f.now : (d.minPayment || 0);
+    return a + (isFinite(due) ? due : 0);
+  }, 0);
+  const t = mins + planExtra();
+  return isFinite(t) ? t : 0;
+}
+function onPlanRun() {
+  const target = monthlyTarget();
+  if (target <= 0) return 0;
+  const now = _thisMonthKey();
+  let cursor = _monthAdd(now, -1), run = 0, guard = 0;   // completed months only
+  while (guard++ < 600) {
+    const paidIn = payments.filter(function(p){ return !p.pending && _monthKey(p.date) === cursor; })
+                           .reduce(function(a, p){ return a + p.amount; }, 0);
+    if (paidIn + 0.005 >= target) { run++; cursor = _monthAdd(cursor, -1); } else break;
+  }
+  return run;
+}
+
+// ── The plan baseline, for "X sooner" ──
+// Compares FREEDOM DATES, never months-remaining: months-remaining falls by
+// one every month simply because time passes, which would hand out "a month
+// sooner" for doing nothing at all.
+let planBaseline = null;   // { ym:'YYYY-MM', setAt:'YYYY-MM-DD' }
+
+function currentFreedomYM() {
+  const active = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
+  if (!active.length) return null;
+  const res = getPlanSim();
+  if (!res || !res.months) return null;
+  const d = planMonthDate(res.months);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+function monthsSooner() {
+  if (!planBaseline || !planBaseline.ym) return 0;
+  const now = currentFreedomYM();
+  if (!now) return 0;
+  return Math.max(0, _monthDiff(now, planBaseline.ym));
+}
+function ensurePlanBaseline() {
+  if (planBaseline && planBaseline.ym) return;
+  const ym = currentFreedomYM();
+  if (!ym) return;
+  planBaseline = { ym: ym, setAt: localDateStr() };
+  try { localStorage.setItem('debtfree_baseline', JSON.stringify(planBaseline)); } catch (e) {}
+}
+
+// ── Derived counts used by several badges ──
+function _clearedDebts() {
+  return debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); });
+}
+function _bestCardPct() {
+  let best = 0;
+  debts.forEach(function(d){
+    if (!(d.originalBalance > 0) || d.balance <= 0) return;
+    best = Math.max(best, ((d.originalBalance - d.balance) / d.originalBalance) * 100);
+  });
+  return best;
+}
+function _lowestActiveBalance() {
+  const act = debts.filter(function(d){ return d.balance > 0; });
+  if (!act.length) return null;
+  return Math.min.apply(null, act.map(function(d){ return d.balance; }));
+}
+// Share of the minimum-only interest bill this plan avoids. A FORECAST, and
+// the copy says so — "your plan avoids", never "you saved". Absolute dollar
+// thresholds were the first draft and repeated the very scaling bug this
+// release exists to fix.
+function interestAvoidedPct() {
+  const plan = getPlanSim(), base = getBaselineSim();
+  if (!plan || !base || !(base.totalInterest > 0)) return 0;
+  return Math.max(0, Math.min(100, ((base.totalInterest - plan.totalInterest) / base.totalInterest) * 100));
+}
+
+function _near(have, need, unitFn) {
+  if (!(need > 0)) return null;
+  return { have: have, need: need, text: unitFn(Math.max(0, need - have)) };
+}
+const _moneyLeft = function(v){ return fmt(Math.ceil(v)); };
+const _countLeft = function(v){ return Math.ceil(v) + ' left'; };
+const _monthsLeft = function(v){ return Math.ceil(v) + ' mo'; };
+
+const BADGES = [];
+function _badge(id, track, icon, name, desc, got, near) {
+  BADGES.push({ id:id, track:track, icon:icon, name:name, desc:desc, got:got, near:near || function(){ return null; } });
+}
+
+// ── TRACK A · showing up ────────────────────────────────────────────────
+[[2,'Two months running'],[3,'Three months running'],[6,'Six months running'],
+ [9,'Nine months running'],[12,'One year running'],[18,'Eighteen months running'],
+ [24,'Two years running'],[36,'Three years running']].forEach(function(t){
+  _badge('a.streak.'+t[0], 'a', '🗓️', t[1],
+    'Money went to your debts in ' + t[0] + ' months in a row.',
+    function(){ return paymentStreak().length >= t[0]; },
+    function(){ return _near(paymentStreak().length, t[0], _monthsLeft); });
+});
+[[10,'10 payments logged'],[25,'25 payments logged'],[50,'50 payments logged'],[100,'100 payments logged']].forEach(function(t){
+  _badge('a.count.'+t[0], 'a', '🧾', t[1],
+    t[0] + ' payments recorded against your debts.',
+    function(){ return paymentCount() >= t[0]; },
+    function(){ return _near(paymentCount(), t[0], _countLeft); });
+});
+_badge('a.best', 'a', '📈', 'Best month yet',
+  'Your largest month of balance reduction in the last twelve.',
+  function(){ const b = bestMonthRecent(); return b.count >= 2 && b.amount > 0; });
+[[3,'Three months on plan'],[6,'Six months on plan'],[12,'Twelve months on plan']].forEach(function(t){
+  _badge('a.onplan.'+t[0], 'a', '✅', t[1],
+    'Covered your minimums plus your extra, ' + t[0] + ' months running.',
+    function(){ return onPlanRun() >= t[0]; },
+    function(){ return _near(onPlanRun(), t[0], _monthsLeft); });
+});
+
+// ── TRACK B · ground covered ────────────────────────────────────────────
+// Front-loaded, like every streak ladder that works: dense while motivation is
+// fragile, sparse once the habit carries it.
+[[1,'1% gone'],[2.5,'2.5% gone'],[5,'5% gone'],[7.5,'7.5% gone'],[10,'10% gone'],
+ [15,'15% gone'],[20,'20% gone'],[25,'A quarter gone'],[33,'A third gone'],
+ [40,'40% gone'],[50,'Half gone'],[60,'60% gone'],[70,'70% gone'],[75,'Three quarters gone'],
+ [80,'80% gone'],[90,'90% gone'],[95,'95% gone'],[100,'All of it gone']].forEach(function(t){
+  _badge('b.pct.'+String(t[0]).replace('.','_'), 'b', t[0] >= 100 ? '🏁' : '📉', t[1],
+    t[0] + '% of the balance you started with is cleared.',
+    function(){ return progressPct() >= t[0]; },
+    function(){
+      const basis = progressBasis();
+      if (!basis) return null;
+      return _near(progressPaidDown(), basis * (t[0]/100), _moneyLeft);
+    });
+});
+_badge('b.card.25', 'b', '💳', 'A quarter off one card',
+  'One account is down a quarter from where it started.',
+  function(){ return _bestCardPct() >= 25; });
+_badge('b.card.50', 'b', '💳', 'Half off one card',
+  'One account is down by half from where it started.',
+  function(){ return _bestCardPct() >= 50; });
+_badge('b.card.1k', 'b', '💳', 'First card under $1,000',
+  'An open account has dropped below a thousand dollars.',
+  function(){ const l = _lowestActiveBalance(); return l !== null && l < 1000; });
+[[1,'First card cleared'],[2,'Second card cleared'],[3,'Third card cleared'],
+ [5,'Fifth card cleared'],[10,'Tenth card cleared']].forEach(function(t){
+  _badge('b.elim.'+t[0], 'b', '✅', t[1],
+    t[0] === 1 ? 'One account paid to zero.' : t[0] + ' accounts paid to zero.',
+    function(){ return _clearedDebts().length >= t[0]; },
+    function(){ return _near(_clearedDebts().length, t[0], _countLeft); });
+});
+_badge('b.debtfree', 'b', '🎉', 'Debt-free',
+  'Every account cleared.',
+  function(){
+    const act = debts.filter(function(d){ return d.balance > 0; });
+    return debts.length > 0 && act.length === 0 &&
+           debts.some(function(d){ return d.originalBalance > 0 && !isTransferred(d); });
+  });
+
+// ── TRACK C · what the plan is buying you ───────────────────────────────
+[[5,'Plan avoids 5% of the interest'],[10,'Avoids 10% of the interest'],
+ [25,'Avoids a quarter of the interest'],[50,'Avoids half the interest'],
+ [75,'Avoids 75% of the interest'],[90,'Avoids 90% of the interest'],
+ [95,'Avoids 95% of the interest']].forEach(function(t){
+  _badge('c.int.'+t[0], 'c', '💰', t[1],
+    'Your plan is on track to avoid ' + t[0] + '% of the interest that minimum payments alone would cost.',
+    function(){ return interestAvoidedPct() >= t[0]; },
+    function(){ return _near(interestAvoidedPct(), t[0], function(v){ return Math.ceil(v) + '%'; }); });
+});
+[[1,'A month sooner'],[3,'Three months sooner'],[6,'Six months sooner'],
+ [12,'A year sooner'],[24,'Two years sooner']].forEach(function(t){
+  _badge('c.sooner.'+t[0], 'c', '⏪', t[1],
+    'Your debt-free date is ' + t[0] + (t[0] === 1 ? ' month' : ' months') + ' earlier than when you started tracking it.',
+    function(){ return monthsSooner() >= t[0]; },
+    function(){ return _near(monthsSooner(), t[0], _monthsLeft); });
+});
+_badge('c.roll.1', 'c', '🔁', 'First minimum rolled',
+  'A cleared card’s minimum is now going to the next debt instead.',
+  function(){ return rolledOverTotal() > 0; });
+[[100,'$100 a month rolled'],[250,'$250 a month rolled'],[500,'$500 a month rolled']].forEach(function(t){
+  _badge('c.roll.'+t[0], 'c', '🔁', t[1],
+    fmt(t[0]) + ' a month from cleared cards is going to your remaining debts.',
+    function(){ return rolledOverTotal() >= t[0]; },
+    function(){ return _near(rolledOverTotal(), t[0], _moneyLeft); });
+});
+
+// ── TRACK D · the plan itself ───────────────────────────────────────────
+_badge('d.debt1', 'd', '🎯', 'First debt added',
+  'Your first account is in the plan.', function(){ return debts.length >= 1; });
+_badge('d.pay1', 'd', '💸', 'First payment logged',
+  'Your first payment is recorded.', function(){ return paymentCount() >= 1; });
+_badge('d.plan', 'd', '🗺️', 'Plan set',
+  'You picked a payoff method.',
+  function(){ return debts.length >= 1 && !!strategy; });
+_badge('d.tuned', 'd', '🔧', 'Plan tuned',
+  'You changed the plan and it moved your date earlier.',
+  function(){ return monthsSooner() >= 1; });
+_badge('d.lump1', 'd', '💵', 'First lump sum',
+  'A one-off payment is in the plan.',
+  function(){ return (lumpSums || []).length >= 1; });
+_badge('d.lump3', 'd', '💵', 'Three lump sums',
+  'Three one-off payments recorded.',
+  function(){ return (lumpSums || []).length >= 3; },
+  function(){ return _near((lumpSums || []).length, 3, _countLeft); });
+
+function badgeById(id) { return BADGES.find(function(b){ return b.id === id; }); }
+function badgesEarnedNow() {
+  const out = [];
+  BADGES.forEach(function(b){ try { if (b.got()) out.push(b.id); } catch (e) {} });
+  return out;
+}
+// Sticky: earned once, earned for good. Correcting a number downward (as
+// progressPct was corrected in 1.39.4) must never take a badge back.
+function badgeIsEarned(id) {
+  return Array.isArray(shownMilestones) && shownMilestones.indexOf(id) !== -1;
+}
+
+// The three closest unearned badges, at most two from any one track so the
+// list never becomes a column of percentages.
+function upNextBadges(limit) {
+  const cand = [];
+  BADGES.forEach(function(b){
+    if (badgeIsEarned(b.id)) return;
+    let n = null;
+    try { n = b.near(); } catch (e) { n = null; }
+    if (!n || !(n.need > 0)) return;
+    const frac = Math.max(0, Math.min(0.999, n.have / n.need));
+    cand.push({ badge: b, frac: frac, text: n.text });
+  });
+  cand.sort(function(x, y){ return y.frac - x.frac; });
+  const perTrack = {}, seenFamily = {}, out = [];
+  for (let i = 0; i < cand.length && out.length < (limit || 3); i++) {
+    const b = cand[i].badge;
+    const family = b.id.split('.').slice(0, -1).join('.') || b.id;
+    if (seenFamily[family]) continue;          // the next rung only, not the ladder
+    if ((perTrack[b.track] || 0) >= 2) continue;
+    seenFamily[family] = true;
+    perTrack[b.track] = (perTrack[b.track] || 0) + 1;
+    out.push(cand[i]);
+  }
+  return out;
+}
+
 
 // ═══════════════════════════════════════════
 //  DATE HELPER — always use LOCAL date, never UTC
@@ -4512,17 +4931,12 @@ function milestoneKeysAchieved() {
     keys.push('debtfree');
   }
 
-  // Percent-of-total-paid thresholds
-  const pct = progressPct();
-  [25, 50, 75].forEach(function(t){ if (pct >= t) keys.push('pct:' + t); });
-
-  // Interest-saved thresholds (uses the same memoized sims as the stat)
-  const plan = getPlanSim();
-  const base = getBaselineSim();
-  if (plan && base) {
-    const saved = Math.max(0, base.totalInterest - plan.totalInterest);
-    [5000, 10000, 20000].forEach(function(t){ if (saved >= t) keys.push('saved:' + t); });
-  }
+  // v1.40.0 — the badge engine IS the milestone list now. The old pct: and
+  // saved: keys are gone: they were absolute-dollar thresholds and a second
+  // parallel system that the Wins tab never showed. Their replacements live in
+  // BADGES (b.pct.* and c.int.*) and both celebrate AND appear on the tab.
+  // Per-debt elim: keys stay dynamic — one per account, not a fixed badge.
+  badgesEarnedNow().forEach(function(id){ keys.push(id); });
   return keys;
 }
 
@@ -4542,9 +4956,10 @@ function milestoneContent(key) {
     const t = key.split(':')[1];
     return { emoji: '\uD83D\uDCC8', headline: t + '% of the balance gone', sub: 'More than ' + t + '% of what you started with is cleared.', big: t + '% down' };
   }
-  if (key.indexOf('saved:') === 0) {
-    const t = parseInt(key.split(':')[1], 10);
-    return { emoji: '\uD83D\uDCB0', headline: fmt(t) + ' in interest saved', sub: 'Money kept in your pocket, not the bank\u2019s.', big: fmt(t) + ' saved' };
+  // v1.40.0 — any badge id celebrates with its own name and description.
+  const b = (typeof badgeById === 'function') ? badgeById(key) : null;
+  if (b) {
+    return { emoji: b.icon, headline: b.name, sub: b.desc, big: b.name };
   }
   return null;
 }
@@ -4561,12 +4976,16 @@ function checkMilestones() {
   fresh.forEach(function(k){ if (shownMilestones.indexOf(k) === -1) shownMilestones.push(k); });
   persistMilestones();
 
-  // Priority: debt-free > elimination > interest saved > percent
+  // Priority: debt-free > an account cleared > ground covered > everything
+  // else. One card per pass regardless — a big payment can cross five
+  // thresholds at once and a stack of modals is not a celebration.
   const priority = function(k){
-    if (k === 'debtfree') return 0;
+    if (k === 'debtfree' || k === 'b.debtfree') return 0;
     if (k.indexOf('elim:') === 0) return 1;
-    if (k.indexOf('saved:') === 0) return 2;
-    if (k.indexOf('pct:') === 0) return 3;
+    if (k.indexOf('b.elim.') === 0) return 2;
+    if (k.indexOf('b.pct.') === 0) return 3;
+    if (k.indexOf('a.') === 0) return 4;
+    if (k.indexOf('c.') === 0) return 5;
     return 9;
   };
   fresh.sort(function(a, b){ return priority(a) - priority(b); });
@@ -8565,14 +8984,11 @@ function renderStats() {
       ? 'paid off \u00b7 ' + _movedCount + ' moved, not counted'
       : (_won === 1 ? 'account cleared' : 'accounts cleared');
   }
-  document.getElementById('ms-total-paid').textContent = fmt(paid);
+  // v1.40.0 — the Wins headline is ground covered, matching the Dashboard bar.
+  document.getElementById('ms-total-paid').textContent = progressPct().toFixed(1) + '%';
   const _tpSub = document.getElementById('ms-total-paid-sub');
   if (_tpSub) {
-    // v1.39.4 — this is money OUT, interest included; it is deliberately not
-    // the same number as "paid down" on the Dashboard bar, so say so.
-    _tpSub.textContent = _movedCount
-      ? 'payments made \u2014 excludes transfers'
-      : 'payments made, interest included';
+    _tpSub.textContent = fmt(progressPaidDown()) + ' of ' + fmt(progressBasis());
   }
 }
 
@@ -10745,22 +11161,104 @@ function renderStrategy() {
   }).join('');
 }
 
-function renderMilestones() {
-  const list = document.getElementById('milestone-list');
-  list.innerHTML = MILESTONES_DEF.map(m => {
-    const achieved = m.check();
-    return `
-    <div class="milestone ${achieved ? 'achieved' : ''}">
-      <div class="milestone-icon">${m.icon}</div>
-      <div class="milestone-info">
-        <div class="milestone-name">${m.name}</div>
-        <div class="milestone-desc">${m.desc}</div>
-      </div>
-      <div class="milestone-badge ${achieved ? '' : 'locked'}">${achieved ? 'Unlocked! ✓' : 'Locked'}</div>
-    </div>`;
-  }).join('');
+// v1.40.0 — a chip is a name; the description lives one tap down, so 65 badges
+// stay scannable. Tapping the open one closes it.
+let _openBadgeId = null;
+function showBadgeDetail(id) {
+  const box = document.getElementById('chip-detail');
+  const b = badgeById(id);
+  if (!box || !b) return;
+  if (_openBadgeId === id) { box.style.display = 'none'; _openBadgeId = null; return; }
+  _openBadgeId = id;
+  const got = badgeIsEarned(id);
+  let extra = '';
+  if (!got) {
+    let n = null;
+    try { n = b.near(); } catch (e) { n = null; }
+    if (n && n.text) extra = ' &middot; ' + escapeHtml(n.text) + ' to go';
+  }
+  box.innerHTML = '<b>' + b.icon + ' ' + escapeHtml(b.name) + '</b>' +
+    (got ? ' &middot; earned' : '') + extra + '<br>' + escapeHtml(b.desc);
+  box.style.display = 'block';
+}
 
-  // v1.33.2 — this list labelled every zero-balance debt "PAID OFF ✓", including
+function toggleTrackRest(track, count) {
+  const box = document.getElementById('rest-' + track);
+  const btn = document.getElementById('more-' + track);
+  if (!box || !btn) return;
+  const hidden = box.classList.contains('hidden');
+  box.classList.toggle('hidden', !hidden);
+  btn.textContent = hidden ? 'Hide' : ('Show ' + count + ' more');
+}
+
+function renderMilestones() {
+  // ── UP NEXT ──────────────────────────────────────────────────────────
+  const upWrap = document.getElementById('upnext-card');
+  const upList = document.getElementById('upnext-list');
+  if (upWrap && upList) {
+    const next = upNextBadges(3);
+    if (!next.length) {
+      upWrap.style.display = 'none';
+      upList.innerHTML = '';
+    } else {
+      upWrap.style.display = 'block';
+      upList.innerHTML = next.map(function(n){
+        const pct = Math.max(2, Math.min(98, Math.round(n.frac * 100)));
+        return '<div class="upnext-row">' +
+            '<div class="upnext-ico">' + n.badge.icon + '</div>' +
+            '<div><div class="upnext-name">' + escapeHtml(n.badge.name) + '</div>' +
+              '<div class="upnext-track"><span class="upnext-fill" style="width:' + pct + '%"></span></div>' +
+            '</div>' +
+            '<div class="upnext-gap">' + escapeHtml(n.text) + '</div>' +
+          '</div>';
+      }).join('');
+    }
+  }
+
+  // ── THE FOUR TRACKS ──────────────────────────────────────────────────
+  const wrap = document.getElementById('badge-tracks');
+  if (wrap) {
+    const nextIds = {};
+    upNextBadges(3).forEach(function(n){ nextIds[n.badge.id] = true; });
+    let earnedAll = 0;
+
+    wrap.innerHTML = BADGE_TRACKS.map(function(t){
+      const mine = BADGES.filter(function(b){ return b.track === t.id; });
+      const earned = mine.filter(function(b){ return badgeIsEarned(b.id); });
+      earnedAll += earned.length;
+      const pct = mine.length ? Math.round((earned.length / mine.length) * 100) : 0;
+
+      // Earned and next-up show by default; the rest is one tap away. Without
+      // this a track of 27 is a column of grey, which is worse than the dead
+      // zone this release exists to fix.
+      const open = mine.filter(function(b){ return badgeIsEarned(b.id) || nextIds[b.id]; });
+      const rest = mine.filter(function(b){ return !badgeIsEarned(b.id) && !nextIds[b.id]; });
+      const chip = function(b){
+        const cls = badgeIsEarned(b.id) ? 'chip got' : (nextIds[b.id] ? 'chip upnext' : 'chip');
+        return '<button type="button" class="' + cls + '" onclick="showBadgeDetail(\'' + b.id + '\')">' +
+               '<span class="chip-i">' + b.icon + '</span>' + escapeHtml(b.name) + '</button>';
+      };
+
+      return '<div class="btrack">' +
+        '<div class="btrack-head"><h4>' + escapeHtml(t.name) + '</h4>' +
+          '<div class="btrack-count">' + earned.length + ' / ' + mine.length + '</div></div>' +
+        '<p class="btrack-why">' + escapeHtml(t.blurb) + '</p>' +
+        '<div class="btrack-bar"><span style="width:' + pct + '%"></span></div>' +
+        '<div class="chips">' + open.map(chip).join('') + '</div>' +
+        (rest.length
+          ? '<div class="chips hidden" id="rest-' + t.id + '" style="margin-top:6px;">' + rest.map(chip).join('') + '</div>' +
+            '<button type="button" class="chip-more" id="more-' + t.id + '" ' +
+            'onclick="toggleTrackRest(\'' + t.id + '\',' + rest.length + ')">Show ' + rest.length + ' more</button>'
+          : '') +
+      '</div>';
+    }).join('');
+
+    const tot = document.getElementById('badge-total');
+    if (tot) tot.textContent = earnedAll + ' of ' + BADGES.length + ' earned';
+  }
+
+  // ── Paid-off accounts (unchanged behaviour) ──────────────────────────
+  // v1.33.2 — this list labelled every zero-balance debt "PAID OFF", including
   // ones whose balance was merely moved to another card. A transfer is shown,
   // because closing the account is real, but it is labelled for what it is and
   // excluded from the win count.
@@ -11011,6 +11509,7 @@ async function checkForUpdates() {
       strategy: strategy,
       extraMonthly: parseAmount(document.getElementById('extra-payment').value) || 0,
       rolledMinimums: rolledMinimums,   // v1.38.0
+    planBaseline: planBaseline,       // v1.40.0 — anchor for the "X sooner" badges
       nextId: nextId,
       accruals: accruals,
       adjustments: adjustments,
@@ -11400,6 +11899,7 @@ function buildBackupPayload() {
     payments: payments,
     lumpSums: lumpSums,
     rolledMinimums: rolledMinimums,   // v1.38.0
+    planBaseline: planBaseline,       // v1.40.0 — anchor for the "X sooner" badges
     strategy: strategy,
     extraMonthly: extraMonthly,
     nextId: nextId,
@@ -11513,6 +12013,15 @@ function applyBackupPayload(data) {
       _milestonesBaselined = false;
       shownMilestones = milestoneKeysAchieved();
       persistMilestones();
+      // v1.40.0 — the restored file's badges are already-history, not news.
+      try { localStorage.setItem('debtfree_badges_seeded', '1'); } catch (e) {}
+      planBaseline = (data && data.planBaseline && data.planBaseline.ym)
+        ? data.planBaseline : null;
+      try {
+        if (planBaseline) localStorage.setItem('debtfree_baseline', JSON.stringify(planBaseline));
+        else localStorage.removeItem('debtfree_baseline');
+      } catch (e) {}
+      ensurePlanBaseline();
       _milestonesBaselined = true;
 
       selectStrategy(strategy);
@@ -12258,6 +12767,29 @@ try {
     persistMilestones();
   }
 } catch (e) { shownMilestones = []; }
+
+// v1.40.0 — upgrade seeding. An existing user's stored list holds the OLD keys
+// only, so without this every one of the 65 new badges would read as freshly
+// crossed and the first render after updating would be a celebration storm for
+// a journey already months old. Same lesson as the rolled minimums in 1.38:
+// seed silently, celebrate only what happens from here.
+try {
+  if (localStorage.getItem('debtfree_badges_seeded') !== '1') {
+    badgesEarnedNow().forEach(function(id){
+      if (shownMilestones.indexOf(id) === -1) shownMilestones.push(id);
+    });
+    persistMilestones();
+    localStorage.setItem('debtfree_badges_seeded', '1');
+  }
+} catch (e) {}
+
+// The freedom date to measure "X sooner" against. Set once, then left alone.
+try {
+  const _b = localStorage.getItem('debtfree_baseline');
+  if (_b) planBaseline = JSON.parse(_b) || null;
+} catch (e) { planBaseline = null; }
+ensurePlanBaseline();
+
 _milestonesBaselined = true;
 
 // v1.22.0 — set up collapsible cards (needs debts loaded for the Add Debt rule)
