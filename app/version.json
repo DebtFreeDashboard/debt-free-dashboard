@@ -1,10 +1,11 @@
 {
-  "version": "1.39.3",
-  "releaseDate": "2026-09-04",
-  "releaseName": "Finding the rough edges sooner",
+  "version": "1.39.4",
+  "releaseDate": "2026-09-07",
+  "releaseName": "Your progress bar now measures the balance",
   "notes": [
-    "Nothing looks or works differently in this release.",
-    "It only improves the anonymous, aggregate counts that show which parts of the app trip people up — so rough edges get spotted and fixed faster.",
-    "Counts only: your balances, rates, payments and dates are never part of it."
+    "Your Debt-Free Progress percentage may change after this update. Nothing has been lost and no payment has been forgotten — the number was being worked out the wrong way and is now correct.",
+    "It used to add up every dollar you had paid, interest included, and compare that to what you started owing. On a high-rate balance that reads far higher than the debt has actually fallen.",
+    "It now measures how much of your starting balance is gone, so the bar, the share card and your badges agree with the progress shown on each individual debt.",
+    "The total you have paid in is still there on the Wins tab, labelled as payments made."
   ]
 }

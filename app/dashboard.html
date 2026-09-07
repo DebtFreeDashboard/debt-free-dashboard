@@ -3325,7 +3325,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.39.3';
+const APP_VERSION = '1.39.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3333,6 +3333,18 @@ const APP_VERSION = '1.39.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.39.4',
+    date: 'September 7, 2026',
+    name: 'Your progress bar now measures the balance',
+    whatsNew: [],
+    fixes: [
+      'Your Debt-Free Progress percentage may drop after this update. Nothing has been lost and no payment has been forgotten \u2014 the number was being worked out the wrong way and is now correct.',
+      'It used to add up every dollar you had paid, including the part that went to interest, and compare that to what you started owing. On a high-rate balance that reads far higher than the debt has actually fallen \u2014 and it could even reach 100% while thousands were still owed.',
+      'It now measures the one thing it always claimed to: how much of your starting balance is gone. The bar, the share card and the Halfway and Final Stretch badges all use it, so they finally agree with the progress bars on your individual debts.',
+      'The money you have paid in is still shown, on the Wins tab, labelled as payments made.'
+    ]
+  },
   {
     version: '1.39.3',
     date: 'September 4, 2026',
@@ -4237,19 +4249,28 @@ let isPremium = false;          // unlocked via Gumroad license verification
 let licenseKey = '';            // stored after successful verify, for display
 let theme = 'dark';             // 'dark' (default) | 'light'
 
+// v1.39.4 — a badge, once earned, stays earned. These checks are evaluated
+// live on every render, so the progressPct() correction would otherwise take
+// "Halfway There" back off a user who had already unlocked it — which reads as
+// lost data, exactly what the release note promises did not happen.
+// shownMilestones already persists the matching celebration key.
+function badgeEarned(key, liveCheck) {
+  return liveCheck || (Array.isArray(shownMilestones) && shownMilestones.indexOf(key) !== -1);
+}
+
 const MILESTONES_DEF = [
   { id: 'first_debt',   icon: '🎯', name: 'First Debt Added',      desc: 'You have committed. The journey starts now.', check: () => debts.length >= 1 },
   { id: 'first_payment',icon: '💸', name: 'First Payment Logged',  desc: 'Money moving in the right direction.',        check: () => payments.length >= 1 },
-  { id: 'paid_500',     icon: '💪', name: '$500 Paid Off',         desc: 'Five hundred dollars closer to freedom.',     check: () => totalPaid() >= 500 },
-  { id: 'paid_1k',      icon: '🏆', name: '$1,000 Paid Off',       desc: 'Four digits down. You are unstoppable.',      check: () => totalPaid() >= 1000 },
-  { id: 'paid_5k',      icon: '🚀', name: '$5,000 Paid Off',       desc: 'Five thousand dollars of freedom earned.',    check: () => totalPaid() >= 5000 },
+  { id: 'paid_500',     icon: '💪', name: '$500 Paid Off',         desc: 'Five hundred dollars of payments made.',      check: () => totalPaid() >= 500 },
+  { id: 'paid_1k',      icon: '🏆', name: '$1,000 Paid Off',       desc: 'A thousand dollars of payments made.',        check: () => totalPaid() >= 1000 },
+  { id: 'paid_5k',      icon: '🚀', name: '$5,000 Paid Off',       desc: 'Five thousand dollars of payments made.',     check: () => totalPaid() >= 5000 },
   { id: 'paid_10k',     icon: '💎', name: '$10,000 Paid Off',      desc: 'You have crossed the five-figure threshold.',  check: () => totalPaid() >= 10000 },
   // v1.33.2 — a transferred balance is not an elimination. This checked raw
   // zero-balance debts AND the `eliminated` payment flag, both of which a
   // balance transfer sets, so moving a card unlocked "First Debt Eliminated".
   { id: 'one_debt_free',icon: '✅', name: 'First Debt Eliminated', desc: 'One down. Feel that weight lift.',            check: () => debts.filter(d => d.balance <= 0 && d.originalBalance > 0 && !isTransferred(d)).length >= 1 },
-  { id: 'halfway',      icon: '🌙', name: 'Halfway There',         desc: 'More behind you than ahead of you.',          check: () => progressPct() >= 50 },
-  { id: 'final_stretch',icon: '🏁', name: 'Final Stretch',        desc: 'Under 25% left to go. Almost there!',         check: () => progressPct() >= 75 },
+  { id: 'halfway',      icon: '🌙', name: 'Halfway There',         desc: 'Half the starting balance is gone.',          check: () => badgeEarned('pct:50', progressPct() >= 50) },
+  { id: 'final_stretch',icon: '🏁', name: 'Final Stretch',        desc: 'Three quarters of the balance is gone.',      check: () => badgeEarned('pct:75', progressPct() >= 75) },
 ];
 
 // ═══════════════════════════════════════════
@@ -4368,6 +4389,17 @@ function totalOriginal() { return debts.reduce((a,d)=>a+(isNaN(d.originalBalance
 // progress, "total paid off" and the eliminated count while your actual debt
 // went UP by the transfer fee. Payments flagged as transfers are excluded here
 // so progress reflects money that genuinely left your pocket.
+// v1.39.4 — one definition of "money that was merely MOVED between cards",
+// used by both totalPaid() and the progress basis. It was inlined in totalPaid
+// only, so the two could drift.
+function transferredTotal() {
+  return debts.reduce(function(a, d) {
+    if (!isTransferred(d)) return a;
+    const amt = (d.transferAmount != null) ? d.transferAmount : (d.originalBalance || 0);
+    return a + Math.max(0, amt);
+  }, 0);
+}
+
 function totalPaid() {
   const gross = payments.filter(function(p) { return !p.pending; })
                         .reduce(function(a, p) { return a + p.amount; }, 0);
@@ -4376,11 +4408,7 @@ function totalPaid() {
   // transfers, so a partial transfer (paid some down, moved the rest) matched
   // no record at all and silently corrected nothing. Subtracting the recorded
   // amount is exact for partials and leaves payment history untouched.
-  const moved = debts.reduce(function(a, d) {
-    if (!isTransferred(d)) return a;
-    const amt = (d.transferAmount != null) ? d.transferAmount : (d.originalBalance || 0);
-    return a + Math.max(0, amt);
-  }, 0);
+  const moved = transferredTotal();
   return Math.max(0, gross - moved);
 }
 
@@ -4512,7 +4540,7 @@ function milestoneContent(key) {
   }
   if (key.indexOf('pct:') === 0) {
     const t = key.split(':')[1];
-    return { emoji: '\uD83D\uDCC8', headline: t + '% paid off', sub: 'More than ' + t + '% of the way to zero.', big: t + '% down' };
+    return { emoji: '\uD83D\uDCC8', headline: t + '% of the balance gone', sub: 'More than ' + t + '% of what you started with is cleared.', big: t + '% down' };
   }
   if (key.indexOf('saved:') === 0) {
     const t = parseInt(key.split(':')[1], 10);
@@ -4648,10 +4676,42 @@ function getBaselineSim() {
   return res;
 }
 
+// ══════════════════════════════════════════════════════════════════════
+// v1.39.4 — PROGRESS IS BALANCE REDUCTION, NOT MONEY SPENT.
+//
+// This divided cumulative GROSS payments by the original balance. Gross
+// payments include interest, so money that went to the lender was counted as
+// though it had reduced the debt. On a high-APR, long-horizon plan — exactly
+// this product's user — the overstatement was severe:
+//
+//   $40,000 @ 22%, $1,000/mo, after 20 payments:
+//     real balance $33,627 (15.9% actually gone) — this reported 50.0%
+//   and it reached 100% at month 40 with $24,462 still owed.
+//
+// It drove the Dashboard hero bar, the Halfway and Final Stretch badges, the
+// 25/50/75 celebrations, AND the public share card, so users were broadcasting
+// an overstatement. The per-debt bars (renderPortfolioTable, next-debt-bar,
+// the card list) always used real reduction, so the app disagreed with itself.
+//
+// Basis excludes balances that were merely MOVED between cards: the
+// destination carries its own originalBalance, so counting both would read a
+// transfer as progress. Transfer FEES stay in the basis — they are real new
+// debt.
+// ══════════════════════════════════════════════════════════════════════
+function progressBasis() {
+  return Math.max(0, totalOriginal() - transferredTotal());
+}
+
+// Dollars actually gone from the balance. Clamped at zero so a month where
+// accrued interest outruns payments reads 0, never negative.
+function progressPaidDown() {
+  return Math.max(0, progressBasis() - totalBalance());
+}
+
 function progressPct() {
-  const orig = totalOriginal();
-  if (!orig) return 0;
-  return Math.min(100, (totalPaid() / orig) * 100);
+  const basis = progressBasis();
+  if (!basis) return 0;
+  return Math.max(0, Math.min(100, (progressPaidDown() / basis) * 100));
 }
 
 // ── v1.21.0 — DIAL-A-DATE (reverse solver) ──
@@ -6192,9 +6252,9 @@ function shareProgress() {
   if (active === 0 && debts.some(function(d){ return d.originalBalance > 0; })) {
     emoji = '\uD83C\uDF89'; big = 'Debt-free.'; sub = 'Every debt eliminated. The plan worked.';
   } else if (paidOff > 0) {
-    emoji = '\uD83D\uDCAA'; big = pct + '% to debt-free'; sub = paidOff + (paidOff === 1 ? ' debt down' : ' debts down') + ' and counting.';
+    emoji = '\uD83D\uDCAA'; big = pct + '% of my debt gone'; sub = paidOff + (paidOff === 1 ? ' account cleared' : ' accounts cleared') + ' so far.';
   } else {
-    emoji = '\uD83D\uDE80'; big = pct + '% to debt-free'; sub = 'The plan is in motion.';
+    emoji = '\uD83D\uDE80'; big = pct + '% of my debt gone'; sub = 'The plan is in motion.';
   }
 
   const content = { emoji: emoji, headline: 'My progress', sub: sub, big: big };
@@ -8477,14 +8537,17 @@ function renderStats() {
     document.getElementById('stat-saved').textContent = '$0';
   }
 
-  // Overall progress
+  // Overall progress. v1.39.4 — this recomputed the old gross-payments formula
+  // inline instead of calling progressPct(), so it had to be fixed here too.
+  // The two labels now reconcile: paid down + remaining = the starting balance.
   const orig = totalOriginal();
   const paid = totalPaid();
-  const pct = orig > 0 ? Math.min(100, (paid/orig)*100) : 0;
+  const pct = progressPct();
+  const paidDown = progressPaidDown();
   document.getElementById('overall-progress-card').style.display = orig > 0 ? 'block' : 'none';
   document.getElementById('overall-progress').style.width = pct + '%';
   document.getElementById('progress-pct').textContent = pct.toFixed(1) + '%';
-  document.getElementById('progress-label-paid').textContent = fmt(paid) + ' paid off';
+  document.getElementById('progress-label-paid').textContent = fmt(paidDown) + ' paid down';
   document.getElementById('progress-label-left').textContent = fmt(total) + ' remaining';
 
   // Milestone counts. v1.33.3 — "Debts Eliminated" counted every zero-balance
@@ -8505,7 +8568,11 @@ function renderStats() {
   document.getElementById('ms-total-paid').textContent = fmt(paid);
   const _tpSub = document.getElementById('ms-total-paid-sub');
   if (_tpSub) {
-    _tpSub.textContent = _movedCount ? 'money you paid \u2014 excludes transfers' : 'cumulative payments';
+    // v1.39.4 — this is money OUT, interest included; it is deliberately not
+    // the same number as "paid down" on the Dashboard bar, so say so.
+    _tpSub.textContent = _movedCount
+      ? 'payments made \u2014 excludes transfers'
+      : 'payments made, interest included';
   }
 }
 
