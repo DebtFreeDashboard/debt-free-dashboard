@@ -289,6 +289,7 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -3336,7 +3337,7 @@
 </div>
 
 <!-- v1.18.0 — confetti + celebration overlay -->
-<canvas id="confetti-canvas" style="position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:1200;"></canvas>
+<canvas id="confetti-canvas" style="position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;pointer-events:none;z-index:1200;"></canvas>
 <div id="celebrate-overlay" class="modal-overlay hidden" style="z-index:1210;" onclick="closeCelebrate(event)">
   <div class="modal celebrate-modal" style="max-width:420px;text-align:center;" onclick="event.stopPropagation()">
     <div id="celebrate-emoji" style="font-size:4rem;line-height:1;margin-bottom:8px;">\uD83C\uDF89</div>
@@ -3397,7 +3398,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.40.1';
+const APP_VERSION = '1.40.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3405,6 +3406,13 @@ const APP_VERSION = '1.40.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.2',
+    date: 'September 14, 2026',
+    name: 'Fits the screen properly',
+    whatsNew: [],
+    fixes: [ 'Fixed the page being very slightly taller than your screen on iPhone and iPad, which could leave a thin strip hidden behind the browser bar.' ]
+  },
   {
     version: '1.40.1',
     date: 'September 7, 2026',

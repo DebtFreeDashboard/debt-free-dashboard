@@ -1,8 +1,8 @@
 {
-  "version": "1.40.1",
-  "releaseDate": "2026-09-07",
-  "releaseName": "Tidier milestone chips",
+  "version": "1.40.2",
+  "releaseDate": "2026-09-14",
+  "releaseName": "Fits the screen properly",
   "notes": [
-    "On a phone, some milestones were splitting their icon onto one line and their name onto the next. Every milestone now sits on a single line."
+    "Fixed the page being very slightly taller than your screen on iPhone and iPad, which could leave a thin strip hidden behind the browser bar."
   ]
 }
