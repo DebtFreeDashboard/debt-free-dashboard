@@ -4,10 +4,15 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.40.5';
+const CACHE_NAME = 'debtfree-1.40.6';
+// v1.40.6 — './dashboard.html' resolved to /dashboard.html (this file sits at
+// the repo root), which did not exist: every cache.addAll() rejected, the
+// fallback cache.add() rejected too, and the app precached NOTHING. Runtime
+// caching masked it, so offline worked for pages already visited and failed
+// for anything else. The app is at /app/dashboard.html.
 const CORE_ASSETS = [
   './',
-  './dashboard.html',
+  './app/dashboard.html',
   '/manifest.json'
 ];
 
@@ -62,7 +67,7 @@ self.addEventListener('fetch', function(event) {
         return resp;
       }).catch(function() {
         return caches.match(req).then(function(r) {
-          return r || caches.match('./dashboard.html');
+          return r || caches.match('./app/dashboard.html');
         });
       })
     );

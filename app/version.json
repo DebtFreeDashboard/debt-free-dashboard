@@ -1,8 +1,9 @@
 {
-  "version": "1.40.5",
+  "version": "1.40.6",
   "releaseDate": "2026-09-15",
-  "releaseName": "The example always shows up now",
+  "releaseName": "Old links work again",
   "notes": [
-    "If your browser has site storage switched off — private browsing, or a link opened inside another app — the dashboard used to open completely empty, with no example numbers and no explanation. It now shows the example like everyone else sees, and tells you plainly that this browser won’t keep what you enter."
+    "Some older posts pointed at a web address that no longer existed, so anyone following them landed on an error page. That address now sends you straight to the dashboard.",
+    "Fixed the app not saving itself for offline use. Part of that setup pointed at the wrong file and had been quietly failing, so opening the app without a connection could fail."
   ]
 }

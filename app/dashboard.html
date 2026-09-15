@@ -3404,7 +3404,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.40.5';
+const APP_VERSION = '1.40.6';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3412,6 +3412,16 @@ const APP_VERSION = '1.40.5';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.6',
+    date: 'September 15, 2026',
+    name: 'Old links work again',
+    whatsNew: [],
+    fixes: [
+      'Some older posts pointed at a web address that no longer existed, so anyone following them landed on an error page. That address now sends you straight to the dashboard.',
+      'Fixed the app not saving itself for offline use. Part of that setup pointed at the wrong file and had been quietly failing, so opening the app without a connection could fail.'
+    ]
+  },
   {
     version: '1.40.5',
     date: 'September 15, 2026',
