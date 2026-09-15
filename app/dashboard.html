@@ -39,7 +39,7 @@
     --accent5: #4ecdc4;
     --glow: rgba(0,229,176,0.15);
     --danger-glow: rgba(255,107,107,0.15);
-    --header-bg: rgba(10,10,15,0.95);
+    --header-bg: #0a0a0f;
     --font-display: 'Syne', sans-serif;
     --font-mono: 'DM Mono', monospace;
     --font-body: 'DM Sans', sans-serif;
@@ -278,7 +278,7 @@
     --accent5: #2bb3aa;
     --glow: rgba(0,168,132,0.12);
     --danger-glow: rgba(224,72,72,0.12);
-    --header-bg: rgba(244,244,247,0.95);
+    --header-bg: #f4f4f7;
     --shadow: 0 4px 24px rgba(20,20,50,0.10);
   }
 
@@ -306,23 +306,29 @@
   }
 
   /* ─── HEADER ─── */
-  /* v1.28.2 — content was ghosting through / above the header on iOS. Cause is
-     a known Safari repaint bug: backdrop-filter on a position:sticky element
-     leaves stale scrolled content painted in its compositing layer. Promoting
-     the element to its own layer with translateZ(0) forces a clean repaint.
-     isolation:isolate keeps the blur from sampling outside its own stacking
-     context. If ghosting survives on device, the fallback is to drop
-     backdrop-filter entirely and take --header-bg to full opacity. */
+  /* v1.40.4 — a plain opaque bar again, with the compositing tricks removed.
+     History: v1.28.2 added translateZ(0) + will-change + isolation to stop
+     backdrop-filter ghosting on iOS, and left a note that the fallback was to
+     drop backdrop-filter outright. It reduced the artefact but never fixed it:
+     a pale band sat across the top of the logo on iPhone, in BOTH themes, that
+     did not move on scroll and cleared the instant the header was pulled down.
+     That specific combination rules out stale scrolled content (which would
+     track the scroll) and points to a stale raster: will-change pinned the
+     layer permanently, so it kept whatever it first rasterised — the logo at
+     its pre-inset position, before env(safe-area-inset-top) resolved and the
+     header padding grew — until something forced a repaint.
+     Removing will-change/translateZ unpins the layer, and removing
+     backdrop-filter removes the only reason it was ever promoted. The cost is
+     close to zero: --header-bg was already 95% opaque, so a 20px blur behind
+     it was doing almost no visible work. Taken to full opacity here, which is
+     the same colour as the page behind it.
+     isolation:isolate stays — it creates a stacking context but no raster
+     layer, and dropping it would change how the header's children stack. */
   .sticky-top {
     position: sticky;
     top: 0;
     z-index: 100;
     background: var(--header-bg);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-    will-change: transform;
     isolation: isolate;
   }
 
@@ -3398,7 +3404,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.40.3';
+const APP_VERSION = '1.40.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3406,6 +3412,13 @@ const APP_VERSION = '1.40.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.4',
+    date: 'September 15, 2026',
+    name: 'Clearer header on iPhone',
+    whatsNew: [],
+    fixes: [ 'Fixed a faint haze across the top of the DebtFree logo on iPhone, which only cleared if you pulled the page down. The header now draws cleanly every time.' ]
+  },
   {
     version: '1.40.3',
     date: 'September 15, 2026',
