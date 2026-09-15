@@ -1,8 +1,8 @@
 {
-  "version": "1.40.4",
+  "version": "1.40.5",
   "releaseDate": "2026-09-15",
-  "releaseName": "Clearer header on iPhone",
+  "releaseName": "The example always shows up now",
   "notes": [
-    "Fixed a faint haze across the top of the DebtFree logo on iPhone, which only cleared if you pulled the page down. The header now draws cleanly every time."
+    "If your browser has site storage switched off — private browsing, or a link opened inside another app — the dashboard used to open completely empty, with no example numbers and no explanation. It now shows the example like everyone else sees, and tells you plainly that this browser won’t keep what you enter."
   ]
 }

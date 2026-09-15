@@ -3404,7 +3404,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.40.4';
+const APP_VERSION = '1.40.5';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3412,6 +3412,13 @@ const APP_VERSION = '1.40.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.5',
+    date: 'September 15, 2026',
+    name: 'The example always shows up now',
+    whatsNew: [],
+    fixes: [ 'If your browser has site storage switched off \u2014 private browsing, or a link opened inside another app \u2014 the dashboard used to open completely empty, with no example numbers and no explanation. It now shows the example like everyone else sees, and tells you plainly that this browser won\u2019t keep what you enter.' ]
+  },
   {
     version: '1.40.4',
     date: 'September 15, 2026',
@@ -7244,7 +7251,11 @@ function detectInAppBrowser() {
 
 function initInAppBanner() {
   const app = detectInAppBrowser();
-  if (!app) return;
+  // v1.40.5 — two different problems share this banner. An in-app browser keeps
+  // data in its own sandbox; a browser with site storage switched off (private
+  // mode, Lockdown Mode, blocked site data) keeps nothing at all. The second
+  // used to be entirely silent.
+  if (!app && _storageOK) return;
   // Respect a dismissal for this session only — the risk is real enough that
   // it's worth re-raising on a fresh visit.
   try { if (sessionStorage.getItem('debtfree_inapp_dismissed') === '1') return; } catch (e) {}
@@ -7255,6 +7266,23 @@ function initInAppBanner() {
 
   // Platform-accurate instructions. Android's Instagram/Facebook webviews use a
   // ⋮ menu; iOS uses ⋯ (or a compass icon on TikTok).
+  if (!_storageOK) {
+    const titleEl = document.querySelector('#inapp-banner .inapp-banner-title');
+    if (titleEl) titleEl.innerHTML = '\u26A0\uFE0F This browser isn\u2019t saving your data';
+    textEl.innerHTML =
+      'Site storage is switched off in this browser, so anything you enter here will be gone ' +
+      'when you come back. Everything below still works \u2014 it just won\u2019t be kept. ' +
+      'Opening the site in a normal (non\u2011private) browser window keeps your numbers on your device.';
+    const copyBtn = document.getElementById('inapp-copy-btn');
+    if (copyBtn && !app) copyBtn.style.display = 'none';
+    banner.style.display = 'block';
+    if (typeof trackShare === 'function') {
+      trackShare('inapp_banner_shown', { _category: 'acquisition',
+        in_app: app || '(browser)', storage: 'blocked' });
+    }
+    return;
+  }
+
   const isAndroid = /Android/i.test(navigator.userAgent || '');
   const menuGlyph = isAndroid ? '&#8942;' : '&#8943;';
   const openLabel = isAndroid ? 'Open in Chrome' : 'Open in browser';
@@ -12276,6 +12304,21 @@ function sanitizeDebts(parsed) {
 // ══════════════════════════════════════════════════════════════════════
 var _demoMode = false;
 
+// v1.40.5 — is storage actually usable? A read-only check is not enough: some
+// browsers serve getItem happily and throw only on write, so the app looks
+// fine and then silently loses everything the visitor types. Probe with a real
+// write-and-remove.
+var _storageOK = (function () {
+  try {
+    var k = '__debtfree_probe__';
+    localStorage.setItem(k, '1');
+    localStorage.removeItem(k);
+    return true;
+  } catch (e) {
+    return false;
+  }
+})();
+
 var DEMO_DEBTS = [
   { id: -101, name: 'Rewards Visa', type: 'cc', balance: 6800, originalBalance: 7500,
     apr: 24.99, realApr: 24.99, regularApr: 24.99, minPayment: 170,
@@ -12322,11 +12365,17 @@ function _demoPayments() {
 // prior dismissal. A returning user who cleared their debts on purpose
 // must not get the example shoved back at them.
 function _shouldSeedDemo() {
+  // v1.40.5 — when storage is unavailable there is nothing persisted to
+  // conflict with, so the example is exactly what this visitor should see.
+  // Returning false here (the old behaviour) handed them a $0 dashboard with
+  // no example and no explanation, which reads as a broken link — and this is
+  // the state social traffic lands in most often.
+  if (!_storageOK) return debts.length === 0 && payments.length === 0;
   try {
     if (localStorage.getItem('debtfree_demo_dismissed') === '1') return false;
     if (localStorage.getItem('debtfree_debts')) return false;
     if (localStorage.getItem('debtfree_payments')) return false;
-  } catch (e) { return false; }
+  } catch (e) { /* nothing readable means nothing saved — fall through */ }
   return debts.length === 0 && payments.length === 0;
 }
 
