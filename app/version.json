@@ -1,9 +1,8 @@
 {
-  "version": "1.40.6",
+  "version": "1.40.7",
   "releaseDate": "2026-09-15",
-  "releaseName": "Old links work again",
+  "releaseName": "Counting visitors correctly",
   "notes": [
-    "Some older posts pointed at a web address that no longer existed, so anyone following them landed on an error page. That address now sends you straight to the dashboard.",
-    "Fixed the app not saving itself for offline use. Part of that setup pointed at the wrong file and had been quietly failing, so opening the app without a connection could fail."
+    "Behind the scenes: the app was miscounting some of its own activity as if it were new visitors arriving from elsewhere. Nothing about the app changes — it only means I can now tell where people actually find this."
   ]
 }

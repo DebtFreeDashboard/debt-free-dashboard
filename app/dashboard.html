@@ -3404,7 +3404,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.40.6';
+const APP_VERSION = '1.40.7';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3412,6 +3412,13 @@ const APP_VERSION = '1.40.6';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.7',
+    date: 'September 15, 2026',
+    name: 'Counting visitors correctly',
+    whatsNew: [],
+    fixes: [ 'Behind the scenes: the app was miscounting some of its own activity as if it were new visitors arriving from elsewhere. Nothing about the app changes \u2014 it only means I can now tell where people actually find this.' ]
+  },
   {
     version: '1.40.6',
     date: 'September 15, 2026',
@@ -6767,7 +6774,7 @@ function celebrateMilestone(key) {
     if (b) b.classList.toggle('seg-active', f === 'square');
   });
   overlay.classList.remove('hidden');
-  trackShare('card_shown', { source: 'milestone', milestone: key });
+  trackShare('card_shown', { card_type: 'milestone', milestone: key });
   if (typeof confettiBurst === 'function') confettiBurst();
 }
 
@@ -6807,7 +6814,7 @@ function shareProgress() {
     if (b) b.classList.toggle('seg-active', f === 'square');
   });
   overlay.classList.remove('hidden');
-  trackShare('card_shown', { source: 'on_demand', pct: pct });
+  trackShare('card_shown', { card_type: 'on_demand', pct: pct });
   // No confetti — this is a deliberate share, not a surprise celebration.
 }
 
@@ -6967,7 +6974,7 @@ async function shareShareCard() {
     if (_lastCardBlob && navigator.canShare) {
       const file = new File([_lastCardBlob], 'debtfree-win.png', { type: 'image/png' });
       if (navigator.canShare({ files: [file] })) {
-        trackShare('card_share', { format: _cardFormat, method: 'native' });
+        trackShare('card_share', { format: _cardFormat, share_method: 'native' });
         await navigator.share({ files: [file], title: 'My debt payoff progress',
           text: 'Tracking my debt payoff with DebtFree Dashboard \u2014 mydebtdashboard.com' });
         return;
@@ -7662,7 +7669,7 @@ function wiSet(k, v) {
   wiSyncBox(k);
   wiMarkChips(k);
   updateWhatIf();
-  if (typeof trackShare === 'function') trackShare('whatif_set', { control: k, value: v });
+  if (typeof trackShare === 'function') trackShare('whatif_set', { control: k, control_value: v });
 }
 function wiNudge(k, dir) { wiSet(k, wiGet(k) + dir * WI_CFG[k].nudge); }
 function wiSyncBox(k) {
