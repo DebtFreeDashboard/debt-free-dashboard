@@ -12,6 +12,18 @@
 <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
 <link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
 <title>DebtFree Dashboard — Install</title>
+
+<!-- v1.40.7 — this page carried no analytics at all. It is where the header's
+     "Install app" button sends people, so every install attempt was invisible:
+     no count of who arrives, on what device, or whether they go on to open the
+     dashboard. Same measurement ID as the homepage and the app. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-NCP56TD9BG');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -326,6 +338,39 @@ function detectDevice() {
   else showTab('desktop');
 }
 detectDevice();
+
+// v1.40.7 — who reaches this page, on what device, and whether they go on to
+// open the dashboard. Parameter names deliberately avoid GA4's reserved set
+// (source, medium, method, value, platform) so none of them get mistaken for
+// traffic attribution the way `source` was on the share-card events.
+(function instrumentInstallPage() {
+  if (typeof gtag !== 'function') return;
+  try {
+    var ua = navigator.userAgent || '';
+    var device = /iphone|ipad|ipod/i.test(ua) ? 'ios'
+               : /android/i.test(ua) ? 'android' : 'desktop';
+    var inApp = /instagram|tiktok|bytedancewebview|musical_ly|fban|fbav|fb_iab/i.test(ua)
+               ? 'in_app' : '(browser)';
+    var params = new URLSearchParams(location.search);
+
+    gtag('event', 'install_page', {
+      event_category: 'activation',
+      device_type: device,
+      in_app: inApp,
+      utm_source: params.get('utm_source') || '(none)'
+    });
+
+    // Leaving for the dashboard is the success path; silence is the drop-off.
+    document.querySelectorAll('a[href*="dashboard.html"]').forEach(function (a) {
+      a.addEventListener('click', function () {
+        gtag('event', 'install_page_exit', {
+          event_category: 'activation',
+          device_type: device
+        });
+      });
+    });
+  } catch (e) {}
+})();
 
 // Register service worker
 if ('serviceWorker' in navigator) {
