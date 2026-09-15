@@ -1267,6 +1267,51 @@
     } catch (e) {}
   })();
 
+  // v1.40.3 — remember the arriving source and pass it through to Gumroad.
+  // Same origin as the app, so a source captured here survives the hop to
+  // /app/dashboard.html and is still attached if the purchase starts there.
+  (function dfAttribution() {
+    var KEY = 'debtfree_attribution';
+    try {
+      var p = new URLSearchParams(location.search);
+      if (p.get('utm_source')) {
+        localStorage.setItem(KEY, JSON.stringify({
+          source: p.get('utm_source'),
+          medium: p.get('utm_medium') || '',
+          content: p.get('utm_content') || '',
+          at: new Date().toISOString().slice(0, 10)
+        }));
+      }
+    } catch (e) {}
+
+    function current() {
+      try {
+        var q = new URLSearchParams(location.search);
+        if (q.get('utm_source')) {
+          return { source: q.get('utm_source'), medium: q.get('utm_medium') || '',
+                   content: q.get('utm_content') || '' };
+        }
+        var raw = localStorage.getItem(KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+
+    document.addEventListener('click', function (e) {
+      var a = (e.target && e.target.closest) ? e.target.closest('a[href*="gumroad.com"]') : null;
+      if (!a) return;
+      var at = current();
+      if (!at || !at.source) return;
+      try {
+        var u = new URL(a.href);
+        if (u.searchParams.get('utm_source')) return;
+        u.searchParams.set('utm_source', at.source);
+        if (at.medium) u.searchParams.set('utm_medium', at.medium);
+        if (at.content) u.searchParams.set('utm_content', at.content);
+        a.href = u.toString();
+      } catch (err) {}
+    }, true);
+  })();
+
   // Homepage -> app click-through. This is the number that decides the
   // Instagram routing test: of the people who land here, how many reach the
   // dashboard. UTMs are forwarded onto the app link so the app's own arrival

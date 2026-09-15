@@ -1,8 +1,8 @@
 {
-  "version": "1.40.2",
-  "releaseDate": "2026-09-14",
-  "releaseName": "Fits the screen properly",
+  "version": "1.40.3",
+  "releaseDate": "2026-09-15",
+  "releaseName": "Knowing which posts are worth making",
   "notes": [
-    "Fixed the page being very slightly taller than your screen on iPhone and iPad, which could leave a thin strip hidden behind the browser bar."
+    "Behind the scenes: if you arrive from a link in a social post, which post it was now carries through to the premium page. None of your debt information is involved — it only tells me which posts are worth making more of."
   ]
 }

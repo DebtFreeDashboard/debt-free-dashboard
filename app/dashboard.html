@@ -3398,7 +3398,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.40.2';
+const APP_VERSION = '1.40.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3406,6 +3406,13 @@ const APP_VERSION = '1.40.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.40.3',
+    date: 'September 15, 2026',
+    name: 'Knowing which posts are worth making',
+    whatsNew: [],
+    fixes: [ 'Behind the scenes: if you arrive from a link in a social post, which post it was now carries through to the premium page. None of your debt information is involved \u2014 it only tells me which posts are worth making more of.' ]
+  },
   {
     version: '1.40.2',
     date: 'September 14, 2026',
@@ -6616,12 +6623,73 @@ function trackOnce(key, action, params) {
   trackShare(action, params);
 }
 
+// ── Acquisition attribution ──────────────────────────────────────────
+// v1.40.3. GA4 already records the utm on arrival, but the purchase
+// completes on gumroad.com — a different origin, which never sees it.
+// Without forwarding, every order looks like it came from
+// mydebtdashboard.com and no sale can be traced back to a channel.
+// The homepage shares this origin, so a source captured there is still
+// here when the buy button is tapped inside the app.
+const ATTRIBUTION_KEY = 'debtfree_attribution';
+
+function rememberAttribution() {
+  try {
+    const p = new URLSearchParams(location.search);
+    const source = p.get('utm_source');
+    if (!source) return;            // no utm on this visit: keep the last one
+    localStorage.setItem(ATTRIBUTION_KEY, JSON.stringify({
+      source: source,
+      medium: p.get('utm_medium') || '',
+      content: p.get('utm_content') || '',
+      at: new Date().toISOString().slice(0, 10)
+    }));
+  } catch (e) {}
+}
+
+// The current URL always wins over storage, so a fresh click is never
+// attributed to an older visit from a different channel.
+function storedAttribution() {
+  try {
+    const p = new URLSearchParams(location.search);
+    if (p.get('utm_source')) {
+      return { source: p.get('utm_source'), medium: p.get('utm_medium') || '',
+               content: p.get('utm_content') || '' };
+    }
+    const raw = localStorage.getItem(ATTRIBUTION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+// Stamped at click time rather than once at boot: the premium buttons sit
+// in panels that an innerHTML re-render can replace, which would silently
+// drop a stamp applied at startup. Capture phase, so the href is rewritten
+// before navigation begins, and delegated, so a button added later is
+// covered without a second place to remember.
+function stampGumroadLinks() {
+  document.addEventListener('click', function (e) {
+    const a = (e.target && e.target.closest) ? e.target.closest('a[href*="gumroad.com"]') : null;
+    if (!a) return;
+    const at = storedAttribution();
+    if (!at || !at.source) return;
+    try {
+      const u = new URL(a.href);
+      if (u.searchParams.get('utm_source')) return;   // already stamped
+      u.searchParams.set('utm_source', at.source);
+      if (at.medium) u.searchParams.set('utm_medium', at.medium);
+      if (at.content) u.searchParams.set('utm_content', at.content);
+      a.href = u.toString();
+    } catch (err) {}
+  }, true);
+}
+
 function trackBuyClick(placement) {
+  const _at = storedAttribution();
   trackShare('buy_clicked', {
     _category: 'revenue',
     placement: placement,
     debt_count: debts.length,
-    is_premium: isPremium ? 'yes' : 'no'
+    is_premium: isPremium ? 'yes' : 'no',
+    utm_source: (_at && _at.source) || '(none)'
   });
 }
 
@@ -12885,6 +12953,9 @@ initInAppBanner();
 // v1.25.0 — record how this visitor arrived, once per session, so acquisition
 // source is attached to the activation funnel (debt_added) in GA4 rather than
 // living only in GA4's own attribution.
+rememberAttribution();
+stampGumroadLinks();
+
 (function captureArrival() {
   try {
     if (sessionStorage.getItem('debtfree_arrival_logged') === '1') return;
