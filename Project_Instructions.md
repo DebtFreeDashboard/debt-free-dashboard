@@ -50,8 +50,12 @@ handles technical execution end to end.
 | `sw.js` | Service worker (repo root) |
 | `index.html` | Marketing homepage (repo root) |
 | `test-fixtures/` | `test-primary.json`, `test-minimal.json`, `README.md` |
+| `app/dev.html` | **Generated** dev build — never edit by hand (see below) |
+| `tools/make-dev.js` | Generates `app/dev.html` from `app/dashboard.html` |
+| `tools/verify-dev.js` | Proves the dev build is isolated from real data |
 
 Live: `mydebtdashboard.com` (homepage) and `/app/dashboard.html` (the app).
+Dev build: `/app/dev.html` — same origin, deliberately inert (see below).
 
 ## Shipping rules
 
@@ -76,6 +80,86 @@ Other rules:
   means for them, not what the code does).
 - Use real dates. Kevin's date is authoritative if it differs from Claude's.
 - Bump patch for fixes, minor for user-visible features.
+- **Never run `git commit` from the Cowork Linux VM.** It has no `autocrlf`, so
+  it would write CRLF into the blobs and turn a 30-line change into a
+  23,000-line diff. Claude writes files; Kevin commits in GitHub Desktop.
+  To see what GitHub Desktop will see:
+  `git -c core.autocrlf=true --no-optional-locks status --short`
+
+## The dev build (`app/dev.html`)
+
+**Why it exists.** GitHub Pages only serves `main`, so a feature branch cannot
+be opened on a real iPhone. Every hard bug this project has hit — viewport
+units, the header haze, blocked storage, the service worker that had never
+precached anything — was only visible on a real device. `app/dev.html` is how
+in-progress work gets onto that device.
+
+**It is a build output.** Never edit `app/dev.html`. Every change belongs in
+`app/dashboard.html`; then regenerate:
+
+```bash
+node tools/make-dev.js          # app/dashboard.html -> app/dev.html
+```
+
+The generator refuses to write a partly-transformed file. If an anchor stops
+matching because `dashboard.html` changed shape, fix the anchor in
+`tools/make-dev.js` — do not ship past the error. A dev build that has lost its
+storage namespace writes directly into real debt data.
+
+**Five transforms, each guarding a specific hazard:**
+
+| Transform | Hazard it prevents |
+|---|---|
+| `localStorage` namespaced to `dev::` | An in-progress schema change overwriting real debt data in the same browser — permanently, with no undo |
+| Service worker disabled + torn down | `sw.js` is scoped at the site root, so it caches `dev.html` and serves a stale build back on the next test |
+| Update check neutered | Dev carries a higher `APP_VERSION` than live `version.json`, so the real check reports an "update" and tries to migrate the tester onto prod |
+| GA4 + Clarity removed | Four weeks of dev reloads quietly inflating the funnel numbers the pricing decision rests on |
+| `noindex`, `[DEV]` title, no manifest, DEV badge | Dev being indexed, installed over the real PWA, or mistaken for prod in a tab switcher |
+
+The storage guard is a **façade over `localStorage`**, not a rename of the known
+keys. The app already uses at least one un-prefixed key (`installDismissed`) and
+new features add more; a façade cannot miss a key that did not exist when it was
+written.
+
+**After changing `tools/make-dev.js`, or when `dashboard.html` changes shape
+around an anchor, re-run the proof:**
+
+```bash
+python3 -m http.server 8911      # from the repo root, another shell
+node tools/verify-dev.js         # expect ALL PASS
+```
+
+The last check is a negative control — prod must **still** send analytics — so a
+green run cannot just mean everything is broken.
+
+**Two things the dev build does not isolate.** Google Drive backup still talks to
+the real Google account (it will create its own file rather than overwrite the
+real backup, because `debtfree_drive_fileid` is namespaced — but do not use dev
+to test Drive against real data). And a Gumroad licence entered in dev is stored
+under `dev::`, so premium must be re-activated there.
+
+## Branching
+
+`app/dev.html` solves device testing; it does not solve isolation of the work
+itself. For a long-running feature, branch — GitHub Desktop handles it from the
+branch dropdown.
+
+A branch beats a duplicated file for this codebase specifically: `dashboard.html`
+is one ~650KB file, so a second copy means every prod hotfix has to be applied
+twice by hand, and a missed one silently reverts shipped work at merge time.
+Git applies a hotfix to the right lines on its own and only raises a conflict
+where the same lines genuinely changed.
+
+Rules that keep a long branch cheap:
+
+- Merge `main` into the branch the **same day** as any prod hotfix, not at the
+  end. Four weeks of unmerged hotfixes is where the pain actually lives.
+- Only branch for work with real blast radius. Additive, paywalled features
+  (amortization, CSV export) can go straight to `main` — a free user's
+  experience is unchanged, and shipping early beats a dark branch.
+- Branch when a change alters what an existing number *means* across tabs.
+  Sinking funds touches `extraMonthly`, which Dashboard, Strategy, What-If,
+  Cash-Flow and Roadmap all read — that is a branch.
 
 ## Testing expectations
 

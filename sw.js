@@ -4,7 +4,7 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.40.7';
+const CACHE_NAME = 'debtfree-1.41.0';
 // v1.40.6 — './dashboard.html' resolved to /dashboard.html (this file sits at
 // the repo root), which did not exist: every cache.addAll() rejected, the
 // fallback cache.add() rejected too, and the app precached NOTHING. Runtime

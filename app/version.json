@@ -1,8 +1,9 @@
 {
-  "version": "1.40.7",
-  "releaseDate": "2026-09-15",
-  "releaseName": "Counting visitors correctly",
+  "version": "1.41.0",
+  "releaseDate": "2026-09-16",
+  "releaseName": "See where every dollar goes",
   "notes": [
-    "Behind the scenes: the app was miscounting some of its own activity as if it were new visitors arriving from elsewhere. Nothing about the app changes — it only means I can now tell where people actually find this."
+    "Premium: a full amortization schedule. For your whole plan or any single debt, every month shows what the payment covers in interest and how much actually comes off the balance.",
+    "Premium: export to CSV. Take the month-by-month schedule, or just your debt list, into Excel, Numbers or Google Sheets and check the math yourself."
   ]
 }
