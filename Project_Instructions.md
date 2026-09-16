@@ -28,8 +28,28 @@ All three must match. If they don't, stop and tell Kevin — something didn't
 deploy. If Kevin uploads a file, still fetch the repo copy and compare; if they
 differ, ask which is authoritative rather than guessing.
 
-`raw.githubusercontent.com` serves the committed file with no CDN lag, so it is
-more reliable than checking the live site. In Cowork, read from the local clone
+`raw.githubusercontent.com` is usually the fastest way to see a committed file,
+but it is **not** instantly consistent — verified 2026-09-16, when it served the
+previous release for several minutes after a push had completed, including with
+a cache-buster and `Cache-Control: no-cache`. Do not read a stale answer there as
+a failed deploy. The authoritative check is the server itself:
+
+```bash
+git ls-remote origin main          # what GitHub actually has
+git show <sha>:app/version.json    # what is in that commit
+```
+
+Two more cache layers sit between a push and what a device sees:
+
+- **GitHub Pages serves `app/dev.html` with `cache-control: max-age=600`.** A
+  normal navigation can therefore load a dev build up to ten minutes old, which
+  is long enough to test the wrong thing and believe it. When testing dev right
+  after a push, hard-reload it, or `fetch('/app/dev.html', {cache:'reload'})`
+  first. `app/dashboard.html` is affected the same way.
+- **The service worker serves the previous HTML for one more load.** After a
+  release, the first page load still reports the old `APP_VERSION` while the new
+  worker installs; the reload after it is correct. This is normal and is not a
+  broken deploy. In Cowork, read from the local clone
 instead: `C:\Users\kevin\Documents\GitHub\debt-free-dashboard` (pull first).
 
 ## The product

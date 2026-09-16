@@ -267,6 +267,86 @@
 .amort-table .amort-bal { font-weight: 600; }
 .amort-table tr.amort-final td { color: var(--accent); font-weight: 700; }
 #amort-debt { width: 100%; }
+
+/* v1.42.0 — Coming Up rows. Deliberately calm: no red, no alarm colouring.
+   A due date is information, not a telling-off, and the person reading it may
+   already know they cannot pay it. */
+.due-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border); }
+.due-row:last-child { border-bottom:none; }
+.due-row-main { flex:1; min-width:0; }
+.due-row-name { font-size:0.88rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.due-row-sub { font-size:0.72rem; color:var(--text-muted); margin-top:2px; }
+.due-row-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.due-row-amt { font-family:var(--font-mono); font-size:0.82rem; font-weight:600; }
+.due-row-log { font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.05em;
+  padding:5px 10px; border-radius:6px; border:1px solid var(--border);
+  background:var(--card2); color:var(--text); cursor:pointer; }
+.due-row-log:hover { border-color:var(--accent); color:var(--accent); }
+.due-today .due-row-sub { color:var(--accent); }
+.due-passed .due-row-sub { color:var(--accent4); }  /* amber, not red: this is
+   the row that most needs noticing, but a person looking at it may already know
+   they could not pay. Amber says "look here"; red says "you failed". */
+
+/* v1.42.0 — batch due-date setter */
+.dd-row { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); }
+.dd-row:last-child { border-bottom:none; }
+.dd-name { flex:1; min-width:0; font-size:0.85rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dd-input { width:58px; flex-shrink:0; text-align:center; }
+#duedates-list { max-height:46vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.due-invite-text { font-size:0.82rem; color:var(--text-muted); line-height:1.5; margin-bottom:12px; }
+.due-invite-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.due-invite-go { flex:1; min-width:140px; }
+/* the due-day tag used in the debt list and portfolio table */
+.due-tag { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.04em;
+  color:var(--text-muted); border:1px solid var(--border); border-radius:4px;
+  padding:1px 5px; margin-left:6px; white-space:nowrap; }
+.due-tag.due-tag-soon { color:var(--accent); border-color:var(--accent); }
+.due-tag.due-tag-passed { color:var(--accent4); border-color:var(--accent4); }
+
+/* v1.42.0 — recurring bills */
+.bill-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); }
+.bill-row:last-child { border-bottom:none; }
+.bill-row input, .bill-add input { font-family:inherit; font-size:0.82rem; padding:7px 8px;
+  border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); min-width:0; }
+.bill-name, .bill-name-static { flex:1; min-width:0; }
+.bill-amt, .bill-amt-static { width:86px; flex-shrink:0; text-align:right; font-family:var(--font-mono); }
+.bill-day, .bill-day-static { width:52px; flex-shrink:0; text-align:center; font-family:var(--font-mono); }
+.bill-name-static, .bill-amt-static, .bill-day-static { font-size:0.82rem; padding:7px 0; }
+.bill-del { flex-shrink:0; width:30px; height:30px; border-radius:6px; border:1px solid var(--border);
+  background:var(--card2); color:var(--text-muted); cursor:pointer; font-size:1rem; line-height:1; }
+.bill-del:hover { border-color:var(--accent3); color:var(--accent3); }
+.bill-add { display:flex; gap:8px; margin-top:10px; }
+.bill-add #bill-name { flex:1; min-width:0; }
+.bill-add #bill-amount { width:86px; flex-shrink:0; }
+.bill-add #bill-due-day { width:60px; flex-shrink:0; }
+
+/* v1.42.0 — bill tick-off. Unmarked is quiet; marked is a filled check. */
+.due-row-tick, .bill-tick {
+  font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.05em;
+  padding:5px 10px; border-radius:6px; border:1px solid var(--border);
+  background:var(--card2); color:var(--text-muted); cursor:pointer; line-height:1;
+}
+.bill-tick { width:30px; height:30px; flex-shrink:0; padding:0; font-size:0.8rem; }
+.due-row-tick:hover, .bill-tick:hover { border-color:var(--accent); color:var(--accent); }
+.due-row-tick.is-marked, .bill-tick.is-marked {
+  background:var(--accent); border-color:var(--accent); color:#0a0a0f; font-weight:700;
+}
+.due-logged .due-row-sub { color:var(--text-muted); }
+
+/* v1.42.0 — Monthly Money Plan. Visually quieter than the extra-payment
+   control above it, because it checks the plan rather than driving it. */
+.money-plan { grid-column:1/-1; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
+.money-plan-label { display:block; font-size:0.78rem; color:var(--text-muted); margin-bottom:6px; }
+.money-plan-stepper { width:100%; max-width:260px; }
+.money-plan-match { font-size:0.7rem; padding:6px 10px; margin-top:8px; }
+.plan-budget-breakdown { font-family:var(--font-mono); font-size:0.68rem; color:var(--text-muted);
+  margin-top:10px; line-height:1.5; }
+.plan-budget-line { font-size:0.8rem; margin-top:6px; line-height:1.5; }
+.plan-budget-line.is-under { color:var(--accent); }
+.plan-budget-line.is-level { color:var(--text-muted); }
+/* Over budget is amber, never red: the user picked both numbers and either one
+   can move. It is a mismatch to look at, not a verdict. */
+.plan-budget-line.is-over  { color:var(--accent4); }
   .roadmap-step { position:relative; display:flex; gap:14px; padding:0 0 22px 0; }
   .roadmap-step:last-child { padding-bottom:0; }
   .roadmap-step::before {
@@ -2562,6 +2642,14 @@
     <!-- v1.35.0 — loud until there's a healthy backup, then it collapses
          to a single quiet line so it stops competing with the progress
          card it sits above. -->
+    <!-- v1.42.0 — what else is due, beside where the extra is going. Dashboard
+         rather than Strategy because this is a daily action, not a planning
+         tool (the same split v1.30.0 applied when the budget card moved). -->
+    <div class="card" id="upcoming-card" style="display:none">
+      <div class="card-title"><div class="dot"></div> Coming Up</div>
+      <div id="upcoming-body"></div>
+      <div id="upcoming-quiet" style="display:none;font-size:0.8rem;color:var(--text-muted);line-height:1.5;"></div>
+    </div>
     <div class="card drive-card loud" id="drive-card" style="display:none">
       <div id="drive-card-line">Your data is only on this device.</div>
       <div class="drive-card-actions">
@@ -2672,6 +2760,12 @@
           <div id="apr-warning" style="display:none;font-size:0.72rem;color:var(--accent3);margin-top:4px;font-family:var(--font-mono);">
             ⚠ APR over 100% — did you mean to type a decimal? (e.g. 27.49)
           </div>
+        </div>
+        <div class="form-field">
+          <label>Due Day <span class="field-optional">optional</span></label>
+          <input type="text" inputmode="numeric" id="debt-due-day" placeholder="15" min="1" max="31"
+            oninput="clearFieldError(this)" />
+          <div class="field-hint">Day of the month it&rsquo;s due</div>
         </div>
         <div class="form-field">
           <label>Min Payment ($) <span class="field-optional">optional</span></label>
@@ -2896,7 +2990,7 @@
 
     <!-- v1.30.0 — moved from Dashboard: these are planning tools, not daily actions -->
 <div class="card" id="budget-card" data-collapse="budget" data-collapse-default="open">
-      <div class="card-title"><div class="dot"></div> Monthly Payoff Budget</div>
+      <div class="card-title"><div class="dot"></div> Monthly Money Plan</div>
       <div class="form-grid" style="grid-template-columns:1fr 1fr">
         <div class="form-field">
           <label>Extra Per Month ($)</label>
@@ -2924,6 +3018,20 @@
             <option value="hybrid">Hybrid &mdash; custom order</option>
           </select>
         </div>
+      <!-- v1.42.0 — the budget check. Deliberately lighter than Extra Per Month
+           above it: extra drives the plan, this only measures it. -->
+      <div class="money-plan">
+        <label class="money-plan-label" for="plan-budget">Monthly budget for debts and bills <span class="field-optional">optional</span></label>
+        <div class="wi-stepper money-plan-stepper">
+          <button type="button" class="wi-nudge" onclick="planBudgetNudge(-1)" aria-label="$50 less">&minus;</button>
+          <input type="text" inputmode="decimal" id="plan-budget" placeholder="2,000" min="0"
+            style="flex:1;min-width:0;" oninput="planBudgetInput(this.value)" onchange="setPlanBudget(this.value)" />
+          <button type="button" class="wi-nudge" onclick="planBudgetNudge(1)" aria-label="$50 more">+</button>
+        </div>
+        <button type="button" class="btn btn-ghost money-plan-match" id="plan-budget-match" onclick="planBudgetMatchCommitted()"></button>
+        <div class="plan-budget-breakdown" id="plan-budget-breakdown"></div>
+        <div class="plan-budget-line" id="plan-budget-line"></div>
+      </div>
       </div>
     </div>
 <div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
@@ -3005,6 +3113,36 @@
           <div style="font-size:1.4rem;">🔒</div>
           <div class="lock-card-title">Your full roadmap to zero</div>
           <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+<div class="card" id="bills-card" data-collapse="bills" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts. Add a due day and it shows up alongside your payments in Coming Up.</p>
+      <div id="bills-list"></div>
+      <div id="bills-total" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:8px 0 14px;"></div>
+      <div class="bill-add">
+        <input id="bill-name" type="text" placeholder="Rent" maxlength="60" aria-label="Bill name" />
+        <input id="bill-amount" type="text" inputmode="decimal" placeholder="1,200" aria-label="Monthly amount" />
+        <input id="bill-due-day" type="text" inputmode="numeric" maxlength="2" placeholder="Day" aria-label="Due day" />
+      </div>
+      <div class="form-error" id="bill-error" style="display:none;"></div>
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addBill()">Add bill</button>
+    </div>
+<div class="card" id="bills-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('bills');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts.</p>
+          <div class="bill-row"><div class="bill-name-static">Rent</div><div class="bill-amt-static">$1,200</div><div class="bill-day-static">1st</div></div>
+          <div class="bill-row"><div class="bill-name-static">Car insurance</div><div class="bill-amt-static">$142</div><div class="bill-day-static">12th</div></div>
+          <div class="bill-row"><div class="bill-name-static">Phone</div><div class="bill-amt-static">$85</div><div class="bill-day-static">20th</div></div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">Everything due, in one place</div>
+          <div class="lock-card-desc" style="max-width:280px;">Your bills alongside your debt payments, so nothing lands on you unexpectedly.</div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
@@ -3552,6 +3690,23 @@
 
 <!-- v1.16.0 — Floating quick-log payment (button + modal) -->
 <button class="fab-log" id="fab-log">+ Log Payment</button>
+<div id="duedates-modal" class="modal-overlay hidden" onclick="closeDueSetter(event)">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title">Due Dates</div>
+      <button class="modal-close" aria-label="Close" onclick="closeDueSetter()">&times;</button>
+    </div>
+    <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.5;margin-bottom:14px;">
+      The day of the month each account is due. Leave any blank if you&rsquo;d rather not track it.
+    </p>
+    <div id="duedates-list"></div>
+    <div class="form-error" id="duedates-error" style="display:none;"></div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveDueSetter()">Save</button>
+      <button class="btn btn-ghost" onclick="closeDueSetter()">Cancel</button>
+    </div>
+  </div>
+</div>
 <div id="quicklog-modal" class="modal-overlay hidden" onclick="closeQuickLog(event)">
   <div class="modal" style="max-width:440px;">
     <div class="modal-header">
@@ -3586,7 +3741,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.41.1';
+const APP_VERSION = '1.42.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3594,6 +3749,26 @@ const APP_VERSION = '1.41.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.42.0',
+    date: 'September 16, 2026',
+    name: 'Nothing catches you out',
+    whatsNew: [
+      'Due dates. Add the day of the month each account is due and a new Coming Up card shows what’s close, with a one-tap way to log the payment right from it. Nothing is assumed — accounts you don’t give a day to are simply left alone.',
+      'Premium: recurring bills. Rent, utilities, insurance, subscriptions — add them with their due days and they appear alongside your debt payments in Coming Up, so you’re looking at everything that’s due in one place. Tick one off once you’ve handled it.',
+      'Monthly Money Plan. Set what you can put toward debts and bills each month, and see it beside what you’ve actually committed. It’s a check on your plan — it doesn’t change your payoff date or any of your numbers.',
+    ],
+    fixes: []
+  },
+  {
+    version: '1.41.2',
+    date: 'September 16, 2026',
+    name: 'Keeping your numbers your numbers',
+    whatsNew: [],
+    fixes: [
+      'The app no longer includes any dollar amounts in its anonymous usage statistics — it now records only broad ranges, so the figures you enter stay on your device. Your amounts are also explicitly hidden from the tool I use to spot layout problems, rather than relying on that tool\'s own default.',
+    ]
+  },
   {
     version: '1.41.1',
     date: 'September 16, 2026',
@@ -4589,6 +4764,8 @@ let accruals = [];               // { id, debtId, debtName, month:"YYYY-MM", amo
 // v1.38.0 — minimums that keep flowing after their debt is gone.
 // { debtId, amount, since:"YYYY-MM-DD", keep:bool }. See rolledOverTotal().
 let rolledMinimums = [];
+let bills = [];              // v1.42.0 — recurring non-debt outgoings (premium)
+let monthlyBudget = 0;       // v1.42.0 — budget-as-check; never read by the engine
 let adjustments = [];            // { id, debtId, amount(signed), date, note }
 let interestAccrualEnabled = false; // default OFF for existing users; load() turns ON for brand-new users
 
@@ -6477,7 +6654,10 @@ function addDebt() {
     includeInStrategy: includeInStrategy,
     origPrincipal: origPrincipal,
     termMonths: termMonths,
-    originationDate: originationDate
+    originationDate: originationDate,
+    // v1.42.0 — stored unclamped; clamped per month at read time so a
+    // card due on the 31st keeps saying 31 rather than being rewritten to 28.
+    dueDay: sanitizeDueDay((document.getElementById('debt-due-day') || {}).value)
   });
 
   // v1.21.1 — activation event. The single most important funnel step: a
@@ -6732,7 +6912,7 @@ function applyTransferClassification() {
   persistMilestones();
 
   if (typeof trackShare === 'function') {
-    trackShare('debt_reclassified_transfer', { _category: 'data_quality', amount: Math.round(amt) });
+    trackShare('debt_reclassified_transfer', { _category: 'data_quality', amount_band: amountBand(amt) });
   }
   save();
   closeClosedDebtModal();
@@ -6763,6 +6943,8 @@ function openEditModal(id) {
   // Show realApr (the post-promo / regular rate) not d.apr which is 0 for promo debts
   document.getElementById('edit-apr').value     = d.realApr || d.apr;
   document.getElementById('edit-min').value     = d.minPayment;
+  var _eddIn = document.getElementById('edit-due-day');
+  if (_eddIn) _eddIn.value = d.dueDay || '';
 
   // Promo fields
   const hasPromo = !!d.promoEnd;
@@ -6968,6 +7150,8 @@ function saveEditDebt() {
   d.origPrincipal   = (_op !== null && !isNaN(_op) && _op > 0) ? _op : null;
   d.termMonths      = (_tm !== null && !isNaN(_tm) && _tm > 0 && _tm <= 600) ? _tm : null;
   d.originationDate = (_eod && _eod.value) ? _eod.value : null;
+  var _edd = document.getElementById('edit-due-day');
+  d.dueDay = _edd ? sanitizeDueDay(_edd.value) : (d.dueDay || null);
 
   // v1.11.0 — Reconciliation: if the saved balance doesn't match what the
   // ledger (originalBalance + accruals + adjustments − payments) would
@@ -7188,6 +7372,57 @@ function trackBuyClick(placement) {
 
 function trackTeaserClick(placement) {
   trackShare('teaser_click', { _category: 'revenue', placement: placement });
+}
+
+
+// v1.41.2 — Analytics must never carry a figure taken from someone's finances.
+//
+// Four events did: dialdate_apply sent the real extra payment, whatif_set sent
+// a slider dollar value, debt_reclassified_transfer sent a transfer amount, and
+// lumps_optimized sent an interest saving. Individually small, but the product
+// is sold on "your numbers stay on your device", and that claim has to be true
+// rather than nearly true.
+//
+// Bands keep every question worth asking answerable — what size of extra
+// payment people use, whether the optimiser saves enough to matter — without
+// the underlying number ever leaving the device.
+//
+// NOTE for GA4: these are new parameter names. Register amount_band /
+// extra_band / control_band / saved_band under Admin -> Custom definitions, or
+// they report as "(not set)" — the same trap that lost add_debt_error
+// segmentation before 1.34.2.
+function amountBand(n) {
+  var v = Math.abs(Number(n) || 0);
+  if (v === 0)     return '0';
+  if (v < 50)      return '1-49';
+  if (v < 100)     return '50-99';
+  if (v < 250)     return '100-249';
+  if (v < 500)     return '250-499';
+  if (v < 1000)    return '500-999';
+  if (v < 2000)    return '1000-1999';
+  if (v < 5000)    return '2000-4999';
+  if (v < 10000)   return '5000-9999';
+  if (v < 25000)   return '10000-24999';
+  return '25000+';
+}
+
+// v1.41.2 — Session recording masks input values by default, but that default
+// is a setting in Clarity's own dashboard, not something this app enforced.
+// Anyone changing it remotely would start capturing balances and payments as
+// they are typed. Marking the fields in the DOM makes the guarantee local.
+//
+// Applied by walking the DOM rather than hand-tagging each of the ~24 money
+// inputs, so fields added later are covered automatically — which matters
+// because the bills work will add more.
+function maskFinancialInputs(root) {
+  try {
+    var scope = root || document;
+    var sel = 'input[inputmode="decimal"], input[type="number"], .money-input';
+    var nodes = scope.querySelectorAll(sel);
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].setAttribute('data-clarity-mask', 'true');
+    }
+  } catch (e) {}
 }
 
 function trackShare(action, params) {
@@ -7576,7 +7811,7 @@ function applyDialExtra(extra) {
   field.value = extra;
   extraMonthly = extra;
   save(); render();
-  trackShare('dialdate_apply', { extra: extra });
+  trackShare('dialdate_apply', { extra_band: amountBand(extra) });
   closeDialDate();
 }
 
@@ -8125,7 +8360,7 @@ function wiSet(k, v) {
   wiSyncBox(k);
   wiMarkChips(k);
   updateWhatIf();
-  if (typeof trackShare === 'function') trackShare('whatif_set', { control: k, control_value: v });
+  if (typeof trackShare === 'function') trackShare('whatif_set', { control: k, control_band: amountBand(v) });
 }
 function wiNudge(k, dir) { wiSet(k, wiGet(k) + dir * WI_CFG[k].nudge); }
 function wiSyncBox(k) {
@@ -9281,6 +9516,9 @@ function render() {
   renderRolledSettings();
   renderStats();
   renderNextDebt();        // v1.13.0
+  renderUpcoming();        // v1.42.0
+  renderBills();           // v1.42.0 (premium)
+  renderMoneyPlan();       // v1.42.0
   renderDebtList();
   renderMonthlySummary();
   renderLumpSumList();
@@ -9365,6 +9603,655 @@ function monthsAway(m) {
   if (!(typeof m === 'number') || !isFinite(m) || m < 0) return '';
   if (m === 0) return 'this month';
   return m + ' month' + (m !== 1 ? 's' : '') + ' away';
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.42.0 — DUE DATES  (free)
+//
+// A debt carries an optional dueDay (1-31). Everything derived from it lives
+// here so there is exactly one place that decides what "due" means.
+//
+// The app only knows what the user LOGGED. It cannot know what they actually
+// paid. So nothing in this file — or in any copy it produces — says missed,
+// late, or overdue. A debt past its day with nothing logged reads "no payment
+// logged yet", which is the only claim the data supports. This is the same
+// rule the streak logic follows.
+// ══════════════════════════════════════════════════════════════════════
+
+var DUE_SOON_DAYS = 7;   // how far ahead the Upcoming card looks
+
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate(); }
+
+// The dueDay clamped into a given month. A card due on the 31st is due on the
+// 28th in February — storing 31 and clamping at read time is right, because
+// clamping at write time would permanently lose the user's actual due day.
+function dueDateIn(year, month, dueDay) {
+  var d = Math.min(Math.max(parseInt(dueDay, 10) || 0, 1), 31);
+  return new Date(year, month, Math.min(d, daysInMonth(year, month)));
+}
+
+// This month's occurrence, whether or not it has passed.
+function dueDateThisMonth(dueDay) {
+  var now = new Date();
+  return dueDateIn(now.getFullYear(), now.getMonth(), dueDay);
+}
+
+// The next occurrence from today, rolling into next month once today's has passed.
+function nextDueDate(dueDay) {
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var here = dueDateIn(today.getFullYear(), today.getMonth(), dueDay);
+  if (here >= today) return here;
+  return dueDateIn(today.getFullYear(), today.getMonth() + 1, dueDay);
+}
+
+function daysUntil(date) {
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.round((date - today) / 86400000);
+}
+
+function sanitizeDueDay(v) {
+  if (v === '' || v === null || typeof v === 'undefined') return null;
+  var n = parseInt(v, 10);
+  if (isNaN(n) || n < 1 || n > 31) return null;
+  return n;
+}
+
+// Rows for the Upcoming card. One per active debt that has a dueDay.
+//   status: 'logged'   payment already logged this month
+//           'today'    due today, nothing logged
+//           'soon'     due within DUE_SOON_DAYS, nothing logged
+//           'passed'   this month's day has gone by with nothing logged
+//           'later'    due further out than DUE_SOON_DAYS
+function upcomingDues() {
+  var ledger = currentMonthLedger();
+  var rows = [];
+  (debts || []).forEach(function (d) {
+    if (!d || d.balance <= 0) return;                 // cleared debts have nothing due
+    var day = sanitizeDueDay(d.dueDay);
+    if (!day) return;
+
+    var paid = ledger.paid[d.id] || 0;
+    var thisMonth = dueDateThisMonth(day);
+    var next = nextDueDate(day);
+    var status, when;
+
+    if (paid > 0) {
+      status = 'logged'; when = next;
+    } else if (daysUntil(thisMonth) < 0) {
+      status = 'passed'; when = thisMonth;
+    } else {
+      var n = daysUntil(next);
+      status = n === 0 ? 'today' : (n <= DUE_SOON_DAYS ? 'soon' : 'later');
+      when = next;
+    }
+
+    var floors = minPaymentFloors(d);
+    rows.push({
+      id: d.id, name: d.name, status: status, date: when,
+      days: daysUntil(when),
+      amount: Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment)),
+      paid: paid
+    });
+  });
+  // v1.42.0 — bills join the same list, premium only. A bill is money that is
+  // genuinely due; leaving it out would make this card a partial answer to the
+  // one question it exists to answer.
+  //
+  // Bills have no 'passed' state: payments are tracked against debts, not
+  // bills, so the app cannot know whether one was paid. Once its day passes a
+  // bill rolls to next month rather than sitting amber forever on something
+  // the user may well have on autopay.
+  if (isPremium) {
+    (bills || []).forEach(function (bill) {
+      var bday = sanitizeDueDay(bill.dueDay);
+      if (!bday) return;
+      var thisMonthDue = dueDateIn(new Date().getFullYear(), new Date().getMonth(), bday);
+      var when, status;
+
+      if (billMarkedThisMonth(bill)) {
+        // Handled for this month; show when it next comes round.
+        status = 'logged'; when = nextDueDate(bday);
+      } else if (billIsTracked(bill) && daysUntil(thisMonthDue) < 0) {
+        // Tracked by hand and this month's day has gone by without a tick.
+        // Only reachable once the user has ticked at least once, so an autopay
+        // bill never lands here.
+        status = 'passed'; when = thisMonthDue;
+      } else {
+        when = nextDueDate(bday);
+        var n = daysUntil(when);
+        status = n === 0 ? 'today' : (n <= DUE_SOON_DAYS ? 'soon' : 'later');
+      }
+
+      rows.push({
+        id: bill.id, name: bill.name, kind: 'bill', status: status,
+        date: when, days: daysUntil(when),
+        amount: parseFloat(bill.amount) || 0, paid: 0,
+        marked: billMarkedThisMonth(bill)
+      });
+    });
+  }
+
+  // Anything needing attention first, then by date.
+  var rank = { passed: 0, today: 1, soon: 2, later: 3, logged: 4 };
+  rows.sort(function (a, b) {
+    if (rank[a.status] !== rank[b.status]) return rank[a.status] - rank[b.status];
+    return a.date - b.date;
+  });
+  return rows;
+}
+
+function dueRowLabel(r) {
+  var isBill = r.kind === 'bill';
+  // A tick is a note to yourself, not evidence of payment — so a bill says
+  // "marked paid", never "paid".
+  if (r.status === 'logged') {
+    return isBill ? 'marked paid this month' : 'payment logged this month';
+  }
+  if (r.status === 'today')  return 'due today';
+  if (r.status === 'passed') {
+    // Deliberately not "missed" or "late" — the app cannot know that.
+    return 'was due ' + dueDayLabel(r.date) + ' \u00b7 '
+         + (isBill ? 'not marked paid yet' : 'no payment logged yet');
+  }
+  if (r.days === 1) return 'due tomorrow';
+  return 'due ' + dueDayLabel(r.date) + ' · in ' + r.days + ' days';
+}
+
+function dueDayLabel(date) {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+
+// ── Batch setter ──────────────────────────────────────────────────────
+// Adding due dates one debt at a time means opening the edit modal once per
+// debt. Kevin's own file has 12 of them; almost nobody finishes that, so the
+// feature would look broken rather than unused.
+
+var DUE_PROMPT_KEY = 'debtfree_due_prompt_dismissed';
+
+function debtsMissingDueDay() {
+  return (debts || []).filter(function (d) {
+    return d && d.balance > 0 && !sanitizeDueDay(d.dueDay);
+  });
+}
+
+function dueInviteDismissed() {
+  try { return localStorage.getItem(DUE_PROMPT_KEY) === '1'; } catch (e) { return false; }
+}
+
+function dismissDueInvite() {
+  try { localStorage.setItem(DUE_PROMPT_KEY, '1'); } catch (e) {}
+  trackShare('due_invite_dismissed', { _category: 'activation' });
+  render();
+}
+
+function openDueSetter() {
+  var modal = document.getElementById('duedates-modal');
+  if (!modal) return;
+  var list = document.getElementById('duedates-list');
+  var active = (debts || []).filter(function (d) { return d.balance > 0; });
+  if (!list) return;
+
+  list.innerHTML = active.map(function (d) {
+    return '<div class="dd-row">'
+         +   '<label class="dd-name" for="dd-in-' + d.id + '">' + escapeHtml(d.name) + '</label>'
+         +   '<input class="dd-input money-input" type="text" inputmode="numeric" '
+         +     'id="dd-in-' + d.id + '" data-debt="' + d.id + '" maxlength="2" placeholder="--" '
+         +     'value="' + (sanitizeDueDay(d.dueDay) || '') + '" />'
+         + '</div>';
+  }).join('');
+
+  var err = document.getElementById('duedates-error');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  maskFinancialInputs(list);   // v1.41.2 — new fields must be masked too
+  modal.classList.remove('hidden');
+  trackShare('due_setter_open', { _category: 'activation', missing: debtsMissingDueDay().length });
+}
+
+function closeDueSetter(e) {
+  var modal = document.getElementById('duedates-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
+}
+
+function saveDueSetter() {
+  var inputs = document.querySelectorAll('#duedates-list .dd-input');
+  var bad = [];
+  var staged = [];
+
+  // Validate everything BEFORE writing any of it, so a typo in the last row
+  // cannot leave the first nine saved and the rest lost.
+  for (var i = 0; i < inputs.length; i++) {
+    var el = inputs[i];
+    var raw = (el.value || '').trim();
+    el.classList.remove('field-invalid');
+    if (raw === '') { staged.push({ id: parseInt(el.dataset.debt, 10), day: null }); continue; }
+    var n = parseInt(raw, 10);
+    if (isNaN(n) || n < 1 || n > 31) {
+      bad.push(el);
+      el.classList.add('field-invalid');
+      continue;
+    }
+    staged.push({ id: parseInt(el.dataset.debt, 10), day: n });
+  }
+
+  var err = document.getElementById('duedates-error');
+  if (bad.length) {
+    if (err) {
+      err.textContent = bad.length === 1
+        ? 'One day is outside 1-31. Fix it or clear it to leave that debt blank.'
+        : bad.length + ' days are outside 1-31. Fix them or clear them to leave those debts blank.';
+      err.style.display = 'block';
+    }
+    bad[0].focus();
+    return;
+  }
+
+  var set = 0;
+  staged.forEach(function (row) {
+    var d = (debts || []).find(function (x) { return x.id === row.id; });
+    if (!d) return;
+    d.dueDay = row.day;
+    if (row.day) set++;
+  });
+
+  save();
+  closeDueSetter();
+  render();
+  trackShare('due_setter_saved', { _category: 'activation', filled: set, total: staged.length });
+}
+
+// One tag renderer for every place a debt is listed, so the debt list, the
+// portfolio table and Next Target can never disagree about a due date.
+function dueTagFor(d) {
+  var day = sanitizeDueDay(d && d.dueDay);
+  if (!day || !d || d.balance <= 0) return '';
+  var rows = upcomingDues();
+  var r = null;
+  for (var i = 0; i < rows.length; i++) { if (rows[i].id === d.id) { r = rows[i]; break; } }
+  var cls = 'due-tag';
+  if (r && (r.status === 'today' || r.status === 'soon')) cls += ' due-tag-soon';
+  else if (r && r.status === 'passed') cls += ' due-tag-passed';
+  var ord = day + (day % 10 === 1 && day !== 11 ? 'st' : day % 10 === 2 && day !== 12 ? 'nd'
+            : day % 10 === 3 && day !== 13 ? 'rd' : 'th');
+  return '<span class="' + cls + '">due ' + ord + '</span>';
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.42.0 — RECURRING BILLS  (premium)
+//
+// A bill is { id, name, amount, dueDay }. Rent, utilities, subscriptions —
+// money that leaves every month and is NOT part of the payoff plan. Bills
+// never touch simulate(), extraMonthly or any plan figure; they exist so the
+// Coming Up card shows everything that is actually due, and so the Monthly
+// Money Plan can check a budget against real outgoings.
+//
+// ids come from the shared nextId counter, so a bill id can never collide
+// with a debt id in the merged Coming Up list.
+// ══════════════════════════════════════════════════════════════════════
+
+
+// ── Bill tick-off ─────────────────────────────────────────────────────
+// paidThrough is the last month the user marked this bill handled, as
+// 'YYYY-MM'. One value rather than a history: the app only ever asks about
+// the current month, and a growing list would swell every backup forever.
+
+function currentMonthKey() { return monthKeyOf(new Date()); }
+
+function billMarkedThisMonth(bill) {
+  return !!bill && bill.paidThrough === currentMonthKey();
+}
+
+// Has this bill ever been ticked? If not, the user is not tracking it by hand
+// (autopay, or simply not interested), so it never shows an unmarked state.
+function billIsTracked(bill) {
+  return !!(bill && bill.paidThrough);
+}
+
+function toggleBillPaid(id) {
+  var b = (bills || []).find(function (x) { return x.id === id; });
+  if (!b) return;
+  var now = currentMonthKey();
+  if (b.paidThrough === now) {
+    // Untick. Step back a month rather than clearing the field, so the bill
+    // stays "tracked" and does not silently fall back to never nagging.
+    var d = new Date();
+    d.setDate(1); d.setMonth(d.getMonth() - 1);
+    b.paidThrough = monthKeyOf(d);
+  } else {
+    b.paidThrough = now;
+  }
+  save(); render();
+  trackShare('bill_marked', { _category: 'engagement', marked: b.paidThrough === now ? 'yes' : 'no' });
+}
+
+function sanitizeBill(b) {
+  if (!b || typeof b !== 'object') return null;
+  var name = String(b.name == null ? '' : b.name).trim().slice(0, 60);
+  var amount = parseFloat(b.amount);
+  var day = sanitizeDueDay(b.dueDay);
+  if (!name) return null;
+  if (isNaN(amount) || amount < 0 || amount > 1000000) amount = 0;
+  var id = parseInt(b.id, 10);
+  // 'YYYY-MM' or absent. Anything else is discarded rather than trusted.
+  var pt = (typeof b.paidThrough === 'string' && /^\d{4}-\d{2}$/.test(b.paidThrough))
+    ? b.paidThrough : null;
+  return { id: isNaN(id) ? nextId++ : id, name: name, amount: amount, dueDay: day,
+           paidThrough: pt };
+}
+
+function billsMonthlyTotal() {
+  return (bills || []).reduce(function (a, b) { return a + (parseFloat(b.amount) || 0); }, 0);
+}
+
+function addBill() {
+  var nameEl = document.getElementById('bill-name');
+  var amtEl  = document.getElementById('bill-amount');
+  var dayEl  = document.getElementById('bill-due-day');
+  var err    = document.getElementById('bill-error');
+  if (!nameEl || !amtEl) return;
+
+  var name = (nameEl.value || '').trim();
+  var amount = parseAmount(amtEl.value);
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  nameEl.classList.remove('field-invalid'); amtEl.classList.remove('field-invalid');
+
+  if (!name) {
+    if (err) { err.textContent = 'Give the bill a name so you can tell it apart.'; err.style.display = 'block'; }
+    nameEl.classList.add('field-invalid'); nameEl.focus(); return;
+  }
+  if (isNaN(amount) || amount <= 0) {
+    if (err) { err.textContent = 'Enter what this bill costs each month.'; err.style.display = 'block'; }
+    amtEl.classList.add('field-invalid'); amtEl.focus(); return;
+  }
+
+  bills.push({ id: nextId++, name: name.slice(0, 60), amount: amount,
+               dueDay: sanitizeDueDay(dayEl ? dayEl.value : null) });
+  nameEl.value = ''; amtEl.value = ''; if (dayEl) dayEl.value = '';
+  save(); render();
+  trackShare('bill_added', { _category: 'engagement', bill_count: bills.length,
+                             has_due_day: (dayEl && dayEl.value) ? 'yes' : 'no' });
+  nameEl.focus();
+}
+
+function removeBill(id) {
+  var i = (bills || []).findIndex(function (b) { return b.id === id; });
+  if (i === -1) return;
+  bills.splice(i, 1);
+  save(); render();
+  trackShare('bill_removed', { _category: 'engagement', bill_count: bills.length });
+}
+
+// Inline edit: the row's fields write straight back. A modal for three fields
+// would be more ceremony than the data deserves.
+function updateBill(id, field, value) {
+  var b = (bills || []).find(function (x) { return x.id === id; });
+  if (!b) return;
+  if (field === 'name')   b.name = String(value || '').trim().slice(0, 60) || b.name;
+  if (field === 'amount') { var a = parseAmount(value); if (!isNaN(a) && a >= 0) b.amount = a; }
+  if (field === 'dueDay') b.dueDay = sanitizeDueDay(value);
+  save(); render();
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.42.0 — MONTHLY MONEY PLAN  (free)
+//
+// A budget the user sets, checked against what they have committed. It is a
+// mirror, not a lever: nothing here is read by simulate(), planExtra(),
+// getPlanSim() or any figure on any other tab. extraMonthly remains the single
+// input that drives the plan.
+//
+// Why a budget rather than income: a budget is a number the user chooses and
+// revisits, so it does not silently rot the way a salary entered once does,
+// and it works for hourly, gig and commission earners who cannot honestly
+// answer "net monthly income". It also keeps the app clear of anything that
+// reads as telling someone what they can afford.
+// ══════════════════════════════════════════════════════════════════════
+
+var PLAN_BUDGET_STEP = 50;
+
+// Every debt with a balance, not just the plan ones — see the header note.
+function allMinimumsTotal() {
+  return (debts || []).reduce(function (a, d) {
+    if (!d || d.balance <= 0) return a;
+    var f = minPaymentFloors(d);
+    return a + Math.min(d.balance, (f && f.now) ? f.now : (d.minPayment || 0));
+  }, 0);
+}
+
+// What the user has actually committed this month: every minimum they owe,
+// plus the extra they chose, plus bills (premium — free users have none).
+function committedMonthlyTotal() {
+  var extra = parseAmount((document.getElementById('extra-payment') || {}).value) || 0;
+  return allMinimumsTotal() + extra + rolledOverTotal()
+       + (isPremium ? billsMonthlyTotal() : 0);
+}
+
+function setPlanBudget(v) {
+  var n = parseFloat(v);
+  monthlyBudget = (isNaN(n) || n < 0) ? 0 : Math.min(n, 10000000);
+  save();
+  renderMoneyPlan();
+  trackShare('budget_set', { _category: 'planning', has_budget: monthlyBudget > 0 ? 'yes' : 'no' });
+}
+
+function planBudgetNudge(dir) {
+  var el = document.getElementById('plan-budget');
+  var cur = parseAmount(el ? el.value : '') || 0;
+  var next = Math.max(0, cur + dir * PLAN_BUDGET_STEP);
+  if (el) el.value = next;
+  setPlanBudget(next);
+}
+
+function planBudgetInput(v) {
+  var n = parseAmount(v);
+  monthlyBudget = (isNaN(n) || n < 0) ? 0 : n;
+  save();
+  renderMoneyPlan();
+}
+
+// Adopt what they are already committing. Turns an unanswerable question
+// ("what is my monthly budget?") into a confirmable one.
+function planBudgetMatchCommitted() {
+  var t = Math.round(committedMonthlyTotal());
+  var el = document.getElementById('plan-budget');
+  if (el) el.value = t;
+  setPlanBudget(t);
+  trackShare('budget_matched', { _category: 'planning' });
+}
+
+function renderMoneyPlan() {
+  var line = document.getElementById('plan-budget-line');
+  var breakdown = document.getElementById('plan-budget-breakdown');
+  var matchBtn = document.getElementById('plan-budget-match');
+  var input = document.getElementById('plan-budget');
+  if (!line || !breakdown || !input) return;
+
+  if (document.activeElement !== input) {
+    input.value = monthlyBudget > 0 ? Math.round(monthlyBudget) : '';
+  }
+
+  var mins = allMinimumsTotal();
+  var extra = (parseAmount((document.getElementById('extra-payment') || {}).value) || 0)
+            + rolledOverTotal();
+  var billTotal = isPremium ? billsMonthlyTotal() : 0;
+  var committed = mins + extra + billTotal;
+
+  if (matchBtn) {
+    matchBtn.textContent = 'Match what I’m committing (' + fmt(committed) + ')';
+    matchBtn.style.display = (committed > 0 && Math.round(committed) !== Math.round(monthlyBudget)) ? '' : 'none';
+  }
+
+  var parts = [];
+  if (billTotal > 0) parts.push('bills ' + fmt(billTotal));
+  parts.push('minimums ' + fmt(mins) + ' (all accounts)');
+  if (extra > 0) parts.push('extra ' + fmt(extra));
+  breakdown.textContent = parts.join('  ·  ') + '  =  ' + fmt(committed) + ' a month';
+
+  if (!monthlyBudget || monthlyBudget <= 0) {
+    line.textContent = '';
+    line.className = 'plan-budget-line';
+    return;
+  }
+
+  var diff = monthlyBudget - committed;
+  // Both readings are plain arithmetic against a number the user chose. Nothing
+  // here tells anyone what they can afford or what they ought to do about it.
+  if (Math.abs(diff) < 1) {
+    line.textContent = 'That matches your ' + fmt(monthlyBudget) + ' budget exactly.';
+    line.className = 'plan-budget-line is-level';
+  } else if (diff > 0) {
+    line.textContent = fmt(diff) + ' of your ' + fmt(monthlyBudget) + ' budget isn’t allocated yet.';
+    line.className = 'plan-budget-line is-under';
+  } else {
+    line.textContent = 'That’s ' + fmt(-diff) + ' more than your ' + fmt(monthlyBudget) + ' budget.';
+    line.className = 'plan-budget-line is-over';
+  }
+}
+
+function renderBills() {
+  var card = document.getElementById('bills-card');
+  var teaser = document.getElementById('bills-teaser');
+  if (!card || !teaser) return;
+  card.style.display = isPremium ? '' : 'none';
+  teaser.style.display = isPremium ? 'none' : '';
+  if (!isPremium) return;
+
+  var list = document.getElementById('bills-list');
+  var total = document.getElementById('bills-total');
+  if (!list) return;
+
+  if (!bills.length) {
+    list.innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);line-height:1.5;padding:4px 0 10px;">'
+                   + 'Nothing added yet. Rent, utilities, insurance, subscriptions — whatever leaves every month.'
+                   + '</div>';
+  } else {
+    list.innerHTML = bills.map(function (b) {
+      return '<div class="bill-row">'
+           +   '<input class="bill-name" type="text" value="' + escapeHtml(b.name) + '" maxlength="60" '
+           +     'onchange="updateBill(' + b.id + ', \'name\', this.value)" aria-label="Bill name" />'
+           +   '<input class="bill-amt money-input" type="text" inputmode="decimal" value="' + b.amount + '" '
+           +     'onchange="updateBill(' + b.id + ', \'amount\', this.value)" aria-label="Monthly amount" />'
+           +   '<input class="bill-day" type="text" inputmode="numeric" maxlength="2" placeholder="--" '
+           +     'value="' + (sanitizeDueDay(b.dueDay) || '') + '" '
+           +     'onchange="updateBill(' + b.id + ', \'dueDay\', this.value)" aria-label="Due day" />'
+           +   '<button type="button" class="bill-tick' + (billMarkedThisMonth(b) ? ' is-marked' : '') + '" '
+           +     'onclick="toggleBillPaid(' + b.id + ')" '
+           +     'aria-pressed="' + (billMarkedThisMonth(b) ? 'true' : 'false') + '" '
+           +     'title="' + (billMarkedThisMonth(b) ? 'Marked paid this month' : 'Mark as paid this month') + '" '
+           +     'aria-label="' + (billMarkedThisMonth(b) ? 'Unmark' : 'Mark') + ' ' + escapeHtml(b.name) + ' as paid this month">\u2713</button>'
+           +   '<button type="button" class="bill-del" onclick="removeBill(' + b.id + ')" aria-label="Remove ' + escapeHtml(b.name) + '">&times;</button>'
+           + '</div>';
+    }).join('');
+  }
+  if (total) {
+    total.textContent = bills.length
+      ? fmt(billsMonthlyTotal()) + ' a month across ' + bills.length + (bills.length === 1 ? ' bill' : ' bills')
+      : '';
+  }
+  maskFinancialInputs(list);
+}
+
+function renderUpcoming() {
+  var card = document.getElementById('upcoming-card');
+  if (!card) return;
+  var body = document.getElementById('upcoming-body');
+  var quiet = document.getElementById('upcoming-quiet');
+  if (!body || !quiet) return;
+
+  var rows = upcomingDues();
+
+
+  // Existing users arrive with no due days at all. Rather than hiding (which
+  // reads as "this feature does nothing") or inventing dates (which is worse
+  // than useless), offer the setter once. Dismissible, and it stops appearing
+  // the moment every active debt has a day.
+  var missing = debtsMissingDueDay();
+  if (!rows.length) {
+    if (missing.length && !dueInviteDismissed()) {
+      card.style.display = '';
+      quiet.style.display = 'none';
+      body.innerHTML =
+        '<div class="due-invite">'
+      +   '<div class="due-invite-text">Add a due day to each account and this card will show '
+      +     'what&rsquo;s coming up, so nothing catches you out.</div>'
+      +   '<div class="due-invite-actions">'
+      +     '<button type="button" class="btn btn-primary due-invite-go" onclick="openDueSetter()">Add due dates</button>'
+      +     '<button type="button" class="btn btn-ghost" onclick="dismissDueInvite()">Not now</button>'
+      +   '</div>'
+      + '</div>';
+      return;
+    }
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+
+  // Only rows that need attention earn space. When nothing is close, the card
+  // collapses to one muted line so the Dashboard still opens on progress
+  // rather than on a list of obligations.
+  var active = rows.filter(function (r) { return r.status !== 'later' && r.status !== 'logged'; });
+
+  // A bill ticked this month drops out of the attention list, but it must stay
+  // reachable — otherwise ticking makes the row vanish with no way to undo a
+  // mis-tap. Marked bills whose day is still ahead ride along at the bottom.
+  var markedSoon = rows.filter(function (r) {
+    return r.kind === 'bill' && r.marked && r.days <= DUE_SOON_DAYS;
+  });
+  if (active.length) active = active.concat(markedSoon);
+
+  if (!active.length) {
+    body.innerHTML = '';
+    var next = rows.slice().sort(function (a, b) { return a.date - b.date; })[0];
+    quiet.style.display = '';
+    quiet.textContent = 'Nothing due in the next ' + DUE_SOON_DAYS + ' days.'
+      + (next ? ' Next up: ' + next.name + ' on ' + dueDayLabel(next.date) + '.' : '');
+    return;
+  }
+
+  quiet.style.display = 'none';
+  var html = '';
+  active.forEach(function (r) {
+    html += '<div class="due-row due-' + r.status + '">'
+         +    '<div class="due-row-main">'
+         +      '<div class="due-row-name">' + escapeHtml(r.name) + '</div>'
+         +      '<div class="due-row-sub">' + escapeHtml(dueRowLabel(r)) + '</div>'
+         +    '</div>'
+         +    '<div class="due-row-right">'
+         +      '<div class="due-row-amt">' + fmt(r.amount) + '</div>'
+         +      (r.kind === 'bill'
+                  ? '<button type="button" class="due-row-tick' + (r.marked ? ' is-marked' : '') + '" '
+                    + 'onclick="toggleBillPaid(' + r.id + ')" '
+                    + 'aria-pressed="' + (r.marked ? 'true' : 'false') + '" '
+                    + 'title="' + (r.marked ? 'Marked paid this month' : 'Mark as paid this month') + '" '
+                    + 'aria-label="' + (r.marked ? 'Unmark' : 'Mark') + ' ' + escapeHtml(r.name) + ' as paid this month">'
+                    + (r.marked ? '\u2713' : 'Mark') + '</button>'
+                  : '<button type="button" class="due-row-log" onclick="logFromDue(' + r.id + ')">Log</button>')
+         +    '</div>'
+         +  '</div>';
+  });
+  body.innerHTML = html;
+}
+
+// Straight from "this is due" to "I paid it", with the debt already chosen.
+// Without this the trip is Dashboard -> past four cards -> Payment Log.
+function logFromDue(debtId) {
+  openQuickLog();
+  var sel = document.getElementById('qlog-debt-select');
+  if (sel) sel.value = String(debtId);
+  var d = (debts || []).find(function (x) { return x.id === debtId; });
+  var amt = document.getElementById('qlog-amount');
+  if (amt && d && !amt.value) {
+    var floors = minPaymentFloors(d);
+    amt.value = Math.round(Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment)));
+  }
+  trackShare('due_quick_log', { _category: 'engagement' });
 }
 
 function renderNextDebt() {
@@ -9744,6 +10631,10 @@ function renderDebtList() {
           <span class="debt-stat-label">Min Pmt</span>
           <span class="debt-stat-val">${fmt(d.minPayment)}</span>
         </div>
+        ${sanitizeDueDay(d.dueDay) ? `<div class="debt-stat">
+          <span class="debt-stat-label">Due</span>
+          <span class="debt-stat-val">${dueTagFor(d)}</span>
+        </div>` : ''}
         ${promoInfo}
         ${transferFeeInfo}
         ${accruedInfo}
@@ -9954,7 +10845,7 @@ function renderPortfolioTable(list) {
           '</td>'
         : '') +
       // v1.28.2 — data-label drives the stacked card layout below 560px.
-      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + exclTag + promoTag + tcTag + progTag + '</td>' +
+      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + dueTagFor(d) + exclTag + promoTag + tcTag + progTag + '</td>' +
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
@@ -11264,7 +12155,7 @@ function applyOptimizedLumps() {
   _optCache.clear();
   _planSimCache = { key: null, res: null };
   if (typeof trackShare === 'function') {
-    trackShare('lumps_optimized', { _category: 'planning', saved: Math.round((cur ? cur.interest : 0) - opt.interest) });
+    trackShare('lumps_optimized', { _category: 'planning', saved_band: amountBand((cur ? cur.interest : 0) - opt.interest) });
   }
   save();
   render();
@@ -12110,6 +13001,8 @@ async function checkForUpdates() {
       strategy: strategy,
       extraMonthly: parseAmount(document.getElementById('extra-payment').value) || 0,
       rolledMinimums: rolledMinimums,   // v1.38.0
+      bills: bills,                     // v1.42.0
+      monthlyBudget: monthlyBudget,     // v1.42.0
     planBaseline: planBaseline,       // v1.40.0 — anchor for the "X sooner" badges
       nextId: nextId,
       accruals: accruals,
@@ -12500,6 +13393,8 @@ function buildBackupPayload() {
     payments: payments,
     lumpSums: lumpSums,
     rolledMinimums: rolledMinimums,   // v1.38.0
+    bills: bills,                     // v1.42.0
+    monthlyBudget: monthlyBudget,     // v1.42.0
     planBaseline: planBaseline,       // v1.40.0 — anchor for the "X sooner" badges
     strategy: strategy,
     extraMonthly: extraMonthly,
@@ -12571,6 +13466,10 @@ function applyBackupPayload(data) {
       lumpSums = data.lumpSums || [];
       // v1.38.0 — a backup from an older version has no rolled list: seed its
       // paid-off debts as kept so the restored plan matches what it showed.
+      var _mbR = parseFloat(data.monthlyBudget);
+      monthlyBudget = (isNaN(_mbR) || _mbR < 0) ? 0 : _mbR;
+      if (Array.isArray(data.bills)) { bills = data.bills.map(sanitizeBill).filter(Boolean); }
+      else { bills = []; }
       if (Array.isArray(data.rolledMinimums)) { rolledMinimums = data.rolledMinimums; }
       else { rolledMinimums = []; syncRolledMinimums(true); }
       strategy = data.strategy || 'avalanche';
@@ -12741,7 +13640,8 @@ function sanitizeDebts(parsed) {
       includeInStrategy: includeInStrategy,
       origPrincipal: origPrincipal,
       termMonths: termMonths,
-      originationDate: originationDate
+      originationDate: originationDate,
+      dueDay: sanitizeDueDay(debt.dueDay)
     });
   });
 }
@@ -12931,6 +13831,8 @@ try { if (DRIVE_ENABLED) driveHandleRedirect(); } catch(e) {} }, 0);
     localStorage.setItem('debtfree_nextid', nextId);
     localStorage.setItem('debtfree_lumpsums', JSON.stringify(lumpSums));
     localStorage.setItem('debtfree_rolled', JSON.stringify(rolledMinimums)); // v1.38.0
+    localStorage.setItem('debtfree_bills', JSON.stringify(bills));          // v1.42.0
+    localStorage.setItem('debtfree_budget', String(monthlyBudget || 0));     // v1.42.0
     // v1.11.0 — accrual ledger + setting
     localStorage.setItem('debtfree_accruals', JSON.stringify(accruals));
     localStorage.setItem('debtfree_adjustments', JSON.stringify(adjustments));
@@ -12970,6 +13872,9 @@ function load() {
         debts = sanitizeDebts(data.debts);
         payments = data.payments || [];
         lumpSums = data.lumpSums || [];
+        var _mbU = parseFloat(data.monthlyBudget);
+        if (!isNaN(_mbU) && _mbU >= 0) monthlyBudget = _mbU;   // v1.42.0
+        if (Array.isArray(data.bills)) bills = data.bills.map(sanitizeBill).filter(Boolean);   // v1.42.0
         if (Array.isArray(data.rolledMinimums)) rolledMinimums = data.rolledMinimums;   // v1.38.0
         strategy = data.strategy || 'avalanche';
         extraMonthly = data.extraMonthly || 0;
@@ -13050,6 +13955,12 @@ function load() {
     // that is ALREADY paid off as kept (not rolled), so nothing a user had
     // folded into their extra before now is counted twice. From here on,
     // new payoffs roll by default.
+    // v1.42.0 — same ordering rule as lumpSums above: load before
+    // selectStrategy() fires save(), or the stored bills are overwritten.
+    const mb = localStorage.getItem('debtfree_budget');
+    if (mb !== null) { var _mb = parseFloat(mb); monthlyBudget = (isNaN(_mb) || _mb < 0) ? 0 : _mb; }
+    const bl = localStorage.getItem('debtfree_bills');
+    if (bl) { try { bills = (JSON.parse(bl) || []).map(sanitizeBill).filter(Boolean); } catch (e) { bills = []; } }
     const rl = localStorage.getItem('debtfree_rolled');
     if (rl !== null) { try { rolledMinimums = JSON.parse(rl) || []; } catch(e) { rolledMinimums = []; } }
     else { rolledMinimums = []; syncRolledMinimums(true); }
@@ -13527,6 +14438,17 @@ setTimeout(function() {
 }, 400);
 </script>
 <script>
+// ── v1.41.2 — mask money fields for session recording ──
+maskFinancialInputs();
+// Modals build their fields lazily, so re-run whenever the DOM grows.
+try {
+  new MutationObserver(function (muts) {
+    for (var i = 0; i < muts.length; i++) {
+      if (muts[i].addedNodes && muts[i].addedNodes.length) { maskFinancialInputs(); return; }
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+} catch (e) {}
+
 // ── SERVICE WORKER REGISTRATION ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -13673,6 +14595,11 @@ if (isInStandaloneMode() ||
         <label>Min Payment ($)</label>
         <input type="text" inputmode="decimal" id="edit-min" min="0" step="1" />
       </div>
+      <div class="form-field" style="grid-column:1/-1">
+        <label>Due Day <span class="field-optional">optional</span></label>
+        <input type="text" inputmode="numeric" id="edit-due-day" min="1" max="31" placeholder="15" />
+      </div>
+
     </div>
 
     <!-- Promo APR toggle -->
