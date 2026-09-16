@@ -224,6 +224,36 @@
 /* Over budget is amber, never red: the user picked both numbers and either one
    can move. It is a mismatch to look at, not a verdict. */
 .plan-budget-line.is-over  { color:var(--accent4); }
+
+/* v1.43.0 — sinking funds */
+.fund-row { padding:12px 0; border-bottom:1px solid var(--border); }
+.fund-row:last-child { border-bottom:none; }
+.fund-row.is-done .fund-sub { color:var(--accent); }
+.fund-head { display:flex; align-items:center; gap:8px; }
+.fund-name, .fund-name-static { flex:1; min-width:0; font-family:inherit; font-size:0.86rem; font-weight:600;
+  padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); }
+.fund-name-static { border-color:transparent; background:transparent; }
+.fund-del { flex-shrink:0; width:28px; height:28px; border-radius:6px; border:1px solid var(--border);
+  background:var(--card2); color:var(--text-muted); cursor:pointer; font-size:1rem; line-height:1; }
+.fund-del:hover { border-color:var(--accent3); color:var(--accent3); }
+.fund-fields { display:flex; gap:8px; margin-top:8px; }
+.fund-f { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+.fund-f span { font-size:0.64rem; color:var(--text-muted); letter-spacing:0.04em; text-transform:uppercase; }
+.fund-f input { width:100%; min-width:0; font-family:var(--font-mono); font-size:0.78rem; text-align:right;
+  padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); }
+.fund-bar { height:4px; border-radius:2px; background:var(--card2); margin-top:10px; overflow:hidden; }
+.fund-bar-fill { height:100%; background:var(--accent5); border-radius:2px; }
+.fund-foot { display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap; }
+.fund-sub { flex:1; min-width:0; font-size:0.72rem; color:var(--text-muted); }
+.fund-counted { flex-shrink:0; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.05em;
+  padding:4px 9px; border-radius:6px; border:1px solid var(--border); background:var(--card2);
+  color:var(--text-muted); cursor:pointer; }
+.fund-counted.is-on { border-color:var(--accent5); color:var(--accent5); }
+.fund-add { display:flex; gap:8px; margin-top:12px; }
+.fund-add input { font-family:inherit; font-size:0.82rem; padding:7px 8px; min-width:0;
+  border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); }
+.fund-add #fund-name { flex:1; }
+.fund-add #fund-monthly, .fund-add #fund-target { width:82px; flex-shrink:0; }
   .roadmap-step { position:relative; display:flex; gap:14px; padding:0 0 22px 0; }
   .roadmap-step:last-child { padding-bottom:0; }
   .roadmap-step::before {
@@ -2994,6 +3024,39 @@
         </div>
       </div>
     </div>
+<div class="card" id="funds-card" data-collapse="funds" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money set aside each month for costs you know are coming. A fund marked &ldquo;in the plan&rdquo; is money not going to debt, so your payoff dates account for it.</p>
+      <div id="funds-list"></div>
+      <div id="funds-note" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:10px 0 14px;line-height:1.5;"></div>
+      <div class="fund-add">
+        <input id="fund-name" type="text" placeholder="Car repairs" maxlength="60" aria-label="Fund name" />
+        <input id="fund-monthly" type="text" inputmode="decimal" placeholder="Monthly" aria-label="Monthly amount" />
+        <input id="fund-target" type="text" inputmode="decimal" placeholder="Target" aria-label="Target amount, optional" />
+      </div>
+      <div class="form-error" id="fund-error" style="display:none;"></div>
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addFund()">Add fund</button>
+      <p style="margin-top:12px;font-size:0.72rem;color:var(--text-muted);line-height:1.5;">Leave the target blank for something ongoing, like insurance. With a target, the fund stops once it&rsquo;s full and that money goes back to your debts.</p>
+    </div>
+<div class="card" id="funds-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('funds');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money set aside each month for costs you know are coming.</p>
+          <div class="fund-row"><div class="fund-head"><div class="fund-name-static">Car repairs</div></div>
+            <div class="fund-bar"><div class="fund-bar-fill" style="width:62%"></div></div>
+            <div class="fund-foot"><span class="fund-sub">$1,240 of $2,000 &middot; 4 months to go</span></div></div>
+          <div class="fund-row"><div class="fund-head"><div class="fund-name-static">Car insurance</div></div>
+            <div class="fund-foot"><span class="fund-sub">$100/mo, ongoing</span></div></div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">Stop the next surprise becoming debt</div>
+          <div class="lock-card-desc" style="max-width:290px;">Set money aside for what you know is coming, and see exactly what it costs your payoff date.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
 <div class="card" id="bills-card" data-collapse="bills" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
       <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts. Add a due day and it shows up alongside your payments in Coming Up.</p>
@@ -3618,7 +3681,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.42.0';
+const APP_VERSION = '1.43.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3626,6 +3689,17 @@ const APP_VERSION = '1.42.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.43.0',
+    date: 'September 16, 2026',
+    name: 'Money set aside on purpose',
+    whatsNew: [
+      'Premium: sinking funds. Set money aside each month for the costs you know are coming — car repairs, insurance, the holidays — so the next one doesn’t land on a credit card.',
+      'Each fund can count toward your plan or just be tracked. A fund that counts is money not going to your debts, so your payoff dates account for it honestly rather than assuming that money was available.',
+      'Funds with a target stop once they’re full, and that money goes back to your debts from then on — your dates reflect that too.',
+    ],
+    fixes: []
+  },
   {
     version: '1.42.0',
     date: 'September 16, 2026',
@@ -4643,6 +4717,7 @@ let accruals = [];               // { id, debtId, debtName, month:"YYYY-MM", amo
 let rolledMinimums = [];
 let bills = [];              // v1.42.0 — recurring non-debt outgoings (premium)
 let monthlyBudget = 0;       // v1.42.0 — budget-as-check; never read by the engine
+let sinkingFunds = [];       // v1.43.0 — money set aside monthly (premium)
 let adjustments = [];            // { id, debtId, amount(signed), date, note }
 let interestAccrualEnabled = false; // default OFF for existing users; load() turns ON for brand-new users
 
@@ -5378,7 +5453,9 @@ function _ledgerKey() {
   return monthKeyOf(new Date()) + '|' + JSON.stringify(l.paid) + '|' + Object.keys(l.accrued).sort().join(',');
 }
 function _simKeyFor(activeDebts, extra, disb, rollover) {
-  return JSON.stringify([strategy, extra, rollover, _ledgerKey(),
+  // v1.43.0 — sinkKey() included: without it, editing a fund leaves every
+  // plan figure showing the previous answer.
+  return JSON.stringify([strategy, extra, rollover, _ledgerKey(), sinkKey(),
     activeDebts.map(function(d){ return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoApr, d.promoEnd, d.postPromoApr]; }),
     disb.map(function(l){ return [l.debtId, l.amount, l.date]; })
   ]);
@@ -5397,7 +5474,8 @@ function getPlanSim() {
   // v1.41.0 — trace on. The amortization table and CSV export are rendered
   // from THIS object rather than a second simulation, which is what keeps
   // them from drifting out of agreement with every other tab.
-  const res = simulate(activeDebts.map(function(d){ return {...d}; }), extra, 0, strategy, disb, { trace: true });
+  const res = simulate(activeDebts.map(function(d){ return {...d}; }), extra, 0, strategy, disb,
+                       { trace: true, sinkSchedule: buildSinkSchedule(SINK_HORIZON) });
   _planSimCache = { key: key, res: res };
   return res;
 }
@@ -6056,6 +6134,9 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   // on the existing opt-in trace flag so a caller that doesn't ask for it
   // pays nothing and sees an unchanged result shape.
   const _traceOn = !!(opts && opts.trace);
+  // v1.43.0 — optional per-month diversion into sinking funds. Absent,
+  // this is a no-op and the engine behaves exactly as it did before.
+  const _sink = (opts && opts.sinkSchedule) || null;
   if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [], perDebt: [], diverged: false };
   const strat = customStrategy || strategy;
 
@@ -6184,7 +6265,10 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
     // v1.12.0 — snowball rollover. The monthly surplus starts with the
     // user's extra payment; with rollover on, the minimum payments of every
     // already-paid-off debt are added to it (stacking as more debts die).
-    let surplus = extraPerMonth;
+    // v1.43.0 — money going into a sinking fund is money not going to the
+    // debts. It comes out of the EXTRA only: the clamp at zero means the
+    // app will never model someone skipping a minimum to feed a fund.
+    let surplus = _sink ? Math.max(0, extraPerMonth - (_sink[month] || 0)) : extraPerMonth;
     if (month === 1 && _extraAlreadyPaid > 0) surplus = Math.max(0, surplus - _extraAlreadyPaid);
     if (doRollover) {
       for (let d of balances) {
@@ -9395,6 +9479,7 @@ function render() {
   renderNextDebt();        // v1.13.0
   renderUpcoming();        // v1.42.0
   renderBills();           // v1.42.0 (premium)
+  renderFunds();           // v1.43.0 (premium)
   renderMoneyPlan();       // v1.42.0
   renderDebtList();
   renderMonthlySummary();
@@ -9906,8 +9991,10 @@ function allMinimumsTotal() {
 // plus the extra they chose, plus bills (premium — free users have none).
 function committedMonthlyTotal() {
   var extra = parseAmount((document.getElementById('extra-payment') || {}).value) || 0;
+  // Funds count here whether or not they are modelled in the payoff plan:
+  // the money leaves the account either way, and this line is about cash.
   return allMinimumsTotal() + extra + rolledOverTotal()
-       + (isPremium ? billsMonthlyTotal() : 0);
+       + (isPremium ? billsMonthlyTotal() + fundsMonthlyTotal(false) : 0);
 }
 
 function setPlanBudget(v) {
@@ -9958,7 +10045,11 @@ function renderMoneyPlan() {
   var extra = (parseAmount((document.getElementById('extra-payment') || {}).value) || 0)
             + rolledOverTotal();
   var billTotal = isPremium ? billsMonthlyTotal() : 0;
-  var committed = mins + extra + billTotal;
+  // Declared with billTotal, NOT further down beside its parts.push(): `var`
+  // hoists but the assignment does not, so a later declaration left this
+  // undefined here and `committed` came out NaN.
+  var fundTotal = isPremium ? fundsMonthlyTotal(false) : 0;
+  var committed = mins + extra + billTotal + fundTotal;
 
   if (matchBtn) {
     matchBtn.textContent = 'Match what I’m committing (' + fmt(committed) + ')';
@@ -9967,6 +10058,7 @@ function renderMoneyPlan() {
 
   var parts = [];
   if (billTotal > 0) parts.push('bills ' + fmt(billTotal));
+  if (fundTotal > 0) parts.push('set aside ' + fmt(fundTotal));
   parts.push('minimums ' + fmt(mins) + ' (all accounts)');
   if (extra > 0) parts.push('extra ' + fmt(extra));
   breakdown.textContent = parts.join('  ·  ') + '  =  ' + fmt(committed) + ' a month';
@@ -9990,6 +10082,238 @@ function renderMoneyPlan() {
     line.textContent = 'That’s ' + fmt(-diff) + ' more than your ' + fmt(monthlyBudget) + ' budget.';
     line.className = 'plan-budget-line is-over';
   }
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.43.0 — SINKING FUNDS  (premium)
+//
+// A sinking fund is money set aside monthly for a known future cost — car
+// repairs, insurance, Christmas. It matters in a DEBT tool because the single
+// most common way a payoff plan collapses is an unexpected $900 bill landing
+// on a credit card. A fund is what stops that becoming new debt.
+//
+// Shape: { id, name, monthly, target, saved, counted }
+//   target null  -> recurring, never completes (insurance, property tax)
+//   target set   -> completes once `saved` reaches it, and the money returns
+//                   to the debts from that month on
+//   counted      -> whether this fund is modelled in the payoff plan
+// ══════════════════════════════════════════════════════════════════════
+
+// simulate()'s MAX_MONTHS is scoped inside that function, so the schedule
+// builder carries its own horizon. Kept equal to it on purpose.
+var SINK_HORIZON = 600;
+
+function sanitizeFund(f) {
+  if (!f || typeof f !== 'object') return null;
+  var name = String(f.name == null ? '' : f.name).trim().slice(0, 60);
+  if (!name) return null;
+  var monthly = parseFloat(f.monthly);
+  if (isNaN(monthly) || monthly < 0 || monthly > 1000000) monthly = 0;
+  var target = (f.target === null || f.target === '' || typeof f.target === 'undefined')
+    ? null : parseFloat(f.target);
+  if (target !== null && (isNaN(target) || target <= 0 || target > 10000000)) target = null;
+  var saved = parseFloat(f.saved);
+  if (isNaN(saved) || saved < 0) saved = 0;
+  if (target !== null) saved = Math.min(saved, target);
+  var id = parseInt(f.id, 10);
+  return {
+    id: isNaN(id) ? nextId++ : id,
+    name: name, monthly: monthly, target: target, saved: saved,
+    counted: f.counted !== false          // default on: the honest reading
+  };
+}
+
+function fundIsComplete(f) {
+  return f && f.target !== null && f.saved >= f.target - 0.005;
+}
+
+// How many more months this fund still needs. Infinity for a recurring fund.
+function fundMonthsRemaining(f) {
+  if (!f || f.monthly <= 0) return f && f.target !== null ? Infinity : Infinity;
+  if (f.target === null) return Infinity;
+  var left = Math.max(0, f.target - f.saved);
+  return left <= 0 ? 0 : Math.ceil(left / f.monthly);
+}
+
+function fundsMonthlyTotal(onlyCounted) {
+  return (sinkingFunds || []).reduce(function (a, f) {
+    if (onlyCounted && f.counted === false) return a;
+    if (fundIsComplete(f)) return a;         // finished funds cost nothing
+    return a + (parseFloat(f.monthly) || 0);
+  }, 0);
+}
+
+// The diversion schedule the engine reads. Index 1 = this month, matching the
+// engine's month numbering (v1.38.0 anchors month 1 to the current month).
+// Built once per simulation rather than per month so the per-month lookup is
+// a array read in the hot loop.
+function buildSinkSchedule(maxMonths) {
+  var sched = new Float64Array(maxMonths + 2);
+  (sinkingFunds || []).forEach(function (f) {
+    if (!f || f.counted === false) return;
+    var monthly = parseFloat(f.monthly) || 0;
+    if (monthly <= 0) return;
+
+    if (f.target === null) {
+      for (var m = 1; m <= maxMonths; m++) sched[m] += monthly;   // never ends
+      return;
+    }
+    var left = Math.max(0, f.target - (parseFloat(f.saved) || 0));
+    for (var k = 1; k <= maxMonths && left > 0.005; k++) {
+      var take = Math.min(monthly, left);    // last month is a part payment
+      sched[k] += take;
+      left -= take;
+    }
+  });
+  return sched;
+}
+
+// Signature for the simulation cache key. Without this, editing a fund would
+// leave every plan figure showing the previous answer — the same class of bug
+// _ledgerKey() exists to prevent.
+function sinkKey() {
+  return (sinkingFunds || []).map(function (f) {
+    return [f.id, f.monthly, f.target, f.saved, f.counted !== false].join(':');
+  }).join('|');
+}
+
+function addFund() {
+  var nameEl = document.getElementById('fund-name');
+  var monEl  = document.getElementById('fund-monthly');
+  var tgtEl  = document.getElementById('fund-target');
+  var err    = document.getElementById('fund-error');
+  if (!nameEl || !monEl) return;
+  var name = (nameEl.value || '').trim();
+  var monthly = parseAmount(monEl.value);
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  nameEl.classList.remove('field-invalid'); monEl.classList.remove('field-invalid');
+
+  if (!name) {
+    if (err) { err.textContent = 'Give the fund a name so you can tell it apart.'; err.style.display = 'block'; }
+    nameEl.classList.add('field-invalid'); nameEl.focus(); return;
+  }
+  if (isNaN(monthly) || monthly <= 0) {
+    if (err) { err.textContent = 'Enter how much you’re setting aside each month.'; err.style.display = 'block'; }
+    monEl.classList.add('field-invalid'); monEl.focus(); return;
+  }
+  var target = tgtEl && tgtEl.value.trim() !== '' ? parseAmount(tgtEl.value) : null;
+  if (target !== null && (isNaN(target) || target <= 0)) target = null;
+
+  sinkingFunds.push(sanitizeFund({ name: name, monthly: monthly, target: target, saved: 0, counted: true }));
+  nameEl.value=''; monEl.value=''; if (tgtEl) tgtEl.value='';
+  _planSimCache = { key: null, res: null };
+  save(); recalculate(); render();
+  trackShare('fund_added', { _category: 'planning', fund_count: sinkingFunds.length,
+                             kind: target === null ? 'recurring' : 'target' });
+  nameEl.focus();
+}
+
+function removeFund(id) {
+  var i = (sinkingFunds || []).findIndex(function (f) { return f.id === id; });
+  if (i === -1) return;
+  sinkingFunds.splice(i, 1);
+  _planSimCache = { key: null, res: null };
+  save(); recalculate(); render();
+  trackShare('fund_removed', { _category: 'planning', fund_count: sinkingFunds.length });
+}
+
+function updateFund(id, field, value) {
+  var f = (sinkingFunds || []).find(function (x) { return x.id === id; });
+  if (!f) return;
+  if (field === 'name')    f.name = String(value||'').trim().slice(0,60) || f.name;
+  if (field === 'monthly') { var m = parseAmount(value); if (!isNaN(m) && m >= 0) f.monthly = m; }
+  if (field === 'saved')   { var s = parseAmount(value); if (!isNaN(s) && s >= 0) f.saved = f.target !== null ? Math.min(s, f.target) : s; }
+  if (field === 'target')  {
+    var t = String(value||'').trim() === '' ? null : parseAmount(value);
+    f.target = (t !== null && !isNaN(t) && t > 0) ? t : null;
+    if (f.target !== null) f.saved = Math.min(f.saved, f.target);
+  }
+  _planSimCache = { key: null, res: null };
+  save(); recalculate(); render();
+}
+
+function toggleFundCounted(id) {
+  var f = (sinkingFunds || []).find(function (x) { return x.id === id; });
+  if (!f) return;
+  f.counted = f.counted === false;
+  _planSimCache = { key: null, res: null };
+  save(); recalculate(); render();
+  trackShare('fund_counted_toggled', { _category: 'planning', counted: f.counted ? 'yes' : 'no' });
+}
+
+function renderFunds() {
+  var card = document.getElementById('funds-card');
+  var teaser = document.getElementById('funds-teaser');
+  if (!card || !teaser) return;
+  card.style.display = isPremium ? '' : 'none';
+  teaser.style.display = isPremium ? 'none' : '';
+  if (!isPremium) return;
+
+  var list = document.getElementById('funds-list');
+  var note = document.getElementById('funds-note');
+  if (!list) return;
+
+  if (!sinkingFunds.length) {
+    list.innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);line-height:1.5;padding:4px 0 10px;">'
+      + 'Nothing set aside yet. Car repairs, insurance, the holidays — the costs that turn into '
+      + 'credit card debt when they arrive without warning.</div>';
+    if (note) note.textContent = '';
+    return;
+  }
+
+  list.innerHTML = sinkingFunds.map(function (f) {
+    var done = fundIsComplete(f);
+    var pct = f.target ? Math.max(0, Math.min(100, (f.saved / f.target) * 100)) : 0;
+    var months = fundMonthsRemaining(f);
+    var sub;
+    if (done) sub = 'fully funded';
+    else if (f.target === null) sub = fmt(f.monthly) + '/mo, ongoing';
+    else if (months === Infinity) sub = 'set a monthly amount to see when this is funded';
+    else sub = fmt(f.saved) + ' of ' + fmt(f.target) + ' · '
+             + months + (months === 1 ? ' month to go' : ' months to go');
+
+    return '<div class="fund-row' + (done ? ' is-done' : '') + '">'
+      + '<div class="fund-head">'
+      +   '<input class="fund-name" type="text" value="' + escapeHtml(f.name) + '" maxlength="60" '
+      +     'onchange="updateFund(' + f.id + ', \'name\', this.value)" aria-label="Fund name" />'
+      +   '<button type="button" class="fund-del" onclick="removeFund(' + f.id + ')" '
+      +     'aria-label="Remove ' + escapeHtml(f.name) + '">&times;</button>'
+      + '</div>'
+      + '<div class="fund-fields">'
+      +   '<label class="fund-f"><span>Monthly</span><input class="money-input" type="text" inputmode="decimal" '
+      +     'value="' + f.monthly + '" onchange="updateFund(' + f.id + ', \'monthly\', this.value)" /></label>'
+      +   '<label class="fund-f"><span>Target</span><input class="money-input" type="text" inputmode="decimal" '
+      +     'placeholder="ongoing" value="' + (f.target === null ? '' : f.target) + '" '
+      +     'onchange="updateFund(' + f.id + ', \'target\', this.value)" /></label>'
+      +   '<label class="fund-f"><span>Saved</span><input class="money-input" type="text" inputmode="decimal" '
+      +     'value="' + f.saved + '" onchange="updateFund(' + f.id + ', \'saved\', this.value)" /></label>'
+      + '</div>'
+      + (f.target !== null ? '<div class="fund-bar"><div class="fund-bar-fill" style="width:' + pct.toFixed(1) + '%"></div></div>' : '')
+      + '<div class="fund-foot">'
+      +   '<span class="fund-sub">' + escapeHtml(sub) + '</span>'
+      +   '<button type="button" class="fund-counted' + (f.counted !== false ? ' is-on' : '') + '" '
+      +     'onclick="toggleFundCounted(' + f.id + ')" aria-pressed="' + (f.counted !== false) + '" '
+      +     'title="' + (f.counted !== false
+             ? 'Counted in your payoff plan'
+             : 'Tracking only — not reflected in your payoff plan') + '">'
+      +     (f.counted !== false ? 'in the plan' : 'tracking only') + '</button>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  if (note) {
+    var counted = fundsMonthlyTotal(true), all = fundsMonthlyTotal(false);
+    if (all <= 0) { note.textContent = ''; }
+    else if (counted <= 0) {
+      note.textContent = fmt(all) + ' a month set aside · none of it counted in your payoff plan.';
+    } else if (counted === all) {
+      note.textContent = fmt(all) + ' a month set aside, and your payoff plan reflects it.';
+    } else {
+      note.textContent = fmt(all) + ' a month set aside · ' + fmt(counted) + ' of it counted in your payoff plan.';
+    }
+  }
+  maskFinancialInputs(list);
 }
 
 function renderBills() {
@@ -12880,6 +13204,7 @@ async function checkForUpdates() {
       rolledMinimums: rolledMinimums,   // v1.38.0
       bills: bills,                     // v1.42.0
       monthlyBudget: monthlyBudget,     // v1.42.0
+      sinkingFunds: sinkingFunds,       // v1.43.0
     planBaseline: planBaseline,       // v1.40.0 — anchor for the "X sooner" badges
       nextId: nextId,
       accruals: accruals,
@@ -13272,6 +13597,7 @@ function buildBackupPayload() {
     rolledMinimums: rolledMinimums,   // v1.38.0
     bills: bills,                     // v1.42.0
     monthlyBudget: monthlyBudget,     // v1.42.0
+    sinkingFunds: sinkingFunds,       // v1.43.0
     planBaseline: planBaseline,       // v1.40.0 — anchor for the "X sooner" badges
     strategy: strategy,
     extraMonthly: extraMonthly,
@@ -13343,6 +13669,8 @@ function applyBackupPayload(data) {
       lumpSums = data.lumpSums || [];
       // v1.38.0 — a backup from an older version has no rolled list: seed its
       // paid-off debts as kept so the restored plan matches what it showed.
+      if (Array.isArray(data.sinkingFunds)) { sinkingFunds = data.sinkingFunds.map(sanitizeFund).filter(Boolean); }
+      else { sinkingFunds = []; }
       var _mbR = parseFloat(data.monthlyBudget);
       monthlyBudget = (isNaN(_mbR) || _mbR < 0) ? 0 : _mbR;
       if (Array.isArray(data.bills)) { bills = data.bills.map(sanitizeBill).filter(Boolean); }
@@ -13710,6 +14038,7 @@ try { if (DRIVE_ENABLED) driveHandleRedirect(); } catch(e) {} }, 0);
     localStorage.setItem('debtfree_rolled', JSON.stringify(rolledMinimums)); // v1.38.0
     localStorage.setItem('debtfree_bills', JSON.stringify(bills));          // v1.42.0
     localStorage.setItem('debtfree_budget', String(monthlyBudget || 0));     // v1.42.0
+    localStorage.setItem('debtfree_funds', JSON.stringify(sinkingFunds));   // v1.43.0
     // v1.11.0 — accrual ledger + setting
     localStorage.setItem('debtfree_accruals', JSON.stringify(accruals));
     localStorage.setItem('debtfree_adjustments', JSON.stringify(adjustments));
@@ -13749,6 +14078,7 @@ function load() {
         debts = sanitizeDebts(data.debts);
         payments = data.payments || [];
         lumpSums = data.lumpSums || [];
+        if (Array.isArray(data.sinkingFunds)) sinkingFunds = data.sinkingFunds.map(sanitizeFund).filter(Boolean);   // v1.43.0
         var _mbU = parseFloat(data.monthlyBudget);
         if (!isNaN(_mbU) && _mbU >= 0) monthlyBudget = _mbU;   // v1.42.0
         if (Array.isArray(data.bills)) bills = data.bills.map(sanitizeBill).filter(Boolean);   // v1.42.0
@@ -13834,6 +14164,10 @@ function load() {
     // new payoffs roll by default.
     // v1.42.0 — same ordering rule as lumpSums above: load before
     // selectStrategy() fires save(), or the stored bills are overwritten.
+    // Same ordering rule as lumpSums/bills: load before selectStrategy()
+    // fires save(), or the stored funds are overwritten with an empty array.
+    const fl = localStorage.getItem('debtfree_funds');
+    if (fl) { try { sinkingFunds = (JSON.parse(fl) || []).map(sanitizeFund).filter(Boolean); } catch (e) { sinkingFunds = []; } }
     const mb = localStorage.getItem('debtfree_budget');
     if (mb !== null) { var _mb = parseFloat(mb); monthlyBudget = (isNaN(_mb) || _mb < 0) ? 0 : _mb; }
     const bl = localStorage.getItem('debtfree_bills');

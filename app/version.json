@@ -1,10 +1,10 @@
 {
-  "version": "1.42.0",
+  "version": "1.43.0",
   "releaseDate": "2026-09-16",
-  "releaseName": "Nothing catches you out",
+  "releaseName": "Money set aside on purpose",
   "notes": [
-    "Due dates. Add the day of the month each account is due and a new Coming Up card shows what’s close, with a one-tap way to log the payment right from it. Nothing is assumed — accounts you don’t give a day to are simply left alone.",
-    "Premium: recurring bills. Rent, utilities, insurance, subscriptions — add them with their due days and they appear alongside your debt payments in Coming Up, so you’re looking at everything that’s due in one place. Tick one off once you’ve handled it.",
-    "Monthly Money Plan. Set what you can put toward debts and bills each month, and see it beside what you’ve actually committed. It’s a check on your plan — it doesn’t change your payoff date or any of your numbers."
+    "Premium: sinking funds. Set money aside each month for the costs you know are coming — car repairs, insurance, the holidays — so the next one doesn’t land on a credit card.",
+    "Each fund can count toward your plan or just be tracked. A fund that counts is money not going to your debts, so your payoff dates account for it honestly rather than assuming that money was available.",
+    "Funds with a target stop once they’re full, and that money goes back to your debts from then on — your dates reflect that too."
   ]
 }
