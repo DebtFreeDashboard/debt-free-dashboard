@@ -4,7 +4,7 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.41.0';
+const CACHE_NAME = 'debtfree-1.41.1';
 // v1.40.6 — './dashboard.html' resolved to /dashboard.html (this file sits at
 // the repo root), which did not exist: every cache.addAll() rejected, the
 // fallback cache.add() rejected too, and the app precached NOTHING. Runtime
@@ -54,6 +54,23 @@ self.addEventListener('fetch', function(event) {
       url.hostname === 'oauth2.googleapis.com' ||
       url.hostname === 'www.googleapis.com' ||
       url.hostname === 'apis.google.com') return;
+
+  // v1.41.1 — never handle the dev build. app/dev.html is a generated
+  // development copy (tools/make-dev.js) that exists only so in-progress work
+  // can be opened on a real device; GitHub Pages serves only `main`, so a
+  // feature branch cannot be. Two concrete problems this early return fixes:
+  //
+  //   1. The HTML branch below is network-first but it CACHES what it fetches,
+  //      so every dev load pushed a development build into the production
+  //      cache.
+  //   2. Its offline fallback is caches.match('./app/dashboard.html') — a
+  //      failed dev fetch would serve PRODUCTION html at the dev URL, which
+  //      looks like the dev build silently reverting.
+  //
+  // Handing dev.html straight to the network also means the dev shim no longer
+  // has to unregister this worker to protect itself, which used to leave the
+  // real PWA without offline support until the app was next opened online.
+  if (url.pathname.endsWith('/dev.html')) return;
 
   const isHTML = req.mode === 'navigate' ||
                  (req.headers.get('accept') || '').includes('text/html') ||

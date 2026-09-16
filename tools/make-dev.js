@@ -90,23 +90,26 @@ const SHIM = `
        something worth being able to test on a dev build. */
   }
 
-  /* ── 2. Service worker off ──────────────────────────────────────────── */
+  /* ── 2. Service worker off ──────────────────────────────────────────────
+     As of app v1.41.1 the real protection lives in sw.js, which returns early
+     for any /dev.html request and therefore never caches or serves the dev
+     build. That is the correct place for it: a page cannot reliably detach a
+     service worker that has already claimed it — unregister() only takes
+     effect on the NEXT navigation, so the first dev load after visiting prod
+     was still being intercepted.
+
+     The earlier version of this shim unregistered the worker and cleared every
+     cache to compensate. Both were collateral damage on production: opening
+     dev left the installed PWA with no offline support until the real app was
+     next opened online. Neither is needed now, so all that remains is refusing
+     a NEW registration, which stops the dev build from installing a worker of
+     its own.                                                                */
   if ('serviceWorker' in navigator) {
-    try {
-      navigator.serviceWorker.getRegistrations().then(function (regs) {
-        regs.forEach(function (r) { r.unregister(); });
-      }).catch(function () {});
-    } catch (e) {}
     try {
       navigator.serviceWorker.register = function () {
         return Promise.reject(new Error('dev build: service worker disabled'));
       };
     } catch (e) {}
-    if (window.caches && caches.keys) {
-      caches.keys().then(function (names) {
-        names.forEach(function (n) { caches.delete(n); });
-      }).catch(function () {});
-    }
   }
 
   /* ── 5. Analytics off ───────────────────────────────────────────────────
