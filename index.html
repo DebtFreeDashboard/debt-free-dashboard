@@ -260,6 +260,49 @@
     color: var(--text-muted);
   }
 
+  /* ─── LAUNCH-PRICE DEADLINE ─── */
+  /* Amber, not red. This is a date, not a problem — red on a money page
+     reads as an error state and the app's own rule is no alarm colouring. */
+  .deadline-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 11px 16px;
+    background: rgba(217,154,31,0.10);
+    border-bottom: 1px solid rgba(217,154,31,0.28);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text);
+    text-align: center;
+  }
+  .deadline-strip[hidden] { display: none; }
+  .deadline-strip .deadline-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--amber); flex-shrink: 0;
+  }
+  .deadline-strip a {
+    color: var(--amber);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(217,154,31,0.45);
+    white-space: nowrap;
+  }
+  .deadline-strip a:hover { border-bottom-color: var(--amber); }
+
+  .deadline-inline {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--amber);
+    margin: -22px 0 26px;
+  }
+  .deadline-inline[hidden] { display: none; }
+
+  @media(max-width:600px) {
+    .deadline-strip { font-size: 0.74rem; padding: 9px 12px; }
+  }
+
   /* ─── HERO ─── */
   .hero {
     min-height: 92vh;
@@ -1454,6 +1497,17 @@
   </div>
 </nav>
 
+<!-- Ships hidden; renderPriceDeadline() reveals it only while the date is
+     still ahead, so a failed script shows nothing rather than a dead date. -->
+<div class="deadline-strip" data-deadline hidden>
+  <span class="deadline-dot" aria-hidden="true"></span>
+  <span data-deadline-text></span>
+  <a href="https://debtfreedashboard.gumroad.com/l/prfzv"
+     target="_blank" rel="noopener"
+     data-cta-label="deadline-strip"
+     data-cta-location="deadline-strip">Get Premium &rarr;</a>
+</div>
+
 <!-- HERO -->
 <section class="hero">
   <div class="hero-container">
@@ -1755,6 +1809,7 @@
           <span class="price-amount">12</span>
         </div>
         <div class="price-note" style="text-align:left">Pay once, yours forever — no subscription</div>
+        <div class="deadline-inline" data-deadline hidden style="margin:0 0 18px"><span data-deadline-text></span></div>
         <div class="pricing-items" style="margin-top:20px">
           <div class="pricing-item"><strong>Everything in Free, plus:</strong></div>
           <div class="pricing-item">What-If lump-sum modeling &amp; planned windfalls</div>
@@ -1868,5 +1923,55 @@ function toggleFaq(el) {
   item.classList.toggle('open');
 }
 </script>
+<script>
+
+// ── Launch-price deadline ─────────────────────────────────────────────
+// 2026-10-01 23:59:59 America/New_York == 2026-10-02T03:59:59Z. Stored as
+// a UTC instant so the cutoff is the same moment for a reader in Perth as
+// it is in Dracut — a local-time string would move the deadline by up to
+// a day depending on who is looking.
+var PRICE_DEADLINE = Date.parse('2026-10-02T03:59:59Z');
+var PRICE_NOW = 12, PRICE_NEXT = 24;
+
+// Prices come from the numbers above rather than literal text, so
+// tools/set-price.py (which rewrites "$12" everywhere) cannot reach into
+// this copy and turn "goes to $24" into nonsense.
+function priceDeadlineLine() {
+  var left = PRICE_DEADLINE - Date.now();
+  if (left <= 0) return null;                       // expired: caller hides
+  var days = Math.ceil(left / 86400000);
+  if (days <= 1) return 'Last day at $' + PRICE_NOW + ' — $' + PRICE_NEXT + ' tonight';
+  if (days <= 7) return days + ' days left at $' + PRICE_NOW + ' — $' + PRICE_NEXT + ' on October 1';
+  return '$' + PRICE_NOW + ' through October 1 — $' + PRICE_NEXT + ' after';
+}
+
+function renderPriceDeadline() {
+  var line = priceDeadlineLine();
+  var nodes = document.querySelectorAll('[data-deadline]');
+  for (var i = 0; i < nodes.length; i++) {
+    if (!line) { nodes[i].hidden = true; continue; }
+    var t = nodes[i].querySelector('[data-deadline-text]');
+    if (t) t.textContent = line;
+    nodes[i].hidden = false;                        // shipped hidden; shown only on success
+  }
+}
+
+// A PWA left open overnight would otherwise show "Last day" the morning
+// after. Cheap enough to re-check on wake and once an hour.
+function watchPriceDeadline() {
+  renderPriceDeadline();
+  setInterval(renderPriceDeadline, 3600000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) renderPriceDeadline();
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', watchPriceDeadline);
+} else {
+  watchPriceDeadline();                             // script ran after parse
+}
+</script>
+
 </body>
 </html>

@@ -1,10 +1,10 @@
 {
-  "version": "1.43.0",
+  "version": "1.44.0",
   "releaseDate": "2026-09-16",
-  "releaseName": "Money set aside on purpose",
+  "releaseName": "Saying it before, not after",
   "notes": [
-    "Premium: sinking funds. Set money aside each month for the costs you know are coming — car repairs, insurance, the holidays — so the next one doesn’t land on a credit card.",
-    "Each fund can count toward your plan or just be tracked. A fund that counts is money not going to your debts, so your payoff dates account for it honestly rather than assuming that money was available.",
-    "Funds with a target stop once they’re full, and that money goes back to your debts from then on — your dates reflect that too."
+    "Premium goes from $12 to $24 on October 1. The app and the site now say so up front rather than the price quietly changing one morning.",
+    "If you already unlocked Premium, nothing changes for you — your license keeps working and every feature added since, including sinking funds and the amortization schedule, is already yours at no extra cost.",
+    "The free version is not changing. It still takes you all the way to debt-free with no account, no subscription and no limit on debts."
   ]
 }

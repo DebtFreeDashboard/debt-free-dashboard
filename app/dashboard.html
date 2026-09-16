@@ -254,6 +254,16 @@
   border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); }
 .fund-add #fund-name { flex:1; }
 .fund-add #fund-monthly, .fund-add #fund-target { width:82px; flex-shrink:0; }
+/* v1.44.0 — launch-price deadline. Lives inside #unlock-pending, which is
+   only rendered for non-premium users, so nobody who already paid is shown
+   a countdown to a price they will never be charged. */
+.deadline-inline {
+  font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.02em;
+  color:var(--accent4); background:rgba(217,154,31,0.10);
+  border:1px solid rgba(217,154,31,0.28); border-radius:6px;
+  padding:7px 10px;
+}
+.deadline-inline[hidden] { display:none; }
   .roadmap-step { position:relative; display:flex; gap:14px; padding:0 0 22px 0; }
   .roadmap-step:last-child { padding-bottom:0; }
   .roadmap-step::before {
@@ -3494,6 +3504,7 @@
           <span id="premium-badge">★ Unlocked</span>
         </div>
         <div id="unlock-pending">
+          <div class="deadline-inline" data-deadline hidden style="margin-bottom:10px;"><span data-deadline-text></span></div>
           <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
             DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, the cash-flow release card, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
           </p>
@@ -3681,7 +3692,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.43.0';
+const APP_VERSION = '1.44.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3689,6 +3700,17 @@ const APP_VERSION = '1.43.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.44.0',
+    date: 'September 16, 2026',
+    name: 'Saying it before, not after',
+    whatsNew: [
+      'Premium goes from $12 to $24 on October 1. The app and the site now say so up front rather than the price quietly changing one morning.',
+      'If you already unlocked Premium, nothing changes for you \u2014 your license keeps working and every feature added since, including sinking funds and the amortization schedule, is already yours at no extra cost.',
+      'The free version is not changing. It still takes you all the way to debt-free with no account, no subscription and no limit on debts.',
+    ],
+    fixes: []
+  },
   {
     version: '1.43.0',
     date: 'September 16, 2026',
@@ -9862,6 +9884,54 @@ function dueTagFor(d) {
 // paidThrough is the last month the user marked this bill handled, as
 // 'YYYY-MM'. One value rather than a history: the app only ever asks about
 // the current month, and a growing list would swell every backup forever.
+
+
+// ── Launch-price deadline ─────────────────────────────────────────────
+// 2026-10-01 23:59:59 America/New_York == 2026-10-02T03:59:59Z. Stored as
+// a UTC instant so the cutoff is the same moment for a reader in Perth as
+// it is in Dracut — a local-time string would move the deadline by up to
+// a day depending on who is looking.
+var PRICE_DEADLINE = Date.parse('2026-10-02T03:59:59Z');
+var PRICE_NOW = 12, PRICE_NEXT = 24;
+
+// Prices come from the numbers above rather than literal text, so
+// tools/set-price.py (which rewrites "$12" everywhere) cannot reach into
+// this copy and turn "goes to $24" into nonsense.
+function priceDeadlineLine() {
+  var left = PRICE_DEADLINE - Date.now();
+  if (left <= 0) return null;                       // expired: caller hides
+  var days = Math.ceil(left / 86400000);
+  if (days <= 1) return 'Last day at $' + PRICE_NOW + ' — $' + PRICE_NEXT + ' tonight';
+  if (days <= 7) return days + ' days left at $' + PRICE_NOW + ' — $' + PRICE_NEXT + ' on October 1';
+  return '$' + PRICE_NOW + ' through October 1 — $' + PRICE_NEXT + ' after';
+}
+
+function renderPriceDeadline() {
+  var line = priceDeadlineLine();
+  var nodes = document.querySelectorAll('[data-deadline]');
+  for (var i = 0; i < nodes.length; i++) {
+    if (!line) { nodes[i].hidden = true; continue; }
+    var t = nodes[i].querySelector('[data-deadline-text]');
+    if (t) t.textContent = line;
+    nodes[i].hidden = false;                        // shipped hidden; shown only on success
+  }
+}
+
+// A PWA left open overnight would otherwise show "Last day" the morning
+// after. Cheap enough to re-check on wake and once an hour.
+function watchPriceDeadline() {
+  renderPriceDeadline();
+  setInterval(renderPriceDeadline, 3600000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) renderPriceDeadline();
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', watchPriceDeadline);
+} else {
+  watchPriceDeadline();                             // script ran after parse
+}
 
 function currentMonthKey() { return monthKeyOf(new Date()); }
 
