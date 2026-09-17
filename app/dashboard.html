@@ -301,6 +301,9 @@
 .progress-compact .pc-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
 .progress-compact .pc-pct {
   font-family:var(--font-serif); font-size:1.5rem; font-weight:900; line-height:1;
+  /* v1.45.2 — same token as .next-debt-amt, so the two headline figures on this
+     tab read as one system and both follow the light/dark theme. */
+  color:var(--accent);
 }
 .progress-compact .pc-share {
   font-size:0.72rem; padding:6px 12px; white-space:nowrap;
@@ -3750,7 +3753,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.45.1';
+const APP_VERSION = '1.45.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3758,6 +3761,15 @@ const APP_VERSION = '1.45.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.45.2',
+    date: 'September 17, 2026',
+    name: 'A small bit of colour',
+    whatsNew: [],
+    fixes: [
+      'Your progress percentage on the Dashboard now uses the same colour as the balance on your Next Target card.',
+    ]
+  },
   {
     version: '1.45.1',
     date: 'September 17, 2026',
