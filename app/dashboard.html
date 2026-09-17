@@ -3485,7 +3485,7 @@
       <div class="chip-detail" id="chip-detail" style="display:none"></div>
     </div>
 
-    <div class="card" id="paid-off-card" data-collapse="paidoff" data-collapse-default="closed" style="display:none">
+    <div class="card" id="paid-off-card" data-collapse="paidoff" data-collapse-default="open" style="display:none">
       <div class="card-title">
         <div class="dot"></div> &#127942; Paid Off Debts
         <span class="tag tag-muted" id="paid-off-count" style="margin-left:4px">0</span>
@@ -3750,7 +3750,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.45.0';
+const APP_VERSION = '1.45.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3758,6 +3758,17 @@ const APP_VERSION = '1.45.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.45.1',
+    date: 'September 17, 2026',
+    name: 'Saying the same thing twice',
+    whatsNew: [],
+    fixes: [
+      'The Strategy Comparison heading could contradict the panel above it \u2014 saying one method saved money while \u201cWhy this order\u201d said your own order was cheaper. It was comparing the two named methods to each other instead of to your actual plan, and on a different set of lump-sum dates. It now compares your real plan against the alternatives on your real dates, so the two always agree.',
+      '\u201cWhy this order\u201d now says which order it means.',
+      'Paid Off Debts and Backup & Restore open by default again.',
+    ]
+  },
   {
     version: '1.45.0',
     date: 'September 17, 2026',
@@ -7878,7 +7889,25 @@ function applyDialExtra(extra) {
 // Per-card state persists in localStorage so the page respects each user's
 // setup. Teasers are deliberately NOT collapsible — gates stay visible.
 let _collapseState = {};
+// v1.45.1 — a stored preference beats the default, which is right for a card
+// the user chose to fold, and wrong the one time we change a default: a card
+// collapsed months ago would stay collapsed forever. Clears the stored entry
+// for these two keys once, then never again. Same shape as the badges_seeded
+// and rolledMinimums migrations.
+function migrateCollapseDefaults() {
+  var FLAG = 'debtfree_collapse_v1451';
+  try {
+    if (localStorage.getItem(FLAG)) return;
+    var st = JSON.parse(localStorage.getItem('debtfree_collapse')) || {};
+    delete st.paidoff;
+    delete st.backup;
+    localStorage.setItem('debtfree_collapse', JSON.stringify(st));
+    localStorage.setItem(FLAG, '1');
+  } catch (e) {}
+}
+
 function loadCollapseState() {
+  migrateCollapseDefaults();
   try { _collapseState = JSON.parse(localStorage.getItem('debtfree_collapse')) || {}; } catch (e) { _collapseState = {}; }
 }
 function persistCollapseState() {
@@ -12647,10 +12676,35 @@ function renderStrategy() {
     }
     const _cmpTag = document.getElementById('cmp-tag');
     if (_cmpTag) {
-      const _d = Math.abs(av.totalInterest - sb.totalInterest);
-      const _w = av.totalInterest <= sb.totalInterest ? 'Avalanche' : 'Snowball';
-      _cmpTag.textContent = _d > 25 ? _w + ' saves ~' + fmt(Math.round(_d / 10) * 10)
-                                    : 'About the same';
+      // Like-for-like, and against the plan the user is ACTUALLY on. av/sb
+      // above are each strategy at its best (lump sums re-placed to suit it);
+      // the user's plan has its lump sums where they really are. Comparing the
+      // two bases is what made this read "Avalanche saves ~$50" underneath a
+      // panel saying Optimized costs $325 less. Re-simulate on the real
+      // disbursements, the same basis the panel uses, so they cannot disagree.
+      const _actNow = _activePlanDebts();
+      const _exNow  = planExtra();
+      const _dbNow  = plannedDisbursements();
+      const _avNow  = simulate(_actNow.map(function(d){ return {...d}; }), _exNow, 0, 'avalanche', _dbNow);
+      const _sbNow  = simulate(_actNow.map(function(d){ return {...d}; }), _exNow, 0, 'snowball',  _dbNow);
+      const _mine   = _curPlan ? _curPlan.interest : null;
+      const _lbl    = strategy === 'hybrid' ? 'Your order'
+                    : strategy.charAt(0).toUpperCase() + strategy.slice(1);
+      const _alts = [];
+      if (strategy !== 'avalanche') _alts.push({ n: 'Avalanche', v: _avNow.totalInterest });
+      if (strategy !== 'snowball')  _alts.push({ n: 'Snowball',  v: _sbNow.totalInterest });
+      if (_mine === null || !_alts.length) {
+        _cmpTag.textContent = '\u2014';
+      } else {
+        const _best = _alts.reduce(function(a, b){ return a.v <= b.v ? a : b; });
+        const _diff = _best.v - _mine;
+        // fmt() on the raw difference, not a rounded one: the panel prints the
+        // same subtraction, and rounding only here would put a different number
+        // two inches from an identical claim.
+        _cmpTag.textContent = _diff >  25 ? _lbl + ' saves ~' + fmt(_diff)
+                            : _diff < -25 ? _best.n + ' saves ~' + fmt(-_diff)
+                            : 'About the same as ' + _best.n;
+      }
     }
 
     const _noteEl = document.getElementById('comparison-note');
@@ -12807,7 +12861,7 @@ function renderStrategy() {
           : 'Searched ' + oo.considered.toLocaleString() + ' orderings \u2014 the best found, though with this many debts it may not be the very best possible.';
 
         _optNote.innerHTML =
-          '<div class="opt-note-title">&#129504; Why this order</div>' +
+          '<div class="opt-note-title">&#129504; Why this order &mdash; Optimized</div>' +
           '<div class="opt-note-body">' + headline +
           ' It starts with <strong>' + escapeHtml(first) + '</strong> and leaves <strong>' + escapeHtml(last) +
           '</strong> for last, taking into account when each 0% rate ends rather than just today\u2019s rate.</div>' +

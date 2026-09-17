@@ -1,13 +1,10 @@
 {
-  "version": "1.45.0",
+  "version": "1.45.1",
   "releaseDate": "2026-09-17",
-  "releaseName": "Less scrolling, same everything",
+  "releaseName": "Saying the same thing twice",
   "notes": [
-    "The Strategy tab is far shorter. Every section folds away now, including the three big ones that never could before — and a folded section still shows its answer on the header, so your strategy and which method saves more are readable without opening anything.",
-    "Monthly Money Plan is now Your Monthly Plan, rebuilt so the amount you put in each month and the optional budget you check it against look and work the same way.",
-    "The cloud icon at the top of the screen now opens your Google Drive backup, with Restore alongside it. Restore used to be on the Dashboard only — it works from any tab now.",
-    "Paid-off debts moved to the Wins tab, with the full detail: when you cleared it, how long it took, and what it started at.",
-    "The Payment Log starts folded. The Log Payment button floating at the bottom is still there whenever you need it.",
-    "Fixed: the Monthly Payment Summary said “across all accounts” while showing only the debts inside your payoff plan. It now says what it actually counts."
+    "Fixed: the Strategy Comparison heading could contradict the panel above it — saying one method saved money while “Why this order” said your own order was cheaper. It was comparing the two named methods to each other instead of to your actual plan, and on a different set of lump-sum dates. It now compares your real plan against the alternatives on your real dates, so the two always agree.",
+    "“Why this order” now says which order it means.",
+    "Paid Off Debts and Backup & Restore open by default again."
   ]
 }
