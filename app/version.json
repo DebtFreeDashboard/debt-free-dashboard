@@ -1,10 +1,13 @@
 {
-  "version": "1.44.0",
-  "releaseDate": "2026-09-16",
-  "releaseName": "Saying it before, not after",
+  "version": "1.45.0",
+  "releaseDate": "2026-09-17",
+  "releaseName": "Less scrolling, same everything",
   "notes": [
-    "Premium goes from $12 to $24 on October 1. The app and the site now say so up front rather than the price quietly changing one morning.",
-    "If you already unlocked Premium, nothing changes for you — your license keeps working and every feature added since, including sinking funds and the amortization schedule, is already yours at no extra cost.",
-    "The free version is not changing. It still takes you all the way to debt-free with no account, no subscription and no limit on debts."
+    "The Strategy tab is far shorter. Every section folds away now, including the three big ones that never could before — and a folded section still shows its answer on the header, so your strategy and which method saves more are readable without opening anything.",
+    "Monthly Money Plan is now Your Monthly Plan, rebuilt so the amount you put in each month and the optional budget you check it against look and work the same way.",
+    "The cloud icon at the top of the screen now opens your Google Drive backup, with Restore alongside it. Restore used to be on the Dashboard only — it works from any tab now.",
+    "Paid-off debts moved to the Wins tab, with the full detail: when you cleared it, how long it took, and what it started at.",
+    "The Payment Log starts folded. The Log Payment button floating at the bottom is still there whenever you need it.",
+    "Fixed: the Monthly Payment Summary said “across all accounts” while showing only the debts inside your payoff plan. It now says what it actually counts."
   ]
 }

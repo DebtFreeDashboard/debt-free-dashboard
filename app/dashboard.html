@@ -264,6 +264,47 @@
   padding:7px 10px;
 }
 .deadline-inline[hidden] { display:none; }
+  /* v1.45.0 — Your Monthly Plan. Two rows, one control system, so the budget
+     check reads as part of the card rather than appended to it. */
+  .plan-row { margin-bottom: 18px; }
+  .plan-row:last-of-type { margin-bottom: 0; }
+  .plan-row-label {
+    display: block; margin-bottom: 8px;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+  .plan-row-note {
+    text-transform: none; letter-spacing: 0.01em; opacity: 0.7;
+    font-size: 0.7rem; margin-left: 6px;
+  }
+  .card-title .tag { font-size: 0.66rem; opacity: 0.9; }
+/* v1.45.0 — the Drive card lives inside the sheet; strip the standalone card
+   chrome so it reads as sheet content rather than a card within a card. */
+.modal .drive-card { margin:0; padding:0; background:transparent; border:0; border-left:0; }
+.modal .drive-card-actions { margin-top:14px; }
+.modal .drive-card-actions .btn { flex:1; min-width:130px; }
+.drive-sheet-alt {
+  margin:16px 0 0; padding-top:14px; border-top:1px solid var(--border);
+  font-size:0.75rem; line-height:1.5; color:var(--text-muted);
+}
+/* v1.45.0 — compact progress. 229px of stacked label/percent/bar/sub/full-width
+   button became one row: the bar is the visual, the share button is the point. */
+.progress-compact .pc-head {
+  display:flex; align-items:flex-start; justify-content:space-between;
+  gap:12px; margin-bottom:10px;
+}
+.progress-compact .pc-label {
+  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--text-muted);
+}
+.progress-compact .pc-sub { font-size:0.82rem; margin-top:3px; }
+.progress-compact .pc-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.progress-compact .pc-pct {
+  font-family:var(--font-serif); font-size:1.5rem; font-weight:900; line-height:1;
+}
+.progress-compact .pc-share {
+  font-size:0.72rem; padding:6px 12px; white-space:nowrap;
+}
   .roadmap-step { position:relative; display:flex; gap:14px; padding:0 0 22px 0; }
   .roadmap-step:last-child { padding-bottom:0; }
   .roadmap-step::before {
@@ -544,8 +585,6 @@
     0%,100% { box-shadow: 0 0 8px var(--accent); }
     50% { box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,229,176,0.3); }
   }
-
-
 
   /* ─── TAB NAV BAR ─── */
   .tab-nav {
@@ -2445,7 +2484,7 @@
        timestamp alone doesn't tell you whether it matters, but "there are
        changes not in your backup" does. -->
   <button class="drive-hdr-btn" id="drive-btn" aria-label="Backup status" style="display:none"
-          onclick="driveBackupNow()">
+          onclick="openDriveSheet()">
     <span class="drive-hdr-icon">&#9729;</span><span class="drive-dot never" id="drive-dot"></span>
   </button>
 </header>
@@ -2528,16 +2567,28 @@
 
     <!-- v1.21.0 — Dial-a-Date entry (premium). Placed at the Freedom Date, the
          exact number it changes, so free users meet the gate at peak desire. -->
-    <button id="dial-date-entry" class="dial-entry" onclick="openDialDate()" style="display:none">
-      <span class="dial-entry-icon">&#127919;</span>
-      <span class="dial-entry-text">
-        <span class="dial-entry-title">Want to be debt-free sooner?</span>
-        <span class="dial-entry-sub">Pick a target date &mdash; see the payment to hit it</span>
-      </span>
-      <span class="dial-entry-arrow">&rarr;</span>
-    </button>
+    <div class="card progress-compact" id="overall-progress-card" style="display:none">
+      <div class="pc-head">
+        <div>
+          <div class="pc-label">Debt-Free Progress</div>
+          <div class="pc-sub"><span id="progress-label-paid">$0 paid off</span></div>
+        </div>
+        <div class="pc-right">
+          <div class="pc-pct" id="progress-pct">0%</div>
+          <button id="share-progress-btn" class="btn btn-ghost pc-share" onclick="shareProgress()">&#128241; Share</button>
+        </div>
+      </div>
+      <div class="hero-progress-track">
+        <div class="hero-progress-fill" id="overall-progress" style="width:0%"></div>
+      </div>
+      <!-- v1.45.0 — #progress-label-left is kept so renderers that write to it
+           keep working, but it is not shown: Total Owed above states the same
+           remaining balance, and saying it twice is what made the top of this
+           tab feel like two cards doing one job. -->
+      <span id="progress-label-left" hidden></span>
+    </div>
 
-    <!-- v1.13.0 — Next Debt to Eliminate (free) -->
+        <!-- v1.13.0 — Next Debt to Eliminate (free) -->
     <div class="card next-debt-card" id="next-debt-card" style="display:none">
       <div class="next-debt-flag">▸ NEXT TARGET</div>
       <div class="next-debt-main">
@@ -2567,33 +2618,7 @@
       <div id="upcoming-body"></div>
       <div id="upcoming-quiet" style="display:none;font-size:0.8rem;color:var(--text-muted);line-height:1.5;"></div>
     </div>
-    <div class="card drive-card loud" id="drive-card" style="display:none">
-      <div id="drive-card-line">Your data is only on this device.</div>
-      <div class="drive-card-actions">
-        <button class="btn" id="drive-card-action" onclick="driveBackupNow()">Back up to Google Drive</button>
-        <button class="btn btn-ghost" onclick="driveRestoreNow()">Restore</button>
-        <button class="btn btn-ghost" id="drive-undo-btn" onclick="driveUndoRestore()" style="display:none">Undo restore</button>
-      </div>
-    </div>
-
-    <div class="card" id="overall-progress-card" style="display:none">
-      <div class="hero-progress">
-        <div class="hero-progress-label">Debt-Free Progress</div>
-        <div class="hero-progress-pct" id="progress-pct">0%</div>
-        <div class="hero-progress-track">
-          <div class="hero-progress-fill" id="overall-progress" style="width:0%"></div>
-        </div>
-        <div class="hero-progress-sub">
-          <span id="progress-label-paid">$0 paid off</span>
-          <span id="progress-label-left" style="color:var(--text-dim)"></span>
-        </div>
-        <button id="share-progress-btn" class="btn btn-ghost" style="margin-top:16px;width:100%;" onclick="shareProgress()">
-          &#128241; Share my progress
-        </button>
-      </div>
-    </div>
-
-    <!-- Chart -->
+        <!-- Chart -->
     <!-- v1.23.0 — collapse/expand all (applies to collapsible cards only) -->
     <div style="display:flex;justify-content:flex-end;margin:-8px 0 10px;">
       <button id="collapse-all-btn" class="collapse-all-btn" onclick="toggleAllCollapse()">Collapse all</button>
@@ -2608,15 +2633,13 @@
     <!-- v1.14.0 — Cash-Flow Release card (premium) -->
     
     <!-- Cash-Flow teaser (free, blur) -->
-    
 
     <!-- v1.14.0 — Premium Roadmap timeline (premium) -->
     
     <!-- Roadmap teaser (free, blur) -->
-    
 
     <!-- Payment Log -->
-    <div class="card" id="payment-log-card" style="display:none">
+    <div class="card" id="payment-log-card" data-collapse="paylog" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Payment Log</div>
       <div id="payment-log-future-warn" class="alert warning" style="display:none;margin-bottom:12px;gap:8px;align-items:center;">
         <span>&#9888;</span><span>Future-dated payment saved but will not affect your current balance or calculations until that date arrives. Use Planned Lump Sums above to model future payments in your payoff simulation.</span>
@@ -2780,30 +2803,15 @@
          default. Kept editable: people genuinely reuse paid-off cards (0%
          transfer offers), and reactivating preserves the debt's ledger history
          instead of forcing a duplicate that would fragment Total Paid Off. -->
-    <div class="card" id="paid-off-card" data-collapse="paidoff" data-collapse-default="closed" style="display:none">
-      <div class="card-title">
-        <div class="dot"></div> &#127942; Paid Off Debts
-        <span class="tag tag-muted" id="paid-off-count" style="margin-left:4px">0</span>
-      </div>
-      <div class="paid-off-summary" id="paid-off-summary"></div>
-      <div class="debt-list" id="paid-off-list"></div>
-      <div class="paid-off-moved" id="paid-off-moved" style="display:none;"></div>
-    </div>
-
-    <!-- Monthly Budget -->
-    
-
+        <!-- Monthly Budget -->
 
     <!-- Monthly Payment Summary -->
     
     <!-- Planned Lump Sums -->
-    
 
     <!-- v1.13.0 — Planned Lump Sums teaser (free users, blur style) -->
-    
 
     <!-- Backup & Restore -->
-    
 
   </div>
 
@@ -2813,7 +2821,9 @@
     <div class="page-subtitle">Pick your method. See the full payoff order and timeline.</div>
 
     <div id="optimized-note" class="optimized-note" style="display:none;"></div>
-    <div class="strategy-grid">
+        <div class="card" id="picker-card" data-collapse="picker" data-collapse-default="closed">
+      <div class="card-title"><div class="dot"></div> Strategy <span class="tag" id="picker-tag">&mdash;</span></div>
+      <div class="strategy-grid">
       <div class="strategy-card" id="card-optimized" onclick="selectStrategy('optimized')">
         <div class="strategy-icon">&#129504;</div>
         <div class="strategy-name">Optimized</div>
@@ -2835,10 +2845,11 @@
         <div class="strategy-desc">You set the order. Maximum control over your plan.</div>
       </div>
     </div>
+    </div>
 
     <!-- Comparison -->
-    <div class="card">
-      <div class="card-title"><div class="dot"></div> Strategy Comparison</div>
+    <div class="card" id="comparison-card" data-collapse="compare" data-collapse-default="closed">
+      <div class="card-title"><div class="dot"></div> Strategy Comparison <span class="tag" id="cmp-tag">&mdash;</span></div>
       <!-- v1.28.3 — say plainly which strategy is running before showing any
            numbers. Users were reading the comparison without realising which
            card was their own plan. -->
@@ -2883,81 +2894,60 @@
       </div>
     </div>
 
-    <!-- v1.28.3 — Lump sum optimizer. Replaces the old "re-distribute to match
-         your strategy" banner, which assumed aligning lumps with the strategy
-         was always better. On real data it could make a plan measurably worse.
-         This panel simulates both ways and only recommends a change when it
-         genuinely saves money — and shows exactly how much. -->
-    <div id="lump-optimizer-panel" class="lump-opt-panel" style="display:none;">
-      <div class="lump-opt-head">
-        <span class="lump-opt-icon">&#127919;</span>
-        <div>
-          <div class="lump-opt-title" id="lump-opt-title">Lump sum placement</div>
-          <div class="lump-opt-text" id="lump-opt-text"></div>
-        </div>
-      </div>
-      <div class="lump-opt-actions" id="lump-opt-actions">
-        <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
-        <!-- v1.36.3 — no inline onclick: this button's action depends on which
-             state the panel is in (re-split a stale plan vs optimize a valid
-             one), so renderStrategy() assigns both label and handler. -->
-        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-opt-action">Optimize my lump sums</button>
-      </div>
-    </div>
-
     <!-- v1.30.0 — moved from Dashboard: these are planning tools, not daily actions -->
 <div class="card" id="budget-card" data-collapse="budget" data-collapse-default="open">
-      <div class="card-title"><div class="dot"></div> Monthly Money Plan</div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr">
-        <div class="form-field">
-          <label>Extra Per Month ($)</label>
-          <!-- v1.39.0 — nudge buttons and presets beside the box; same treatment
-               as the What-If controls. The box keeps its id: sixteen plan sites
-               and the video recorder read it. -->
-          <div class="wi-stepper" style="width:100%;">
-            <button type="button" class="wi-nudge" onclick="budgetNudge(-1)" aria-label="$25 less">&minus;</button>
-            <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" style="flex:1;min-width:0;" oninput="recalculateDebounced()" onchange="recalculate()" />
-            <button type="button" class="wi-nudge" onclick="budgetNudge(1)" aria-label="$25 more">+</button>
-          </div>
-          <div class="wi-chips" id="budget-chips">
-            <button type="button" class="wi-chip" data-v="100" onclick="budgetSet(100)">$100</button>
-            <button type="button" class="wi-chip" data-v="250" onclick="budgetSet(250)">$250</button>
-            <button type="button" class="wi-chip" data-v="500" onclick="budgetSet(500)">$500</button>
-            <button type="button" class="wi-chip" data-v="1000" onclick="budgetSet(1000)">$1,000</button>
-          </div>
+      <div class="card-title"><div class="dot"></div> Your Monthly Plan</div>
+
+      <div class="plan-row">
+        <label class="plan-row-label" for="extra-payment">Extra per month
+          <span class="plan-row-note">drives your plan</span></label>
+        <div class="wi-stepper" style="width:100%;">
+          <button type="button" class="wi-nudge" onclick="budgetNudge(-1)" aria-label="$25 less">&minus;</button>
+          <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" style="flex:1;min-width:0;" oninput="recalculateDebounced()" onchange="recalculate()" />
+          <button type="button" class="wi-nudge" onclick="budgetNudge(1)" aria-label="$25 more">+</button>
         </div>
-        <div class="form-field field-full">
-          <label>Strategy</label>
-          <select id="strategy-select" onchange="recalculate()">
-            <option value="optimized">Optimized &mdash; lowest total interest</option>
-            <option value="avalanche">Avalanche &mdash; highest APR</option>
-            <option value="snowball">Snowball &mdash; lowest balance</option>
-            <option value="hybrid">Hybrid &mdash; custom order</option>
-          </select>
+        <div class="wi-chips" id="budget-chips">
+          <button type="button" class="wi-chip" data-v="100" onclick="budgetSet(100)">$100</button>
+          <button type="button" class="wi-chip" data-v="250" onclick="budgetSet(250)">$250</button>
+          <button type="button" class="wi-chip" data-v="500" onclick="budgetSet(500)">$500</button>
+          <button type="button" class="wi-chip" data-v="1000" onclick="budgetSet(1000)">$1,000</button>
         </div>
-      <!-- v1.42.0 — the budget check. Deliberately lighter than Extra Per Month
-           above it: extra drives the plan, this only measures it. -->
-      <div class="money-plan">
-        <label class="money-plan-label" for="plan-budget">Monthly budget for debts and bills <span class="field-optional">optional</span></label>
-        <div class="wi-stepper money-plan-stepper">
+      </div>
+
+      <div class="plan-row">
+        <label class="plan-row-label" for="plan-budget">Monthly budget
+          <span class="plan-row-note">checks your plan &middot; optional</span></label>
+        <div class="wi-stepper" style="width:100%;">
           <button type="button" class="wi-nudge" onclick="planBudgetNudge(-1)" aria-label="$50 less">&minus;</button>
           <input type="text" inputmode="decimal" id="plan-budget" placeholder="2,000" min="0"
             style="flex:1;min-width:0;" oninput="planBudgetInput(this.value)" onchange="setPlanBudget(this.value)" />
           <button type="button" class="wi-nudge" onclick="planBudgetNudge(1)" aria-label="$50 more">+</button>
         </div>
-        <button type="button" class="btn btn-ghost money-plan-match" id="plan-budget-match" onclick="planBudgetMatchCommitted()"></button>
+        <div class="wi-chips">
+          <button type="button" class="btn btn-ghost money-plan-match" id="plan-budget-match" onclick="planBudgetMatchCommitted()"></button>
+        </div>
         <div class="plan-budget-breakdown" id="plan-budget-breakdown"></div>
         <div class="plan-budget-line" id="plan-budget-line"></div>
       </div>
-      </div>
+
+      <!-- Kept in the DOM, out of the UI. recalculate() and five other sites
+           read this as the source of truth for `strategy`; the strategy cards
+           at the top of the tab are the control users see. -->
+      <select id="strategy-select" onchange="recalculate()" hidden>
+        <option value="optimized">Optimized</option>
+        <option value="avalanche">Avalanche</option>
+        <option value="snowball">Snowball</option>
+        <option value="hybrid">Hybrid</option>
+      </select>
     </div>
-<div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
+
+    <div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Monthly Payment Summary</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
         <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
           <div class="stat-mini-label">Min Payments Due</div>
           <div id="summary-min-total" style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent3);">$0</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">across all accounts</div>
+          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">across your payoff plan</div>
         </div>
         <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
           <div class="stat-mini-label">Total Monthly Payment</div>
@@ -2980,61 +2970,40 @@
            plan than the one shown. -->
       <div class="rollover-note" id="rollover-note"></div>
     </div>
-<div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="open" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
-      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
-        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
-        Planned lump sum applied
+
+    <div class="card" id="bills-card" data-collapse="bills" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts. Add a due day and it shows up alongside your payments in Coming Up.</p>
+      <div id="bills-list"></div>
+      <div id="bills-total" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:8px 0 14px;"></div>
+      <div class="bill-add">
+        <input id="bill-name" type="text" placeholder="Rent" maxlength="60" aria-label="Bill name" />
+        <input id="bill-amount" type="text" inputmode="decimal" placeholder="1,200" aria-label="Monthly amount" />
+        <input id="bill-due-day" type="text" inputmode="numeric" maxlength="2" placeholder="Day" aria-label="Due day" />
       </div>
-      <div id="cashflow-events" style="margin-top:16px;"></div>
+      <div class="form-error" id="bill-error" style="display:none;"></div>
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addBill()">Add bill</button>
     </div>
-<div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('cashflow');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+
+    <div class="card" id="bills-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('bills');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
-            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
-            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
-          </div>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts.</p>
+          <div class="bill-row"><div class="bill-name-static">Rent</div><div class="bill-amt-static">$1,200</div><div class="bill-day-static">1st</div></div>
+          <div class="bill-row"><div class="bill-name-static">Car insurance</div><div class="bill-amt-static">$142</div><div class="bill-day-static">12th</div></div>
+          <div class="bill-row"><div class="bill-name-static">Phone</div><div class="bill-amt-static">$85</div><div class="bill-day-static">20th</div></div>
         </div>
         <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">See your cash come back</div>
-          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">Everything due, in one place</div>
+          <div class="lock-card-desc" style="max-width:280px;">Your bills alongside your debt payments, so nothing lands on you unexpectedly.</div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
     </div>
-<div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="open" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
-      <div id="roadmap-track"></div>
-    </div>
-<div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('roadmap');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">Your full roadmap to zero</div>
-          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
-<div class="card" id="funds-card" data-collapse="funds" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+
+    <div class="card" id="funds-card" data-collapse="funds" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
       <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money set aside each month for costs you know are coming. A fund marked &ldquo;in the plan&rdquo; is money not going to debt, so your payoff dates account for it.</p>
       <div id="funds-list"></div>
@@ -3048,7 +3017,8 @@
       <button class="btn btn-ghost" style="margin-top:10px;" onclick="addFund()">Add fund</button>
       <p style="margin-top:12px;font-size:0.72rem;color:var(--text-muted);line-height:1.5;">Leave the target blank for something ongoing, like insurance. With a target, the fund stops once it&rsquo;s full and that money goes back to your debts.</p>
     </div>
-<div class="card" id="funds-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('funds');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+
+    <div class="card" id="funds-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('funds');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
       <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
@@ -3067,80 +3037,26 @@
         </div>
       </div>
     </div>
-<div class="card" id="bills-card" data-collapse="bills" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts. Add a due day and it shows up alongside your payments in Coming Up.</p>
-      <div id="bills-list"></div>
-      <div id="bills-total" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:8px 0 14px;"></div>
-      <div class="bill-add">
-        <input id="bill-name" type="text" placeholder="Rent" maxlength="60" aria-label="Bill name" />
-        <input id="bill-amount" type="text" inputmode="decimal" placeholder="1,200" aria-label="Monthly amount" />
-        <input id="bill-due-day" type="text" inputmode="numeric" maxlength="2" placeholder="Day" aria-label="Due day" />
-      </div>
-      <div class="form-error" id="bill-error" style="display:none;"></div>
-      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addBill()">Add bill</button>
-    </div>
-<div class="card" id="bills-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('bills');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts.</p>
-          <div class="bill-row"><div class="bill-name-static">Rent</div><div class="bill-amt-static">$1,200</div><div class="bill-day-static">1st</div></div>
-          <div class="bill-row"><div class="bill-name-static">Car insurance</div><div class="bill-amt-static">$142</div><div class="bill-day-static">12th</div></div>
-          <div class="bill-row"><div class="bill-name-static">Phone</div><div class="bill-amt-static">$85</div><div class="bill-day-static">20th</div></div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">&#128274;</div>
-          <div class="lock-card-title">Everything due, in one place</div>
-          <div class="lock-card-desc" style="max-width:280px;">Your bills alongside your debt payments, so nothing lands on you unexpectedly.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
-<div class="card" id="amort-card" data-collapse="amort" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Amortization Schedule <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Month by month, what your payment covers in interest and what actually comes off the balance.</p>
-      <div style="margin-bottom:12px;">
-        <select id="amort-debt" onchange="setAmortDebt(this.value)" aria-label="Choose which debt to show"></select>
-      </div>
-      <div class="amort-scroll">
-        <table class="amort-table">
-          <thead><tr><th>Month</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Balance</th></tr></thead>
-          <tbody id="amort-body"></tbody>
-        </table>
-      </div>
-      <div id="amort-note" style="margin-top:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);"></div>
-      <button id="amort-more" class="btn btn-ghost" style="margin-top:10px;display:none;" onclick="toggleAmortRows()"></button>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-        <button class="btn btn-ghost" onclick="exportAmortizationCsv()">Export schedule (CSV)</button>
-        <button class="btn btn-ghost" onclick="exportDebtsCsv()">Export debt list (CSV)</button>
-      </div>
-      <p style="margin-top:12px;font-size:0.72rem;color:var(--text-muted);line-height:1.5;">A projection based on the figures you entered. Your lender&rsquo;s statement is the record.</p>
-    </div>
-<div class="card" id="amort-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('amort');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Amortization Schedule <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Month by month, what your payment covers in interest and what actually comes off the balance.</p>
-          <table class="amort-table">
-            <thead><tr><th>Month</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Balance</th></tr></thead>
-            <tbody>
-              <tr><td class="amort-m">Sep 2026</td><td>$450</td><td class="amort-int">$182</td><td>$268</td><td class="amort-bal">$9,732</td></tr>
-              <tr><td class="amort-m">Oct 2026</td><td>$450</td><td class="amort-int">$177</td><td>$273</td><td class="amort-bal">$9,459</td></tr>
-              <tr><td class="amort-m">Nov 2026</td><td>$450</td><td class="amort-int">$172</td><td>$278</td><td class="amort-bal">$9,181</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">&#128274;</div>
-          <div class="lock-card-title">See where every dollar goes</div>
-          <div class="lock-card-desc" style="max-width:280px;">The full month-by-month schedule for every debt, plus CSV export for your own spreadsheet.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
-<div class="card" id="lump-sum-card" data-collapse="lumps" data-collapse-default="closed" style="display:none">
+
+    <div class="card" id="lump-sum-card" data-collapse="lumps" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments</div>
+
+      <div id="lump-optimizer-panel" class="lump-opt-panel" style="display:none;">
+      <div class="lump-opt-head">
+        <span class="lump-opt-icon">&#127919;</span>
+        <div>
+          <div class="lump-opt-title" id="lump-opt-title">Lump sum placement</div>
+          <div class="lump-opt-text" id="lump-opt-text"></div>
+        </div>
+      </div>
+      <div class="lump-opt-actions" id="lump-opt-actions">
+        <button class="btn btn-ghost" style="font-size:0.75rem; padding:6px 14px;" onclick="dismissRedistBanner()">Keep as-is</button>
+        <!-- v1.36.3 — no inline onclick: this button's action depends on which
+             state the panel is in (re-split a stale plan vs optimize a valid
+             one), so renderStrategy() assigns both label and handler. -->
+        <button class="btn btn-primary" style="font-size:0.75rem; padding:6px 14px;" id="lump-opt-action">Optimize my lump sums</button>
+      </div>
+    </div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
       <div id="lump-sum-list"></div>
       <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
@@ -3169,7 +3085,8 @@
       </div>
       <div id="lump-auto-hint" style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">The system will allocate this amount across your debts following your current strategy.</div>
     </div>
-<div class="card" id="lump-sum-teaser" style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+
+    <div class="card" id="lump-sum-teaser" style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
       <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
@@ -3187,6 +3104,138 @@
           <div style="font-size:1.4rem;">🔒</div>
           <div class="lock-card-title">Schedule future windfalls into your plan</div>
           <div class="lock-card-desc" style="max-width:280px;">Add a bonus or tax refund on a future date and your Freedom Date updates automatically. Unlock everything for a one-time $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payoff order -->
+    <div class="card" id="payoff-order-card" data-collapse="order" data-collapse-default="closed">
+      <div class="card-title"><div class="dot"></div> Payoff Order &amp; Timeline</div>
+      <div id="hybrid-order-note" style="display:none; margin-bottom:12px;">
+        <div class="alert warning">
+          <span>🎯</span>
+          <span>Hybrid mode is active. Set your custom payoff order below &mdash; debts are paid off top to bottom. Your order is saved automatically and kept even if you switch strategies.</span>
+        </div>
+        <!-- v1.23.2 — reorder right here on the Strategy tab; no trip to Dashboard -->
+        <div id="hybrid-order-list" class="hybrid-order-list"></div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="timeline-table" id="timeline-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Debt</th>
+              <th>Balance</th>
+              <th>APR</th>
+              <th>Est. Payoff</th>
+              <th>Interest Paid</th>
+            </tr>
+          </thead>
+          <tbody id="timeline-tbody">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:24px">Add debts on the Dashboard to see your plan.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
+      <div id="roadmap-track"></div>
+    </div>
+
+    <div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('roadmap');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
+          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">Your full roadmap to zero</div>
+          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
+      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
+        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
+        Planned lump sum applied
+      </div>
+      <div id="cashflow-events" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('cashflow');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
+          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
+            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
+            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
+            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
+          </div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">🔒</div>
+          <div class="lock-card-title">See your cash come back</div>
+          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
+          <div class="lock-card-cta">Unlock</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="amort-card" data-collapse="amort" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Amortization Schedule <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Month by month, what your payment covers in interest and what actually comes off the balance.</p>
+      <div style="margin-bottom:12px;">
+        <select id="amort-debt" onchange="setAmortDebt(this.value)" aria-label="Choose which debt to show"></select>
+      </div>
+      <div class="amort-scroll">
+        <table class="amort-table">
+          <thead><tr><th>Month</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Balance</th></tr></thead>
+          <tbody id="amort-body"></tbody>
+        </table>
+      </div>
+      <div id="amort-note" style="margin-top:10px;font-family:var(--font-mono);font-size:0.7rem;color:var(--text-muted);"></div>
+      <button id="amort-more" class="btn btn-ghost" style="margin-top:10px;display:none;" onclick="toggleAmortRows()"></button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+        <button class="btn btn-ghost" onclick="exportAmortizationCsv()">Export schedule (CSV)</button>
+        <button class="btn btn-ghost" onclick="exportDebtsCsv()">Export debt list (CSV)</button>
+      </div>
+      <p style="margin-top:12px;font-size:0.72rem;color:var(--text-muted);line-height:1.5;">A projection based on the figures you entered. Your lender&rsquo;s statement is the record.</p>
+    </div>
+
+    <div class="card" id="amort-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('amort');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+      <div class="card-title"><div class="dot"></div> Amortization Schedule <span class="premium-tag">Premium</span></div>
+      <div class="blur-teaser">
+        <div class="blur-content">
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Month by month, what your payment covers in interest and what actually comes off the balance.</p>
+          <table class="amort-table">
+            <thead><tr><th>Month</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Balance</th></tr></thead>
+            <tbody>
+              <tr><td class="amort-m">Sep 2026</td><td>$450</td><td class="amort-int">$182</td><td>$268</td><td class="amort-bal">$9,732</td></tr>
+              <tr><td class="amort-m">Oct 2026</td><td>$450</td><td class="amort-int">$177</td><td>$273</td><td class="amort-bal">$9,459</td></tr>
+              <tr><td class="amort-m">Nov 2026</td><td>$450</td><td class="amort-int">$172</td><td>$278</td><td class="amort-bal">$9,181</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">See where every dollar goes</div>
+          <div class="lock-card-desc" style="max-width:280px;">The full month-by-month schedule for every debt, plus CSV export for your own spreadsheet.</div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
@@ -3255,39 +3304,24 @@
       </div>
     </div>
 
-    <!-- Payoff order -->
-    <div class="card">
-      <div class="card-title"><div class="dot"></div> Payoff Order &amp; Timeline</div>
-      <div id="hybrid-order-note" style="display:none; margin-bottom:12px;">
-        <div class="alert warning">
-          <span>🎯</span>
-          <span>Hybrid mode is active. Set your custom payoff order below &mdash; debts are paid off top to bottom. Your order is saved automatically and kept even if you switch strategies.</span>
-        </div>
-        <!-- v1.23.2 — reorder right here on the Strategy tab; no trip to Dashboard -->
-        <div id="hybrid-order-list" class="hybrid-order-list"></div>
-      </div>
-      <div style="overflow-x:auto">
-        <table class="timeline-table" id="timeline-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Debt</th>
-              <th>Balance</th>
-              <th>APR</th>
-              <th>Est. Payoff</th>
-              <th>Interest Paid</th>
-            </tr>
-          </thead>
-          <tbody id="timeline-tbody">
-            <tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:24px">Add debts on the Dashboard to see your plan.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <!-- v1.28.3 — Lump sum optimizer. Replaces the old "re-distribute to match
+         your strategy" banner, which assumed aligning lumps with the strategy
+         was always better. On real data it could make a plan measurably worse.
+         This panel simulates both ways and only recommends a change when it
+         genuinely saves money — and shows exactly how much. -->
+
   </div>
 
   <!-- ══════════════════════ WHAT IF ══════════════════════ -->
   <div class="section" id="section-whatif">
+    <button id="dial-date-entry" class="dial-entry" onclick="openDialDate()" style="display:none">
+      <span class="dial-entry-icon">&#127919;</span>
+      <span class="dial-entry-text">
+        <span class="dial-entry-title">Want to be debt-free sooner?</span>
+        <span class="dial-entry-sub">Pick a target date &mdash; see the payment to hit it</span>
+      </span>
+      <span class="dial-entry-arrow">&rarr;</span>
+    </button>
     <div class="page-title">What If?</div>
     <div class="page-subtitle">Model different scenarios. See exactly how much time and money you can save.</div>
 
@@ -3451,11 +3485,14 @@
       <div class="chip-detail" id="chip-detail" style="display:none"></div>
     </div>
 
-    <div class="card" id="paid-debts-card" style="display:none">
-      <div class="card-title"><div class="dot"></div> 🎉 Debts Eliminated
-        <span class="tag tag-muted" id="paid-debts-title" style="margin-left:6px;font-size:0.58rem;"></span>
+    <div class="card" id="paid-off-card" data-collapse="paidoff" data-collapse-default="closed" style="display:none">
+      <div class="card-title">
+        <div class="dot"></div> &#127942; Paid Off Debts
+        <span class="tag tag-muted" id="paid-off-count" style="margin-left:4px">0</span>
       </div>
-      <div class="debt-list" id="paid-debts-list"></div>
+      <div class="paid-off-summary" id="paid-off-summary"></div>
+      <div class="debt-list" id="paid-off-list"></div>
+      <div class="paid-off-moved" id="paid-off-moved" style="display:none;"></div>
     </div>
   </div>
 
@@ -3530,7 +3567,6 @@
       <div id="backup-msg" style="margin-top:12px;"></div>
     </div>
   </div>
-
 
   <!-- What's New Modal (v1.7.1) -->
   <div id="whatsnew-modal" class="modal-overlay hidden" onclick="closeWhatsNewModal(event)">
@@ -3639,6 +3675,28 @@
 <!-- v1.17.0 — undo toast root -->
 <div id="toast-root"></div>
 
+<!-- v1.45.0 — Google Drive sheet. Opened by the header cloud button, so backup
+     AND restore are reachable from every tab; before this, Restore existed only
+     on the Dashboard. -->
+<div id="drive-modal" class="modal-overlay hidden" onclick="closeDriveSheet(event)">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">Google Drive backup</div>
+      <button class="modal-close" aria-label="Close" onclick="closeDriveSheet()">&times;</button>
+    </div>
+      <div class="card drive-card loud" id="drive-card" style="display:none">
+      <div id="drive-card-line">Your data is only on this device.</div>
+      <div class="drive-card-actions">
+      <button class="btn" id="drive-card-action" onclick="driveBackupNow()">Back up to Google Drive</button>
+      <button class="btn btn-ghost" onclick="driveRestoreNow()">Restore</button>
+      <button class="btn btn-ghost" id="drive-undo-btn" onclick="driveUndoRestore()" style="display:none">Undo restore</button>
+      </div>
+      </div>
+      <p class="drive-sheet-alt">No Google account? Settings &rsaquo; Backup &amp; Restore
+         saves a file to your device instead.</p>
+  </div>
+</div>
+
 <!-- v1.16.0 — Floating quick-log payment (button + modal) -->
 <button class="fab-log" id="fab-log">+ Log Payment</button>
 <div id="duedates-modal" class="modal-overlay hidden" onclick="closeDueSetter(event)">
@@ -3692,7 +3750,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.44.0';
+const APP_VERSION = '1.45.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3700,6 +3758,21 @@ const APP_VERSION = '1.44.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.45.0',
+    date: 'September 17, 2026',
+    name: 'Less scrolling, same everything',
+    whatsNew: [
+      'The Strategy tab is far shorter. Every section folds away now, including the three big ones that never could before \u2014 and a folded section still shows its answer on the header, so your strategy and which method saves more are readable without opening anything.',
+      'Monthly Money Plan is now Your Monthly Plan, rebuilt so the amount you put in each month and the optional budget you check it against look and work the same way.',
+      'The cloud icon at the top of the screen now opens your Google Drive backup, with Restore alongside it. Restore used to be on the Dashboard only \u2014 it works from any tab now.',
+      'Paid-off debts moved to the Wins tab, with the full detail: when you cleared it, how long it took, and what it started at.',
+      'The Payment Log starts folded. The Log Payment button floating at the bottom is still there whenever you need it.',
+    ],
+    fixes: [
+      'The Monthly Payment Summary said \u201cacross all accounts\u201d while showing only the debts inside your payoff plan. If you have an account excluded from the plan, that figure disagreed with Your Monthly Plan just below it. It now says what it actually counts.',
+    ]
+  },
   {
     version: '1.44.0',
     date: 'September 16, 2026',
@@ -5104,7 +5177,6 @@ function upNextBadges(limit) {
   return out;
 }
 
-
 // ═══════════════════════════════════════════
 //  DATE HELPER — always use LOCAL date, never UTC
 //  new Date().toISOString() returns UTC which can be
@@ -5513,7 +5585,6 @@ function getBaselineSim() {
   _baseSimCache = { key: key, res: res };
   return res;
 }
-
 
 // ══════════════════════════════════════════════════════════════════════
 // v1.41.0 — AMORTIZATION TABLES + CSV EXPORT  (premium)
@@ -7356,7 +7427,6 @@ function trackBuyClick(placement) {
 function trackTeaserClick(placement) {
   trackShare('teaser_click', { _category: 'revenue', placement: placement });
 }
-
 
 // v1.41.2 — Analytics must never carry a figure taken from someone's finances.
 //
@@ -9589,7 +9659,6 @@ function monthsAway(m) {
   return m + ' month' + (m !== 1 ? 's' : '') + ' away';
 }
 
-
 // ══════════════════════════════════════════════════════════════════════
 // v1.42.0 — DUE DATES  (free)
 //
@@ -9748,7 +9817,6 @@ function dueDayLabel(date) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-
 // ── Batch setter ──────────────────────────────────────────────────────
 // Adding due dates one debt at a time means opening the edit modal once per
 // debt. Kevin's own file has 12 of them; almost nobody finishes that, so the
@@ -9865,7 +9933,6 @@ function dueTagFor(d) {
   return '<span class="' + cls + '">due ' + ord + '</span>';
 }
 
-
 // ══════════════════════════════════════════════════════════════════════
 // v1.42.0 — RECURRING BILLS  (premium)
 //
@@ -9879,12 +9946,10 @@ function dueTagFor(d) {
 // with a debt id in the merged Coming Up list.
 // ══════════════════════════════════════════════════════════════════════
 
-
 // ── Bill tick-off ─────────────────────────────────────────────────────
 // paidThrough is the last month the user marked this bill handled, as
 // 'YYYY-MM'. One value rather than a history: the app only ever asks about
 // the current month, and a growing list would swell every backup forever.
-
 
 // ── Launch-price deadline ─────────────────────────────────────────────
 // 2026-10-01 23:59:59 America/New_York == 2026-10-02T03:59:59Z. Stored as
@@ -10030,7 +10095,6 @@ function updateBill(id, field, value) {
   save(); render();
 }
 
-
 // ══════════════════════════════════════════════════════════════════════
 // v1.42.0 — MONTHLY MONEY PLAN  (free)
 //
@@ -10153,7 +10217,6 @@ function renderMoneyPlan() {
     line.className = 'plan-budget-line is-over';
   }
 }
-
 
 // ══════════════════════════════════════════════════════════════════════
 // v1.43.0 — SINKING FUNDS  (premium)
@@ -10437,7 +10500,6 @@ function renderUpcoming() {
   if (!body || !quiet) return;
 
   var rows = upcomingDues();
-
 
   // Existing users arrive with no due days at all. Rather than hiding (which
   // reads as "this feature does nothing") or inventing dates (which is worse
@@ -12026,7 +12088,6 @@ function renderTransfer() {
 // interest most. Greedy finds a very good answer, not a provably perfect one.
 // Every dollar of the original lump totals is preserved; only the split moves.
 
-
 // v1.36.3 — Lump lines pointed at debts that will already be gone.
 //
 // The optimizer panel below only speaks up when re-splitting would SAVE
@@ -12574,6 +12635,24 @@ function renderStrategy() {
           fmt(_curPlan.interest) + ' interest</span>'
         : '');
     }
+    // v1.45.0 — both cards collapse by default, so the headline has to
+    // survive on the header. A collapsed card that still answers the question
+    // is a summary; one that hides it is just a card you have to open.
+    const _pickerTag = document.getElementById('picker-tag');
+    if (_pickerTag) {
+      // _label above is const-scoped inside the _asbVal guard, so derive it
+      // again here rather than reaching into a block we might not have entered.
+      _pickerTag.textContent = strategy === 'hybrid' ? 'Hybrid'
+        : strategy.charAt(0).toUpperCase() + strategy.slice(1);
+    }
+    const _cmpTag = document.getElementById('cmp-tag');
+    if (_cmpTag) {
+      const _d = Math.abs(av.totalInterest - sb.totalInterest);
+      const _w = av.totalInterest <= sb.totalInterest ? 'Avalanche' : 'Snowball';
+      _cmpTag.textContent = _d > 25 ? _w + ' saves ~' + fmt(Math.round(_d / 10) * 10)
+                                    : 'About the same';
+    }
+
     const _noteEl = document.getElementById('comparison-note');
     if (_noteEl) {
       if (fairBasis && _curPlan) {
@@ -12582,7 +12661,8 @@ function renderStrategy() {
         const _gap = (_bestForCurrent !== null) ? (_curPlan.interest - _bestForCurrent) : 0;
         _noteEl.innerHTML = 'Each card below shows that strategy <strong>at its best</strong> \u2014 same debts, same extra payment, ' +
           'with your scheduled lump sums placed as well as possible for it. That\u2019s why these differ from your plan today' +
-          (_gap > 25 ? ': moving your lump sums could close a gap of about ' + fmt(Math.round(_gap/10)*10) + ' without paying a cent more.' : '.');
+          '.';   // v1.45.0 — the lump-sum nudge lives on the Lump Sum card now,
+                 // not here as well with a second, differently-rounded figure.
       } else {
         _noteEl.textContent = 'Based on your current plan.';
       }
@@ -13513,6 +13593,22 @@ function driveFindFileId() {
       if (id) localStorage.setItem(LS_DRIVE_FILEID, id);
       return id;
     });
+}
+
+function openDriveSheet() {
+  if (!DRIVE_ENABLED) return;
+  const m = document.getElementById('drive-modal');
+  if (!m) return;
+  updateDriveUI();                 // status line and button label before it is seen
+  m.classList.remove('hidden');
+  trackShare('drive_sheet_open', { _category: 'engagement' });
+}
+
+function closeDriveSheet(e) {
+  const m = document.getElementById('drive-modal');
+  if (!m) return;
+  if (e && e.target !== m) return;  // clicks inside the sheet must not close it
+  m.classList.add('hidden');
 }
 
 function driveBackupNow() {
