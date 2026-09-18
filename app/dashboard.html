@@ -43,6 +43,12 @@
     --font-display: 'Syne', sans-serif;
     --font-mono: 'DM Mono', monospace;
     --font-body: 'DM Sans', sans-serif;
+    /* v1.46.0 — referenced 19 times since long before this release and
+       never declared, so every use resolved to nothing and the fields and
+       tiles that asked for it came out transparent. */
+    --card2: #1a1a26;
+    --field-h: 44px;
+    --field-h-lg: 52px;
     --radius: 16px;
     --radius-sm: 8px;
     --shadow: 0 4px 24px rgba(0,0,0,0.4);
@@ -183,8 +189,7 @@
 /* v1.42.0 — recurring bills */
 .bill-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); }
 .bill-row:last-child { border-bottom:none; }
-.bill-row input, .bill-add input { font-family:inherit; font-size:0.82rem; padding:7px 8px;
-  border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); min-width:0; }
+/* v1.46.0 — chrome now comes from the field system above. */
 .bill-name, .bill-name-static { flex:1; min-width:0; }
 .bill-amt, .bill-amt-static { width:86px; flex-shrink:0; text-align:right; font-family:var(--font-mono); }
 .bill-day, .bill-day-static { width:52px; flex-shrink:0; text-align:center; font-family:var(--font-mono); }
@@ -250,8 +255,7 @@
   color:var(--text-muted); cursor:pointer; }
 .fund-counted.is-on { border-color:var(--accent5); color:var(--accent5); }
 .fund-add { display:flex; gap:8px; margin-top:12px; }
-.fund-add input { font-family:inherit; font-size:0.82rem; padding:7px 8px; min-width:0;
-  border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); }
+/* v1.46.0 — chrome now comes from the field system above. */
 .fund-add #fund-name { flex:1; }
 .fund-add #fund-monthly, .fund-add #fund-target { width:82px; flex-shrink:0; }
 /* v1.44.0 — launch-price deadline. Lives inside #unlock-pending, which is
@@ -308,6 +312,105 @@
 .progress-compact .pc-share {
   font-size:0.72rem; padding:6px 12px; white-space:nowrap;
 }
+/* v1.45.3 — the two summary tiles. Labels and subs were long enough to wrap at
+   phone width, and they wrapped in different places: the left one's caption ran
+   to two lines under the number while the right one's label ran to two lines
+   above it, so the two figures never sat on the same baseline. Shorter copy on
+   one line each, and a reserved label height so any future wording change
+   cannot knock them out of alignment again. */
+.summary-stat {
+  background:var(--card2); border-radius:10px; padding:16px; text-align:center;
+  display:flex; flex-direction:column; align-items:center;
+}
+.summary-stat .stat-mini-label {
+  min-height:1.9em; display:flex; align-items:flex-end; justify-content:center;
+  text-wrap:balance;
+}
+.summary-stat-num {
+  font-family:var(--font-serif); font-size:1.6rem; font-weight:900; line-height:1.15;
+  font-variant-numeric:tabular-nums;
+}
+.summary-stat-sub { font-size:0.72rem; color:var(--text-muted); margin-top:4px; text-wrap:balance; }
+  /* ═══════════ v1.46.0 — the field system ═══════════
+     One chrome for every entry field in the app. Size and affix change by
+     role; fill, border, radius, face and focus never do. Selectors are listed
+     together rather than merged into the components that used to own them, so
+     the next person can see at a glance what the system covers. */
+  .form-field input, .form-field select,
+  .bill-row input, .bill-add input,
+  .fund-add input,
+  #amort-debt,
+  .field-shell {
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    line-height: 1.2;
+    height: var(--field-h);
+    padding: 0 12px;
+    width: 100%;
+    min-width: 0;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .form-field select, #amort-debt {
+    /* the arrow the browser stops drawing once appearance is none */
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+                      linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+    background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 32px;
+  }
+  .form-field input:focus, .form-field select:focus,
+  .bill-row input:focus, .bill-add input:focus,
+  .fund-add input:focus, #amort-debt:focus,
+  .field-shell:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--glow);
+  }
+  .form-field input::placeholder, .bill-add input::placeholder,
+  .fund-add input::placeholder { color: var(--text-dim); }
+
+  /* Money: a $ pinned to the left edge so the figure starts somewhere, and a
+     size that matches what the number means. */
+  .field-shell {
+    display: flex; align-items: center; gap: 2px; padding: 0 14px;
+  }
+  .field-affix {
+    font-family: var(--font-mono); color: var(--text-dim);
+    flex: 0 0 auto; font-size: 1rem; user-select: none;
+  }
+  .field-shell > input {
+    flex: 1; min-width: 0; width: 100%;
+    background: none; border: 0; outline: none; padding: 0;
+    color: var(--text); font-family: var(--font-mono);
+    font-size: 0.95rem; font-variant-numeric: tabular-nums;
+    height: 100%; box-shadow: none;
+  }
+  .field-shell > input:focus { box-shadow: none; border: 0; }
+  /* full-width money fields get the display size; the paired narrow ones in
+     Add a Debt stay compact, because 1.3rem in a 159px box wraps the value. */
+  .field-shell.is-lg { height: var(--field-h-lg); }
+  .field-shell.is-lg .field-affix { font-size: 1.05rem; }
+  .field-shell.is-lg > input { font-size: 1.3rem; }
+
+  /* Bills and Sinking Funds keep their compact footprint, on the system. */
+  .bill-row input, .bill-add input, .fund-add input { height: 38px; padding: 0 10px; }
+  /* A wrapped money input hands its width to the shell: .bill-amt/.fund-* size
+     the INPUT, and once the input sits inside a shell that sizing no longer
+     reaches the row, so the shell stretches and starves the name field. */
+  .bill-add .field-shell, .bill-row .field-shell { flex: 0 0 96px; width: 96px; height: 38px; padding: 0 10px; }
+  .fund-add .field-shell { flex: 0 0 92px; width: 92px; height: 38px; padding: 0 10px; }
+  .bill-add .field-shell > input, .bill-row .field-shell > input,
+  .fund-add .field-shell > input { font-size: 0.85rem; text-align: right; }
+  .form-field .field-shell { width: 100%; height: var(--field-h); }
+  .bill-amt, .bill-amt-static { text-align: right; }
+  .bill-day, .bill-day-static { text-align: center; }
   .roadmap-step { position:relative; display:flex; gap:14px; padding:0 0 22px 0; }
   .roadmap-step:last-child { padding-bottom:0; }
   .roadmap-step::before {
@@ -461,6 +564,7 @@
     --danger-glow: rgba(224,72,72,0.12);
     --header-bg: #f4f4f7;
     --shadow: 0 4px 24px rgba(20,20,50,0.10);
+    --card2: #f0f0f4;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2657,7 +2761,7 @@
         </div>
         <div class="form-field">
           <label>Amount Paid ($)</label>
-          <input type="text" inputmode="decimal" id="log-amount" placeholder="250" min="0" step="1" />
+          <input type="text" inputmode="decimal" id="log-amount" placeholder="250" min="0" step="1"  data-affix="$"/>
         </div>
         <div class="form-field">
           <label>Date</label>
@@ -2694,7 +2798,7 @@
         </div>
         <div class="form-field">
           <label>Balance ($)</label>
-          <input type="text" inputmode="decimal" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview(); clearFieldError(this);" />
+          <input type="text" inputmode="decimal" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview(); clearFieldError(this);"  data-affix="$"/>
         </div>
         <div class="form-field">
           <label>APR (%)</label>
@@ -2713,7 +2817,7 @@
         <div class="form-field">
           <label>Min Payment ($) <span class="field-optional">optional</span></label>
           <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
-            oninput="clearFieldError(this)" />
+            oninput="clearFieldError(this)"  data-affix="$"/>
           <div class="field-hint" id="min-hint">Blank = we'll estimate it</div>
         </div>
       </div>
@@ -2906,7 +3010,7 @@
           <span class="plan-row-note">drives your plan</span></label>
         <div class="wi-stepper" style="width:100%;">
           <button type="button" class="wi-nudge" onclick="budgetNudge(-1)" aria-label="$25 less">&minus;</button>
-          <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" style="flex:1;min-width:0;" oninput="recalculateDebounced()" onchange="recalculate()" />
+          <input type="text" inputmode="decimal" id="extra-payment" placeholder="200" min="0" step="10" value="200" style="flex:1;min-width:0;" oninput="recalculateDebounced()" onchange="recalculate()"  data-affix="$" data-affix-lg/>
           <button type="button" class="wi-nudge" onclick="budgetNudge(1)" aria-label="$25 more">+</button>
         </div>
         <div class="wi-chips" id="budget-chips">
@@ -2923,7 +3027,7 @@
         <div class="wi-stepper" style="width:100%;">
           <button type="button" class="wi-nudge" onclick="planBudgetNudge(-1)" aria-label="$50 less">&minus;</button>
           <input type="text" inputmode="decimal" id="plan-budget" placeholder="2,000" min="0"
-            style="flex:1;min-width:0;" oninput="planBudgetInput(this.value)" onchange="setPlanBudget(this.value)" />
+            style="flex:1;min-width:0;" oninput="planBudgetInput(this.value)" onchange="setPlanBudget(this.value)"  data-affix="$" data-affix-lg/>
           <button type="button" class="wi-nudge" onclick="planBudgetNudge(1)" aria-label="$50 more">+</button>
         </div>
         <div class="wi-chips">
@@ -2947,15 +3051,15 @@
     <div class="card" id="monthly-summary-card" data-collapse="summary" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Monthly Payment Summary</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px;">
-        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
-          <div class="stat-mini-label">Min Payments Due</div>
-          <div id="summary-min-total" style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent3);">$0</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">across your payoff plan</div>
+        <div class="summary-stat">
+          <div class="stat-mini-label">Min Payments</div>
+          <div id="summary-min-total" class="summary-stat-num" style="color:var(--accent3);">$0</div>
+          <div class="summary-stat-sub">in your plan</div>
         </div>
-        <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
-          <div class="stat-mini-label">Total Monthly Payment</div>
-          <div id="summary-total-payment" style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent);">$0</div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">minimums + extra</div>
+        <div class="summary-stat">
+          <div class="stat-mini-label">Total Monthly</div>
+          <div id="summary-total-payment" class="summary-stat-num" style="color:var(--accent);">$0</div>
+          <div class="summary-stat-sub">minimums + extra</div>
         </div>
       </div>
       <!-- v1.38.1 — rolled-over minimums live here, next to the total they change.
@@ -2981,7 +3085,7 @@
       <div id="bills-total" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:8px 0 14px;"></div>
       <div class="bill-add">
         <input id="bill-name" type="text" placeholder="Rent" maxlength="60" aria-label="Bill name" />
-        <input id="bill-amount" type="text" inputmode="decimal" placeholder="1,200" aria-label="Monthly amount" />
+        <input id="bill-amount" type="text" inputmode="decimal" placeholder="1,200" aria-label="Monthly amount"  data-affix="$"/>
         <input id="bill-due-day" type="text" inputmode="numeric" maxlength="2" placeholder="Day" aria-label="Due day" />
       </div>
       <div class="form-error" id="bill-error" style="display:none;"></div>
@@ -3013,8 +3117,8 @@
       <div id="funds-note" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:10px 0 14px;line-height:1.5;"></div>
       <div class="fund-add">
         <input id="fund-name" type="text" placeholder="Car repairs" maxlength="60" aria-label="Fund name" />
-        <input id="fund-monthly" type="text" inputmode="decimal" placeholder="Monthly" aria-label="Monthly amount" />
-        <input id="fund-target" type="text" inputmode="decimal" placeholder="Target" aria-label="Target amount, optional" />
+        <input id="fund-monthly" type="text" inputmode="decimal" placeholder="Monthly" aria-label="Monthly amount"  data-affix="$"/>
+        <input id="fund-target" type="text" inputmode="decimal" placeholder="Target" aria-label="Target amount, optional"  data-affix="$"/>
       </div>
       <div class="form-error" id="fund-error" style="display:none;"></div>
       <button class="btn btn-ghost" style="margin-top:10px;" onclick="addFund()">Add fund</button>
@@ -3075,7 +3179,7 @@
       <div class="form-grid form-grid-action form-grid-lump" style="margin-top:4px;">
         <div class="form-field">
           <label>Amount ($)</label>
-          <input type="text" inputmode="decimal" id="lump-amount" placeholder="5000" min="1" step="100" />
+          <input type="text" inputmode="decimal" id="lump-amount" placeholder="5000" min="1" step="100"  data-affix="$"/>
         </div>
         <div class="form-field">
           <label>Expected Date</label>
@@ -3753,7 +3857,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.45.2';
+const APP_VERSION = '1.46.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3761,6 +3865,28 @@ const APP_VERSION = '1.45.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.46.0',
+    date: 'September 18, 2026',
+    name: 'Every box the same box',
+    whatsNew: [
+      'Every field you type into now looks and behaves the same way, on both tabs. There were four different styles before, depending on which feature you were in.',
+      'Amounts show a $ inside the box and are set larger, so the figure reads as the number it is instead of small text adrift in a wide field.',
+    ],
+    fixes: [
+      'Extra per month, Monthly budget and the amortization picker had no styling at all \u2014 they were plain browser boxes, which is why they showed up white in dark mode.',
+      'The Bills and Sinking Funds fields had no background, from a colour that was referenced throughout the app but never actually defined.',
+    ]
+  },
+  {
+    version: '1.45.3',
+    date: 'September 18, 2026',
+    name: 'Two numbers, one baseline',
+    whatsNew: [],
+    fixes: [
+      'The two figures in Monthly Payment Summary sat at different heights on a phone, because the wording above one and below the other was long enough to wrap. Shorter labels, and the figures now line up.',
+    ]
+  },
   {
     version: '1.45.2',
     date: 'September 17, 2026',
@@ -7926,7 +8052,31 @@ function persistCollapseState() {
   try { localStorage.setItem('debtfree_collapse', JSON.stringify(_collapseState)); } catch (e) {}
 }
 
+// v1.46.0 — wraps every [data-affix] input in a .field-shell so the $ sits
+// inside the field. Done here rather than in the markup because it is one code
+// path to verify instead of ten hand-edited tags, and it is idempotent: a
+// second call (re-render, restored backup) is a no-op.
+function initFieldAffixes() {
+  document.querySelectorAll('input[data-affix]').forEach(function (input) {
+    if (input.parentElement && input.parentElement.classList.contains('field-shell')) return;
+    var shell = document.createElement('span');
+    shell.className = 'field-shell' + (input.hasAttribute('data-affix-lg') ? ' is-lg' : '');
+    // Carry the input's own sizing (flex:1, width) onto the shell, or a field
+    // that used to stretch would collapse to its content.
+    if (input.style.flex) { shell.style.flex = input.style.flex; input.style.flex = ''; }
+    if (input.style.width) { shell.style.width = input.style.width; input.style.width = ''; }
+    var affix = document.createElement('span');
+    affix.className = 'field-affix';
+    affix.setAttribute('aria-hidden', 'true');   // the label already says dollars
+    affix.textContent = input.getAttribute('data-affix');
+    input.parentNode.insertBefore(shell, input);
+    shell.appendChild(affix);
+    shell.appendChild(input);
+  });
+}
+
 function initCollapsibles() {
+  initFieldAffixes();
   loadCollapseState();
   document.querySelectorAll('[data-collapse]').forEach(function(card) {
     const key = card.getAttribute('data-collapse');

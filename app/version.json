@@ -1,8 +1,11 @@
 {
-  "version": "1.45.2",
-  "releaseDate": "2026-09-17",
-  "releaseName": "A small bit of colour",
+  "version": "1.46.0",
+  "releaseDate": "2026-09-18",
+  "releaseName": "Every box the same box",
   "notes": [
-    "Your progress percentage on the Dashboard now uses the same colour as the balance on your Next Target card."
+    "Every field you type into now looks and behaves the same way, on both tabs. There were four different styles before, depending on which feature you happened to be in.",
+    "Amounts show a $ inside the box and are set larger, so the figure reads as the number it is instead of small text adrift in a wide field.",
+    "Fixed: Extra per month, Monthly budget and the amortization picker had no styling at all — they were plain browser boxes, which is why they showed up white in dark mode.",
+    "Fixed: the Bills and Sinking Funds fields had no background, from a colour referenced throughout the app but never actually defined."
   ]
 }
