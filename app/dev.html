@@ -142,7 +142,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
 <title>[DEV] DebtFree Dashboard — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
@@ -163,9 +163,9 @@
     --glow: rgba(0,229,176,0.15);
     --danger-glow: rgba(255,107,107,0.15);
     --header-bg: #0a0a0f;
-    --font-display: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --font-body: 'DM Sans', sans-serif;
+    --font-display: 'Sora', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-body: 'Sora', system-ui, sans-serif;
     /* v1.46.0 — referenced 19 times since long before this release and
        never declared, so every use resolved to nothing and the fields and
        tiles that asked for it came out transparent. */
@@ -427,7 +427,7 @@
 .progress-compact .pc-sub { font-size:0.82rem; margin-top:3px; }
 .progress-compact .pc-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
 .progress-compact .pc-pct {
-  font-family:var(--font-serif); font-size:1.5rem; font-weight:900; line-height:1;
+  font-family:var(--font-display); font-size:1.5rem; font-weight:900; line-height:1;
   /* v1.45.2 — same token as .next-debt-amt, so the two headline figures on this
      tab read as one system and both follow the light/dark theme. */
   color:var(--accent);
@@ -450,10 +450,15 @@
   text-wrap:balance;
 }
 .summary-stat-num {
-  font-family:var(--font-serif); font-size:1.6rem; font-weight:900; line-height:1.15;
+  font-family:var(--font-display); font-size:1.6rem; font-weight:900; line-height:1.15;
   font-variant-numeric:tabular-nums;
 }
-.summary-stat-sub { font-size:0.72rem; color:var(--text-muted); margin-top:4px; text-wrap:balance; }
+/* v1.47.0 — Sora sets wider than the face this replaced, and “minimums +
+   extra” tipped onto a second line at 360px. Scale the caption with the
+   viewport so it holds on one line on a small phone without shrinking on a
+   normal one. */
+.summary-stat-sub { font-size:clamp(0.62rem, 2.55vw, 0.72rem); color:var(--text-muted);
+  margin-top:4px; text-wrap:balance; }
   /* ═══════════ v1.46.0 — the field system ═══════════
      One chrome for every entry field in the app. Size and affix change by
      role; fill, border, radius, face and focus never do. Selectors are listed
@@ -3802,7 +3807,7 @@
   <div id="whatsnew-modal" class="modal-overlay hidden" onclick="closeWhatsNewModal(event)">
     <div class="modal" style="max-width:560px;max-height:85vh;overflow-y:auto;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
-        <div style="font-family:var(--font-serif);font-size:1.5rem;font-weight:900;color:var(--accent);">What’s New</div>
+        <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:900;color:var(--accent);">What’s New</div>
         <button aria-label="Close" onclick="closeWhatsNewModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.6rem;line-height:1;cursor:pointer;padding:4px 8px;">×</button>
       </div>
       <div id="whatsnew-content"></div>
@@ -3816,12 +3821,12 @@
   <div id="debt-free-modal" class="modal-overlay hidden" onclick="closeDebtFreeModal(event)">
     <div class="modal" style="max-width:480px;text-align:center;padding:40px 32px;">
       <div style="font-size:3rem;margin-bottom:12px;">🎉</div>
-      <div style="font-family:var(--font-serif);font-size:1.6rem;font-weight:900;color:var(--accent);margin-bottom:8px;">All Debts Paid Off!</div>
+      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:900;color:var(--accent);margin-bottom:8px;">All Debts Paid Off!</div>
       <div id="debt-free-date" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);letter-spacing:0.06em;margin-bottom:20px;"></div>
       <p id="debt-free-msg" style="font-size:0.9rem;line-height:1.6;color:var(--text);margin-bottom:20px;"></p>
       <div id="debt-free-leftover" style="background:var(--card2);border-radius:12px;padding:16px;margin-bottom:24px;display:none;">
         <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Remaining from Lump Sum</div>
-        <div id="debt-free-leftover-amount" style="font-family:var(--font-serif);font-size:2rem;font-weight:900;color:var(--accent);">$0</div>
+        <div id="debt-free-leftover-amount" style="font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--accent);">$0</div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">after all debts are cleared</div>
       </div>
       <div id="debt-free-breakdown" style="text-align:left;margin-bottom:24px;font-size:0.82rem;"></div>
@@ -3980,7 +3985,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.46.0';
+const APP_VERSION = '1.47.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3988,6 +3993,18 @@ const APP_VERSION = '1.46.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.47.0',
+    date: 'September 19, 2026',
+    name: 'Numbers you can read at a glance',
+    whatsNew: [
+      'New type throughout. Amounts are now set in JetBrains Mono, which was designed for reading figures quickly \u2014 a zero can\u2019t be mistaken for an eight, and columns line up properly.',
+      'Headings and labels move to Sora, which sits better alongside those numbers than the previous pairing did.',
+    ],
+    fixes: [
+      'Your largest figures \u2014 the progress percentage, the monthly totals, the leftover amount \u2014 were falling back to the wrong typeface because of a style rule that pointed at something that was never defined. They now use the heading face as intended.',
+    ]
+  },
   {
     version: '1.46.0',
     date: 'September 18, 2026',
@@ -4992,7 +5009,7 @@ function renderWhatsNewEntries(entries) {
       : '';
     return '<div style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:14px;">' +
       '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">' +
-        '<span style="font-family:var(--font-serif);font-size:1.15rem;font-weight:900;color:var(--accent);">v' + esc(e.version) + '</span>' +
+        '<span style="font-family:var(--font-display);font-size:1.15rem;font-weight:900;color:var(--accent);">v' + esc(e.version) + '</span>' +
         (e.name ? '<span style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);">' + esc(e.name) + '</span>' : '') +
         '<span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-dim);margin-left:auto;">' + esc(e.date) + '</span>' +
       '</div>' +
@@ -7889,13 +7906,13 @@ function drawShareCard(content, format) {
   ctx.fillStyle = accent;
   roundRect(ctx, inX, top, 92, 92, 22); ctx.fill();
   ctx.fillStyle = isLight ? '#ffffff' : '#0a0a0f';
-  ctx.font = '700 46px Syne, sans-serif';
+  ctx.font = '700 46px Sora, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('DF', inX + 46, top + 50);
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = ink; ctx.font = '800 44px Syne, sans-serif';
+  ctx.fillStyle = ink; ctx.font = '800 44px Sora, sans-serif';
   ctx.fillText('DebtFree', inX + 120, top + 40);
-  ctx.fillStyle = muted; ctx.font = '500 26px "DM Mono", monospace';
+  ctx.fillStyle = muted; ctx.font = '500 26px "JetBrains Mono", monospace';
   ctx.fillText('DASHBOARD', inX + 120, top + 78);
 
   // Vertical rhythm — story has more room so spread things out
@@ -7913,15 +7930,15 @@ function drawShareCard(content, format) {
   // Big line — auto-fit
   ctx.fillStyle = ink;
   let size = isStory ? 108 : 92;
-  ctx.font = '800 ' + size + 'px Syne, sans-serif';
+  ctx.font = '800 ' + size + 'px Sora, sans-serif';
   while (ctx.measureText(content.big).width > maxW && size > 40) {
-    size -= 4; ctx.font = '800 ' + size + 'px Syne, sans-serif';
+    size -= 4; ctx.font = '800 ' + size + 'px Sora, sans-serif';
   }
   ctx.fillText(content.big, cx, bigY);
 
   // Sub line
   ctx.fillStyle = muted;
-  ctx.font = '400 34px "DM Sans", sans-serif';
+  ctx.font = '400 34px "Sora", sans-serif';
   wrapText(ctx, content.sub, cx, subY, maxW, 46);
 
   // Stat strip (real data)
@@ -7938,7 +7955,7 @@ function drawShareCard(content, format) {
   drawStat(ctx, panelX + panelW*0.70, stripY, freedom, 'freedom date', accent, muted);
 
   // URL baked in
-  ctx.fillStyle = muted; ctx.font = '500 30px "DM Mono", monospace';
+  ctx.fillStyle = muted; ctx.font = '500 30px "JetBrains Mono", monospace';
   ctx.fillText('mydebtdashboard.com', cx, urlY);
 
   const preview = document.getElementById('share-card-preview');
@@ -7967,9 +7984,9 @@ function wrapText(ctx, text, cx, y, maxW, lh) {
   lines.forEach(function(l, i){ ctx.fillText(l, cx, y + i*lh); });
 }
 function drawStat(ctx, cx, y, big, label, accent, muted) {
-  ctx.fillStyle = accent; ctx.font = '800 68px Syne, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillStyle = accent; ctx.font = '800 68px Sora, sans-serif'; ctx.textAlign = 'center';
   ctx.fillText(big, cx, y);
-  ctx.fillStyle = muted; ctx.font = '500 26px "DM Mono", monospace';
+  ctx.fillStyle = muted; ctx.font = '500 26px "JetBrains Mono", monospace';
   ctx.fillText(label, cx, y + 44);
 }
 
@@ -11614,11 +11631,11 @@ function renderChart() {
       },
       scales: {
         x: {
-          ticks: { color: _muted, maxTicksLimit: 8, font: { family: "'DM Mono'" } },
+          ticks: { color: _muted, maxTicksLimit: 8, font: { family: "'JetBrains Mono'" } },
           grid: { color: 'rgba(128,128,128,0.1)' }
         },
         y: {
-          ticks: { color: _muted, callback: v => fmt(v), font: { family: "'DM Mono'" } },
+          ticks: { color: _muted, callback: v => fmt(v), font: { family: "'JetBrains Mono'" } },
           grid: { color: 'rgba(128,128,128,0.1)' }
         }
       }
@@ -11771,7 +11788,7 @@ function renderCashflow() {
         ctx.fillStyle = amber;
         ctx.beginPath(); ctx.moveTo(px - 5, top - 1); ctx.lineTo(px + 5, top - 1); ctx.lineTo(px, top + 7); ctx.closePath(); ctx.fill();
         // label
-        ctx.font = "10px 'DM Mono', monospace";
+        ctx.font = "10px 'JetBrains Mono', monospace";
         ctx.fillStyle = amber;
         ctx.textAlign = 'center';
         ctx.fillText(shortAmt(mk.amount) + ' lump', px, top - 5);
@@ -11796,8 +11813,8 @@ function renderCashflow() {
       layout: { padding: { top: markers.length ? 16 : 0 } },
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return fmt(c.raw) + '/mo'; } } } },
       scales: {
-        x: { ticks: { color: muted, maxTicksLimit: 8, font: { family: "'DM Mono'" } }, grid: { display: false } },
-        y: { ticks: { color: muted, font: { family: "'DM Mono'" }, callback: function(v){ return '$' + v; } }, grid: { color: 'rgba(128,128,128,0.1)' }, beginAtZero: true }
+        x: { ticks: { color: muted, maxTicksLimit: 8, font: { family: "'JetBrains Mono'" } }, grid: { display: false } },
+        y: { ticks: { color: muted, font: { family: "'JetBrains Mono'" }, callback: function(v){ return '$' + v; } }, grid: { color: 'rgba(128,128,128,0.1)' }, beginAtZero: true }
       }
     },
     plugins: [lumpMarkerPlugin]
@@ -14872,7 +14889,7 @@ function showOrphanBanner() {
 
   const banner = document.createElement('div');
   banner.id = 'orphan-banner';
-  banner.style.cssText = 'position:sticky;top:0;z-index:100;background:#3a1a1a;border-bottom:1px solid rgba(255,120,120,0.4);padding:12px 16px;color:#f0d4d4;font-family:DM Sans,sans-serif;font-size:0.85rem;line-height:1.4;';
+  banner.style.cssText = 'position:sticky;top:0;z-index:100;background:#3a1a1a;border-bottom:1px solid rgba(255,120,120,0.4);padding:12px 16px;color:#f0d4d4;font-family:Sora,sans-serif;font-size:0.85rem;line-height:1.4;';
   // Build DOM nodes (no innerHTML interpolation of debt names — XSS-safe)
   const title = document.createElement('div');
   title.style.cssText = 'font-weight:700;margin-bottom:6px;color:#ff9090;';
@@ -14887,7 +14904,7 @@ function showOrphanBanner() {
   actions.style.cssText = 'display:flex;gap:8px;';
   const removeBtn = document.createElement('button');
   removeBtn.className = 'btn';
-  removeBtn.style.cssText = 'background:#c8f135;color:#0a0a0f;border:none;padding:8px 14px;border-radius:6px;font-family:DM Mono,monospace;font-size:0.75rem;font-weight:700;cursor:pointer;';
+  removeBtn.style.cssText = 'background:#c8f135;color:#0a0a0f;border:none;padding:8px 14px;border-radius:6px;font-family:JetBrains Mono,monospace;font-size:0.75rem;font-weight:700;cursor:pointer;';
   removeBtn.textContent = 'Remove orphans';
   removeBtn.onclick = function() {
     const validIds = new Set(debts.map(function(d) { return d.id; }));
@@ -14899,7 +14916,7 @@ function showOrphanBanner() {
   };
   const dismissBtn = document.createElement('button');
   dismissBtn.className = 'btn';
-  dismissBtn.style.cssText = 'background:transparent;color:#d8b8b8;border:1px solid rgba(216,184,184,0.3);padding:8px 14px;border-radius:6px;font-family:DM Mono,monospace;font-size:0.75rem;cursor:pointer;';
+  dismissBtn.style.cssText = 'background:transparent;color:#d8b8b8;border:1px solid rgba(216,184,184,0.3);padding:8px 14px;border-radius:6px;font-family:JetBrains Mono,monospace;font-size:0.75rem;cursor:pointer;';
   dismissBtn.textContent = 'Keep & dismiss';
   dismissBtn.onclick = function() { banner.remove(); };
   actions.appendChild(removeBtn);
@@ -15190,12 +15207,12 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
     background: var(--surface); border-top: 1px solid rgba(200,241,53,0.3);
     padding: 16px 20px; display: flex; align-items: center;
-    gap: 14px; font-family: 'DM Sans', sans-serif;
+    gap: 14px; font-family: 'Sora', sans-serif;
     animation: slideUp 0.3s ease;
   `;
   banner.innerHTML = `
     <div style="flex:1">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:3px;">
+      <div style="font-family:'Sora',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:3px;">
         Add DebtFree to your home screen
       </div>
       <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">
@@ -15207,7 +15224,7 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
     <button onclick="document.getElementById('install-banner').remove();localStorage.setItem('installDismissed','1')"
       style="background:none;border:1px solid var(--border2);color:var(--text-muted);
              border-radius:6px;padding:6px 12px;font-size:0.75rem;cursor:pointer;
-             font-family:'DM Mono',monospace;white-space:nowrap;">
+             font-family:'JetBrains Mono',monospace;white-space:nowrap;">
       Not now
     </button>
   `;

@@ -1,11 +1,10 @@
 {
-  "version": "1.46.0",
-  "releaseDate": "2026-09-18",
-  "releaseName": "Every box the same box",
+  "version": "1.47.0",
+  "releaseDate": "2026-09-19",
+  "releaseName": "Numbers you can read at a glance",
   "notes": [
-    "Every field you type into now looks and behaves the same way, on both tabs. There were four different styles before, depending on which feature you happened to be in.",
-    "Amounts show a $ inside the box and are set larger, so the figure reads as the number it is instead of small text adrift in a wide field.",
-    "Fixed: Extra per month, Monthly budget and the amortization picker had no styling at all — they were plain browser boxes, which is why they showed up white in dark mode.",
-    "Fixed: the Bills and Sinking Funds fields had no background, from a colour referenced throughout the app but never actually defined."
+    "New type throughout. Amounts are now set in JetBrains Mono, which was designed for reading figures quickly — a zero can’t be mistaken for an eight, and columns line up properly.",
+    "Headings and labels move to Sora, which sits better alongside those numbers than the previous pairing did.",
+    "Fixed: your largest figures — the progress percentage, the monthly totals, the leftover amount — were falling back to the wrong typeface because of a style rule that pointed at something that was never defined."
   ]
 }
