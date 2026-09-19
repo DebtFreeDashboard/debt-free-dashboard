@@ -115,6 +115,10 @@
     color:var(--accent); font-weight:700; margin-bottom:12px;
   }
   .next-debt-main { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; }
+  /* v1.48.0 — on a wrap the figure used to drop to flex-start and sit under
+     the name, left-aligned, contradicting its own text-align:right. */
+  .next-debt-info { flex:1 1 180px; min-width:0; }
+  .next-debt-figure { margin-left:auto; }
   .next-debt-name { font-family:var(--font-display); font-size:1.5rem; font-weight:800; line-height:1.1; }
   .next-debt-sub { font-size:0.78rem; color:var(--text-muted); margin-top:4px; }
   .next-debt-figure { text-align:right; }
@@ -131,6 +135,69 @@
   .hero-progress-sub { font-size:0.82rem; color:var(--text-muted); margin-top:8px; }
   .hero-progress-track { height:12px; background:var(--surface3); border-radius:6px; overflow:hidden; margin:18px 0 6px; }
   .hero-progress-fill { height:100%; background:linear-gradient(90deg, var(--accent5), var(--accent)); border-radius:6px; transition:width .6s ease; box-shadow:0 0 18px var(--glow); }
+
+  /* v1.48.0 — Dashboard hero. One figure gets to be big: Total Owed, with the
+     progress bar folded into the same card so the balance and the progress
+     against that balance stop occupying two cards to say one thing. Before
+     this the tab opened with four stat tiles at identical weight, so nothing
+     told a first-time reader where to look, and the card saying where the
+     money actually goes sat fourth, below the fold on a phone. */
+  .hero-card { padding:20px 18px 18px; }
+  .hero-label {
+    font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--text-muted); font-weight:700;
+  }
+  .hero-total {
+    font-family:var(--font-display); font-weight:800; color:var(--accent3);
+    letter-spacing:-0.03em; line-height:1.05; margin-top:8px;
+    font-size:clamp(2.1rem, 11vw, 2.9rem);
+  }
+  .hero-sub { font-size:0.78rem; color:var(--text-muted); margin-top:6px; }
+  .hero-prog-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
+  .hero-prog-line { font-size:clamp(0.7rem, 3.1vw, 0.78rem); color:var(--text); min-width:0; }
+  .hero-prog-line b { color:var(--accent); font-weight:700; }
+  .hero-card .hero-progress-track { margin:18px 0 0; height:10px; }
+  /* No emoji on this one: the hero line beside it is the longest string on
+     the tab, and the phone glyph cost the ~30px that pushed it to wrap. */
+  .hero-card .pc-share { flex-shrink:0; padding:0 14px; }
+
+  /* The three supporting figures. Deliberately small — they are context for
+     the hero and the target card above them, not headlines of their own. */
+  .stat-strip {
+    display:grid; grid-template-columns:repeat(3, minmax(0,1fr));
+    gap:8px; margin-bottom:16px;
+  }
+  .ministat {
+    background:var(--surface2); border:1px solid var(--border);
+    border-radius:var(--radius-sm); padding:11px 10px; min-width:0;
+  }
+  .ministat-label {
+    font-family:var(--font-mono); font-size:0.57rem; letter-spacing:0.06em;
+    text-transform:uppercase; color:var(--text-muted); font-weight:700; line-height:1.3;
+  }
+  .ministat-value {
+    font-family:var(--font-display); font-weight:800; margin-top:5px;
+    font-size:clamp(0.8rem, 3.7vw, 1rem); letter-spacing:-0.01em; overflow-wrap:anywhere;
+  }
+  /* --text-dim fails contrast on the light ground; --text-muted passes. */
+  .ministat-sub { font-size:0.57rem; color:var(--text-muted); margin-top:3px; line-height:1.3; }
+  .ministat.warn .ministat-value { color:var(--accent4); }
+  .ministat.info .ministat-value { color:var(--accent2); }
+
+  /* v1.48.0 — the amount the plan actually sends to the target debt. The card
+     showed the balance and the minimum but never this number, which is the one
+     people kept asking for: "so do I put my money here, or somewhere first?" */
+  .nd-plan {
+    margin-top:16px; padding:12px 14px; border-radius:11px;
+    background:var(--surface3); border:1px solid var(--border);
+  }
+  .nd-plan-label { font-size:0.76rem; color:var(--text); }
+  .nd-plan-amt {
+    font-family:var(--font-display); font-size:1.6rem; font-weight:800;
+    color:var(--accent); letter-spacing:-0.02em; margin-top:2px; line-height:1.1;
+  }
+  .nd-plan-amt span { font-size:0.8rem; font-weight:600; color:var(--text-muted); }
+  .nd-plan-break { font-size:0.72rem; color:var(--text-muted); margin-top:4px; line-height:1.4; }
 
   /* v1.14.0 — Debt-Free Roadmap (premium) */
 
@@ -2653,45 +2720,24 @@
       <button class="demo-banner-btn" onclick="startMyNumbers()">Start with my numbers</button>
     </div>
 
-    <!-- Stats -->
-    <div class="stat-grid" id="stat-grid">
-      <div class="stat-card danger">
-        <div class="stat-label">Total Owed</div>
-        <div class="stat-value" id="stat-total">$0</div>
-        <div class="stat-sub">across all accounts</div>
-      </div>
-      <div class="stat-card warn">
-        <div class="stat-label">Monthly Interest</div>
-        <div class="stat-value" id="stat-interest">$0</div>
-        <div class="stat-sub">you're currently paying</div>
-      </div>
-      <div class="stat-card info">
-        <div class="stat-label">Freedom Date</div>
-        <div class="stat-value" id="stat-date" style="font-size:1.1rem">—</div>
-        <div class="stat-sub" id="stat-months">add debts to calculate</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Interest Saved</div>
-        <div class="stat-value" id="stat-saved">$0</div>
-        <div class="stat-sub">vs. min payments only</div>
-      </div>
-    </div>
+    <!-- v1.48.0 — the hero. Total Owed alone at the top, with Debt-Free
+         Progress folded into the same card: the balance and the progress
+         against that balance are one fact, and saying it in two cards is what
+         made the top of this tab feel like a wall. The other three figures
+         moved below the target card into a quiet three-up strip. -->
+    <div class="card hero-card" id="hero-card">
+      <div class="hero-label">Total Owed</div>
+      <div class="hero-total" id="stat-total">$0</div>
+      <div class="hero-sub" id="hero-accounts">across all accounts</div>
 
-    <!-- v1.21.0 — Dial-a-Date entry (premium). Placed at the Freedom Date, the
-         exact number it changes, so free users meet the gate at peak desire. -->
-    <div class="card progress-compact" id="overall-progress-card" style="display:none">
-      <div class="pc-head">
-        <div>
-          <div class="pc-label">Debt-Free Progress</div>
-          <div class="pc-sub"><span id="progress-label-paid">$0 paid off</span></div>
+      <div id="overall-progress-card" style="display:none">
+        <div class="hero-progress-track">
+          <div class="hero-progress-fill" id="overall-progress" style="width:0%"></div>
         </div>
-        <div class="pc-right">
-          <div class="pc-pct" id="progress-pct">0%</div>
-          <button id="share-progress-btn" class="btn btn-ghost pc-share" onclick="shareProgress()">&#128241; Share</button>
+        <div class="hero-prog-row">
+          <div class="hero-prog-line"><b id="progress-pct">0%</b> paid down &middot; <span id="progress-label-paid">$0 gone</span></div>
+          <button id="share-progress-btn" class="btn btn-ghost pc-share" onclick="shareProgress()">Share</button>
         </div>
-      </div>
-      <div class="hero-progress-track">
-        <div class="hero-progress-fill" id="overall-progress" style="width:0%"></div>
       </div>
       <!-- v1.45.0 — #progress-label-left is kept so renderers that write to it
            keep working, but it is not shown: Total Owed above states the same
@@ -2700,22 +2746,51 @@
       <span id="progress-label-left" hidden></span>
     </div>
 
-        <!-- v1.13.0 — Next Debt to Eliminate (free) -->
+    <!-- v1.13.0 — the target debt (free).
+         v1.48.0 — moved to second, directly under the hero, and retitled. It
+         used to read "NEXT TARGET", which people read as a queue: next after
+         what? The card also never stated the amount the plan sends here, which
+         was the actual question being asked. Both are fixed below. -->
     <div class="card next-debt-card" id="next-debt-card" style="display:none">
-      <div class="next-debt-flag">▸ NEXT TARGET</div>
+      <div class="next-debt-flag">&#9656; WHERE YOUR EXTRA GOES</div>
       <div class="next-debt-main">
         <div class="next-debt-info">
-          <div class="next-debt-name" id="next-debt-name">—</div>
-          <div class="next-debt-sub" id="next-debt-sub">—</div>
+          <div class="next-debt-name" id="next-debt-name">&mdash;</div>
+          <div class="next-debt-sub" id="next-debt-sub">&mdash;</div>
         </div>
         <div class="next-debt-figure">
           <div class="next-debt-amt" id="next-debt-amt">$0</div>
           <div class="next-debt-amt-label">remaining</div>
         </div>
       </div>
+      <div class="nd-plan" id="nd-plan" style="display:none">
+        <div class="nd-plan-label" id="nd-plan-label">Your plan sends</div>
+        <div class="nd-plan-amt" id="nd-plan-amt">$0<span>/mo</span></div>
+        <div class="nd-plan-break" id="nd-plan-break"></div>
+      </div>
       <div class="next-debt-bar"><div class="next-debt-bar-fill" id="next-debt-bar-fill" style="width:0%"></div></div>
-      <div class="next-debt-eta" id="next-debt-eta">—</div>
+      <div class="next-debt-eta" id="next-debt-eta">&mdash;</div>
       <div class="next-debt-attacking" id="next-debt-attacking" style="display:none;"></div>
+    </div>
+
+    <!-- v1.48.0 — the supporting figures, demoted out of the hero. Same ids, so
+         renderStats() is unchanged apart from the labels it no longer owns. -->
+    <div class="stat-strip" id="stat-grid">
+      <div class="ministat warn">
+        <div class="ministat-label">Interest/mo</div>
+        <div class="ministat-value" id="stat-interest">$0</div>
+        <div class="ministat-sub">you're paying now</div>
+      </div>
+      <div class="ministat info">
+        <div class="ministat-label">Debt-free</div>
+        <div class="ministat-value" id="stat-date">&mdash;</div>
+        <div class="ministat-sub" id="stat-months">add debts</div>
+      </div>
+      <div class="ministat">
+        <div class="ministat-label">Int. saved</div>
+        <div class="ministat-value" id="stat-saved">$0</div>
+        <div class="ministat-sub">vs. minimums only</div>
+      </div>
     </div>
 
     <!-- v1.13.0 — Debt-Free Progress hero (free) -->
@@ -3862,7 +3937,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.47.0';
+const APP_VERSION = '1.48.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3870,6 +3945,20 @@ const APP_VERSION = '1.47.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.48.0',
+    date: 'September 19, 2026',
+    name: 'A clearer first screen',
+    whatsNew: [
+      'The Dashboard now opens with one number \u2014 what you owe \u2014 instead of four tiles competing for your attention. Your progress bar sits in the same card, so the balance and how far you\u2019ve come are one thing to read instead of two.',
+      'The card showing where your extra money goes has moved up, right under that total, and now tells you the amount: what the minimum is, what you added on top, and what\u2019s been freed up from debts you\u2019ve already cleared.',
+      'That card used to be headed \u201cNext Target\u201d, which read like something waiting its turn. It now says \u201cWhere your extra goes\u201d, because that is what it has always shown.',
+      'When only one of your accounts is actually charging interest, the card says so \u2014 it explains why your plan is pointed there without you having to open the Strategy tab.',
+    ],
+    fixes: [
+      'Your monthly interest, debt-free date and interest saved are still on the Dashboard, now in a compact row below the target card rather than four large tiles above it.',
+    ]
+  },
   {
     version: '1.47.0',
     date: 'September 19, 2026',
@@ -10837,14 +10926,65 @@ function renderNextDebt() {
   document.getElementById('next-debt-name').textContent = target.name;
   const apr = (target.hasPromo && target.promoEnd && new Date() < new Date(target.promoEnd))
     ? (target.promoApr || 0) : (target.realApr || target.apr || 0);
-  document.getElementById('next-debt-sub').textContent =
-    fmtDec(target.minPayment || 0) + '/mo minimum · ' + apr + '% APR';
+  // v1.48.0 — the minimum moved into the plan block below, where it is one
+  // term of the sum people actually wanted. The freed line now answers "why
+  // this account?" from the rates alone. Descriptive, never advisory, and
+  // only claims that hold under EVERY strategy: snowball and a custom order
+  // both aim at something other than the highest rate, so "highest" is
+  // asserted from the rates themselves, never inferred from the target.
+  const _effApr = function(d) {
+    return (d.hasPromo && d.promoEnd && new Date() < new Date(d.promoEnd))
+      ? (d.promoApr || 0) : (d.realApr || d.apr || 0);
+  };
+  const _charging = activeDebts.filter(function(d){ return _effApr(d) > 0; });
+  const _maxApr = _charging.reduce(function(m, d){ return Math.max(m, _effApr(d)); }, 0);
+  const _subEl = document.getElementById('next-debt-sub');
+  if (apr <= 0) {
+    _subEl.textContent = '0% APR — no interest accruing on this one right now';
+  } else if (_charging.length === 1) {
+    _subEl.textContent = apr + '% APR — your only account charging interest';
+  } else if (apr >= _maxApr) {
+    _subEl.textContent = apr + '% APR — the highest of the ' + _charging.length + ' accounts charging interest';
+  } else {
+    _subEl.textContent = apr + '% APR — 1 of ' + _charging.length + ' accounts charging interest';
+  }
   document.getElementById('next-debt-amt').textContent = fmtDec(target.balance);
 
   // Progress on THIS debt: paid / original
   const orig = target.originalBalance || target.balance;
   const paidPct = orig > 0 ? Math.min(100, Math.max(0, (1 - target.balance / orig) * 100)) : 0;
   document.getElementById('next-debt-bar-fill').style.width = paidPct.toFixed(0) + '%';
+
+  // v1.48.0 — what the plan sends here this month. Under every strategy the
+  // extra lands on the attack debt, so this is its minimum plus planExtra()
+  // (the user's own extra plus any freed minimums they chose to roll), capped
+  // at the balance: once the balance is smaller than the payment the rest
+  // cascades to the next debt, and claiming otherwise would overstate it.
+  const _planBox = document.getElementById('nd-plan');
+  if (_planBox) {
+    const _min = Math.max(0, parseFloat(target.minPayment) || 0);
+    const _xEl = document.getElementById('extra-payment');
+    const _userExtra = parseAmount(_xEl ? _xEl.value : extraMonthly) || 0;
+    const _rolled = rolledOverTotal();   // _userExtra + _rolled === planExtra()
+    const _sendRaw = _min + _userExtra + _rolled;
+    const _send = Math.min(_sendRaw, target.balance);
+    if (_send > 0) {
+      _planBox.style.display = 'block';
+      document.getElementById('nd-plan-label').textContent =
+        _sendRaw >= target.balance ? 'Clearing it takes' : 'Your plan sends';
+      document.getElementById('nd-plan-amt').innerHTML =
+        escapeHtml(fmt(_send)) + '<span>' + (_sendRaw >= target.balance ? '' : '/mo') + '</span>';
+      const _parts = [];
+      if (_min > 0) _parts.push(fmt(_min) + ' minimum');
+      if (_userExtra > 0) _parts.push(fmt(_userExtra) + ' extra');
+      if (_rolled > 0) _parts.push(fmt(_rolled) + ' freed up');
+      document.getElementById('nd-plan-break').textContent =
+        _sendRaw >= target.balance ? 'the balance is smaller than this month\'s payment'
+        : _parts.length > 1 ? _parts.join(' + ') : '';
+    } else {
+      _planBox.style.display = 'none';
+    }
+  }
 
   // v1.28.0 — this line wrapped at EVERY month count, not just large ones:
   // the long month name plus a parenthetical pushed it past the ~46 mono
@@ -10965,6 +11105,15 @@ function renderStats() {
   const activeDebts = debts.filter(d => d.balance > 0 && d.includeInStrategy !== false);
 
   document.getElementById('stat-total').textContent = fmt(total);
+  // v1.48.0 — the hero says how many accounts that total spans. "all" was
+  // fine beside three sibling tiles; alone under a 46px figure it invites
+  // the question it doesn't answer.
+  const _accEl = document.getElementById('hero-accounts');
+  if (_accEl) {
+    const _n = debts.filter(function(d){ return d.balance > 0; }).length;
+    _accEl.textContent = _n === 0 ? 'nothing owed'
+      : _n === 1 ? 'across 1 account' : 'across ' + _n + ' accounts';
+  }
   document.getElementById('stat-interest').textContent = fmtDec(interest);
 
   if (activeDebts.length) {
@@ -10975,12 +11124,15 @@ function renderStats() {
     document.getElementById('stat-date').textContent = freeDate.toLocaleDateString('en-US',{month:'short',year:'numeric'});
     // v1.28.0 — was `res.months + ' months away'`, which rendered the
     // ungrammatical "1 months away" in the final month of a payoff.
-    document.getElementById('stat-months').textContent = monthsAway(planMonthsAway(res.months));
+    // v1.48.0 — the three-up strip is narrow, so this drops "away": the
+    // label above it already says what the number is.
+    document.getElementById('stat-months').textContent =
+      monthsAway(planMonthsAway(res.months)).replace(/ away$/, '');
     const saved = Math.max(0, minRes.totalInterest - res.totalInterest);
     document.getElementById('stat-saved').textContent = fmt(saved);
   } else {
     document.getElementById('stat-date').textContent = '—';
-    document.getElementById('stat-months').textContent = 'add debts to calculate';
+    document.getElementById('stat-months').textContent = 'add debts';
     document.getElementById('stat-saved').textContent = '$0';
   }
 
@@ -10994,7 +11146,9 @@ function renderStats() {
   document.getElementById('overall-progress-card').style.display = orig > 0 ? 'block' : 'none';
   document.getElementById('overall-progress').style.width = pct + '%';
   document.getElementById('progress-pct').textContent = pct.toFixed(1) + '%';
-  document.getElementById('progress-label-paid').textContent = fmt(paidDown) + ' paid down';
+  // v1.48.0 — the hero line now reads "30.1% paid down \u00b7 $26,693 gone", so
+  // this span carries the figure only; the words live in the markup.
+  document.getElementById('progress-label-paid').textContent = fmt(paidDown) + ' gone';
   document.getElementById('progress-label-left').textContent = fmt(total) + ' remaining';
 
   // Milestone counts. v1.33.3 — "Debts Eliminated" counted every zero-balance

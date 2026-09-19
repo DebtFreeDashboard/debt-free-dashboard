@@ -1,10 +1,11 @@
 {
-  "version": "1.47.0",
+  "version": "1.48.0",
   "releaseDate": "2026-09-19",
-  "releaseName": "Numbers you can read at a glance",
+  "releaseName": "A clearer first screen",
   "notes": [
-    "New type throughout. Amounts are now set in JetBrains Mono, which was designed for reading figures quickly — a zero can’t be mistaken for an eight, and columns line up properly.",
-    "Headings and labels move to Sora, which sits better alongside those numbers than the previous pairing did.",
-    "Fixed: your largest figures — the progress percentage, the monthly totals, the leftover amount — were falling back to the wrong typeface because of a style rule that pointed at something that was never defined."
+    "The Dashboard now opens with one number — what you owe — instead of four tiles competing for your attention. Your progress bar sits in the same card, so the balance and how far you’ve come are one thing to read instead of two.",
+    "The card showing where your extra money goes has moved up, right under that total, and now tells you the amount: what the minimum is, what you added on top, and what’s been freed up from debts you’ve already cleared.",
+    "That card used to be headed “Next Target”, which read like something waiting its turn. It now says “Where your extra goes”, because that is what it has always shown.",
+    "When only one of your accounts is actually charging interest, the card says so — it explains why your plan is pointed there without opening the Strategy tab."
   ]
 }
