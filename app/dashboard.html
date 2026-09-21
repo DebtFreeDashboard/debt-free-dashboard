@@ -3937,7 +3937,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.48.0';
+const APP_VERSION = '1.48.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3945,6 +3945,15 @@ const APP_VERSION = '1.48.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.48.1',
+    date: 'September 21, 2026',
+    name: 'Coming Up names the right date',
+    whatsNew: [],
+    fixes: [
+      'When nothing was due in the next week, Coming Up could still name a payment due tomorrow as \u201cnext up\u201d \u2014 even though you\u2019d already logged that month\u2019s payment. It now names the next payment you actually haven\u2019t made yet.',
+    ]
+  },
   {
     version: '1.48.0',
     date: 'September 19, 2026',
@@ -10040,7 +10049,7 @@ function upcomingDues() {
 
     var floors = minPaymentFloors(d);
     rows.push({
-      id: d.id, name: d.name, status: status, date: when,
+      id: d.id, name: d.name, status: status, date: when, dueDay: day,
       days: daysUntil(when),
       amount: Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment)),
       paid: paid
@@ -10077,7 +10086,7 @@ function upcomingDues() {
 
       rows.push({
         id: bill.id, name: bill.name, kind: 'bill', status: status,
-        date: when, days: daysUntil(when),
+        date: when, dueDay: bday, days: daysUntil(when),
         amount: parseFloat(bill.amount) || 0, paid: 0,
         marked: billMarkedThisMonth(bill)
       });
@@ -10838,7 +10847,18 @@ function renderUpcoming() {
 
   if (!active.length) {
     body.innerHTML = '';
-    var next = rows.slice().sort(function (a, b) { return a.date - b.date; })[0];
+    // v1.48.1 — a 'logged' row's date is this month's occurrence while it is
+    // still ahead, which is the one its logged payment already covers. Read
+    // as "next up" it contradicted the line before it ("nothing due in 7
+    // days … next up: tomorrow"). What is next OWED for a logged row is the
+    // following month's occurrence.
+    var _now = new Date();
+    var owed = rows.map(function (r) {
+      var d = (r.status === 'logged' && r.dueDay)
+        ? dueDateIn(_now.getFullYear(), _now.getMonth() + 1, r.dueDay) : r.date;
+      return { name: r.name, date: d };
+    });
+    var next = owed.sort(function (a, b) { return a.date - b.date; })[0];
     quiet.style.display = '';
     quiet.textContent = 'Nothing due in the next ' + DUE_SOON_DAYS + ' days.'
       + (next ? ' Next up: ' + next.name + ' on ' + dueDayLabel(next.date) + '.' : '');

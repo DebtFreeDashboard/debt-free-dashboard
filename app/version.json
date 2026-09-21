@@ -1,11 +1,8 @@
 {
-  "version": "1.48.0",
-  "releaseDate": "2026-09-19",
-  "releaseName": "A clearer first screen",
+  "version": "1.48.1",
+  "releaseDate": "2026-09-21",
+  "releaseName": "Coming Up names the right date",
   "notes": [
-    "The Dashboard now opens with one number — what you owe — instead of four tiles competing for your attention. Your progress bar sits in the same card, so the balance and how far you’ve come are one thing to read instead of two.",
-    "The card showing where your extra money goes has moved up, right under that total, and now tells you the amount: what the minimum is, what you added on top, and what’s been freed up from debts you’ve already cleared.",
-    "That card used to be headed “Next Target”, which read like something waiting its turn. It now says “Where your extra goes”, because that is what it has always shown.",
-    "When only one of your accounts is actually charging interest, the card says so — it explains why your plan is pointed there without opening the Strategy tab."
+    "Fixed: when nothing was due in the next week, Coming Up could still name a payment due tomorrow as “next up” — even though you’d already logged that month’s payment. It now names the next payment you actually haven’t made yet."
   ]
 }
