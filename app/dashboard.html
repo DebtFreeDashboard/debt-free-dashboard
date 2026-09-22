@@ -3937,7 +3937,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.48.1';
+const APP_VERSION = '1.48.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3945,6 +3945,17 @@ const APP_VERSION = '1.48.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.48.2',
+    date: 'September 22, 2026',
+    name: 'Coming Up tells the whole truth',
+    whatsNew: [],
+    fixes: [
+      'A part payment no longer counts as the whole thing. If you log $50 against a $200 minimum, Coming Up keeps showing the account and says how much of it you\u2019ve logged so far.',
+      'A future-dated payment is money that hasn\u2019t moved yet. If it\u2019s dated after the due day, the account still shows as coming up \u2014 and when it is scheduled in time, the card now says \u201cscheduled\u201d rather than \u201clogged\u201d.',
+      'Marking your only bill as paid used to make the row disappear with no way to undo it. It now stays on the card until its due day passes.',
+    ]
+  },
   {
     version: '1.48.1',
     date: 'September 21, 2026',
@@ -10024,20 +10035,56 @@ function sanitizeDueDay(v) {
 //           'soon'     due within DUE_SOON_DAYS, nothing logged
 //           'passed'   this month's day has gone by with nothing logged
 //           'later'    due further out than DUE_SOON_DAYS
+// v1.48.2 — what this month's logged payments actually cover for one debt,
+// for the Coming Up card only. Two differences from currentMonthLedger():
+// it is per-debt, and it ignores a PENDING payment dated after the due day,
+// because money scheduled to leave on the 30th has not covered a due date on
+// the 22nd. The ledger counts those deliberately (they net against month 1 of
+// the plan) — that behaviour is unchanged everywhere else.
+function dueCoverageFor(debtId, dueDate) {
+  var ym = monthKeyOf(new Date());
+  var covered = 0, anyApplied = false;
+  (payments || []).forEach(function (p) {
+    if (!p || p.debtId !== debtId) return;
+    if (_monthKey(p.date) !== ym) return;
+    var amt = parseFloat(p.amount) || 0;
+    if (amt <= 0) return;
+    if (p.pending) {
+      var parts = String(p.date).split('-');
+      var when = new Date(+parts[0], (+parts[1]) - 1, +parts[2]);
+      if (when > dueDate) return;          // lands after the day it would cover
+    } else {
+      anyApplied = true;
+    }
+    covered += amt;
+  });
+  return { amount: covered, applied: anyApplied };
+}
+
 function upcomingDues() {
-  var ledger = currentMonthLedger();
   var rows = [];
   (debts || []).forEach(function (d) {
     if (!d || d.balance <= 0) return;                 // cleared debts have nothing due
     var day = sanitizeDueDay(d.dueDay);
     if (!day) return;
 
-    var paid = ledger.paid[d.id] || 0;
     var thisMonth = dueDateThisMonth(day);
     var next = nextDueDate(day);
+
+    // What this month's due day asks for. sanitizeDebts() guarantees a
+    // positive minPayment on every debt, so this is always a real figure.
+    var floors = minPaymentFloors(d);
+    var due = Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment));
+
+    var cov = dueCoverageFor(d.id, thisMonth);
+    var paid = cov.amount;
+    // Covered only when the logged amount reaches what the due day asks for.
+    // Half a cent of slack so a $49.995 rounding artefact isn't called partial.
+    var covered = paid > 0 && (due <= 0 || paid + 0.005 >= due);
+    var partial = paid > 0 && !covered;
     var status, when;
 
-    if (paid > 0) {
+    if (covered) {
       status = 'logged'; when = next;
     } else if (daysUntil(thisMonth) < 0) {
       status = 'passed'; when = thisMonth;
@@ -10047,12 +10094,14 @@ function upcomingDues() {
       when = next;
     }
 
-    var floors = minPaymentFloors(d);
     rows.push({
       id: d.id, name: d.name, status: status, date: when, dueDay: day,
       days: daysUntil(when),
-      amount: Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment)),
-      paid: paid
+      // A partly-covered row shows what is still outstanding, not the whole
+      // minimum — the user has already sent the difference.
+      amount: partial ? Math.max(0, due - paid) : due,
+      due: due, paid: paid, partial: partial,
+      scheduledOnly: status === 'logged' && !cov.applied
     });
   });
   // v1.42.0 — bills join the same list, premium only. A bill is money that is
@@ -10107,16 +10156,23 @@ function dueRowLabel(r) {
   // A tick is a note to yourself, not evidence of payment — so a bill says
   // "marked paid", never "paid".
   if (r.status === 'logged') {
-    return isBill ? 'marked paid this month' : 'payment logged this month';
+    if (isBill) return 'marked paid this month';
+    // v1.48.2 — a future-dated payment is saved as pending and hasn't left
+    // the account yet, so it is scheduled, not logged.
+    return r.scheduledOnly ? 'payment scheduled this month' : 'payment logged this month';
   }
-  if (r.status === 'today')  return 'due today';
+  // v1.48.2 — what's been logged so far, stated rather than judged. The user
+  // may have meant to pay less; the card reports the two figures and stops.
+  var part = r.partial ? ' \u00b7 ' + fmt(r.paid) + ' of ' + fmt(r.due) + ' logged' : '';
+  if (r.status === 'today')  return 'due today' + part;
   if (r.status === 'passed') {
     // Deliberately not "missed" or "late" — the app cannot know that.
     return 'was due ' + dueDayLabel(r.date) + ' \u00b7 '
-         + (isBill ? 'not marked paid yet' : 'no payment logged yet');
+         + (r.partial ? fmt(r.paid) + ' of ' + fmt(r.due) + ' logged'
+            : isBill ? 'not marked paid yet' : 'no payment logged yet');
   }
-  if (r.days === 1) return 'due tomorrow';
-  return 'due ' + dueDayLabel(r.date) + ' · in ' + r.days + ' days';
+  if (r.days === 1) return 'due tomorrow' + part;
+  return 'due ' + dueDayLabel(r.date) + ' · in ' + r.days + ' days' + part;
 }
 
 function dueDayLabel(date) {
@@ -10843,7 +10899,9 @@ function renderUpcoming() {
   var markedSoon = rows.filter(function (r) {
     return r.kind === 'bill' && r.marked && r.days <= DUE_SOON_DAYS;
   });
-  if (active.length) active = active.concat(markedSoon);
+  // v1.48.2 — was `if (active.length)`, so ticking your ONLY bill made the row
+  // vanish with no way back — the precise case this list exists to prevent.
+  active = active.concat(markedSoon);
 
   if (!active.length) {
     body.innerHTML = '';

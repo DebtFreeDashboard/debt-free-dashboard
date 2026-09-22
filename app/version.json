@@ -1,8 +1,10 @@
 {
-  "version": "1.48.1",
-  "releaseDate": "2026-09-21",
-  "releaseName": "Coming Up names the right date",
+  "version": "1.48.2",
+  "releaseDate": "2026-09-22",
+  "releaseName": "Coming Up tells the whole truth",
   "notes": [
-    "Fixed: when nothing was due in the next week, Coming Up could still name a payment due tomorrow as “next up” — even though you’d already logged that month’s payment. It now names the next payment you actually haven’t made yet."
+    "Fixed: a part payment no longer counts as the whole thing. If you log $50 against a $200 minimum, Coming Up keeps showing the account and says how much of it you’ve logged so far.",
+    "Fixed: a future-dated payment is money that hasn’t moved yet. If it’s dated after the due day, the account still shows as coming up — and when it is scheduled in time, the card says “scheduled” rather than “logged”.",
+    "Fixed: marking your only bill as paid used to make the row disappear with no way to undo it. It now stays on the card until its due day passes."
   ]
 }
