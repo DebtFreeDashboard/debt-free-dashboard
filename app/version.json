@@ -1,10 +1,11 @@
 {
-  "version": "1.48.2",
+  "version": "1.48.3",
   "releaseDate": "2026-09-22",
-  "releaseName": "Coming Up tells the whole truth",
+  "releaseName": "Bills fit their card again",
   "notes": [
-    "Fixed: a part payment no longer counts as the whole thing. If you log $50 against a $200 minimum, Coming Up keeps showing the account and says how much of it you’ve logged so far.",
-    "Fixed: a future-dated payment is money that hasn’t moved yet. If it’s dated after the due day, the account still shows as coming up — and when it is scheduled in time, the card says “scheduled” rather than “logged”.",
-    "Fixed: marking your only bill as paid used to make the row disappear with no way to undo it. It now stays on the card until its due day passes."
+    "Fixed: a bill you had already saved stretched off the right edge of its card, squashing the name down to a sliver and pushing the tick and delete buttons off screen. The row fits properly again. Adding a new bill was never affected.",
+    "Saved bills now show their amount the same way the Add-bill row does — with a $ and thousands separators — instead of a bare number.",
+    "A saved bill now puts its name on its own line, so a name like “Car insurance premium” reads in full instead of being cut off after a few letters.",
+    "The two boxes in Your Monthly Plan were set much larger than every other field on the tab. They are still the biggest — they drive the whole plan — but no longer out of step with everything around them."
   ]
 }
