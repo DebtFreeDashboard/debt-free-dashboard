@@ -4026,8 +4026,8 @@
       <div id="drive-card-line">Your data is only on this device.</div>
       <div class="drive-card-actions">
       <button class="btn" id="drive-card-action" onclick="driveBackupNow()">Back up to Google Drive</button>
-      <button class="btn btn-ghost" onclick="driveRestoreNow()">Restore</button>
-      <button class="btn btn-ghost" id="drive-undo-btn" onclick="driveUndoRestore()" style="display:none">Undo restore</button>
+      <button class="btn btn-ghost" onclick="driveRestoreNow()">Sync with Drive</button>
+      <button class="btn btn-ghost" id="drive-undo-btn" onclick="driveUndoRestore()" style="display:none">Undo sync</button>
       </div>
       </div>
       <p class="drive-sheet-alt">No Google account? Settings &rsaquo; Backup &amp; Restore
@@ -4088,7 +4088,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.48.3';
+const APP_VERSION = '1.49.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4096,6 +4096,18 @@ const APP_VERSION = '1.48.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.49.0',
+    date: 'September 24, 2026',
+    name: 'Two devices stop fighting',
+    whatsNew: [
+      'Google Drive now merges instead of replacing. Before, pulling your backup down overwrote whatever was on the device you pulled it to \u2014 so if you logged a payment on your phone and then synced your laptop, the phone\u2019s payment was gone. Payments, interest and corrections from both devices are now kept.',
+      'Anything you deleted stays deleted. A merge will not quietly bring back a payment you removed on another device.',
+      'Once you\u2019ve tapped the cloud icon, the app keeps backing itself up on its own for the rest of that session \u2014 including when you switch away from it \u2014 so you don\u2019t have to remember.',
+      'The Restore button is now \u201cSync with Drive\u201d, because that is what it does. If a sync ever looks wrong, \u201cUndo sync\u201d puts this device back exactly as it was.',
+    ],
+    fixes: []
+  },
   {
     version: '1.48.3',
     date: 'September 22, 2026',
@@ -10564,7 +10576,8 @@ function sanitizeBill(b) {
   var pt = (typeof b.paidThrough === 'string' && /^\d{4}-\d{2}$/.test(b.paidThrough))
     ? b.paidThrough : null;
   return { id: isNaN(id) ? nextId++ : id, name: name, amount: amount, dueDay: day,
-           paidThrough: pt };
+           paidThrough: pt,
+           updatedAt: (typeof b.updatedAt === 'string') ? b.updatedAt : null };   // v1.49.0
 }
 
 function billsMonthlyTotal() {
@@ -10776,6 +10789,7 @@ function sanitizeFund(f) {
   if (target !== null) saved = Math.min(saved, target);
   var id = parseInt(f.id, 10);
   return {
+    updatedAt: (typeof f.updatedAt === 'string') ? f.updatedAt : null,   // v1.49.0
     id: isNaN(id) ? nextId++ : id,
     name: name, monthly: monthly, target: target, saved: saved,
     counted: f.counted !== false          // default on: the honest reading
@@ -14040,6 +14054,403 @@ function showBackupMsg(type, text) {
 }
 
 // ═══════════════════════════════════════════
+//  SYNC MERGE  (v1.49.0)
+// ═══════════════════════════════════════════
+// Two devices, one Drive file, no server. Restore used to replace this
+// device wholesale, which is why two devices were unsafe: whichever one you
+// restored from won, and a payment logged on the other was gone without a
+// word. This merges instead.
+//
+// The shape of the data picks the strategy:
+//
+//   APPEND-ONLY (payments, adjustments, accruals) — rows are only ever
+//     added, and nothing references their ids, so they are leaves. Union
+//     both sides. If two devices minted the same id for different rows, the
+//     newcomer is re-keyed rather than dropped: losing a ledger row is the
+//     exact failure this exists to prevent.
+//
+//   MUTABLE (debts, bills, sinkingFunds, lumpSums, rolledMinimums) — the
+//     newer updatedAt wins the WHOLE record. Not per field: merging a
+//     balance from one device with an APR from the other would invent a
+//     state neither user ever saw.
+//
+//   SCALARS (strategy, extraMonthly, …) — one value each, so they travel as
+//     a set from whichever device wrote last.
+//
+// DELETIONS need tombstones, or a union resurrects anything you deleted and
+// silently changes your balance. A record is dropped when a tombstone for
+// its key is at least as new as the record, which still lets a deliberate
+// re-add after a delete survive.
+//
+// mergeBackups() is pure: no DOM, no globals, no mutation of its arguments.
+// It is covered by 27 unit tests and a 400-case randomised two-device fuzz
+// suite asserting that nothing is lost, nothing resurrects, ids never
+// collide, and the result is the same whichever device merges first.
+
+var _SM_APPEND = 'append', _SM_MUTABLE = 'mutable';
+
+// Accruals carry no id of their own: (debtId, month) is the idempotency key
+// the app already relies on to make double-accrual impossible.
+var _SM_COLLECTIONS = [
+  { name: 'payments',       mode: _SM_APPEND,  key: ['id'] },
+  { name: 'adjustments',    mode: _SM_APPEND,  key: ['id'] },
+  { name: 'accruals',       mode: _SM_APPEND,  key: ['debtId', 'month'] },
+  { name: 'debts',          mode: _SM_MUTABLE, key: ['id'] },
+  { name: 'bills',          mode: _SM_MUTABLE, key: ['id'] },
+  { name: 'sinkingFunds',   mode: _SM_MUTABLE, key: ['id'] },
+  { name: 'lumpSums',       mode: _SM_MUTABLE, key: ['id'] },
+  { name: 'rolledMinimums', mode: _SM_MUTABLE, key: ['debtId'] }
+];
+
+var _SM_SCALARS = ['strategy', 'extraMonthly', 'monthlyBudget', 'planBaseline',
+                   'interestAccrualEnabled', 'theme'];
+
+var _SM_DEBT_REFS = [
+  { name: 'payments',       field: 'debtId' },
+  { name: 'adjustments',    field: 'debtId' },
+  { name: 'accruals',       field: 'debtId' },
+  { name: 'lumpSums',       field: 'debtId' },
+  { name: 'rolledMinimums', field: 'debtId' }
+];
+
+var _SM_TOMB_TTL_DAYS = 400;    // longer than any plausible offline gap
+var _SM_TOMB_MAX      = 800;    // a cap so the payload cannot grow forever
+
+function _smClone(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
+function _smArr(v) { return Array.isArray(v) ? v : []; }
+function _smMs(iso) { var t = Date.parse(iso || ''); return isNaN(t) ? 0 : t; }
+function _smKey(rec, key) {
+  return key.map(function (k) { return String(rec == null ? '' : rec[k]); }).join('\u0001');
+}
+
+// Content identity ignoring bookkeeping, so "did this really change?" is not
+// answered yes just because a timestamp moved.
+function _smHash(rec) {
+  var o = {}, keys = Object.keys(rec || {}).filter(function (k) {
+    return k !== 'updatedAt' && k !== 'debtName';
+  }).sort();
+  keys.forEach(function (k) { o[k] = rec[k]; });
+  return JSON.stringify(o);
+}
+
+function _smTombMap(payloads) {
+  var out = {}, cutoff = Date.now() - _SM_TOMB_TTL_DAYS * 86400000;
+  payloads.forEach(function (p) {
+    _smArr(p && p.syncMeta && p.syncMeta.deletions).forEach(function (t) {
+      if (!t || !t.c || t.k == null) return;
+      var at = _smMs(t.at);
+      if (at < cutoff) return;
+      var k = t.c + '\u0002' + t.k;
+      if (!out[k] || at > out[k]) out[k] = at;
+    });
+  });
+  return out;
+}
+
+function _smTombList(map) {
+  var out = [];
+  Object.keys(map).forEach(function (k) {
+    var i = k.indexOf('\u0002');
+    out.push({ c: k.slice(0, i), k: k.slice(i + 1), at: new Date(map[k]).toISOString() });
+  });
+  out.sort(function (a, b) { return _smMs(b.at) - _smMs(a.at); });
+  return out.slice(0, _SM_TOMB_MAX);
+}
+
+function _smMaxId(payloads) {
+  var m = 0;
+  payloads.forEach(function (p) {
+    _SM_COLLECTIONS.forEach(function (c) {
+      _smArr(p && p[c.name]).forEach(function (r) {
+        var n = parseInt(r && r.id, 10);
+        if (!isNaN(n) && n > m) m = n;
+      });
+    });
+    var n = parseInt(p && p.nextId, 10);
+    if (!isNaN(n) && n - 1 > m) m = n - 1;
+  });
+  return m;
+}
+
+// Two devices offline, both add a debt: the shared nextId counter hands each
+// the same id for a different account. Union by id would fuse them and drop a
+// balance. The evidence bar is deliberately high — a DIFFERENT name AND a
+// different original balance — because splitting a merely renamed account in
+// two would double it in the plan, which is the worse mistake.
+function _smResolveDebtCollisions(local, remote, idSeed) {
+  var byId = {};
+  _smArr(local.debts).forEach(function (d) { if (d && d.id != null) byId[String(d.id)] = d; });
+  var remap = {};
+  _smArr(remote.debts).forEach(function (d) {
+    if (!d || d.id == null) return;
+    var mine = byId[String(d.id)];
+    if (!mine) return;
+    var sameAccount =
+      String(mine.name || '').trim().toLowerCase() === String(d.name || '').trim().toLowerCase() ||
+      Number(mine.originalBalance) === Number(d.originalBalance);
+    if (sameAccount) return;
+    remap[String(d.id)] = ++idSeed.v;
+  });
+  if (!Object.keys(remap).length) return remote;
+
+  var out = _smClone(remote);
+  _smArr(out.debts).forEach(function (d) {
+    if (d && remap[String(d.id)] != null) d.id = remap[String(d.id)];
+  });
+  _SM_DEBT_REFS.forEach(function (ref) {
+    _smArr(out[ref.name]).forEach(function (r) {
+      if (r && remap[String(r[ref.field])] != null) r[ref.field] = remap[String(r[ref.field])];
+    });
+  });
+  out.__remappedDebts = Object.keys(remap).length;
+  return out;
+}
+
+function mergeBackups(localIn, remoteIn) {
+  var local = _smClone(localIn) || {};
+  var remote = _smClone(remoteIn) || {};
+  var idSeed = { v: _smMaxId([local, remote]) };
+
+  remote = _smResolveDebtCollisions(local, remote, idSeed);
+
+  var tombs = _smTombMap([local, remote]);
+  var summary = { added: {}, updated: {}, removed: {}, remappedDebts: remote.__remappedDebts || 0 };
+  var out = {};
+
+  _SM_COLLECTIONS.forEach(function (c) {
+    var map = {}, order = [], added = 0, updated = 0, removed = 0;
+
+    function put(rec, fromRemote) {
+      var k = _smKey(rec, c.key);
+      var tomb = tombs[c.name + '\u0002' + k];
+      var recAt = _smMs(rec.updatedAt);
+      if (tomb != null && tomb >= recAt) {
+        if (map[k]) { delete map[k]; }
+        removed++;
+        return;
+      }
+      if (!map[k]) {
+        map[k] = rec; order.push(k);
+        if (fromRemote) added++;
+        return;
+      }
+      if (c.mode === _SM_APPEND) {
+        if (_smHash(map[k]) !== _smHash(rec)) {
+          if (c.key.length === 1 && c.key[0] === 'id') {
+            rec.id = ++idSeed.v;
+            var nk = _smKey(rec, c.key);
+            map[nk] = rec; order.push(nk);
+            if (fromRemote) added++;
+          }
+          // Composite-key rows (accruals) cannot be re-keyed without
+          // inventing a second accrual for the same debt-month, which is
+          // exactly what that key exists to prevent. First one wins.
+        }
+        return;
+      }
+      var a = _smMs(map[k].updatedAt), b = _smMs(rec.updatedAt);
+      if (b > a) {
+        if (_smHash(map[k]) !== _smHash(rec)) updated++;
+        map[k] = rec;
+      }
+    }
+
+    _smArr(local[c.name]).forEach(function (r) { if (r) put(r, false); });
+    _smArr(remote[c.name]).forEach(function (r) { if (r) put(r, true); });
+
+    out[c.name] = order.filter(function (k) { return map[k]; }).map(function (k) { return map[k]; });
+    if (added) summary.added[c.name] = added;
+    if (updated) summary.updated[c.name] = updated;
+    if (removed) summary.removed[c.name] = removed;
+  });
+
+  var localAt = _smMs(local.syncMeta && local.syncMeta.updatedAt) || _smMs(local.exportDate);
+  var remoteAt = _smMs(remote.syncMeta && remote.syncMeta.updatedAt) || _smMs(remote.exportDate);
+  var newer = remoteAt > localAt ? remote : local;
+  _SM_SCALARS.forEach(function (k) {
+    out[k] = (newer[k] !== undefined) ? newer[k]
+           : (local[k] !== undefined ? local[k] : remote[k]);
+  });
+  summary.scalarsFrom = remoteAt > localAt ? 'remote' : 'local';
+
+  out.version = 2;
+  out.exportDate = new Date().toISOString();
+  out.nextId = Math.max(_smMaxId([out]) + 1, parseInt(local.nextId, 10) || 1, parseInt(remote.nextId, 10) || 1);
+  out.syncMeta = {
+    deviceId: (local.syncMeta && local.syncMeta.deviceId) || null,
+    updatedAt: new Date(Math.max(localAt, remoteAt) || Date.now()).toISOString(),
+    deletions: _smTombList(tombs)
+  };
+  return { payload: out, summary: summary };
+}
+
+// ── what the user is told after a merge ───────────────────────────────
+function syncSummaryText(sum) {
+  function total(o) {
+    return Object.keys(o || {}).reduce(function (n, k) { return n + o[k]; }, 0);
+  }
+  var a = total(sum && sum.added), u = total(sum && sum.updated);
+  if (!a && !u) return 'Already up to date.';
+  var bits = [];
+  if (a) bits.push(a + (a === 1 ? ' item' : ' items') + ' brought in');
+  if (u) bits.push(u + (u === 1 ? ' update' : ' updates') + ' applied');
+  return 'Synced — ' + bits.join(', ') + '.';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  CHANGE TRACKING  (v1.49.0)
+//
+//  The merge needs to know two things this app never recorded: when each
+//  record last changed, and what has been deleted. Both are derived here
+//  rather than at the 45 places that mutate data — save() is the choke
+//  point every one of them passes through, so one comparison against a
+//  shadow of the last save catches edits, additions and deletions alike,
+//  including the bulk operations that rewrite whole arrays.
+// ══════════════════════════════════════════════════════════════════════
+
+var LS_SYNC_SHADOW = 'debtfree_sync_shadow';
+var LS_SYNC_TOMBS  = 'debtfree_sync_tombs';
+var LS_SYNC_DEVICE = 'debtfree_sync_device';
+
+function syncDeviceId() {
+  try {
+    var id = localStorage.getItem(LS_SYNC_DEVICE);
+    if (!id) {
+      id = 'd' + Math.random().toString(36).slice(2, 10);
+      localStorage.setItem(LS_SYNC_DEVICE, id);
+    }
+    return id;
+  } catch (e) { return 'unknown'; }
+}
+
+function syncDeletions() {
+  try { return JSON.parse(localStorage.getItem(LS_SYNC_TOMBS) || '[]') || []; }
+  catch (e) { return []; }
+}
+
+function syncSetDeletions(list) {
+  try {
+    localStorage.setItem(LS_SYNC_TOMBS, JSON.stringify(_smTombList(_smTombMap([{ syncMeta: { deletions: list } }]))));
+  } catch (e) {}
+}
+
+// The one-per-plan settings share a single clock: they are merged as a set,
+// so they need one timestamp, not six.
+var LS_SYNC_SCALARS_AT = 'debtfree_sync_scalars_at';
+
+function syncMeta() {
+  var at;
+  try { at = localStorage.getItem(LS_SYNC_SCALARS_AT); } catch (e) {}
+  return {
+    deviceId: syncDeviceId(),
+    updatedAt: at || new Date().toISOString(),
+    deletions: syncDeletions()
+  };
+}
+
+function _syncLiveCollections() {
+  return {
+    payments: payments, adjustments: adjustments, accruals: accruals,
+    debts: debts, bills: bills, sinkingFunds: sinkingFunds,
+    lumpSums: lumpSums, rolledMinimums: rolledMinimums
+  };
+}
+
+function _syncScalarSnapshot() {
+  return JSON.stringify([strategy, extraMonthly, monthlyBudget, planBaseline,
+                         interestAccrualEnabled, theme]);
+}
+
+function syncTrackChanges() {
+  var live = _syncLiveCollections();
+  var shadow = null;
+  try { shadow = JSON.parse(localStorage.getItem(LS_SYNC_SHADOW) || 'null'); } catch (e) {}
+  var now = new Date().toISOString();
+  var next = {}, tombs = syncDeletions();
+  var firstRun = !shadow;
+
+  _SM_COLLECTIONS.forEach(function (c) {
+    var rows = _smArr(live[c.name]);
+    var prev = (shadow && shadow[c.name]) || {};
+    var cur = {};
+    rows.forEach(function (r) {
+      if (!r) return;
+      var k = _smKey(r, c.key);
+      var h = _smHash(r);
+      cur[k] = h;
+      // On the very first save after upgrading there is no shadow, so
+      // stamping everything "now" would make this device win every future
+      // conflict on records it never actually touched. Seed silently instead.
+      if (!firstRun && c.mode === _SM_MUTABLE && prev[k] !== h) r.updatedAt = now;
+    });
+    if (!firstRun) {
+      Object.keys(prev).forEach(function (k) {
+        if (cur[k] === undefined) tombs.push({ c: c.name, k: k, at: now });
+      });
+    }
+    next[c.name] = cur;
+  });
+
+  // Scalars share one clock.
+  var sc = _syncScalarSnapshot();
+  if (!firstRun && shadow && shadow.__scalars !== sc) {
+    try { localStorage.setItem(LS_SYNC_SCALARS_AT, now); } catch (e) {}
+  }
+  next.__scalars = sc;
+
+  try {
+    localStorage.setItem(LS_SYNC_SHADOW, JSON.stringify(next));
+    localStorage.setItem(LS_SYNC_TOMBS, JSON.stringify(_smTombList(_smTombMap([{ syncMeta: { deletions: tombs } }]))));
+  } catch (e) {}
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  AUTOSAVE  (v1.49.0)
+//
+//  Backs the app up on its own — but ONLY while a token is already in hand.
+//  It never asks for one, so the app can never bounce the user to Google
+//  unprompted. In practice: tap the cloud icon once, and the rest of that
+//  session looks after itself, including when you switch away from the app.
+// ══════════════════════════════════════════════════════════════════════
+
+var DRIVE_AUTOSAVE_MS = 15000;   // settle time; a burst of edits sends once
+var _driveAutoTimer = null;
+
+function driveAutoBackupSoon() {
+  if (!DRIVE_ENABLED || !_driveToken) return;
+  if (typeof _demoMode !== 'undefined' && _demoMode) return;
+  clearTimeout(_driveAutoTimer);
+  _driveAutoTimer = setTimeout(driveAutoBackupRun, DRIVE_AUTOSAVE_MS);
+}
+
+function driveAutoBackupRun() {
+  if (!DRIVE_ENABLED || !_driveToken || _driveBusy) return;
+  if (typeof _demoMode !== 'undefined' && _demoMode) return;
+  // driveState() compares a hash of the current data against the hash at the
+  // last backup, so this skips a no-op upload after a render-only change.
+  try { if (driveState().status === 'ok') return; } catch (e) { return; }
+  driveBackupNow(true);
+}
+
+// Push the merged result back so both copies converge and a third device
+// sees one history instead of two. Deferred by a tick: the merge's own
+// promise chain clears _driveBusy in a microtask, which runs first.
+function driveBackupAfterMerge() {
+  setTimeout(function () { driveBackupNow(true); }, 0);
+}
+
+// Leaving the app is the moment most likely to be the last one, so the
+// pending autosave is flushed rather than abandoned.
+try {
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') {
+      clearTimeout(_driveAutoTimer);
+      driveAutoBackupRun();
+    }
+  });
+} catch (e) {}
+
+// ═══════════════════════════════════════════
 //  GOOGLE DRIVE BACKUP  (v1.35.0)
 // ═══════════════════════════════════════════
 // One tap writes the same payload exportData() produces into a file in
@@ -14257,7 +14668,7 @@ function closeDriveSheet(e) {
   m.classList.add('hidden');
 }
 
-function driveBackupNow() {
+function driveBackupNow(quiet) {
   if (!DRIVE_ENABLED || _driveBusy) return;
   if (typeof _demoMode !== 'undefined' && _demoMode) {
     driveToast('warn', 'This is example data. Add your own debts first.');
@@ -14291,7 +14702,9 @@ function driveBackupNow() {
       const d = JSON.parse(body); delete d.exportDate;
       localStorage.setItem(LS_DRIVE_HASH, driveHash(JSON.stringify(d)));
       localStorage.setItem(LS_DRIVE_AT, new Date().toISOString());
-      driveToast('ok', 'Backed up to your Google Drive.');
+      // An autosave the user did not ask for says nothing on success; the
+      // cloud dot going green is the whole message. Failures still speak.
+      if (!quiet) driveToast('ok', 'Backed up to your Google Drive.');
     })
     .catch(function(err) {
       // A stale cached file id (user deleted the file in Drive) is the one
@@ -14302,17 +14715,17 @@ function driveBackupNow() {
     .then(function(){ _driveBusy = false; updateDriveUI(); });
 }
 
+// v1.49.0 — was driveRestoreNow(), which replaced this device wholesale.
+// Replacing is what made two devices unsafe: whichever one you restored from
+// won, and anything logged on the other was gone with no warning. This merges
+// instead, so the question "which device is right?" stops being asked.
 function driveRestoreNow() {
   if (!DRIVE_ENABLED || _driveBusy) return;
-  const st = driveState();
-  const warn = st.status === 'never'
-    ? 'This will replace everything currently on this device with the backup in your Google Drive.'
-    : 'This will replace everything on this device with your Drive backup' +
-      (st.status === 'stale' ? ' — and this device has changes that are NOT in that backup, which will be lost.' : '.');
-  if (!confirm(warn + '\n\nA snapshot of the current data is saved first, so you can undo this.\n\nContinue?')) return;
-  // Confirm first, then authorise. On return driveHandleRedirect() calls
-  // driveRestoreDo() directly so the user is not asked to confirm twice.
-  if (!driveEnsureToken('restore')) return;
+  if (typeof _demoMode !== 'undefined' && _demoMode) {
+    driveToast('warn', 'This is example data. Add your own debts first.');
+    return;
+  }
+  if (!driveEnsureToken('restore')) return;   // page is navigating to Google
   driveRestoreDo();
 }
 
@@ -14327,15 +14740,20 @@ function driveRestoreDo() {
     if (!id) throw new Error('No backup found in your Google Drive yet.');
     return driveFetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media');
   }).then(function(r){ return r.json(); })
-    .then(function(data) {
-      applyBackupPayload(data);
-      const d = JSON.parse(JSON.stringify(data)); delete d.exportDate;
-      localStorage.setItem(LS_DRIVE_HASH, driveHash(JSON.stringify(d)));
-      driveToast('ok', 'Restored from your Google Drive.');
+    .then(function(remote) {
+      // The merge is pure and never throws on shape: a malformed cloud file
+      // yields the local payload unchanged rather than a broken ledger.
+      const res = mergeBackups(buildBackupPayload(), remote);
+      applyBackupPayload(res.payload);
+      save();
+      driveToast('ok', syncSummaryText(res.summary));
+      // Both sides converge on the merged result, so a third device merging
+      // later sees one history rather than two.
+      driveBackupAfterMerge();
     })
     .catch(function(err) {
       if (/40[34]/.test(err.message)) localStorage.removeItem(LS_DRIVE_FILEID);
-      driveToast('warn', err.message || 'Restore failed. Nothing was changed.');
+      driveToast('warn', err.message || 'Sync failed. Nothing was changed.');
     })
     .then(function(){ _driveBusy = false; updateDriveUI(); });
 }
@@ -14343,7 +14761,7 @@ function driveRestoreDo() {
 function driveUndoRestore() {
   const raw = localStorage.getItem(LS_DRIVE_UNDO);
   if (!raw) { driveToast('warn', 'Nothing to undo.'); return; }
-  if (!confirm('Put back the data that was on this device before the restore?')) return;
+  if (!confirm('Put back the data that was on this device before the last sync?')) return;
   try {
     applyBackupPayload(JSON.parse(raw));
     localStorage.removeItem(LS_DRIVE_UNDO);
@@ -14420,7 +14838,10 @@ function buildBackupPayload() {
     // v1.13.2 — theme is a harmless preference and safe to carry in a backup.
     // Premium/license are deliberately NOT exported: a backup file can be
     // shared, and we don't want it to become a way to hand out premium.
-    theme: theme
+    theme: theme,
+    // v1.49.0 — what the merge needs: which device wrote this, when its
+    // one-per-plan settings last changed, and what it has deleted.
+    syncMeta: syncMeta()
   };
 }
 
@@ -14505,6 +14926,11 @@ function applyBackupPayload(data) {
       });
       interestAccrualEnabled = !!data.interestAccrualEnabled;
       var _impToggle = document.getElementById('accrual-toggle');
+      // v1.49.0 — carry the incoming tombstones so a delete made on another
+      // device is not undone by the next merge from a third copy.
+      if (data.syncMeta && Array.isArray(data.syncMeta.deletions)) {
+        syncSetDeletions(data.syncMeta.deletions);
+      }
       if (_impToggle) _impToggle.checked = interestAccrualEnabled;
       // v1.13.2 — apply imported theme if present (premium/license are NOT
       // imported by design — they stay tied to this device's activation).
@@ -14840,6 +15266,10 @@ try { if (DRIVE_ENABLED) driveHandleRedirect(); } catch(e) {} }, 0);
   // debts indistinguishable from the user's own on the next visit and
   // would contaminate backup exports.
   if (_demoMode) return;
+  // v1.49.0 — every mutation in the app funnels through save(), so this is
+  // the one place that can notice what changed without touching 45 call
+  // sites. It stamps edited records and records deletions as tombstones.
+  try { syncTrackChanges(); } catch (e) {}
   try {
     localStorage.setItem('debtfree_debts', JSON.stringify(debts));
     localStorage.setItem('debtfree_payments', JSON.stringify(payments));
@@ -14859,6 +15289,10 @@ try { if (DRIVE_ENABLED) driveHandleRedirect(); } catch(e) {} }, 0);
     localStorage.setItem('debtfree_premium', isPremium ? '1' : '0');
     localStorage.setItem('debtfree_license', licenseKey || '');
     localStorage.setItem('debtfree_theme', theme || 'dark');
+    // v1.49.0 — with a live token, changes back themselves up on their own.
+    // Without one this is a no-op: no token is ever requested in the
+    // background, so the app never bounces the user to Google unasked.
+    try { driveAutoBackupSoon(); } catch (e) {}
   } catch(e) {
     // v1.6.0 — surface storage errors instead of silently dropping the write
     console.error('DebtFree save() failed:', e);

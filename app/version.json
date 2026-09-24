@@ -1,11 +1,11 @@
 {
-  "version": "1.48.3",
-  "releaseDate": "2026-09-22",
-  "releaseName": "Bills fit their card again",
+  "version": "1.49.0",
+  "releaseDate": "2026-09-24",
+  "releaseName": "Two devices stop fighting",
   "notes": [
-    "Fixed: a bill you had already saved stretched off the right edge of its card, squashing the name down to a sliver and pushing the tick and delete buttons off screen. The row fits properly again. Adding a new bill was never affected.",
-    "Saved bills now show their amount the same way the Add-bill row does — with a $ and thousands separators — instead of a bare number.",
-    "A saved bill now puts its name on its own line, so a name like “Car insurance premium” reads in full instead of being cut off after a few letters.",
-    "The two boxes in Your Monthly Plan were set much larger than every other field on the tab. They are still the biggest — they drive the whole plan — but no longer out of step with everything around them."
+    "Google Drive now merges instead of replacing. Before, pulling your backup down overwrote whatever was on the device you pulled it to — so if you logged a payment on your phone and then synced your laptop, the phone's payment was gone. Payments, interest and corrections from both devices are now kept.",
+    "Anything you deleted stays deleted. A merge will not quietly bring back a payment you removed on another device.",
+    "Once you've tapped the cloud icon, the app keeps backing itself up on its own for the rest of that session — including when you switch away from it — so you don't have to remember.",
+    "The Restore button is now “Sync with Drive”, because that is what it does. If a sync ever looks wrong, “Undo sync” puts this device back exactly as it was."
   ]
 }
