@@ -1,11 +1,10 @@
 {
-  "version": "1.49.0",
-  "releaseDate": "2026-09-24",
-  "releaseName": "Two devices stop fighting",
+  "version": "1.49.1",
+  "releaseDate": "2026-09-25",
+  "releaseName": "One button, and it is always the safe one",
   "notes": [
-    "Google Drive now merges instead of replacing. Before, pulling your backup down overwrote whatever was on the device you pulled it to — so if you logged a payment on your phone and then synced your laptop, the phone's payment was gone. Payments, interest and corrections from both devices are now kept.",
-    "Anything you deleted stays deleted. A merge will not quietly bring back a payment you removed on another device.",
-    "Once you've tapped the cloud icon, the app keeps backing itself up on its own for the rest of that session — including when you switch away from it — so you don't have to remember.",
-    "The Restore button is now “Sync with Drive”, because that is what it does. If a sync ever looks wrong, “Undo sync” puts this device back exactly as it was."
+    "Fixed: there were two Google Drive buttons and only one of them was safe. “Back up” replaced the copy in Drive with whatever was on the device you tapped it from — so tapping it on a device that was behind pushed the older data over the newer. There is now a single button, and it always merges first.",
+    "Fixed: the automatic backup did the same thing without being asked, so a long session on one device could bury what the other device had saved. It now merges as well, and waits rather than refreshing the screen while you are typing in a box.",
+    "Fixed a problem introduced in the previous update: after a sync, this device marked every record as if it had just been edited here. In one case that could let an untouched account outrank a genuine edit made on your other device."
   ]
 }

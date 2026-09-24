@@ -3902,8 +3902,7 @@
       <div class="card drive-card loud" id="drive-card" style="display:none">
       <div id="drive-card-line">Your data is only on this device.</div>
       <div class="drive-card-actions">
-      <button class="btn" id="drive-card-action" onclick="driveBackupNow()">Back up to Google Drive</button>
-      <button class="btn btn-ghost" onclick="driveRestoreNow()">Sync with Drive</button>
+      <button class="btn" id="drive-card-action" onclick="driveSyncNow()">Back up to Google Drive</button>
       <button class="btn btn-ghost" id="drive-undo-btn" onclick="driveUndoRestore()" style="display:none">Undo sync</button>
       </div>
       </div>
@@ -3965,7 +3964,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.49.0';
+const APP_VERSION = '1.49.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3973,6 +3972,17 @@ const APP_VERSION = '1.49.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.49.1',
+    date: 'September 25, 2026',
+    name: 'One button, and it is always the safe one',
+    whatsNew: [],
+    fixes: [
+      'There were two Google Drive buttons and only one of them was safe. \u201cBack up\u201d replaced the copy in Drive with whatever was on the device you tapped it from \u2014 so tapping it on a device that was behind pushed the older data over the newer. There is now a single button, and it always merges first.',
+      'The automatic backup did the same thing without being asked, so a long session on one device could bury what the other device had saved. It now merges as well, and waits rather than refreshing the screen while you are typing in a box.',
+      'Fixed a problem introduced in the previous update: after a sync, this device marked every record as if it had just been edited here. In one case that could let an untouched account outrank a genuine edit made on your other device.',
+    ]
+  },
   {
     version: '1.49.0',
     date: 'September 24, 2026',
@@ -14238,13 +14248,28 @@ function _syncScalarSnapshot() {
                          interestAccrualEnabled, theme]);
 }
 
+// v1.49.1 — set while applyBackupPayload() is installing a merged or
+// imported payload. The records in it carry stamps that mean something; the
+// save() that follows must not overwrite them with "edited now", or a device
+// that merely RECEIVED a record would outrank the device that actually last
+// edited it.
+var _syncApplying = false;
+
 function syncTrackChanges() {
   var live = _syncLiveCollections();
   var shadow = null;
   try { shadow = JSON.parse(localStorage.getItem(LS_SYNC_SHADOW) || 'null'); } catch (e) {}
   var now = new Date().toISOString();
   var next = {}, tombs = syncDeletions();
-  var firstRun = !shadow;
+  // Applying a payload is treated exactly like the first run: reseed the
+  // shadow, stamp nothing, invent no tombstones. Anything the merge dropped
+  // was dropped because a tombstone already said so.
+  //
+  // The flag is CONSUMED here. applyBackupPayload() ends in save(), so that
+  // save is the one it covers; leaving it raised would silently suppress
+  // stamping on the user's next real edit.
+  var firstRun = !shadow || _syncApplying;
+  _syncApplying = false;
 
   _SM_COLLECTIONS.forEach(function (c) {
     var rows = _smArr(live[c.name]);
@@ -14300,20 +14325,28 @@ function driveAutoBackupSoon() {
   _driveAutoTimer = setTimeout(driveAutoBackupRun, DRIVE_AUTOSAVE_MS);
 }
 
+// True while the user is in a field. A merge can bring in changes from the
+// other device and re-render, which would throw away half-typed input.
+function _syncUserIsTyping() {
+  try {
+    var el = document.activeElement;
+    if (!el) return false;
+    var tag = (el.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable === true;
+  } catch (e) { return false; }
+}
+
 function driveAutoBackupRun() {
   if (!DRIVE_ENABLED || !_driveToken || _driveBusy) return;
   if (typeof _demoMode !== 'undefined' && _demoMode) return;
   // driveState() compares a hash of the current data against the hash at the
-  // last backup, so this skips a no-op upload after a render-only change.
+  // last backup, so this skips a no-op round trip after a render-only change.
   try { if (driveState().status === 'ok') return; } catch (e) { return; }
-  driveBackupNow(true);
-}
-
-// Push the merged result back so both copies converge and a third device
-// sees one history instead of two. Deferred by a tick: the merge's own
-// promise chain clears _driveBusy in a microtask, which runs first.
-function driveBackupAfterMerge() {
-  setTimeout(function () { driveBackupNow(true); }, 0);
+  // Mid-edit: come back rather than re-rendering under them.
+  if (_syncUserIsTyping()) { driveAutoBackupSoon(); return; }
+  // v1.49.1 — was driveBackupNow(true), a straight overwrite. A long session
+  // on this device could bury what the other device uploaded meanwhile.
+  driveSyncDo(true);
 }
 
 // Leaving the app is the moment most likely to be the last one, so the
@@ -14492,8 +14525,9 @@ function driveHandleRedirect() {
     return;
   }
   _driveToken = token;
-  if (pending.intent === 'restore') driveRestoreDo();
-  else driveBackupNow();
+  // v1.49.1 — both intents resume into the same merge. There is only one
+  // action now, so a redirect started before the upgrade still lands safely.
+  driveSyncDo(false);
 }
 
 // A 401 means the in-memory token aged out. Drop it and re-auth once,
@@ -14543,6 +14577,36 @@ function closeDriveSheet(e) {
   if (!m) return;
   if (e && e.target !== m) return;  // clicks inside the sheet must not close it
   m.classList.add('hidden');
+}
+
+// v1.49.1 — the upload half on its own, so the sync flow can push the
+// MERGED payload without going back through the busy/consent checks.
+function driveUploadPayload(payload) {
+  const body = JSON.stringify(payload, null, 2);
+  return driveFindFileId().then(function(id) {
+    const meta = { name: DRIVE_FILENAME, mimeType: 'application/json' };
+    const boundary = 'dfd' + Date.now();
+    const multipart =
+      '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' +
+      JSON.stringify(meta) +
+      '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' +
+      body + '\r\n--' + boundary + '--';
+    const url = id
+      ? 'https://www.googleapis.com/upload/drive/v3/files/' + id + '?uploadType=multipart&fields=id'
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id';
+    return driveFetch(url, {
+      method: id ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'multipart/related; boundary=' + boundary },
+      body: multipart
+    });
+  }).then(function(r){ return r.json(); })
+    .then(function(j) {
+      if (j && j.id) localStorage.setItem(LS_DRIVE_FILEID, j.id);
+      const d = JSON.parse(body); delete d.exportDate;
+      localStorage.setItem(LS_DRIVE_HASH, driveHash(JSON.stringify(d)));
+      localStorage.setItem(LS_DRIVE_AT, new Date().toISOString());
+      return j;
+    });
 }
 
 function driveBackupNow(quiet) {
@@ -14596,44 +14660,61 @@ function driveBackupNow(quiet) {
 // Replacing is what made two devices unsafe: whichever one you restored from
 // won, and anything logged on the other was gone with no warning. This merges
 // instead, so the question "which device is right?" stops being asked.
-function driveRestoreNow() {
+function driveSyncNow(quiet) {
   if (!DRIVE_ENABLED || _driveBusy) return;
   if (typeof _demoMode !== 'undefined' && _demoMode) {
     driveToast('warn', 'This is example data. Add your own debts first.');
     return;
   }
   if (!driveEnsureToken('restore')) return;   // page is navigating to Google
-  driveRestoreDo();
+  driveSyncDo(quiet);
 }
+// The old name, still referenced by the OAuth resume path.
+function driveRestoreNow() { driveSyncNow(false); }
 
-function driveRestoreDo() {
+// v1.49.1 — the ONE Drive action. Download what is there, merge it with this
+// device, apply the result, upload it back. No path in the app overwrites the
+// cloud file with one device's view any more, so there is no longer a button
+// that is safe and a button that is not.
+//
+// With nothing in Drive yet this is simply the first backup.
+function driveSyncDo(quiet) {
   _driveBusy = true;
   updateDriveUI();
-  // Snapshot BEFORE touching anything. Restore is the only destructive
-  // action in the app, and it sits one tap from a routine one.
+  // Snapshot BEFORE touching anything, so "Undo sync" can put this device
+  // back exactly as it was.
   try { localStorage.setItem(LS_DRIVE_UNDO, JSON.stringify(buildBackupPayload())); } catch(e) {}
 
+  var summary = null;
   driveFindFileId().then(function(id) {
-    if (!id) throw new Error('No backup found in your Google Drive yet.');
-    return driveFetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media');
-  }).then(function(r){ return r.json(); })
+      if (!id) return null;              // nothing in Drive yet
+      return driveFetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media')
+        .then(function(r){ return r.json(); });
+    })
     .then(function(remote) {
-      // The merge is pure and never throws on shape: a malformed cloud file
-      // yields the local payload unchanged rather than a broken ledger.
-      const res = mergeBackups(buildBackupPayload(), remote);
-      applyBackupPayload(res.payload);
-      save();
-      driveToast('ok', syncSummaryText(res.summary));
-      // Both sides converge on the merged result, so a third device merging
-      // later sees one history rather than two.
-      driveBackupAfterMerge();
+      if (remote) {
+        // mergeBackups() is pure and tolerant of shape: a malformed cloud
+        // file yields this device's data unchanged rather than a broken
+        // ledger.
+        var res = mergeBackups(buildBackupPayload(), remote);
+        summary = res.summary;
+        applyBackupPayload(res.payload);
+        save();
+      }
+      return driveUploadPayload(buildBackupPayload());
+    })
+    .then(function() {
+      if (!quiet) driveToast('ok', summary ? syncSummaryText(summary) : 'Backed up to your Google Drive.');
     })
     .catch(function(err) {
       if (/40[34]/.test(err.message)) localStorage.removeItem(LS_DRIVE_FILEID);
-      driveToast('warn', err.message || 'Sync failed. Nothing was changed.');
+      driveToast('warn', (err && err.message) || 'Sync failed. Nothing was changed.');
     })
     .then(function(){ _driveBusy = false; updateDriveUI(); });
 }
+
+// Kept as the name the OAuth redirect resumes into.
+function driveRestoreDo() { driveSyncDo(false); }
 
 function driveUndoRestore() {
   const raw = localStorage.getItem(LS_DRIVE_UNDO);
@@ -14682,8 +14763,10 @@ function updateDriveUI() {
         st.status === 'stale' ? '<strong>Changes since your last backup.</strong> Last saved ' + driveAgo(st.at) + '.' :
         'Backed up to your Google Drive ' + driveAgo(st.at) + '.';
     }
+    // v1.49.1 — one button, and it always merges. "Back up" only describes
+    // the very first tap, when there is nothing in Drive to merge with.
     if (act) act.textContent = _driveBusy ? 'Working…' :
-      (st.status === 'never' ? 'Back up to Google Drive' : 'Back up now');
+      (st.status === 'never' ? 'Back up to Google Drive' : 'Sync now');
     if (act) act.disabled = !!_driveBusy;
   }
   if (undo) undo.style.display = localStorage.getItem(LS_DRIVE_UNDO) ? '' : 'none';
@@ -14770,6 +14853,7 @@ function applyBackupPayload(data) {
       if (!data || !data.debts || !Array.isArray(data.debts)) {
         throw new Error('Invalid file');
       }
+      _syncApplying = true;   // v1.49.1 — see syncTrackChanges()
       // v1.6.0 — run imported debts through the same sanitization
       // pipeline load() uses.  Without this, old-format backups came in with
       // missing postPromoApr/hasPromo/type fields and silently corrupted the
