@@ -1,10 +1,10 @@
 {
-  "version": "1.49.1",
+  "version": "1.49.2",
   "releaseDate": "2026-09-25",
-  "releaseName": "One button, and it is always the safe one",
+  "releaseName": "A sync could duplicate a payment",
   "notes": [
-    "Fixed: there were two Google Drive buttons and only one of them was safe. “Back up” replaced the copy in Drive with whatever was on the device you tapped it from — so tapping it on a device that was behind pushed the older data over the newer. There is now a single button, and it always merges first.",
-    "Fixed: the automatic backup did the same thing without being asked, so a long session on one device could bury what the other device had saved. It now merges as well, and waits rather than refreshing the screen while you are typing in a box.",
-    "Fixed a problem introduced in the previous update: after a sync, this device marked every record as if it had just been edited here. In one case that could let an untouched account outrank a genuine edit made on your other device."
+    "Fixed: syncing could bring back a scheduled payment that had already gone through, as a second copy still marked pending — which would then have been applied again the next time you opened the app, moving your balance by an amount you never paid. Syncing now recognises a scheduled payment and the applied version of it as the same payment.",
+    "If a sync already left you with a duplicate, this update removes it for you the first time you open the app, before anything can be applied. Only a pending copy that exactly matches a payment already applied is removed, and you are told it happened.",
+    "Removed a stray amber line that ran down the inside of the Google Drive dialog."
   ]
 }

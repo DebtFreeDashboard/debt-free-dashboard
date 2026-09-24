@@ -2765,6 +2765,12 @@
 .drive-card.quiet{padding:10px 14px;font-size:.85rem;opacity:.75;display:flex;align-items:center;gap:10px;
   flex-wrap:wrap;justify-content:space-between;}
 .drive-card.loud{border-left:3px solid #e0a030;}
+/* v1.49.2 — .modal .drive-card already clears the border, but it is declared
+   earlier in the sheet and carries the same specificity, so .drive-card.loud
+   won and drew an amber bar down the inside of the Drive dialog. The modal
+   frames the card on its own; the accent is only meant for the card sitting
+   inline on the Settings tab. */
+.modal .drive-card.loud{border-left:0;}
 .drive-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .drive-card.quiet .drive-card-actions{margin-top:0;}
 .drive-toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:24px;z-index:9999;
@@ -4087,7 +4093,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.49.1';
+const APP_VERSION = '1.49.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4095,6 +4101,17 @@ const APP_VERSION = '1.49.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.49.2',
+    date: 'September 25, 2026',
+    name: 'A sync could duplicate a payment',
+    whatsNew: [],
+    fixes: [
+      'Syncing could bring back a scheduled payment that had already gone through, as a second copy still marked pending \u2014 which would then have been applied again the next time you opened the app, moving your balance by an amount you never paid. Syncing now recognises a scheduled payment and the applied version of it as the same payment.',
+      'If a sync already left you with a duplicate, this update removes it for you the first time you open the app, before anything can be applied. Only a pending copy that exactly matches a payment already applied is removed, and you are told it happened.',
+      'Removed a stray amber line that ran down the inside of the Google Drive dialog.',
+    ]
+  },
   {
     version: '1.49.1',
     date: 'September 25, 2026',
@@ -14097,19 +14114,34 @@ function showBackupMsg(type, text) {
 // suite asserting that nothing is lost, nothing resurrects, ids never
 // collide, and the result is the same whichever device merges first.
 
-var _SM_APPEND = 'append', _SM_MUTABLE = 'mutable';
-
-// Accruals carry no id of their own: (debtId, month) is the idempotency key
-// the app already relies on to make double-accrual impossible.
+// v1.49.2 — ONE rule: the same key is the same record, and the newer
+// updatedAt wins. Whole record, never per field.
+//
+// payments/adjustments/accruals used to be treated as append-only, on the
+// theory that rows are only ever added. That was wrong, and it corrupted a
+// ledger: processDuePayments() matures a pending payment IN PLACE (same id,
+// pending flips to false, amount capped to the remaining balance) and the
+// Payment Log has an Edit button. So the cloud copy of a payment routinely
+// differs from the local copy while being the SAME payment. The old code read
+// that difference as an id collision, re-keyed one side and kept both — and
+// the duplicate came in still pending, so the next app open applied it again.
+//
+// The cost: two devices minting the same id for genuinely DIFFERENT records
+// now keep one rather than both. Impossible for payments (ids are Date.now()),
+// possible for adjustments (shared nextId counter), and far rarer either way
+// than a payment maturing, which happens on every schedule.
+//
+// Accruals keep their (debtId, month) key — the idempotency key the app
+// already relies on to make double-accrual impossible.
 var _SM_COLLECTIONS = [
-  { name: 'payments',       mode: _SM_APPEND,  key: ['id'] },
-  { name: 'adjustments',    mode: _SM_APPEND,  key: ['id'] },
-  { name: 'accruals',       mode: _SM_APPEND,  key: ['debtId', 'month'] },
-  { name: 'debts',          mode: _SM_MUTABLE, key: ['id'] },
-  { name: 'bills',          mode: _SM_MUTABLE, key: ['id'] },
-  { name: 'sinkingFunds',   mode: _SM_MUTABLE, key: ['id'] },
-  { name: 'lumpSums',       mode: _SM_MUTABLE, key: ['id'] },
-  { name: 'rolledMinimums', mode: _SM_MUTABLE, key: ['debtId'] }
+  { name: 'payments',       key: ['id'] },
+  { name: 'adjustments',    key: ['id'] },
+  { name: 'accruals',       key: ['debtId', 'month'] },
+  { name: 'debts',          key: ['id'] },
+  { name: 'bills',          key: ['id'] },
+  { name: 'sinkingFunds',   key: ['id'] },
+  { name: 'lumpSums',       key: ['id'] },
+  { name: 'rolledMinimums', key: ['debtId'] }
 ];
 
 var _SM_SCALARS = ['strategy', 'extraMonthly', 'monthlyBudget', 'planBaseline',
@@ -14244,20 +14276,7 @@ function mergeBackups(localIn, remoteIn) {
         if (fromRemote) added++;
         return;
       }
-      if (c.mode === _SM_APPEND) {
-        if (_smHash(map[k]) !== _smHash(rec)) {
-          if (c.key.length === 1 && c.key[0] === 'id') {
-            rec.id = ++idSeed.v;
-            var nk = _smKey(rec, c.key);
-            map[nk] = rec; order.push(nk);
-            if (fromRemote) added++;
-          }
-          // Composite-key rows (accruals) cannot be re-keyed without
-          // inventing a second accrual for the same debt-month, which is
-          // exactly what that key exists to prevent. First one wins.
-        }
-        return;
-      }
+      // Same key: the newer stamp wins the whole record. Never both.
       var a = _smMs(map[k].updatedAt), b = _smMs(rec.updatedAt);
       if (b > a) {
         if (_smHash(map[k]) !== _smHash(rec)) updated++;
@@ -14317,6 +14336,49 @@ function syncSummaryText(sum) {
 //  shadow of the last save catches edits, additions and deletions alike,
 //  including the bulk operations that rewrite whole arrays.
 // ══════════════════════════════════════════════════════════════════════
+
+// v1.49.2 — one-time cleanup for ledgers already damaged by the v1.49.0/1
+// merge. Signature of the bug: a PENDING payment sitting alongside an applied
+// one for the same debt, date and amount. That pairing does not occur in
+// normal use — a pending entry matures on the next open, it does not linger
+// next to its own twin — and the pending copy has not touched the balance
+// yet, so removing it prevents a double-apply rather than altering history.
+//
+// Deliberately narrow: exact match on debtId, date AND amount, and only the
+// pending row is removed. A duplicate whose amount was capped on maturing is
+// left alone for the user to delete, because guessing there could throw away
+// a real scheduled payment.
+var LS_SYNC_DEDUPE = 'debtfree_sync_dedupe_1492';
+
+function syncCleanupDuplicatePendings() {
+  try {
+    if (localStorage.getItem(LS_SYNC_DEDUPE)) return 0;
+    var applied = {};
+    (payments || []).forEach(function (p) {
+      if (p && !p.pending) applied[p.debtId + '|' + p.date + '|' + p.amount] = true;
+    });
+    var removedIds = [];
+    payments = (payments || []).filter(function (p) {
+      if (!p || !p.pending) return true;
+      if (applied[p.debtId + '|' + p.date + '|' + p.amount]) { removedIds.push(p.id); return false; }
+      return true;
+    });
+    localStorage.setItem(LS_SYNC_DEDUPE, '1');
+    if (removedIds.length) {
+      // Tombstone them explicitly rather than leaving it to save()'s diff.
+      // The duplicates are still sitting in the Drive file, so without a
+      // tombstone the very next sync would pull them straight back in. The
+      // diff cannot be relied on here: on a device with no shadow yet it
+      // seeds silently and records nothing.
+      var tombs = syncDeletions();
+      var at = new Date().toISOString();
+      removedIds.forEach(function (id) { tombs.push({ c: 'payments', k: String(id), at: at }); });
+      syncSetDeletions(tombs);
+      save();
+    }
+    return removedIds.length;
+  } catch (e) { return 0; }
+}
 
 var LS_SYNC_SHADOW = 'debtfree_sync_shadow';
 var LS_SYNC_TOMBS  = 'debtfree_sync_tombs';
@@ -14406,7 +14468,9 @@ function syncTrackChanges() {
       // On the very first save after upgrading there is no shadow, so
       // stamping everything "now" would make this device win every future
       // conflict on records it never actually touched. Seed silently instead.
-      if (!firstRun && c.mode === _SM_MUTABLE && prev[k] !== h) r.updatedAt = now;
+      // v1.49.2 — every collection is stamped now, not just the ones that
+      // used to be called mutable: updatedAt is what decides every conflict.
+      if (!firstRun && prev[k] !== h) r.updatedAt = now;
     });
     if (!firstRun) {
       Object.keys(prev).forEach(function (k) {
@@ -15783,6 +15847,18 @@ applyPremiumState();
 
 // Process any payments or lump sums that became due today, then accrue
 // estimated interest for any month boundaries crossed since last open
+// v1.49.2 — before anything is applied for the day: strip pending rows that
+// the old merge duplicated, or they would post a second time right here.
+var _bootDeduped = syncCleanupDuplicatePendings();
+if (_bootDeduped > 0) {
+  setTimeout(function () {
+    try {
+      driveToast('warn', _bootDeduped + (_bootDeduped === 1
+        ? ' duplicate pending payment was removed (it had already been applied).'
+        : ' duplicate pending payments were removed (they had already been applied).'));
+    } catch (e) {}
+  }, 1200);
+}
 var _bootDue = processDuePayments();
 var _bootAcc = processInterestAccrual();
 if (_bootDue || _bootAcc) render();
