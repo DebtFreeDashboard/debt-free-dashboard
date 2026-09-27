@@ -205,7 +205,9 @@
    five-column money table that wraps is unreadable at 320px, and the numbers
    need to stay in columns to be comparable down the page. */
 .amort-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; }
-.amort-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.7rem; min-width: 330px; }
+.amort-table { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: 0.7rem; min-width: 300px; }
+/* v1.50.0 — the Balance column was clipped by 13-28px on phones. */
+@media (max-width: 420px) { .amort-table { font-size: 0.64rem; } .amort-table th, .amort-table td { padding: 6px 3px; } }
 .amort-table th { text-align: right; padding: 6px 6px; color: var(--text-muted); font-weight: 500;
   letter-spacing: 0.04em; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .amort-table th:first-child, .amort-table td:first-child { text-align: left; }
@@ -831,10 +833,25 @@
     flex-shrink: 0;
   }
 
+  .nd-plan-month { margin-top:8px; padding-top:8px; border-top:1px dashed var(--border2); font-size:0.78rem; line-height:1.45; color:var(--text-muted); }
+  .po-sub { margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
+  .po-sub-title { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .po-sub-desc { font-size:0.82rem; color:var(--text-muted); margin-bottom:14px; line-height:1.5; }
+  #roadmap-teaser { cursor:pointer; }
+  .log-oneoff { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:0.78rem; color:var(--text-muted); cursor:pointer; }
+  .log-oneoff input { width:16px; height:16px; accent-color:var(--accent); }
   .nav-tab.active, .nav-tab:hover {
     color: var(--accent);
     border-color: var(--accent);
     background: rgba(0,229,176,0.06);
+  }
+  /* v1.50.0 — all five tabs fit on a phone. At 390px the bar was 501px wide
+     and Settings (license activation, backup) sat past the right edge with no
+     hint that it existed. Tighter type and padding below 480px keeps every
+     tab visible down to 340px; the bar still scrolls if a phone is narrower. */
+  @media (max-width: 480px) {
+    .tab-nav-inner { padding: 10px 8px; gap: 2px; justify-content: space-between; }
+    .nav-tab { font-size: 0.66rem; letter-spacing: 0.02em; padding: 6px 8px; }
   }
 
   /* ─── LAYOUT ─── */
@@ -1137,6 +1154,15 @@
   }
 
   .form-field select option { background: var(--surface2); color: var(--text); }
+  /* v1.50.0 — a money input inside a form-field got the field chrome twice:
+     this older .form-field input rule comes later in the sheet than
+     .field-shell > input with the same specificity, so it won, and every $
+     field in Add a Debt and Log Payment showed a box inside a box. The shell
+     is the field; its input is bare. */
+  .form-field .field-shell > input,
+  .form-field .field-shell > input:focus {
+    background: none; border: 0; box-shadow: none; padding: 0; height: 100%; border-radius: 0;
+  }
 
   /* ─── BUTTONS ─── */
   .btn {
@@ -2188,6 +2214,7 @@
 
   .tag-accent { background: rgba(0,229,176,0.1); color: var(--accent); border: 1px solid rgba(0,229,176,0.2); }
   .tag-muted { background: var(--surface3); color: var(--text-dim); }
+  .tag-warn { background: rgba(255,184,77,0.12); color: var(--accent4); border: 1px solid rgba(255,184,77,0.35); }
 
   .empty-state {
     text-align: center;
@@ -2786,7 +2813,7 @@
          what? The card also never stated the amount the plan sends here, which
          was the actual question being asked. Both are fixed below. -->
     <div class="card next-debt-card" id="next-debt-card" style="display:none">
-      <div class="next-debt-flag">&#9656; WHERE YOUR EXTRA GOES</div>
+      <div class="next-debt-flag" id="next-debt-flag">&#9656; WHERE YOUR EXTRA GOES</div>
       <div class="next-debt-main">
         <div class="next-debt-info">
           <div class="next-debt-name" id="next-debt-name">&mdash;</div>
@@ -2801,6 +2828,7 @@
         <div class="nd-plan-label" id="nd-plan-label">Your plan sends</div>
         <div class="nd-plan-amt" id="nd-plan-amt">$0<span>/mo</span></div>
         <div class="nd-plan-break" id="nd-plan-break"></div>
+        <div class="nd-plan-month" id="nd-plan-month" style="display:none"></div>
       </div>
       <div class="next-debt-bar"><div class="next-debt-bar-fill" id="next-debt-bar-fill" style="width:0%"></div></div>
       <div class="next-debt-eta" id="next-debt-eta">&mdash;</div>
@@ -2816,12 +2844,12 @@
         <div class="ministat-sub">you're paying now</div>
       </div>
       <div class="ministat info">
-        <div class="ministat-label">Debt-free</div>
+        <div class="ministat-label">Freedom Date</div>
         <div class="ministat-value" id="stat-date">&mdash;</div>
         <div class="ministat-sub" id="stat-months">add debts</div>
       </div>
       <div class="ministat">
-        <div class="ministat-label">Int. saved</div>
+        <div class="ministat-label">Interest saved</div>
         <div class="ministat-value" id="stat-saved">$0</div>
         <div class="ministat-sub">vs. minimums only</div>
       </div>
@@ -2860,6 +2888,20 @@
     <!-- Roadmap teaser (free, blur) -->
 
     <!-- Payment Log -->
+    <!-- v1.50.0 — Your Debts moved above the Payment Log and Add a Debt form:
+         it is where a returning user edits balances. Hidden until the first debt
+         exists, so a new user still meets the add form first. -->
+    <!-- Debt List -->
+    <div class="card" id="debt-list-card" data-collapse="debts" data-collapse-default="open">
+      <div class="card-title"><div class="dot"></div> Your Debts <span class="tag tag-muted" id="debt-count" style="margin-left:4px">0 accounts</span></div>
+      <div class="debt-list" id="debt-list">
+        <div class="empty-state">
+          <div class="icon">💳</div>
+          <p>No debts added yet.<br>Add your first debt below to start building your payoff plan.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="card" id="payment-log-card" data-collapse="paylog" data-collapse-default="closed" style="display:none">
       <div class="card-title"><div class="dot"></div> Payment Log</div>
       <div id="payment-log-future-warn" class="alert warning" style="display:none;margin-bottom:12px;gap:8px;align-items:center;">
@@ -2886,6 +2928,10 @@
           <button class="btn btn-primary" onclick="logPayment()">Log</button>
         </div>
       </div>
+      <label class="log-oneoff" for="log-oneoff">
+        <input type="checkbox" id="log-oneoff" />
+        <span>One-off payment (tax refund, bonus, windfall)</span>
+      </label>
     </div>
     <!-- Add Debt Form -->
     <div class="card" id="add-debt-card" data-collapse="adddebt" data-collapse-default="dynamic">
@@ -2897,7 +2943,7 @@
       <div class="form-grid">
         <div class="form-field">
           <label>Debt Name <span class="field-optional">optional</span></label>
-          <input type="text" id="debt-name" placeholder="e.g. Rewards Visa" />
+          <input type="text" id="debt-name" placeholder="Rewards Visa" />
         </div>
         <div class="form-field">
           <label>Type</label>
@@ -3008,17 +3054,6 @@
       <button class="btn btn-primary btn-full" onclick="addDebt()">+ Add Debt</button>
     </div>
 
-    <!-- Debt List -->
-    <div class="card" id="debt-list-card" data-collapse="debts" data-collapse-default="open">
-      <div class="card-title"><div class="dot"></div> Your Debts <span class="tag tag-muted" id="debt-count" style="margin-left:4px">0 accounts</span></div>
-      <div class="debt-list" id="debt-list">
-        <div class="empty-state">
-          <div class="icon">💳</div>
-          <p>No debts added yet.<br>Add your first debt above to start building your payoff plan.</p>
-        </div>
-      </div>
-    </div>
-
     <!-- v1.26.0 — Paid Off Debts. Eliminated debts leave the active list (so it
          visibly shrinks as you win) and land here as a trophy case, collapsed by
          default. Kept editable: people genuinely reuse paid-off cards (0%
@@ -3053,12 +3088,12 @@
       <div class="strategy-card selected" id="card-avalanche" onclick="selectStrategy('avalanche')">
         <div class="strategy-icon">🏔️</div>
         <div class="strategy-name">Avalanche</div>
-        <div class="strategy-desc">Pay highest interest first. Saves the most money overall.</div>
+        <div class="strategy-desc">Highest APR first. Usually the least interest of the classic methods.</div>
       </div>
       <div class="strategy-card" id="card-snowball" onclick="selectStrategy('snowball')">
         <div class="strategy-icon">⛄</div>
         <div class="strategy-name">Snowball</div>
-        <div class="strategy-desc">Pay smallest balance first. Quick wins keep you motivated.</div>
+        <div class="strategy-desc">Smallest balance first. Accounts close sooner.</div>
       </div>
       <div class="strategy-card" id="card-hybrid" onclick="selectStrategy('hybrid')">
         <div class="strategy-icon">🎯</div>
@@ -3192,69 +3227,68 @@
       <div class="rollover-note" id="rollover-note"></div>
     </div>
 
-    <div class="card" id="bills-card" data-collapse="bills" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts. Add a due day and it shows up alongside your payments in Coming Up.</p>
-      <div id="bills-list"></div>
-      <div id="bills-total" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:8px 0 14px;"></div>
-      <div class="bill-add">
-        <input id="bill-name" type="text" placeholder="Rent" maxlength="60" aria-label="Bill name" />
-        <input id="bill-amount" type="text" inputmode="decimal" placeholder="1,200" aria-label="Monthly amount"  data-affix="$"/>
-        <input id="bill-due-day" type="text" inputmode="numeric" maxlength="2" placeholder="Day" aria-label="Due day" />
-      </div>
-      <div class="form-error" id="bill-error" style="display:none;"></div>
-      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addBill()">Add bill</button>
-    </div>
-
-    <div class="card" id="bills-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('bills');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts.</p>
-          <div class="bill-row"><div class="bill-name-static">Rent</div><div class="bill-amt-static">$1,200</div><div class="bill-day-static">1st</div></div>
-          <div class="bill-row"><div class="bill-name-static">Car insurance</div><div class="bill-amt-static">$142</div><div class="bill-day-static">12th</div></div>
-          <div class="bill-row"><div class="bill-name-static">Phone</div><div class="bill-amt-static">$85</div><div class="bill-day-static">20th</div></div>
+    <!-- Payoff order -->
+    <div class="card" id="payoff-order-card" data-collapse="order" data-collapse-default="open">
+      <div class="card-title"><div class="dot"></div> Payoff Order</div>
+      <div id="hybrid-order-note" style="display:none; margin-bottom:12px;">
+        <div class="alert warning">
+          <span>🎯</span>
+          <span>Hybrid mode is active. Set your custom payoff order below &mdash; debts are paid off top to bottom. Your order is saved automatically and kept even if you switch strategies.</span>
         </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">&#128274;</div>
-          <div class="lock-card-title">Everything due, in one place</div>
-          <div class="lock-card-desc" style="max-width:280px;">Your bills alongside your debt payments, so nothing lands on you unexpectedly.</div>
-          <div class="lock-card-cta">Unlock</div>
-        </div>
+        <!-- v1.23.2 — reorder right here on the Strategy tab; no trip to Dashboard -->
+        <div id="hybrid-order-list" class="hybrid-order-list"></div>
       </div>
-    </div>
-
-    <div class="card" id="funds-card" data-collapse="funds" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money set aside each month for costs you know are coming. A fund marked &ldquo;in the plan&rdquo; is money not going to debt, so your payoff dates account for it.</p>
-      <div id="funds-list"></div>
-      <div id="funds-note" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:10px 0 14px;line-height:1.5;"></div>
-      <div class="fund-add">
-        <input id="fund-name" type="text" placeholder="Car repairs" maxlength="60" aria-label="Fund name" />
-        <input id="fund-monthly" type="text" inputmode="decimal" placeholder="Monthly" aria-label="Monthly amount"  data-affix="$"/>
-        <input id="fund-target" type="text" inputmode="decimal" placeholder="Target" aria-label="Target amount, optional"  data-affix="$"/>
+      <div style="overflow-x:auto">
+        <table class="timeline-table" id="timeline-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Debt</th>
+              <th>Balance</th>
+              <th>APR</th>
+              <th>Payoff date</th>
+              <th>Interest Paid</th>
+            </tr>
+          </thead>
+          <tbody id="timeline-tbody">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:24px">Add debts on the Dashboard to see your plan.</td></tr>
+          </tbody>
+        </table>
       </div>
-      <div class="form-error" id="fund-error" style="display:none;"></div>
-      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addFund()">Add fund</button>
-      <p style="margin-top:12px;font-size:0.72rem;color:var(--text-muted);line-height:1.5;">Leave the target blank for something ongoing, like insurance. With a target, the fund stops once it&rsquo;s full and that money goes back to your debts.</p>
-    </div>
 
-    <div class="card" id="funds-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('funds');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
-      <div class="blur-teaser">
-        <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money set aside each month for costs you know are coming.</p>
-          <div class="fund-row"><div class="fund-head"><div class="fund-name-static">Car repairs</div></div>
-            <div class="fund-bar"><div class="fund-bar-fill" style="width:62%"></div></div>
-            <div class="fund-foot"><span class="fund-sub">$1,240 of $2,000 &middot; 4 months to go</span></div></div>
-          <div class="fund-row"><div class="fund-head"><div class="fund-name-static">Car insurance</div></div>
-            <div class="fund-foot"><span class="fund-sub">$100/mo, ongoing</span></div></div>
+      <!-- v1.50.0 — Debt-Free Roadmap and Monthly Cash-Flow Release folded into
+           this card. They listed the same debts with the same dates in three
+           separate cards. Ids kept so existing references (and the video
+           pipeline's scroll targets) still resolve. -->
+      <div class="po-sub" id="cashflow-card" data-premium data-premium-managed style="display:none">
+        <div class="po-sub-title">Monthly minimums, step by step <span class="premium-tag">Premium</span></div>
+        <p class="po-sub-desc">Each payoff ends a minimum payment. Your plan rolls that amount over to the next debt, so this line is how much of your monthly payment is still tied to minimums.</p>
+        <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
+        <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
+          <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
+          Planned lump sum applied
         </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">&#128274;</div>
-          <div class="lock-card-title">Stop the next surprise becoming debt</div>
-          <div class="lock-card-desc" style="max-width:290px;">Set money aside for what you know is coming, and see exactly what it costs your payoff date.</div>
-          <div class="lock-card-cta">Unlock</div>
+        <div id="cashflow-events" style="display:none"></div>
+      </div>
+
+      <div class="po-sub" id="roadmap-card" data-premium data-premium-managed style="display:none">
+        <div class="po-sub-title">Payoff by payoff <span class="premium-tag">Premium</span></div>
+        <div id="roadmap-track"></div>
+      </div>
+
+      <div class="po-sub" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('roadmap');goToUnlock()">
+        <div class="blur-teaser">
+          <div class="blur-content">
+            <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire paid off</div><div class="roadmap-step-sub">Aug 2026 · $145/mo rolls over</div></div></div>
+            <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan paid off</div><div class="roadmap-step-sub">Mar 2027 · $310/mo rolls over</div></div></div>
+            <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Freedom Date 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
+          </div>
+          <div class="blur-overlay">
+            <div style="font-size:1.4rem;">🔒</div>
+            <div class="lock-card-title">Payoff by payoff</div>
+            <div class="lock-card-desc" style="max-width:280px;">The month each debt clears, the minimum that rolls over, and a chart of your minimums stepping down. Unlock for $12.</div>
+            <div class="lock-card-cta">Unlock</div>
+          </div>
         </div>
       </div>
     </div>
@@ -3307,7 +3341,7 @@
       <div id="lump-auto-hint" style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;font-family:var(--font-mono);">The system will allocate this amount across your debts following your current strategy.</div>
     </div>
 
-    <div class="card" id="lump-sum-teaser" style="display:none" onclick="document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+    <div class="card" id="lump-sum-teaser" style="display:none" onclick="goToUnlock()">
       <div class="card-title"><div class="dot"></div> Planned Lump Sum Payments <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
@@ -3330,89 +3364,68 @@
       </div>
     </div>
 
-    <!-- Payoff order -->
-    <div class="card" id="payoff-order-card" data-collapse="order" data-collapse-default="closed">
-      <div class="card-title"><div class="dot"></div> Payoff Order &amp; Timeline</div>
-      <div id="hybrid-order-note" style="display:none; margin-bottom:12px;">
-        <div class="alert warning">
-          <span>🎯</span>
-          <span>Hybrid mode is active. Set your custom payoff order below &mdash; debts are paid off top to bottom. Your order is saved automatically and kept even if you switch strategies.</span>
-        </div>
-        <!-- v1.23.2 — reorder right here on the Strategy tab; no trip to Dashboard -->
-        <div id="hybrid-order-list" class="hybrid-order-list"></div>
+    <div class="card" id="bills-card" data-collapse="bills" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts. Add a due day and it shows up alongside your payments in Coming Up.</p>
+      <div id="bills-list"></div>
+      <div id="bills-total" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:8px 0 14px;"></div>
+      <div class="bill-add">
+        <input id="bill-name" type="text" placeholder="Rent" maxlength="60" aria-label="Bill name" />
+        <input id="bill-amount" type="text" inputmode="decimal" placeholder="1,200" aria-label="Monthly amount"  data-affix="$"/>
+        <input id="bill-due-day" type="text" inputmode="numeric" maxlength="2" placeholder="Day" aria-label="Due day" />
       </div>
-      <div style="overflow-x:auto">
-        <table class="timeline-table" id="timeline-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Debt</th>
-              <th>Balance</th>
-              <th>APR</th>
-              <th>Est. Payoff</th>
-              <th>Interest Paid</th>
-            </tr>
-          </thead>
-          <tbody id="timeline-tbody">
-            <tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:24px">Add debts on the Dashboard to see your plan.</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="form-error" id="bill-error" style="display:none;"></div>
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addBill()">Add bill</button>
     </div>
 
-    <div class="card" id="roadmap-card" data-collapse="roadmap" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;line-height:1.5;">Your journey to zero, milestone by milestone.</p>
-      <div id="roadmap-track"></div>
-    </div>
-
-    <div class="card" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('roadmap');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Debt-Free Roadmap <span class="premium-tag">Premium</span></div>
+    <div class="card" id="bills-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('bills');goToUnlock()">
+      <div class="card-title"><div class="dot"></div> Recurring Bills <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire eliminated</div><div class="roadmap-step-sub">Aug 2026 · frees $145/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan eliminated</div><div class="roadmap-step-sub">Mar 2027 · frees $310/mo</div></div></div>
-          <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Debt-free 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money that leaves every month besides your debts.</p>
+          <div class="bill-row"><div class="bill-name-static">Rent</div><div class="bill-amt-static">$1,200</div><div class="bill-day-static">1st</div></div>
+          <div class="bill-row"><div class="bill-name-static">Car insurance</div><div class="bill-amt-static">$142</div><div class="bill-day-static">12th</div></div>
+          <div class="bill-row"><div class="bill-name-static">Phone</div><div class="bill-amt-static">$85</div><div class="bill-day-static">20th</div></div>
         </div>
         <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">Your full roadmap to zero</div>
-          <div class="lock-card-desc" style="max-width:280px;">Every debt-elimination milestone with dates and freed cash. Unlock for $12.</div>
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">Everything due, in one place</div>
+          <div class="lock-card-desc" style="max-width:280px;">Your bills alongside your debt payments, so nothing lands on you unexpectedly.</div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
     </div>
 
-    <div class="card" id="cashflow-card" data-collapse="cashflow" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
-      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-      <div class="chart-wrap"><canvas id="cashflowChart"></canvas></div>
-      <div id="cashflow-marker-legend" style="display:none; align-items:center; gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">
-        <span style="display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid var(--accent4);"></span>
-        Planned lump sum applied
+    <div class="card" id="funds-card" data-collapse="funds" data-collapse-default="closed" data-premium data-premium-managed style="display:none">
+      <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
+      <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money set aside each month for costs you know are coming. A fund marked &ldquo;in the plan&rdquo; is money not going to debt, so your payoff dates account for it.</p>
+      <div id="funds-list"></div>
+      <div id="funds-note" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);margin:10px 0 14px;line-height:1.5;"></div>
+      <div class="fund-add">
+        <input id="fund-name" type="text" placeholder="Car repairs" maxlength="60" aria-label="Fund name" />
+        <input id="fund-monthly" type="text" inputmode="decimal" placeholder="Per mo" aria-label="Monthly amount"  data-affix="$"/>
+        <input id="fund-target" type="text" inputmode="decimal" placeholder="Goal" aria-label="Target amount, optional"  data-affix="$"/>
       </div>
-      <div id="cashflow-events" style="margin-top:16px;"></div>
+      <div class="form-error" id="fund-error" style="display:none;"></div>
+      <button class="btn btn-ghost" style="margin-top:10px;" onclick="addFund()">Add fund</button>
+      <p style="margin-top:12px;font-size:0.72rem;color:var(--text-muted);line-height:1.5;">Leave the target blank for something ongoing, like insurance. With a target, the fund stops once it&rsquo;s full and that money goes back to your debts.</p>
     </div>
 
-    <div class="card" id="cashflow-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('cashflow');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
-      <div class="card-title"><div class="dot"></div> Monthly Cash-Flow Release <span class="premium-tag">Premium</span></div>
+    <div class="card" id="funds-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('funds');goToUnlock()">
+      <div class="card-title"><div class="dot"></div> Sinking Funds <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">As each debt is eliminated, its minimum payment frees up. Here's how much monthly cash comes back to you over time.</p>
-          <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding:0 8px;">
-            <div style="flex:1;background:var(--accent);height:95%;border-radius:4px 4px 0 0;opacity:0.85;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent);height:78%;border-radius:4px 4px 0 0;opacity:0.8;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:55%;border-radius:4px 4px 0 0;opacity:0.75;"></div>
-            <div style="flex:1;background:var(--accent5);height:32%;border-radius:4px 4px 0 0;opacity:0.7;"></div>
-            <div style="flex:1;background:var(--accent4);height:12%;border-radius:4px 4px 0 0;opacity:0.65;"></div>
-          </div>
+          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Money set aside each month for costs you know are coming.</p>
+          <div class="fund-row"><div class="fund-head"><div class="fund-name-static">Car repairs</div></div>
+            <div class="fund-bar"><div class="fund-bar-fill" style="width:62%"></div></div>
+            <div class="fund-foot"><span class="fund-sub">$1,240 of $2,000 &middot; 4 months to go</span></div></div>
+          <div class="fund-row"><div class="fund-head"><div class="fund-name-static">Car insurance</div></div>
+            <div class="fund-foot"><span class="fund-sub">$100/mo, ongoing</span></div></div>
         </div>
         <div class="blur-overlay">
-          <div style="font-size:1.4rem;">🔒</div>
-          <div class="lock-card-title">See your cash come back</div>
-          <div class="lock-card-desc" style="max-width:280px;">Watch your monthly minimums step down to zero as each debt falls. Unlock for $12.</div>
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">Stop the next surprise becoming debt</div>
+          <div class="lock-card-desc" style="max-width:290px;">Set money aside for what you know is coming, and see exactly what it costs your payoff date.</div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
@@ -3439,7 +3452,7 @@
       <p style="margin-top:12px;font-size:0.72rem;color:var(--text-muted);line-height:1.5;">A projection based on the figures you entered. Your lender&rsquo;s statement is the record.</p>
     </div>
 
-    <div class="card" id="amort-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('amort');document.getElementById('unlock-box').scrollIntoView({behavior:'smooth',block:'center'})">
+    <div class="card" id="amort-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('amort');goToUnlock()">
       <div class="card-title"><div class="dot"></div> Amortization Schedule <span class="premium-tag">Premium</span></div>
       <div class="blur-teaser">
         <div class="blur-content">
@@ -3458,69 +3471,6 @@
           <div class="lock-card-title">See where every dollar goes</div>
           <div class="lock-card-desc" style="max-width:280px;">The full month-by-month schedule for every debt, plus CSV export for your own spreadsheet.</div>
           <div class="lock-card-cta">Unlock</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- v1.29.0 — Balance Transfer Modeller. A NEUTRAL CALCULATOR, never a
-         recommender: it models the offer the user already has in hand and
-         reports what the math shows. It does not suggest transferring, does not
-         name or rank products, and does not tell anyone what to do with their
-         money. The headline result is the promo-expiry risk, not the saving —
-         a transfer that isn't cleared before 0% ends is exactly how these
-         offers hurt people, and a calculator that buries that is worse than
-         no calculator at all. -->
-    <div class="card" id="transfer-card" data-collapse="transfer" data-collapse-default="closed">
-      <div class="card-title"><div class="dot"></div> &#128179; Balance Transfer Modeller</div>
-
-      <div id="transfer-real">
-        <p class="xfer-intro">
-          Considering a 0% balance transfer offer? Enter its terms and see what the math works out to
-          for your debts &mdash; including whether you&rsquo;d clear it before the 0% period ends.
-        </p>
-
-        <div class="form-field">
-          <label>Move balances from</label>
-          <div id="xfer-sources" class="xfer-sources"></div>
-        </div>
-
-        <div class="form-grid" style="grid-template-columns:1fr 1fr">
-          <div class="form-field">
-            <label>Transfer to</label>
-            <select id="xfer-dest" onchange="renderTransfer()"></select>
-          </div>
-          <div class="form-field">
-            <label>0% period (months)</label>
-            <input type="number" id="xfer-months" value="13" min="1" max="60" step="1" oninput="renderTransfer()" />
-          </div>
-          <div class="form-field">
-            <label>Transfer fee (%)</label>
-            <input type="text" inputmode="decimal" id="xfer-fee" value="5" min="0" max="10" step="0.1" oninput="renderTransfer()" />
-          </div>
-          <div class="form-field">
-            <label>Rate after 0% ends (%)</label>
-            <input type="text" inputmode="decimal" id="xfer-apr" value="24.99" min="0" max="40" step="0.01" oninput="renderTransfer()" />
-          </div>
-        </div>
-
-        <div id="xfer-result"></div>
-      </div>
-
-      <div id="transfer-teaser" class="blur-teaser" style="display:none; cursor:default;">
-        <div class="blur-content">
-          <div class="xfer-result-card">
-            <div class="xfer-headline">Saves $1,240 in interest</div>
-            <div class="xfer-sub">after the transfer fee &mdash; cleared 2 months before 0% ends</div>
-          </div>
-        </div>
-        <div class="blur-overlay">
-          <div style="font-size:1.4rem;">&#128274;</div>
-          <div class="lock-card-title">Model a 0% balance transfer</div>
-          <div class="lock-card-desc" style="max-width:320px;">
-            See what a 0% offer really works out to for your debts &mdash; fee included, and whether
-            you&rsquo;d clear it before the rate jumps. One-time $12.
-          </div>
-          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-transfer')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
         </div>
       </div>
     </div>
@@ -3649,29 +3599,73 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title"><div class="dot"></div> One-Time Windfall</div>
-      <div class="form-grid" style="grid-template-columns:2fr 1fr auto">
-        <div class="form-field field-full">
-          <label>Apply Windfall To</label>
-          <select id="wi-windfall-debt"></select>
-        </div>
+    <!-- v1.29.0 — Balance Transfer Modeler. A NEUTRAL CALCULATOR, never a
+         recommender: it models the offer the user already has in hand and
+         reports what the math shows. It does not suggest transferring, does not
+         name or rank products, and does not tell anyone what to do with their
+         money. The headline result is the promo-expiry risk, not the saving —
+         a transfer that isn't cleared before 0% ends is exactly how these
+         offers hurt people, and a calculator that buries that is worse than
+         no calculator at all. -->
+    <div class="card" id="transfer-card" data-collapse="transfer" data-collapse-default="closed">
+      <div class="card-title"><div class="dot"></div> &#128179; Balance Transfer Modeler</div>
+
+      <div id="transfer-real">
+        <p class="xfer-intro">
+          Considering a 0% balance transfer offer? Enter its terms and see what the math works out to
+          for your debts &mdash; including whether you&rsquo;d clear it before the 0% period ends.
+        </p>
+
         <div class="form-field">
-          <label>Amount ($)</label>
-          <input type="text" inputmode="decimal" id="wi-windfall-amt" placeholder="1000" min="0" step="100" />
+          <label>Move balances from</label>
+          <div id="xfer-sources" class="xfer-sources"></div>
         </div>
-        <div class="form-field">
-          <label>&nbsp;</label>
-          <button class="btn btn-primary" onclick="applyWindfall()">Apply</button>
+
+        <div class="form-grid" style="grid-template-columns:1fr 1fr">
+          <div class="form-field">
+            <label>Transfer to</label>
+            <select id="xfer-dest" onchange="renderTransfer()"></select>
+          </div>
+          <div class="form-field">
+            <label>0% period (months)</label>
+            <input type="number" id="xfer-months" value="13" min="1" max="60" step="1" oninput="renderTransfer()" />
+          </div>
+          <div class="form-field">
+            <label>Transfer fee (%)</label>
+            <input type="text" inputmode="decimal" id="xfer-fee" value="5" min="0" max="10" step="0.1" oninput="renderTransfer()" />
+          </div>
+          <div class="form-field">
+            <label>Rate after 0% ends (%)</label>
+            <input type="text" inputmode="decimal" id="xfer-apr" value="24.99" min="0" max="40" step="0.01" oninput="renderTransfer()" />
+          </div>
+        </div>
+
+        <div id="xfer-result"></div>
+      </div>
+
+      <div id="transfer-teaser" class="blur-teaser" style="display:none; cursor:default;">
+        <div class="blur-content">
+          <div class="xfer-result-card">
+            <div class="xfer-headline">Saves $1,240 in interest</div>
+            <div class="xfer-sub">after the transfer fee &mdash; cleared 2 months before 0% ends</div>
+          </div>
+        </div>
+        <div class="blur-overlay">
+          <div style="font-size:1.4rem;">&#128274;</div>
+          <div class="lock-card-title">Model a 0% balance transfer</div>
+          <div class="lock-card-desc" style="max-width:320px;">
+            See what a 0% offer really works out to for your debts &mdash; fee included, and whether
+            you&rsquo;d clear it before the rate jumps. One-time $12.
+          </div>
+          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-transfer')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
         </div>
       </div>
-      <div id="windfall-result" style="margin-top:12px"></div>
     </div>
 
-    <div class="cta-bar">
-      <h3>Every dollar extra matters.</h3>
-      <p>Putting just $100 more per month toward your debt can shave years off your payoff date and save thousands in interest.</p>
-      <button class="btn btn-primary" onclick="goToBudget()">Set My Monthly Extra →</button>
+    <div class="cta-bar" id="wi-noextra-cta" style="display:none">
+      <h3>No monthly extra set yet.</h3>
+      <p>Your plan currently pays minimums only. The slider above shows what any monthly extra would change &mdash; and it can be set on the Strategy tab.</p>
+      <button class="btn btn-primary" onclick="goToBudget()">Set a monthly extra &rarr;</button>
     </div>
   </div>
 
@@ -3698,14 +3692,7 @@
       <div class="upnext" id="upnext-list"></div>
     </div>
 
-    <div class="card">
-      <div class="card-title"><div class="dot"></div> Achievement Badges
-        <span class="tag tag-muted" id="badge-total" style="margin-left:6px;font-size:0.58rem;"></span>
-      </div>
-      <div id="badge-tracks"></div>
-      <div class="chip-detail" id="chip-detail" style="display:none"></div>
-    </div>
-
+    <!-- v1.50.0 — the real record of cleared debts sits above the 65 badges. -->
     <div class="card" id="paid-off-card" data-collapse="paidoff" data-collapse-default="open" style="display:none">
       <div class="card-title">
         <div class="dot"></div> &#127942; Paid Off Debts
@@ -3715,6 +3702,15 @@
       <div class="debt-list" id="paid-off-list"></div>
       <div class="paid-off-moved" id="paid-off-moved" style="display:none;"></div>
     </div>
+
+    <div class="card">
+      <div class="card-title"><div class="dot"></div> Achievement Badges
+        <span class="tag tag-muted" id="badge-total" style="margin-left:6px;font-size:0.58rem;"></span>
+      </div>
+      <div id="badge-tracks"></div>
+      <div class="chip-detail" id="chip-detail" style="display:none"></div>
+    </div>
+
   </div>
 
   <!-- v1.30.0 — Settings tab. Backup/restore, theme and premium were sitting on
@@ -3764,7 +3760,7 @@
         <div id="unlock-pending">
           <div class="deadline-inline" data-deadline hidden style="margin-bottom:10px;"><span data-deadline-text></span></div>
           <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
-            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, the cash-flow release card, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
+            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, payoff-by-payoff detail with the minimums chart, bills, sinking funds, the amortization schedule, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
             <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('settings')" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
@@ -3970,7 +3966,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.49.2';
+const APP_VERSION = '1.50.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3978,6 +3974,26 @@ const APP_VERSION = '1.49.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.50.0',
+    date: 'September 27, 2026',
+    name: 'A clearer plan',
+    whatsNew: [
+      'Your Freedom Date now shows what it is counting on this month. If part of this month’s plan hasn’t been logged yet, the card at the top says how much and where — for example “Still planned for September: $740 to Discover.” Before, the date simply moved on the 1st with no explanation.',
+      'The Strategy tab is shorter and reads in order: your plan, then its result. Payoff Order now sits directly under your monthly plan, and the Roadmap and Cash-Flow views are part of it instead of three separate cards listing the same debts and dates.',
+      'Your Debts moved up on the Dashboard, above the Payment Log and the Add a Debt form. Paid Off Debts moved above the badges on Wins.',
+      'Coming Up names everything due on the same day, not just one of them.',
+      'The Balance Transfer Modeler moved to the What If tab, with the other “what if” tools.',
+    ],
+    fixes: [
+      'A 0% card saved without a promo end date was treated as 0% forever, so its interest showed as $0. The end date is now required, and any card already saved without one is flagged so you can add it.',
+      'On phones, the Settings tab was hidden off the right edge of the screen. All five tabs now fit.',
+      'Tapping a locked Premium preview on the Strategy tab did nothing. It now takes you to the unlock section.',
+      'The One-Time Windfall box on What If recorded a real payment from a tab that is otherwise only “what if”. It’s gone: to log a tax refund or bonus, use Log Payment and tick “One-off payment”.',
+      'One name for each thing: “Freedom Date” for the day you’re debt-free, “Payoff date” for each debt, “rolled over” for a paid-off debt’s minimum that moves to the next one, and “extra” only for the amount you set.',
+      'Clearer wording on the strategy options and a few other spots, and the amortization table no longer cuts off its Balance column on phones.',
+    ]
+  },
   {
     version: '1.49.2',
     date: 'September 25, 2026',
@@ -5464,10 +5480,10 @@ _badge('b.debtfree', 'b', '🎉', 'Debt-free',
     function(){ return monthsSooner() >= t[0]; },
     function(){ return _near(monthsSooner(), t[0], _monthsLeft); });
 });
-_badge('c.roll.1', 'c', '🔁', 'First minimum rolled',
+_badge('c.roll.1', 'c', '🔁', 'First minimum rolled over',
   'A cleared card’s minimum is now going to the next debt instead.',
   function(){ return rolledOverTotal() > 0; });
-[[100,'$100 a month rolled'],[250,'$250 a month rolled'],[500,'$500 a month rolled']].forEach(function(t){
+[[100,'$100/mo rolled over'],[250,'$250/mo rolled over'],[500,'$500/mo rolled over']].forEach(function(t){
   _badge('c.roll.'+t[0], 'c', '🔁', t[1],
     fmt(t[0]) + ' a month from cleared cards is going to your remaining debts.',
     function(){ return rolledOverTotal() >= t[0]; },
@@ -5594,6 +5610,11 @@ function showSection(id) {
   // v1.30.0 — Settings is static markup (backup, theme, premium, update check);
   // its state is applied by render()/applyPremiumState(), so no render call here.
   if (id === 'strategy') renderStrategy();
+  // v1.50.0 — the Balance Transfer Modeler moved to What If.
+  if (id === 'whatif' && typeof renderTransfer === 'function') renderTransfer();
+  // v1.50.0 — which tabs get used. GA could not answer a single placement
+  // question before this. Tab name only; nothing from the user's data.
+  if (typeof trackShare === 'function') trackShare('tab_view', { _category: 'navigation', tab: id });
 }
 
 // ═══════════════════════════════════════════
@@ -5928,6 +5949,30 @@ function getPlanSim() {
   return res;
 }
 
+// v1.50.0 — how much of the plan's month 1 (this calendar month) has not been
+// logged yet, per debt, largest first. Month 1 of getPlanSim() already nets
+// what's been paid this month; a pending payment dated this month is applied
+// in month 1 too, but it's already on the books, so it isn't "still planned".
+function stillPlannedThisMonth() {
+  const sim = getPlanSim();
+  if (!sim || !sim.monthlyData || !sim.monthlyData.length) return null;
+  const m1 = sim.monthlyData[0];
+  if (!m1 || m1.month !== 1 || !m1.amort) return null;
+  const ym = monthKeyOf(new Date());
+  const pend = {};
+  (payments || []).forEach(function(p) {
+    if (p.pending && String(p.date || '').slice(0, 7) === ym) pend[p.debtId] = (pend[p.debtId] || 0) + (parseFloat(p.amount) || 0);
+  });
+  const rows = [];
+  Object.keys(m1.amort).forEach(function(id) {
+    const d = debts.find(function(x) { return String(x.id) === String(id); });
+    const amt = (m1.amort[id].paid || 0) - (pend[id] || 0);
+    if (d && amt >= 1) rows.push({ id: d.id, name: d.name, amount: amt });
+  });
+  rows.sort(function(a, b) { return b.amount - a.amount; });
+  return { total: rows.reduce(function(t, r) { return t + r.amount; }, 0), rows: rows };
+}
+
 // The do-nothing counterfactual: minimums only, no lumps, no rollover.
 // Used by the Interest Saved stat.
 function getBaselineSim() {
@@ -6053,7 +6098,12 @@ function renderAmortization() {
   var totalInt = rows.reduce(function(a, r){ return a + r.interest; }, 0);
   var totalPaid = rows.reduce(function(a, r){ return a + r.paid; }, 0);
   if (note) {
-    note.textContent = rows.length + (rows.length === 1 ? ' month' : ' months')
+    // v1.50.0 — a date range, not "12 months": the Dashboard counts months
+    // AWAY (11) and this counted payments (12), so the two read as disagreeing.
+    var _first = monthLabel(planMonthDate(rows[0].month));
+    var _last  = monthLabel(planMonthDate(rows[rows.length - 1].month));
+    note.textContent = (_first === _last ? _first : _first + ' \u2013 ' + _last)
+      + ' · ' + rows.length + (rows.length === 1 ? ' monthly payment' : ' monthly payments')
       + ' · ' + fmt(totalPaid) + ' paid, of which ' + fmt(totalInt) + ' is interest';
   }
   if (more) {
@@ -6144,7 +6194,7 @@ function exportAmortizationCsv() {
   lines.push(['Summary'].map(csvCell).join(','));
   lines.push(['Strategy', AMORT_STRAT_LABEL[strategy] || strategy].map(csvCell).join(','));
   lines.push(['Months to debt-free', sim.months].map(csvCell).join(','));
-  lines.push(['Debt-free date', monthLabel(planMonthDate(sim.months))].map(csvCell).join(','));
+  lines.push(['Freedom Date', monthLabel(planMonthDate(sim.months))].map(csvCell).join(','));
   lines.push(['Total interest', csvMoney(sim.totalInterest)].map(csvCell).join(','));
   lines.push(['Monthly extra (incl. rolled minimums)', csvMoney(planExtra())].map(csvCell).join(','));
   lines.push(['Generated', localDateStr()].map(csvCell).join(','));
@@ -7026,6 +7076,13 @@ function addDebt() {
     const feeRate = parseAmount(document.getElementById('debt-transfer-fee').value) || 0;
     transferFee = Math.round(balance * (feeRate / 100) * 100) / 100;
     finalBalance = balance + transferFee;
+    // v1.50.0 — a promo with no end date was saved and modelled at 0% for
+    // ever: a $5,000 card at 24.99% after the promo showed $0 interest
+    // instead of ~$3,000. The end date is what the whole promo model hangs on.
+    if (!promoEnd) {
+      showFormError('Enter the date the 0% period ends, so the plan knows when interest starts.', 'debt-promo-end', 'debt-promo-end');
+      return;
+    }
     if (isNaN(postPromoApr)) {
       showFormError('Enter the rate this card goes to after the 0% period ends, so the plan knows what happens next.', 'debt-post-promo-apr');
       return;
@@ -7499,6 +7556,11 @@ function saveEditDebt() {
     promoApr     = parseAmount(document.getElementById('edit-promo-apr').value) || 0;
     promoEnd     = document.getElementById('edit-promo-end').value || null;
     postPromoApr = parseAmount(document.getElementById('edit-post-promo-apr').value);
+    // v1.50.0 — same rule as Add: no end date, no promo model.
+    if (!promoEnd) {
+      showFormError('Enter the date the 0% period ends, so the plan knows when interest starts.', 'edit-promo-end');
+      return;
+    }
     if (isNaN(postPromoApr)) {
       // v1.34.1 — was a raw alert(): jarring, and invisible in analytics, so
       // promo-flow failures never counted towards add_debt_error at all.
@@ -7614,7 +7676,7 @@ function saveEditDebt() {
 // ═══════════════════════════════════════════
 // v1.16.0 — shared payment-logging core used by both the dashboard form and
 // the floating quick-log modal. Returns 'future' | 'logged' | null.
-function logPaymentCore(debtId, amount, date) {
+function logPaymentCore(debtId, amount, date, note) {
   if (isNaN(amount) || amount <= 0) { alert('Enter a valid payment amount.'); return null; }
   const d = debts.find(function(x) { return x.id === debtId; });
   if (!d) return null;
@@ -7623,14 +7685,18 @@ function logPaymentCore(debtId, amount, date) {
   const pid = Date.now();
   if (date > today) {
     // Future date — save as pending; no balance change until it arrives
-    payments.push({ id: pid, debtId: debtId, debtName: d.name, amount: amount, date: date, eliminated: false, pending: true });
+    const _prow = { id: pid, debtId: debtId, debtName: d.name, amount: amount, date: date, eliminated: false, pending: true };
+    if (note) _prow.note = note;
+    payments.push(_prow);
     save(); render();
     return { status: 'future', paymentId: pid, debtName: d.name, amount: amount };
   }
 
   const actualPayment = Math.min(amount, d.balance);
   d.balance = Math.max(0, d.balance - actualPayment);
-  payments.push({ id: pid, debtId: debtId, debtName: d.name, amount: actualPayment, date: date, eliminated: d.balance <= 0 });
+  const _row = { id: pid, debtId: debtId, debtName: d.name, amount: actualPayment, date: date, eliminated: d.balance <= 0 };
+  if (note) _row.note = note;
+  payments.push(_row);
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save(); render();
   return { status: 'logged', paymentId: pid, debtName: d.name, amount: actualPayment };
@@ -7663,9 +7729,11 @@ function logPayment() {
   const debtId = parseInt(document.getElementById('log-debt-select').value);
   const amount = parseAmount(document.getElementById('log-amount').value);
   const date = document.getElementById('log-date').value || localDateStr();
-  const result = logPaymentCore(debtId, amount, date);
+  const _oneoff = document.getElementById('log-oneoff');
+  const result = logPaymentCore(debtId, amount, date, (_oneoff && _oneoff.checked) ? 'One-off' : null);
   if (result === null) return;
   document.getElementById('log-amount').value = '';
+  if (_oneoff) _oneoff.checked = false;
   if (result.status === 'future') {
     const warn = document.getElementById('payment-log-future-warn');
     if (warn) {
@@ -8931,6 +8999,15 @@ function updateWhatIf() {
 
   const dashboardExtra = planExtra();   // v1.38.0 — user's extra + rolled minimums
   const scenarioExtra  = dashboardExtra + sliderExtra;
+  // v1.50.0 — the closing card only appears when no monthly extra is set.
+  // It used to promise "years off" and "thousands" to everyone, including
+  // people already on an 11-month plan.
+  const _noExtraCta = document.getElementById('wi-noextra-cta');
+  if (_noExtraCta) {
+    const _ep = document.getElementById('extra-payment');
+    const _own = parseAmount(_ep ? _ep.value : extraMonthly) || 0;
+    _noExtraCta.style.display = _own > 0 ? 'none' : '';
+  }
 
   // Baseline: current plan with all planned lump sums, no slider additions.
   // v1.17.0 — memoized: identical inputs to the Dashboard sim.
@@ -9032,13 +9109,9 @@ function updateWhatIf() {
     el.style.webkitTransform = '';
   });
 
-  // Populate windfall debt select
-  var ws = document.getElementById('wi-windfall-debt');
-  if (ws) {
-    ws.innerHTML = activeDebts.map(function(d) {
-      return '<option value="' + d.id + '">' + escapeHtml(d.name) + '</option>';
-    }).join('');
-  }
+  // v1.50.0 — the windfall select was populated here; the card is gone
+  // (it logged real payments from the What If tab). One-off payments are
+  // tagged from the Payment Log form instead.
 }
 
 // ═══════════════════════════════════════════
@@ -9084,15 +9157,16 @@ function applyPremiumState() {
 // users see the real card; free users see the blurred teaser.
 function applyDataCardVisibility() {
   const hasActive = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; }).length > 0;
-  [['cashflow-card','cashflow-teaser'], ['roadmap-card','roadmap-teaser']].forEach(function(pair) {
+  // v1.50.0 — one teaser now covers both blocks of the merged Payoff Order card.
+  [['cashflow-card', null], ['roadmap-card','roadmap-teaser']].forEach(function(pair) {
     const real = document.getElementById(pair[0]);
-    const teaser = document.getElementById(pair[1]);
+    const teaser = pair[1] ? document.getElementById(pair[1]) : null;
     if (real) real.style.display = (isPremium && hasActive && real.dataset.hasContent !== '0') ? 'block' : 'none';
     const showTeaser = (!isPremium && hasActive);
     if (teaser) teaser.style.display = showTeaser ? 'block' : 'none';
     // v1.39.3 — how many free users with real data ever SEE the upsell.
     // Deduped: this function runs on every render.
-    if (showTeaser) {
+    if (showTeaser && pair[1]) {
       trackOnce('teaser:' + pair[1], 'teaser_shown', {
         _category: 'revenue',
         placement: pair[1].replace('-teaser', '')
@@ -9925,37 +9999,8 @@ function deletePayment(paymentId) {
   save(); render();
 }
 
-function applyWindfall() {
-  const debtId = parseInt(document.getElementById('wi-windfall-debt').value);
-  const amt = parseAmount(document.getElementById('wi-windfall-amt').value);
-  if (isNaN(amt) || amt <= 0) return;
-
-  const d = debts.find(x=>x.id===debtId);
-  if (!d) return;
-
-  const old = d.balance;
-  d.balance = Math.max(0, d.balance - amt);
-  const saved = old - d.balance;
-  const paymentId = Date.now();
-
-  payments.push({ id: paymentId, debtId, debtName: d.name, amount: saved, date: localDateStr(), eliminated: d.balance <= 0, note: 'Windfall' });
-
-  document.getElementById('windfall-result').innerHTML = `
-    <div class="alert" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <span>✅ Applied ${fmt(saved)} to <strong>${escapeHtml(d.name)}</strong>. New balance: <strong>${fmtDec(d.balance)}</strong>.${d.balance === 0 ? ' 🎉 <strong>Debt eliminated!</strong>' : ''}</span>
-      <button class="btn btn-ghost" style="font-size:0.75rem;padding:6px 14px;white-space:nowrap;border-color:rgba(255,107,107,0.4);color:var(--accent3);" onclick="undoWindfall(${paymentId})">↩ Undo</button>
-    </div>`;
-
-  document.getElementById('wi-windfall-amt').value = '';
-  save(); render(); updateWhatIf();
-}
-
-function undoWindfall(paymentId) {
-  deletePayment(paymentId);
-  document.getElementById('windfall-result').innerHTML = `
-    <div class="alert warning">↩ Windfall undone — balance restored.</div>`;
-  updateWhatIf();
-}
+// v1.50.0 — applyWindfall()/undoWindfall() removed with the What If card.
+// A one-off payment is logged from the Payment Log with the "One-off" box.
 
 // ═══════════════════════════════════════════
 //  RENDER
@@ -10636,7 +10681,12 @@ function renderMoneyPlan() {
   if (billTotal > 0) parts.push('bills ' + fmt(billTotal));
   if (fundTotal > 0) parts.push('set aside ' + fmt(fundTotal));
   parts.push('minimums ' + fmt(mins) + ' (all accounts)');
-  if (extra > 0) parts.push('extra ' + fmt(extra));
+  // v1.50.0 — "extra" means the amount the user set, nothing else. Rolled-over
+  // minimums are named on their own so $800 and $1,260 are never both "extra".
+  var _ownX = parseAmount((document.getElementById('extra-payment') || {}).value) || 0;
+  var _rollX = rolledOverTotal();
+  if (_ownX > 0) parts.push('extra ' + fmt(_ownX));
+  if (_rollX > 0) parts.push('rolled over ' + fmt(_rollX));
   breakdown.textContent = parts.join('  ·  ') + '  =  ' + fmt(committed) + ' a month';
 
   if (!monthlyBudget || monthlyBudget <= 0) {
@@ -11015,10 +11065,17 @@ function renderUpcoming() {
         ? dueDateIn(_now.getFullYear(), _now.getMonth() + 1, r.dueDay) : r.date;
       return { name: r.name, date: d };
     });
-    var next = owed.sort(function (a, b) { return a.date - b.date; })[0];
+    owed.sort(function (a, b) { return a.date - b.date; });
+    var next = owed[0];
+    // v1.50.0 — everything due on that first date, not just one of it. With
+    // Discover and a bill both due Oct 7, it named whichever sorted first.
+    var sameDay = next ? owed.filter(function (o) { return o.date.getTime() === next.date.getTime(); })
+                              .map(function (o) { return o.name; }) : [];
+    var namesStr = sameDay.length <= 1 ? (sameDay[0] || '')
+      : sameDay.slice(0, -1).join(', ') + ' and ' + sameDay[sameDay.length - 1];
     quiet.style.display = '';
     quiet.textContent = 'Nothing due in the next ' + DUE_SOON_DAYS + ' days.'
-      + (next ? ' Next up: ' + next.name + ' on ' + dueDayLabel(next.date) + '.' : '');
+      + (next ? ' Next up: ' + namesStr + ' on ' + dueDayLabel(next.date) + '.' : '');
     return;
   }
 
@@ -11154,12 +11211,45 @@ function renderNextDebt() {
       const _parts = [];
       if (_min > 0) _parts.push(fmt(_min) + ' minimum');
       if (_userExtra > 0) _parts.push(fmt(_userExtra) + ' extra');
-      if (_rolled > 0) _parts.push(fmt(_rolled) + ' freed up');
+      if (_rolled > 0) _parts.push(fmt(_rolled) + ' rolled over');
       document.getElementById('nd-plan-break').textContent =
         _sendRaw >= target.balance ? 'the balance is smaller than this month\'s payment'
         : _parts.length > 1 ? _parts.join(' + ') : '';
     } else {
       _planBox.style.display = 'none';
+    }
+  }
+
+  // v1.50.0 — the heading only talks about "your extra" when there is one.
+  const _flagEl = document.getElementById('next-debt-flag');
+  if (_flagEl) _flagEl.textContent = '\u25b8 ' + (planExtra() > 0 ? 'WHERE YOUR EXTRA GOES' : 'NEXT DEBT IN LINE');
+
+  // v1.50.0 — what the plan still counts on THIS month. The plan's month 1
+  // is the current calendar month (anchored in v1.38.0): whatever it pays in
+  // month 1 that isn't logged yet is money the Freedom Date assumes arrives
+  // before the 1st. Nothing showed it, so on the 1st the date simply moved
+  // (Sep 27: $740 to Discover; unlogged, Oct 1 read Sep 2027 instead of Aug).
+  const _monthEl = document.getElementById('nd-plan-month');
+  if (_monthEl) {
+    const _left = stillPlannedThisMonth();
+    // Only for people who log payments: someone who has never logged one has
+    // "not logged" for every debt, and the line would just restate the month.
+    const _cut = new Date(); _cut.setDate(_cut.getDate() - 45);
+    const _cutStr = localDateStr(_cut);
+    const _logs = (payments || []).some(function(p) { return !p.pending && String(p.date || '') >= _cutStr; });
+    if (_logs && _left && _left.total >= 1) {
+      const _mName = new Date().toLocaleDateString('en-US', { month: 'long' });
+      // Name the debt this card is about when it's in the list.
+      const _mine = _left.rows.find(function(r) { return r.id === target.id; });
+      const _top = _mine || _left.rows[0];
+      _monthEl.textContent = 'Still planned for ' + _mName + ': ' + fmt(_left.total) +
+        (_left.rows.length === 1 ? ' to ' + _top.name
+          : ' across ' + _left.rows.length + ' debts, ' + fmt(_top.amount) + ' of it to ' + _top.name) +
+        '. Your Freedom Date counts on it.';
+      _monthEl.style.display = 'block';
+      if (_planBox) _planBox.style.display = 'block';
+    } else {
+      _monthEl.style.display = 'none';
     }
   }
 
@@ -11241,7 +11331,7 @@ function renderMonthlySummary() {
         return '<label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:5px 0;">' +
           '<input type="checkbox" ' + (x.r.keep ? '' : 'checked') + ' onchange="toggleRolledMinimum(' + x.d.id + ')" />' +
           '<span style="flex:1;font-size:0.8rem;">' + escapeHtml(x.d.name) + ' <span style="color:var(--text-muted);">\u00b7 ' + fmt(x.r.amount) + '/mo</span></span>' +
-          '<span style="font-size:0.7rem;color:var(--text-muted);">' + (x.r.keep ? 'kept' : 'rolled into plan') + '</span></label>';
+          '<span style="font-size:0.7rem;color:var(--text-muted);">' + (x.r.keep ? 'kept' : 'rolled over') + '</span></label>';
       }).join('');
     }
   }
@@ -11357,12 +11447,14 @@ function renderDebtList() {
   const _activeCount = debts.filter(function(d) { return d.balance > 0; }).length;
   document.getElementById('debt-count').textContent = _activeCount + ' account' + (_activeCount !== 1 ? 's' : '');
 
+  { const _dl = document.getElementById('debt-list-card'); if (_dl) _dl.style.display = ''; }
   if (!_activeCount) {
     // Distinguish "nothing added yet" from "you beat all of them".
     list.innerHTML = debts.length
       ? `<div class="empty-state"><div class="icon">&#127942;</div><p><strong>Every debt eliminated.</strong><br>Your paid-off accounts are in the trophy case below.</p></div>`
-      : `<div class="empty-state"><div class="icon">💳</div><p>No debts added yet.<br>Add your first debt above to start building your payoff plan.</p></div>`;
+      : `<div class="empty-state"><div class="icon">💳</div><p>No debts added yet.<br>Add your first debt below to start building your payoff plan.</p></div>`;
     renderPaidOffDebts();
+    { const _dl = document.getElementById('debt-list-card'); if (_dl) _dl.style.display = debts.length ? '' : 'none'; }
     document.getElementById('payment-log-card').style.display = debts.length ? 'block' : 'none';
     return;
   }
@@ -11427,6 +11519,11 @@ function renderDebtList() {
       } else {
         promoBadge = `<span class="tag tag-muted" style="margin-left:6px;font-size:0.58rem;">promo ended</span>`;
       }
+    } else if (d.hasPromo && !d.promoEnd && d.balance > 0) {
+      // v1.50.0 — saved before the end date was required. Modelled at the
+      // promo rate with no end, so the plan understates interest. Say so.
+      promoBadge = `<span class="tag tag-warn" style="margin-left:6px;font-size:0.58rem;">0% end date missing</span>`;
+      promoInfo = `<div class="debt-stat" style="grid-column:1/-1"><span class="debt-stat-label">Add the date the 0% ends (Edit) &mdash; until then the plan treats this card as 0% with no end.</span></div>`;
     }
     const transferFeeInfo = d.transferFee > 0
       ? `<div class="debt-stat"><span class="debt-stat-label">Transfer Fee</span><span class="debt-stat-val" style="color:var(--accent4)">${fmtDec(d.transferFee)}</span></div>`
@@ -11604,7 +11701,7 @@ function renderPortfolioTable(list) {
     '<th data-k="balance" class="pf-th pf-num">Balance ' + arrow('balance') + '</th>' +
     '<th data-k="apr" class="pf-th pf-num">APR ' + arrow('apr') + '</th>' +
     '<th data-k="min" class="pf-th pf-num">Min ' + arrow('min') + '</th>' +
-    '<th data-k="order" class="pf-th pf-num">Clear&nbsp;by ' + arrow('order') + '</th>' +
+    '<th data-k="order" class="pf-th pf-num">Payoff&nbsp;date ' + arrow('order') + '</th>' +
     '<th data-k="interest" class="pf-th pf-num">Interest ' + arrow('interest') + '</th>' +
     '<th class="pf-th"></th>' +
     '</tr></thead>';
@@ -11661,7 +11758,7 @@ function renderPortfolioTable(list) {
             tail = ' \u00b7 <strong>your plan doesn\u2019t clear it first</strong>';
           } else if (_monthsToPromo - _clears <= 1) {
             cls = 'promo-tight';
-            tail = ' \u00b7 cleared with little to spare';
+            tail = ' \u00b7 cleared within a month of the 0% ending';
           }
           promoTag = '<div class="pf-promo ' + cls + '">0% until <strong>' + _endStr +
                      '</strong>, then ' + (d.postPromoApr != null ? d.postPromoApr : (d.realApr || 0)) + '%' + tail + '</div>';
@@ -11670,6 +11767,9 @@ function renderPortfolioTable(list) {
                      (d.postPromoApr != null ? d.postPromoApr : (d.realApr || 0)) + '%</div>';
         }
       }
+    } else if (d.hasPromo && !d.promoEnd && d.balance > 0) {
+      // v1.50.0 — see the free card: flag a promo saved without an end date.
+      promoTag = '<div class="pf-promo promo-risk">0% end date missing \u2014 the plan treats this card as 0% with no end. Add the date with Edit.</div>';
     }
 
     // Progress: how much of this debt is already gone.
@@ -11721,7 +11821,7 @@ function renderPortfolioTable(list) {
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
-      '<td class="pf-td pf-num" data-label="Clear by">' + orderCell + '</td>' +
+      '<td class="pf-td pf-num" data-label="Payoff date">' + orderCell + '</td>' +
       '<td class="pf-td pf-num" data-label="Interest">' + fmtDec(r.interest) + '</td>' +
       '<td class="pf-td pf-num pf-actions" style="white-space:nowrap;">' +
         '<button class="btn btn-ghost" style="font-size:0.66rem;padding:4px 9px;" onclick="openEditModal(' + d.id + ')">Edit</button> ' +
@@ -12043,7 +12143,7 @@ function renderCashflow() {
       '<div><div class="cashflow-event-name">' + title + '</div>' +
       '<div class="cashflow-event-date">' + monthLabel(g.date) + '</div></div>' +
       '<div style="text-align:right;"><div class="cashflow-event-amt">+' + fmtDec(g.freed) + '/mo</div>' +
-      '<div class="cashflow-event-running">' + fmtDec(g.remainingObligation) + '/mo still committed</div></div>' +
+      '<div class="cashflow-event-running">' + fmtDec(g.remainingObligation) + '/mo still in minimums</div></div>' +
       '</div>';
     if (multi) {
       html += '<div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:5px;">';
@@ -12078,8 +12178,10 @@ function renderRoadmap() {
     return '<div class="roadmap-step">' +
       '<div class="roadmap-node"></div>' +
       '<div class="roadmap-step-body">' +
-      '<div class="roadmap-step-title">' + escapeHtml(ev.name) + ' eliminated</div>' +
-      '<div class="roadmap-step-sub">' + monthLabel(ev.date) + ' · frees ' + fmtDec(ev.freed) + '/mo</div>' +
+      '<div class="roadmap-step-title">' + escapeHtml(ev.name) + ' paid off</div>' +
+      // v1.50.0 — one name for the idea everywhere: the minimum "rolls over".
+      '<div class="roadmap-step-sub">' + monthLabel(ev.date) + ' · ' + fmtDec(ev.freed) + '/mo rolls over' +
+        (ev.remainingObligation > 0.005 ? ' · ' + fmtDec(ev.remainingObligation) + '/mo still in minimums' : ' · no minimums left') + '</div>' +
       '</div></div>';
   }).join('');
   // Final debt-free milestone
@@ -12087,7 +12189,7 @@ function renderRoadmap() {
   html += '<div class="roadmap-step">' +
     '<div class="roadmap-node roadmap-node--final"></div>' +
     '<div class="roadmap-step-body">' +
-    '<div class="roadmap-step-title">Debt-free 🎉</div>' +
+    '<div class="roadmap-step-title">Freedom Date 🎉</div>' +
     '<div class="roadmap-step-sub">' + monthLabel(freeDate) + '</div>' +
     '</div></div>';
   track.innerHTML = html;
@@ -13116,7 +13218,7 @@ function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, tota
     const apr = d.apr || 0;
     const monthlyInt = d.balance * apr / 100 / 12;
     if (monthlyInt > 0.01) {
-      return 'Bleeding ~$' + Math.round(monthlyInt) + '/mo at ' + apr.toFixed(2) + '% APR';
+      return '~$' + Math.round(monthlyInt) + '/mo interest at ' + apr.toFixed(2) + '% APR';
     }
     return apr.toFixed(2) + '% APR';
   }
@@ -13312,7 +13414,7 @@ function renderStrategy() {
       document.getElementById('best-strategy-text').innerHTML = _tied
         ? 'Avalanche and Snowball come out <strong>effectively tied</strong> for your debts \u2014 about ' +
           fmt(Math.abs(av.totalInterest - sb.totalInterest)) + ' apart, which is within the margin of this comparison. ' +
-          'Pick whichever you\u2019ll actually stick with.'
+          'Either order produces a similar result.'
         : 'The <strong>' + best + '</strong> method saves you roughly <strong>' + fmt(savings) +
           ' more in interest</strong> on your debts' +
           (fairBasis ? ', comparing each strategy with your lump sums placed at their best.' : '.');
@@ -13360,10 +13462,10 @@ function renderStrategy() {
             ' less in interest</strong> than ' + bestNamedLabel + '.';
         } else if (gain > 1) {
           headline = 'For your debts this comes out within about ' + fmt(Math.max(1, gain)) +
-            ' of ' + bestNamedLabel + ' \u2014 <strong>much the same</strong>. Pick whichever you\u2019ll stick with.';
+            ' of ' + bestNamedLabel + ' \u2014 <strong>much the same</strong>. Either order produces a similar result.';
         } else {
           headline = 'For your debts this works out <strong>much the same as ' + bestNamedLabel +
-            '</strong>. Pick whichever you\u2019ll stick with.';
+            '</strong>. Either order produces a similar result.';
         }
 
         const basis = oo.exhaustive
@@ -13447,7 +13549,7 @@ function renderStrategy() {
         if (_titleEl) _titleEl.textContent = 'Your lump sums are well placed';
         if (_txtEl) {
           _txtEl.innerHTML = 'We checked other ways to split your scheduled lump sums across your debts &mdash; none beats what you have now under ' +
-            _stratLabel + '. Nothing to change.';
+            _stratLabel + '. No other split lowers the interest.';
         }
         if (_actionsEl) _actionsEl.style.display = 'none';
       }
@@ -13561,7 +13663,7 @@ function renderStrategy() {
       </td>
       <td data-label="Balance">${fmtDec(d.balance)}</td>
       <td data-label="APR" style="color:${d.apr > 20 ? 'var(--accent3)' : d.apr > 10 ? 'var(--accent4)' : 'var(--text-muted)'}">${d.apr}%</td>
-      <td data-label="Est. payoff">${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}${schedCell}</td>
+      <td data-label="Payoff date">${date.toLocaleDateString('en-US',{month:'short',year:'numeric'})}${schedCell}</td>
       <td data-label="Interest paid" style="color:var(--accent3)">${fmt(debtInterest)}</td>
     </tr>`;
   }).join('');
@@ -13872,10 +13974,6 @@ function populateDebtSelects() {
     }
   }
 
-  const wsel = document.getElementById('wi-windfall-debt');
-  wsel.innerHTML = activeDebts.length
-    ? activeDebts.map(d=>`<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('')
-    : '<option value="">No active debts</option>';
 }
 
 // ═══════════════════════════════════════════

@@ -1,10 +1,18 @@
 {
-  "version": "1.49.2",
-  "releaseDate": "2026-09-25",
-  "releaseName": "A sync could duplicate a payment",
+  "version": "1.50.0",
+  "releaseDate": "2026-09-27",
+  "releaseName": "A clearer plan",
   "notes": [
-    "Fixed: syncing could bring back a scheduled payment that had already gone through, as a second copy still marked pending — which would then have been applied again the next time you opened the app, moving your balance by an amount you never paid. Syncing now recognises a scheduled payment and the applied version of it as the same payment.",
-    "If a sync already left you with a duplicate, this update removes it for you the first time you open the app, before anything can be applied. Only a pending copy that exactly matches a payment already applied is removed, and you are told it happened.",
-    "Removed a stray amber line that ran down the inside of the Google Drive dialog."
+    "Your Freedom Date now shows what it is counting on this month. If part of this month’s plan hasn’t been logged yet, the card at the top says how much and where — for example “Still planned for September: $740 to Discover.” Before, the date simply moved on the 1st with no explanation.",
+    "The Strategy tab is shorter and reads in order: your plan, then its result. Payoff Order now sits directly under your monthly plan, and the Roadmap and Cash-Flow views are part of it instead of three separate cards listing the same debts and dates.",
+    "Your Debts moved up on the Dashboard, above the Payment Log and the Add a Debt form. Paid Off Debts moved above the badges on Wins.",
+    "Coming Up names everything due on the same day, not just one of them.",
+    "The Balance Transfer Modeler moved to the What If tab, with the other “what if” tools.",
+    "A 0% card saved without a promo end date was treated as 0% forever, so its interest showed as $0. The end date is now required, and any card already saved without one is flagged so you can add it.",
+    "On phones, the Settings tab was hidden off the right edge of the screen. All five tabs now fit.",
+    "Tapping a locked Premium preview on the Strategy tab did nothing. It now takes you to the unlock section.",
+    "The One-Time Windfall box on What If recorded a real payment from a tab that is otherwise only “what if”. It’s gone: to log a tax refund or bonus, use Log Payment and tick “One-off payment”.",
+    "One name for each thing: “Freedom Date” for the day you’re debt-free, “Payoff date” for each debt, “rolled over” for a paid-off debt’s minimum that moves to the next one, and “extra” only for the amount you set.",
+    "Clearer wording on the strategy options and a few other spots, and the amortization table no longer cuts off its Balance column on phones."
   ]
 }
