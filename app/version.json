@@ -1,18 +1,12 @@
 {
-  "version": "1.50.0",
-  "releaseDate": "2026-09-27",
-  "releaseName": "A clearer plan",
+  "version": "1.51.0",
+  "releaseDate": "2026-10-01",
+  "releaseName": "What’s next?",
   "notes": [
-    "Your Freedom Date now shows what it is counting on this month. If part of this month’s plan hasn’t been logged yet, the card at the top says how much and where — for example “Still planned for September: $740 to Discover.” Before, the date simply moved on the 1st with no explanation.",
-    "The Strategy tab is shorter and reads in order: your plan, then its result. Payoff Order now sits directly under your monthly plan, and the Roadmap and Cash-Flow views are part of it instead of three separate cards listing the same debts and dates.",
-    "Your Debts moved up on the Dashboard, above the Payment Log and the Add a Debt form. Paid Off Debts moved above the badges on Wins.",
-    "Coming Up names everything due on the same day, not just one of them.",
-    "The Balance Transfer Modeler moved to the What If tab, with the other “what if” tools.",
-    "A 0% card saved without a promo end date was treated as 0% forever, so its interest showed as $0. The end date is now required, and any card already saved without one is flagged so you can add it.",
-    "On phones, the Settings tab was hidden off the right edge of the screen. All five tabs now fit.",
-    "Tapping a locked Premium preview on the Strategy tab did nothing. It now takes you to the unlock section.",
-    "The One-Time Windfall box on What If recorded a real payment from a tab that is otherwise only “what if”. It’s gone: to log a tax refund or bonus, use Log Payment and tick “One-off payment”.",
-    "One name for each thing: “Freedom Date” for the day you’re debt-free, “Payoff date” for each debt, “rolled over” for a paid-off debt’s minimum that moves to the next one, and “extra” only for the amount you set.",
-    "Clearer wording on the strategy options and a few other spots, and the amortization table no longer cuts off its Balance column on phones."
+    "New: a “What’s next?” guide. Tap Next at the top of any tab to see where you are and what to do next — add a debt, fill in due dates, enter your monthly plan, choose a payoff order, log a payment, back up. Each step has a button that takes you straight there.",
+    "Until those six steps are done, the next one shows at the top of the Dashboard. Hide it with the × any time; the Next button always brings the full list back.",
+    "Once you’re set up, the same list shows what needs attention right now, like payments due this week or a backup that’s getting old.",
+    "“Still planned for this month” now appears only in the last 10 days of a month, when it actually matters, instead of from the 1st.",
+    "In the last days of a month, Coming Up could leave out a card or bill due early the next month if you had already paid it for the current month — on September 30, a debt due October 7 could be missing. Everything due in the next 7 days now shows, and marking a bill from that row marks it for the month it’s due."
   ]
 }

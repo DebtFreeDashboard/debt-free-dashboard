@@ -743,6 +743,44 @@
     transition: all 0.18s ease;
     white-space: nowrap;
   }
+  /* v1.51.0 — guide button: same chrome as the install link beside it. */
+  .guide-hdr-btn { position:relative; display:inline-flex; align-items:center; gap:6px; background:none; cursor:pointer;
+    color:var(--text-muted); font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.04em; text-transform:uppercase;
+    padding:7px 12px; border:1px solid var(--border2); border-radius:8px; white-space:nowrap; transition:all .18s ease; }
+  .guide-hdr-btn:hover { color:var(--accent); border-color:var(--accent); }
+  .guide-hdr-icon { font-size:0.9rem; line-height:1; color:var(--accent); }
+  .guide-badge { position:absolute; top:-6px; right:-6px; min-width:17px; height:17px; padding:0 4px; border-radius:9px;
+    background:var(--accent); color:#fff; font-size:0.62rem; font-weight:700; line-height:17px; text-align:center; letter-spacing:0; }
+  .guide-badge.dot { min-width:9px; width:9px; height:9px; padding:0; top:-3px; right:-3px; }
+  .guide-card { position:relative; border-left:3px solid var(--accent); }
+  .guide-hide { position:absolute; top:10px; right:12px; background:none; border:0; font-size:1.2rem; color:var(--text-dim); cursor:pointer; line-height:1; }
+  .guide-flag { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.1em; color:var(--accent); margin-bottom:8px; }
+  .guide-progress { color:var(--text-muted); margin-left:6px; }
+  .guide-title { font-weight:700; font-size:1.05rem; color:var(--text); margin-bottom:6px; padding-right:24px; }
+  .guide-why { font-size:0.84rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px; }
+  .guide-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .guide-bar { height:4px; background:var(--surface3); border-radius:2px; margin-top:14px; overflow:hidden; }
+  .guide-bar-fill { height:100%; background:var(--accent); width:0; transition:width .3s ease; }
+  .gm-section { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin:16px 0 8px; }
+  .gm-next { background:rgba(0,168,132,0.08); border:1px solid rgba(0,168,132,0.25); border-radius:var(--radius-sm); padding:12px 14px; }
+  .gm-row { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+  .gm-row:last-child { border-bottom:0; }
+  .gm-check { flex:0 0 20px; height:20px; border-radius:50%; border:1.5px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:transparent; margin-top:1px; }
+  .gm-row.done .gm-check { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .gm-text { flex:1; min-width:0; }
+  .gm-title { font-size:0.88rem; font-weight:600; color:var(--text); }
+  .gm-row.done .gm-title { color:var(--text-muted); font-weight:500; }
+  .gm-why { font-size:0.76rem; color:var(--text-muted); line-height:1.45; margin-top:2px; }
+  .gm-btn { flex:0 0 auto; font-size:0.72rem; padding:6px 10px; }
+  .gm-skip { background:none; border:0; color:var(--text-dim); font-size:0.72rem; text-decoration:underline; cursor:pointer; padding:4px 0 0; }
+  @media (max-width: 420px) { .guide-hdr-text { display:none; } .guide-hdr-btn { padding:7px 10px; } }
+  /* The full list can be taller than a phone screen; the shared .modal has no
+     scroll of its own, so this one gets it. */
+  #guide-modal { align-items:flex-start; }
+  #guide-modal .modal { max-height:calc(100vh - 40px); max-height:calc(100dvh - 40px); overflow-y:auto; padding:22px; -webkit-overflow-scrolling:touch; }
+  .gm-row { flex-wrap:wrap; }
+  .gm-text { flex:1 1 200px; }
+  @media (max-width: 480px) { .gm-row .gm-btn { margin-left:30px; } }
   .install-link:hover {
     color: var(--accent);
     border-color: var(--accent);
@@ -2723,6 +2761,10 @@
   <!-- v1.35.0 - reachable from every tab. The dot is the point: a
        timestamp alone doesn't tell you whether it matters, but "there are
        changes not in your backup" does. -->
+  <!-- v1.51.0 — "What's next?" guide, reachable from every tab. -->
+  <button class="guide-hdr-btn" id="guide-btn" type="button" aria-label="What's next?" onclick="openGuide('header')">
+    <span class="guide-hdr-icon" aria-hidden="true">&#10003;</span><span class="guide-hdr-text">Next</span><span class="guide-badge" id="guide-badge" hidden></span>
+  </button>
   <button class="drive-hdr-btn" id="drive-btn" aria-label="Backup status" style="display:none"
           onclick="openDriveSheet()">
     <span class="drive-hdr-icon">&#9729;</span><span class="drive-dot never" id="drive-dot"></span>
@@ -2786,6 +2828,20 @@
          against that balance are one fact, and saying it in two cards is what
          made the top of this tab feel like a wall. The other three figures
          moved below the target card into a quiet three-up strip. -->
+    <!-- v1.51.0 — setup guide card. Shows until the six setup steps are done
+         (or it is hidden); the header button always brings the full list back. -->
+    <div class="card guide-card" id="guide-card" style="display:none">
+      <button type="button" class="guide-hide" aria-label="Hide the setup guide" onclick="hideGuideCard()">&times;</button>
+      <div class="guide-flag">&#9656; NEXT STEP <span class="guide-progress" id="guide-progress"></span></div>
+      <div class="guide-title" id="guide-title"></div>
+      <div class="guide-why" id="guide-why"></div>
+      <div class="guide-actions">
+        <button type="button" class="btn btn-primary" id="guide-go"></button>
+        <button type="button" class="btn btn-ghost" onclick="openGuide('card')">All steps</button>
+      </div>
+      <div class="guide-bar"><div class="guide-bar-fill" id="guide-bar-fill"></div></div>
+    </div>
+
     <div class="card hero-card" id="hero-card">
       <div class="hero-label">Total Owed</div>
       <div class="hero-total" id="stat-total">$0</div>
@@ -3915,6 +3971,16 @@
 
 <!-- v1.16.0 — Floating quick-log payment (button + modal) -->
 <button class="fab-log" id="fab-log">+ Log Payment</button>
+<!-- v1.51.0 — What's next? -->
+<div id="guide-modal" class="modal-overlay hidden" onclick="closeGuide(event)">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title">What&rsquo;s next?</div>
+      <button class="modal-close" aria-label="Close" onclick="closeGuide()">&times;</button>
+    </div>
+    <div id="guide-body"></div>
+  </div>
+</div>
 <div id="duedates-modal" class="modal-overlay hidden" onclick="closeDueSetter(event)">
   <div class="modal" style="max-width:440px;">
     <div class="modal-header">
@@ -3966,7 +4032,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.50.0';
+const APP_VERSION = '1.51.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -3974,6 +4040,20 @@ const APP_VERSION = '1.50.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.0',
+    date: 'October 1, 2026',
+    name: 'What’s next?',
+    whatsNew: [
+      'New: a “What’s next?” guide. Tap Next at the top of any tab to see where you are and what to do next — add a debt, fill in due dates, enter your monthly plan, choose a payoff order, log a payment, back up. Each step has a button that takes you straight there.',
+      'Until those six steps are done, the next one shows at the top of the Dashboard. Hide it with the × any time; the Next button always brings the full list back.',
+      'Once you’re set up, the same list shows what needs attention right now, like payments due this week or a backup that’s getting old.',
+    ],
+    fixes: [
+      'In the last days of a month, Coming Up could leave out a card or bill due early the next month if you had already paid it for the current month — on September 30, a debt due October 7 could be missing. Everything due in the next 7 days now shows, and marking a bill from that row marks it for the month it’s due.',
+      '“Still planned for this month” now appears only in the last 10 days of a month, when it actually matters, instead of from the 1st.',
+    ]
+  },
   {
     version: '1.50.0',
     date: 'September 27, 2026',
@@ -5949,11 +6029,324 @@ function getPlanSim() {
   return res;
 }
 
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.51.0 — "What's next?" GUIDE
+//
+// Reads only what is already saved here and points at the next app action.
+// Every step is about USING the app (enter, choose, log, back up) — never a
+// suggestion about money. Order matters: each step makes the next one useful.
+// Setup = steps 1-6; installing is optional. After setup, the same list shows
+// what currently needs attention (payments due, this month's plan, backups).
+// ══════════════════════════════════════════════════════════════════════
+var GUIDE_KEY = 'debtfree_guide';
+function guideState() {
+  var st = null;
+  try { st = JSON.parse(localStorage.getItem(GUIDE_KEY) || 'null'); } catch (e) {}
+  if (!st || typeof st !== 'object') {
+    st = { v: 1, created: localDateStr(new Date()) };
+    try { localStorage.setItem(GUIDE_KEY, JSON.stringify(st)); } catch (e) {}
+  }
+  return st;
+}
+function guideSet(k, v) {
+  var st = guideState();
+  if (st[k] === v) return;
+  st[k] = v;
+  try { localStorage.setItem(GUIDE_KEY, JSON.stringify(st)); } catch (e) {}
+}
+function guideMark(k) {
+  var st = guideState();
+  if (st[k]) return;
+  guideSet(k, true);
+  if (typeof renderGuide === 'function') renderGuide();
+}
+function guideStandalone() {
+  try {
+    return (('standalone' in window.navigator) && window.navigator.standalone) ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  } catch (e) { return false; }
+}
+function guideLastBackup() {
+  var t = 0;
+  try { var d = localStorage.getItem('debtfree_drive_last_backup'); if (d) t = Math.max(t, Date.parse(d) || 0); } catch (e) {}
+  var ex = guideState().exportAt; if (ex) t = Math.max(t, Date.parse(ex) || 0);
+  return t;
+}
+function guideMonthName() { return new Date().toLocaleDateString('en-US', { month: 'long' }); }
+
+function guideSteps() {
+  var st = guideState();
+  var active = (debts || []).filter(function (d) { return d.balance > 0; });
+  var steps = [];
+  // Payments dated before the guide existed on this device mean someone who
+  // was already using the app (or restored a backup): don't walk them back
+  // through "enter your plan" and "choose an order".
+  var veteran = !!st.grand || (payments || []).some(function (p) { return !p.pending && st.created && String(p.date || '') < st.created; });
+
+  steps.push({ id: 'debt', title: 'Add your first debt',
+    why: 'Your Freedom Date and payoff plan appear as soon as one is in.',
+    done: (debts || []).length > 0, cta: 'Add a debt', go: function () { goAddDebt(); } });
+
+  var noEnd = active.filter(function (d) { return d.hasPromo && !d.promoEnd; });
+  var noDue = debtsMissingDueDay();
+  var dueOk = !noDue.length || dueInviteDismissed();
+  var det = { id: 'details', done: !noEnd.length && dueOk };
+  if (noEnd.length) {
+    det.title = 'Add the 0% end date for ' + noEnd[0].name;
+    det.why = 'Until it’s in, the plan treats this card as 0% with no end date.';
+    det.cta = 'Edit ' + noEnd[0].name; det.go = function () { openEditModal(noEnd[0].id); };
+  } else {
+    det.title = 'Add due dates';
+    det.why = 'The day of the month each account is due, so Coming Up can show what’s due in the next 7 days.';
+    det.cta = 'Add due dates'; det.go = function () { openDueSetter(); };
+    det.skip = { label: 'Skip due dates', go: function () { dismissDueInvite(); } };
+  }
+  steps.push(det);
+
+  steps.push({ id: 'plan', title: 'Enter what you plan to pay each month',
+    why: 'Your monthly extra (zero is fine) and your budget set the pace of the plan.',
+    done: !!(st.plan || veteran || monthlyBudget > 0), cta: 'Open my monthly plan',
+    go: function () { guideMark('plan'); goToBudget(); },
+    skip: { label: 'Already set', go: function () { guideMark('plan'); } } });
+
+  steps.push({ id: 'order', title: 'Choose a payoff order',
+    why: 'Optimized, Avalanche, Snowball or your own order — each one shows how it plays out with your numbers.',
+    done: !!(st.order || veteran), cta: 'Compare orders',
+    go: function () {
+      showSection('strategy'); expandCollapse('picker', false); expandCollapse('compare', false);
+      var c = document.getElementById('picker-card'); if (c) setTimeout(function () { c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+    },
+    skip: { label: 'Keep ' + (strategy.charAt(0).toUpperCase() + strategy.slice(1)), go: function () { guideMark('order'); } } });
+
+  steps.push({ id: 'log', title: 'Log your first payment',
+    why: 'Logged payments keep your balances, Coming Up and your Freedom Date current.',
+    done: (payments || []).length > 0, cta: 'Log a payment', go: function () { openQuickLog(); } });
+
+  steps.push({ id: 'backup', title: 'Back up your data',
+    why: 'Everything lives on this device. A backup to Google Drive or a file is how it survives a lost phone or a cleared browser.',
+    done: guideLastBackup() > 0, cta: 'Back up',
+    go: function () {
+      if (typeof DRIVE_ENABLED !== 'undefined' && DRIVE_ENABLED) openDriveSheet();
+      else { showSection('settings'); var b = document.getElementById('backup-card'); if (b) b.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    } });
+
+  // Any step can only be done once the one before it makes sense: with no
+  // debts, nothing after step 1 is meaningful.
+  if (!steps[0].done) for (var i = 1; i < steps.length; i++) steps[i].done = false;
+  return steps;
+}
+
+// What needs attention now, once there's a plan to keep up.
+function guideNow() {
+  var out = [];
+  var active = (debts || []).filter(function (d) { return d.balance > 0; });
+  if (!active.length) return out;
+  try {
+    var rows = upcomingDues().filter(function (r) { return r.status === 'passed' || r.status === 'today' || r.status === 'soon'; });
+    var passed = rows.filter(function (r) { return r.status === 'passed'; });
+    if (passed.length) {
+      out.push({ id: 'passed', title: passed[0].name + ' was due ' + dueDayLabel(passed[0].date),
+        why: passed[0].kind === 'bill' ? 'Not marked paid yet.' : 'No payment logged for it yet. If it’s paid, logging it keeps your balance right.',
+        cta: passed[0].kind === 'bill' ? 'See Coming Up' : 'Log it',
+        go: passed[0].kind === 'bill' ? guideToUpcoming : (function (id) { return function () { logFromDue(id); }; })(passed[0].id) });
+    }
+    var soon = rows.filter(function (r) { return r.status !== 'passed'; });
+    if (soon.length) {
+      out.push({ id: 'due', title: soon.length === 1 ? soon[0].name + ' is due ' + dueDayLabel(soon[0].date)
+          : soon.length + ' payments due in the next ' + DUE_SOON_DAYS + ' days',
+        why: 'Log each one once it’s paid, so balances and Coming Up stay current.',
+        cta: 'See Coming Up', go: guideToUpcoming });
+    }
+  } catch (e) {}
+  try {
+    var cut = new Date(); cut.setDate(cut.getDate() - 45);
+    var cutStr = localDateStr(cut);
+    var logs = (payments || []).some(function (p) { return !p.pending && String(p.date || '') >= cutStr; });
+    var left = logs ? stillPlannedThisMonth() : null;
+    if (left && left.total >= 1) {
+      var top = left.rows[0];
+      out.push({ id: 'planned', title: 'Still planned for ' + guideMonthName() + ': ' + fmt(left.total),
+        why: (left.rows.length === 1 ? 'To ' + top.name + '. ' : fmt(top.amount) + ' of it to ' + top.name + '. ') + 'Your Freedom Date counts on it before the 1st.',
+        cta: 'Log a payment', go: function () { logFromDue(top.id); } });
+    }
+  } catch (e) {}
+  var last = guideLastBackup();
+  var driveOn = false; try { driveOn = !!_driveToken; } catch (e) {}
+  if (last && !driveOn && (Date.now() - last) > 30 * 86400000) {
+    out.push({ id: 'rebackup', title: 'Last backup was ' + Math.floor((Date.now() - last) / 86400000) + ' days ago',
+      why: 'Anything added since then exists only on this device.', cta: 'Back up',
+      go: function () { guideSteps()[5].go(); } });
+  }
+  return out;
+}
+
+// Optional extras. Premium tools appear only for Premium users: the guide
+// is a walkthrough, not an advert.
+function guideOptional() {
+  var out = [];
+  var hasActive = (debts || []).some(function (d) { return d.balance > 0; });
+  if (hasActive && isPremium) {
+    if (!(bills || []).length) out.push({ id: 'bills', title: 'Add your recurring bills',
+      why: 'They join Coming Up and your monthly budget.', cta: 'Add bills', go: function () { guideToCard('strategy', 'bills', 'bills-card'); } });
+    if (!(lumpSums || []).length) out.push({ id: 'lumps', title: 'Plan a lump sum',
+      why: 'A bonus or refund on a future date gets built into your Freedom Date.', cta: 'Plan one', go: function () { guideToCard('strategy', 'lumps', 'lump-sum-card'); } });
+    if (!(sinkingFunds || []).length) out.push({ id: 'funds', title: 'Set up a sinking fund',
+      why: 'Money set aside for a known expense, counted in your monthly budget.', cta: 'Set one up', go: function () { guideToCard('strategy', 'funds', 'funds-card'); } });
+  }
+  if (hasActive && !guideStandalone()) out.push({ id: 'install', title: 'Install it on your phone',
+    why: 'Opens from your home screen like an app and works offline.', cta: 'How to install',
+    go: function () { var l = document.getElementById('install-link'); if (l) l.click(); } });
+  return out;
+}
+
+function guideToUpcoming() {
+  showSection('dashboard');
+  var c = document.getElementById('upcoming-card');
+  if (c) setTimeout(function () { c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120);
+}
+function guideToCard(tab, key, id) {
+  showSection(tab); expandCollapse(key, false);
+  var c = document.getElementById(id);
+  if (c) setTimeout(function () { c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 120);
+}
+
+var _guideActions = {};
+function guideGo(id) {
+  var fn = _guideActions[id];
+  closeGuide();
+  trackShare('guide_action', { _category: 'activation', step: id });
+  if (fn) fn();
+}
+
+function renderGuide() {
+  var btn = document.getElementById('guide-btn');
+  var badge = document.getElementById('guide-badge');
+  var card = document.getElementById('guide-card');
+  if (!btn || !card) return;
+  if (_demoMode) { card.style.display = 'none'; if (badge) badge.hidden = true; return; }
+  var steps = guideSteps();
+  var left = steps.filter(function (x) { return !x.done; });
+  var now = left.length ? [] : guideNow();
+  if (badge) {
+    if (left.length) { badge.hidden = false; badge.className = 'guide-badge'; badge.textContent = String(left.length); }
+    else if (now.length) { badge.hidden = false; badge.className = 'guide-badge dot'; badge.textContent = ''; }
+    else badge.hidden = true;
+  }
+  var st = guideState();
+  if (!left.length || st.hidden) { card.style.display = 'none'; return; }
+  var step = left[0];
+  var doneN = steps.length - left.length;
+  card.style.display = '';
+  document.getElementById('guide-progress').textContent = '· ' + doneN + ' of ' + steps.length + ' set up';
+  document.getElementById('guide-title').textContent = step.title;
+  document.getElementById('guide-why').textContent = step.why;
+  var go = document.getElementById('guide-go');
+  go.textContent = step.cta;
+  _guideActions[step.id] = step.go;
+  go.onclick = function () { guideGo(step.id); };
+  document.getElementById('guide-bar-fill').style.width = Math.round(doneN / steps.length * 100) + '%';
+  // The welcome line in Add a Debt says the same thing as step 1.
+  var hint = document.getElementById('welcome-hint');
+  if (hint && step.id === 'debt') hint.style.display = 'none';
+}
+
+function hideGuideCard() {
+  guideSet('hidden', true);
+  trackShare('guide_hidden', { _category: 'activation' });
+  renderGuide();
+}
+
+function openGuide(source) {
+  var modal = document.getElementById('guide-modal');
+  var body = document.getElementById('guide-body');
+  if (!modal || !body) return;
+  _guideActions = {};
+  var esc = escapeHtml;
+  var html = '';
+  if (_demoMode) {
+    _guideActions.start = function () { startMyNumbers(); };
+    html = '<div class="gm-next"><div class="gm-title">You&rsquo;re looking at example data</div>' +
+      '<div class="gm-why">Start with your own numbers and this list will walk you through setting up your plan.</div>' +
+      '<div style="margin-top:10px"><button type="button" class="btn btn-primary gm-btn" onclick="guideGo(\'start\')">Start with my numbers</button></div></div>';
+    body.innerHTML = html; modal.classList.remove('hidden');
+    trackShare('guide_open', { _category: 'activation', source: source || 'unknown', left: -1 });
+    return;
+  }
+  var steps = guideSteps(), now = guideNow(), opt = guideOptional();
+  var left = steps.filter(function (x) { return !x.done; });
+  var first = left[0] || now[0] || null;
+  function row(x, done) {
+    _guideActions[x.id] = x.go;
+    if (x.skip) _guideActions[x.id + '_skip'] = x.skip.go;
+    return '<div class="gm-row' + (done ? ' done' : '') + '">' +
+      '<div class="gm-check">&#10003;</div>' +
+      '<div class="gm-text"><div class="gm-title">' + esc(x.title) + '</div>' +
+      (done ? '' : '<div class="gm-why">' + esc(x.why) + '</div>' +
+        (x.skip ? '<button type="button" class="gm-skip" onclick="guideSkip(\'' + x.id + '\')">' + esc(x.skip.label) + '</button>' : '')) +
+      '</div>' +
+      (done ? '' : '<button type="button" class="btn btn-ghost gm-btn" onclick="guideGo(\'' + x.id + '\')">' + esc(x.cta) + '</button>') +
+      '</div>';
+  }
+  if (first) {
+    _guideActions[first.id] = first.go;
+    html += '<div class="gm-next"><div class="gm-section" style="margin-top:0">Next step</div>' +
+      '<div class="gm-title" style="font-size:1rem">' + esc(first.title) + '</div>' +
+      '<div class="gm-why">' + esc(first.why) + '</div>' +
+      '<div style="margin-top:10px"><button type="button" class="btn btn-primary gm-btn" onclick="guideGo(\'' + first.id + '\')">' + esc(first.cta) + '</button></div></div>';
+  } else {
+    html += '<div class="gm-next"><div class="gm-title">You&rsquo;re all set</div>' +
+      '<div class="gm-why">Setup is done and nothing needs attention right now. Log payments as you make them and this list will tell you when something comes up.</div></div>';
+  }
+  if (left.length && now.length === 0) now = guideNow();
+  if (now.length && !(now.length === 1 && first === now[0])) {
+    html += '<div class="gm-section">Right now</div>' + now.filter(function (x) { return x !== first; }).map(function (x) { return row(x, false); }).join('');
+  }
+  html += '<div class="gm-section">Getting set up &middot; ' + (steps.length - left.length) + ' of ' + steps.length + '</div>' +
+    steps.map(function (x) { return row(x, x.done); }).join('');
+  if (opt.length) html += '<div class="gm-section">Optional</div>' + opt.map(function (x) { return row(x, false); }).join('');
+  if (guideState().hidden && left.length) {
+    html += '<div style="margin-top:14px;text-align:center"><button type="button" class="gm-skip" onclick="guideSet(\'hidden\', false);closeGuide();renderGuide();">Show the setup card on the Dashboard again</button></div>';
+  }
+  body.innerHTML = html;
+  modal.classList.remove('hidden');
+  trackShare('guide_open', { _category: 'activation', source: source || 'unknown', left: left.length });
+}
+function guideSkip(id) {
+  var fn = _guideActions[id + '_skip'];
+  trackShare('guide_skip', { _category: 'activation', step: id });
+  if (fn) fn();
+  renderGuide();
+  openGuide('skip');
+}
+function closeGuide(e) {
+  var modal = document.getElementById('guide-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
+}
+
+// Steps 3 and 4 complete when the user actually touches them.
+document.addEventListener('input', function (e) {
+  var t = e.target;
+  if (t && (t.id === 'extra-payment' || t.id === 'plan-budget')) guideMark('plan');
+}, true);
+document.addEventListener('click', function (e) {
+  var t = e.target && e.target.closest ? e.target.closest('.strategy-card') : null;
+  if (t) guideMark('order');
+}, true);
+
 // v1.50.0 — how much of the plan's month 1 (this calendar month) has not been
 // logged yet, per debt, largest first. Month 1 of getPlanSim() already nets
 // what's been paid this month; a pending payment dated this month is applied
 // in month 1 too, but it's already on the books, so it isn't "still planned".
 function stillPlannedThisMonth() {
+  // v1.51.0 — only in the last 10 days of the month. Earlier than that it is
+  // just "the rest of this month's plan" — true, but not news; it matters as
+  // the 1st approaches, when an unlogged amount would move the Freedom Date.
+  const _t = new Date();
+  const _daysLeft = new Date(_t.getFullYear(), _t.getMonth() + 1, 0).getDate() - _t.getDate();
+  if (_daysLeft >= 10) return null;
   const sim = getPlanSim();
   if (!sim || !sim.monthlyData || !sim.monthlyData.length) return null;
   const m1 = sim.monthlyData[0];
@@ -10034,6 +10427,7 @@ function render() {
     updateWhatIf();
   }
   budgetMarkChips();   // v1.39.0
+  renderGuide();       // v1.51.0
 
   // v1.18.0 — flywheel: check for newly-crossed milestones after each render.
   // Suppressed during the initial load (see _milestonesBaselined) so importing
@@ -10051,7 +10445,10 @@ function render() {
   // v1.27.0 — also hidden in demo mode; the example banner is doing that job
   // and two first-run messages at once is noise.
   const _hint = document.getElementById('welcome-hint');
-  if (_hint) _hint.style.display = (debts.length || _demoMode) ? 'none' : 'block';
+  // v1.51.0 — the guide card's step 1 says the same thing; show one, not both.
+  const _gc = document.getElementById('guide-card');
+  const _guideUp = _gc && _gc.style.display !== 'none';
+  if (_hint) _hint.style.display = (debts.length || _demoMode || _guideUp) ? 'none' : 'block';
 
   // v1.23.3 — if the user is ON the Strategy tab, re-render it whenever data
   // changes (reorders, payments via the quick-log modal, etc). Previously only
@@ -10165,12 +10562,18 @@ function sanitizeDueDay(v) {
 // because money scheduled to leave on the 30th has not covered a due date on
 // the 22nd. The ledger counts those deliberately (they net against month 1 of
 // the plan) — that behaviour is unchanged everywhere else.
-function dueCoverageFor(debtId, dueDate) {
+function dueCoverageFor(debtId, dueDate, windowStart) {
   var ym = monthKeyOf(new Date());
+  // v1.50.1 — for a next-month occurrence: count payments from the start of
+  // its lead window, or dated in its own month.
+  var wsKey = windowStart ? localDateStr(windowStart) : null;
+  var dueYm = monthKeyOf(dueDate);
   var covered = 0, anyApplied = false;
   (payments || []).forEach(function (p) {
     if (!p || p.debtId !== debtId) return;
-    if (_monthKey(p.date) !== ym) return;
+    if (wsKey) {
+      if (!(String(p.date) >= wsKey || _monthKey(p.date) === dueYm)) return;
+    } else if (_monthKey(p.date) !== ym) return;
     var amt = parseFloat(p.amount) || 0;
     if (amt <= 0) return;
     if (p.pending) {
@@ -10208,8 +10611,22 @@ function upcomingDues() {
     var partial = paid > 0 && !covered;
     var status, when;
 
+    var forNext = false;
+    if (covered && monthKeyOf(next) !== monthKeyOf(thisMonth) && daysUntil(next) <= DUE_SOON_DAYS) {
+      // v1.50.1 — this month is handled, but next month's date is already
+      // inside the window. Judge that occurrence on its own payments.
+      var ws = new Date(next.getFullYear(), next.getMonth(), next.getDate() - DUE_SOON_DAYS);
+      cov = dueCoverageFor(d.id, next, ws);
+      paid = cov.amount;
+      covered = paid > 0 && (due <= 0 || paid + 0.005 >= due);
+      partial = paid > 0 && !covered;
+      forNext = true;
+    }
     if (covered) {
       status = 'logged'; when = next;
+    } else if (forNext) {
+      var nn = daysUntil(next);
+      status = nn === 0 ? 'today' : 'soon'; when = next;
     } else if (daysUntil(thisMonth) < 0) {
       status = 'passed'; when = thisMonth;
     } else {
@@ -10225,7 +10642,8 @@ function upcomingDues() {
       // minimum — the user has already sent the difference.
       amount: partial ? Math.max(0, due - paid) : due,
       due: due, paid: paid, partial: partial,
-      scheduledOnly: status === 'logged' && !cov.applied
+      scheduledOnly: status === 'logged' && !cov.applied,
+      forNext: forNext
     });
   });
   // v1.42.0 — bills join the same list, premium only. A bill is money that is
@@ -10243,7 +10661,16 @@ function upcomingDues() {
       var thisMonthDue = dueDateIn(new Date().getFullYear(), new Date().getMonth(), bday);
       var when, status;
 
-      if (billMarkedThisMonth(bill)) {
+      var _bNext = nextDueDate(bday), _bYm = null, _bMarked = billMarkedThisMonth(bill);
+      if (_bMarked && monthKeyOf(_bNext) !== monthKeyOf(thisMonthDue) && daysUntil(_bNext) <= DUE_SOON_DAYS) {
+        // v1.50.1 — handled this month, but next month's date is already in
+        // the window: that occurrence is its own question.
+        _bYm = monthKeyOf(_bNext);
+        _bMarked = billMarkedFor(bill, _bYm);
+        when = _bNext;
+        if (_bMarked) status = 'logged';
+        else { var bn = daysUntil(_bNext); status = bn === 0 ? 'today' : 'soon'; }
+      } else if (billMarkedThisMonth(bill)) {
         // Handled for this month; show when it next comes round.
         status = 'logged'; when = nextDueDate(bday);
       } else if (billIsTracked(bill) && daysUntil(thisMonthDue) < 0) {
@@ -10261,7 +10688,11 @@ function upcomingDues() {
         id: bill.id, name: bill.name, kind: 'bill', status: status,
         date: when, dueDay: bday, days: daysUntil(when),
         amount: parseFloat(bill.amount) || 0, paid: 0,
-        marked: billMarkedThisMonth(bill)
+        marked: _bYm ? _bMarked : billMarkedThisMonth(bill),
+        // The tick always marks the month of the date this row shows: an
+        // unticked bill due Oct 7, ticked on Sep 30, is October's bill.
+        markYm: _bYm || (status === 'logged' ? currentMonthKey() : monthKeyOf(when)),
+        forNext: !!_bYm
       });
     });
   }
@@ -10280,6 +10711,8 @@ function dueRowLabel(r) {
   // A tick is a note to yourself, not evidence of payment — so a bill says
   // "marked paid", never "paid".
   if (r.status === 'logged') {
+    // v1.50.1 — an early-next-month row is about THAT date, not this month.
+    if (r.forNext) return (isBill ? 'marked paid for ' : (r.scheduledOnly ? 'payment scheduled for ' : 'payment logged for ')) + dueDayLabel(r.date);
     if (isBill) return 'marked paid this month';
     // v1.48.2 — a future-dated payment is saved as pending and hasn't left
     // the account yet, so it is scheduled, not logged.
@@ -10487,7 +10920,12 @@ if (document.readyState === 'loading') {
 function currentMonthKey() { return monthKeyOf(new Date()); }
 
 function billMarkedThisMonth(bill) {
-  return !!bill && bill.paidThrough === currentMonthKey();
+  return billMarkedFor(bill, currentMonthKey());
+}
+// v1.50.1 — paidThrough is 'YYYY-MM'; string order is month order. A bill
+// marked for October (ticked on Sep 30) is handled for September too.
+function billMarkedFor(bill, ym) {
+  return !!bill && !!bill.paidThrough && bill.paidThrough >= ym;
 }
 
 // Has this bill ever been ticked? If not, the user is not tracking it by hand
@@ -10496,15 +10934,18 @@ function billIsTracked(bill) {
   return !!(bill && bill.paidThrough);
 }
 
-function toggleBillPaid(id) {
+function toggleBillPaid(id, ym) {
   var b = (bills || []).find(function (x) { return x.id === id; });
   if (!b) return;
-  var now = currentMonthKey();
-  if (b.paidThrough === now) {
+  // v1.50.1 — ym: which month this tick is for (Coming Up passes next month
+  // for an early-next-month row). Default is the current month, as before.
+  var now = ym || currentMonthKey();
+  if (billMarkedFor(b, now)) {
     // Untick. Step back a month rather than clearing the field, so the bill
     // stays "tracked" and does not silently fall back to never nagging.
-    var d = new Date();
-    d.setDate(1); d.setMonth(d.getMonth() - 1);
+    var p = now.split('-');
+    var d = new Date(+p[0], (+p[1]) - 1, 1);
+    d.setMonth(d.getMonth() - 1);
     b.paidThrough = monthKeyOf(d);
   } else {
     b.paidThrough = now;
@@ -11062,7 +11503,7 @@ function renderUpcoming() {
     var _now = new Date();
     var owed = rows.map(function (r) {
       var d = (r.status === 'logged' && r.dueDay)
-        ? dueDateIn(_now.getFullYear(), _now.getMonth() + 1, r.dueDay) : r.date;
+        ? dueDateIn(_now.getFullYear(), _now.getMonth() + (r.forNext ? 2 : 1), r.dueDay) : r.date;
       return { name: r.name, date: d };
     });
     owed.sort(function (a, b) { return a.date - b.date; });
@@ -11091,7 +11532,7 @@ function renderUpcoming() {
          +      '<div class="due-row-amt">' + fmt(r.amount) + '</div>'
          +      (r.kind === 'bill'
                   ? '<button type="button" class="due-row-tick' + (r.marked ? ' is-marked' : '') + '" '
-                    + 'onclick="toggleBillPaid(' + r.id + ')" '
+                    + 'onclick="toggleBillPaid(' + r.id + (r.markYm ? ', \'' + r.markYm + '\'' : '') + ')" '
                     + 'aria-pressed="' + (r.marked ? 'true' : 'false') + '" '
                     + 'title="' + (r.marked ? 'Marked paid this month' : 'Mark as paid this month') + '" '
                     + 'aria-label="' + (r.marked ? 'Unmark' : 'Mark') + ' ' + escapeHtml(r.name) + ' as paid this month">'
@@ -14767,6 +15208,7 @@ function driveUploadPayload(payload) {
       const d = JSON.parse(body); delete d.exportDate;
       localStorage.setItem(LS_DRIVE_HASH, driveHash(JSON.stringify(d)));
       localStorage.setItem(LS_DRIVE_AT, new Date().toISOString());
+      if (typeof renderGuide === 'function') renderGuide();   // v1.51.0
       return j;
     });
 }
@@ -14805,6 +15247,7 @@ function driveBackupNow(quiet) {
       const d = JSON.parse(body); delete d.exportDate;
       localStorage.setItem(LS_DRIVE_HASH, driveHash(JSON.stringify(d)));
       localStorage.setItem(LS_DRIVE_AT, new Date().toISOString());
+      if (typeof renderGuide === 'function') renderGuide();   // v1.51.0
       // An autosave the user did not ask for says nothing on success; the
       // cloud dot going green is the whole message. Failures still speak.
       if (!quiet) driveToast('ok', 'Backed up to your Google Drive.');
@@ -14978,6 +15421,8 @@ function exportData() {
     return;
   }
   const data = buildBackupPayload();
+  guideSet('exportAt', new Date().toISOString());   // v1.51.0 — counts as a backup
+  if (typeof renderGuide === 'function') renderGuide();
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
