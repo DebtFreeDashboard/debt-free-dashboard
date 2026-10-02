@@ -70,6 +70,7 @@ handles technical execution end to end.
 | `sw.js` | Service worker (repo root) |
 | `index.html` | Marketing homepage (repo root) |
 | `test-fixtures/` | `test-primary.json`, `test-minimal.json`, `README.md` |
+| `tools/gumroad/` | Gumroad cover + thumbnail (PNGs, HTML sources, `render.mjs`). Manual step of any price change; `set-price.py` does not touch them |
 | `app/dev.html` | **Generated** dev build — never edit by hand (see below) |
 | `tools/make-dev.js` | Generates `app/dev.html` from `app/dashboard.html` |
 | `tools/verify-dev.js` | Proves the dev build is isolated from real data |
