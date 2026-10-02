@@ -4041,7 +4041,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.1';
+const APP_VERSION = '1.51.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4049,6 +4049,15 @@ const APP_VERSION = '1.51.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.2',
+    date: 'October 2, 2026',
+    name: 'Internal fix',
+    whatsNew: [],
+    fixes: [
+      'Internal change only \u2014 nothing to see. Nothing about your debts, payments or plan is affected.'
+    ]
+  },
   {
     version: '1.51.1',
     date: 'October 2, 2026',
@@ -16253,6 +16262,37 @@ document.getElementById('log-date').value = localDateStr();
 // Display current version
 const versionEl = document.getElementById('current-version');
 if (versionEl) versionEl.textContent = APP_VERSION;
+// v1.51.2 — owner switch for the installed app, which has no address bar for
+// ?internal=1. Five taps on the version line within 3 seconds flips
+// debtfree_internal for this device; the GA data filter drops tagged events.
+(function () {
+  if (!versionEl || !versionEl.parentElement) return;
+  var line = versionEl.parentElement, taps = [];
+  function isInternal() { try { return localStorage.getItem('debtfree_internal') === '1'; } catch (e) { return false; } }
+  function mark() {
+    var m = document.getElementById('internal-mark');
+    if (!m) { m = document.createElement('span'); m.id = 'internal-mark'; line.appendChild(m); }
+    m.textContent = isInternal() ? ' \u00b7 this device is not counted' : '';
+  }
+  mark();
+  line.addEventListener('click', function () {
+    var now = Date.now();
+    taps = taps.filter(function (t) { return now - t < 3000; });
+    taps.push(now);
+    if (taps.length < 5) return;
+    taps = [];
+    var on = !isInternal();
+    try {
+      if (on) localStorage.setItem('debtfree_internal', '1');
+      else localStorage.removeItem('debtfree_internal');
+    } catch (e) { showBackupMsg('warn', 'Could not save that setting on this device.'); return; }
+    if (on && typeof gtag === 'function') { try { gtag('set', { traffic_type: 'internal' }); } catch (e) {} }
+    mark();
+    showBackupMsg('ok', on
+      ? 'This device is no longer counted in visitor statistics.'
+      : 'This device is counted in visitor statistics again, starting the next time the app opens.');
+  });
+})();
 
 // Mark this as an active session BEFORE load() so the sessionStorage fallback
 // inside load() can read this flag correctly.

@@ -1,9 +1,8 @@
 {
-  "version": "1.51.1",
+  "version": "1.51.2",
   "releaseDate": "2026-10-02",
-  "releaseName": "Premium is now $24",
+  "releaseName": "Internal fix",
   "notes": [
-    "Premium is now $24, one time. If you already unlocked Premium, nothing changes: your license keeps working, on every device, with every update.",
-    "The launch-price countdown has been removed now that the launch price has ended."
+    "Internal change only — nothing to see. Nothing about your debts, payments or plan is affected."
   ]
 }
