@@ -6,19 +6,19 @@
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DebtFree Dashboard — See Your Debt-Free Date</title>
-<meta name="description" content="See your real debt-free date in about 60 seconds. A free, private debt payoff planner with Avalanche, Snowball, and Hybrid strategies, a live 'What-If' extra-payment slider, 0% promo-APR tracking, and a payment logger. Your data stays on your device. Optional $12 one-time premium — no subscription.">
+<meta name="description" content="See your real debt-free date in about 60 seconds. A free, private debt payoff planner with Avalanche, Snowball, and Hybrid strategies, a live 'What-If' extra-payment slider, 0% promo-APR tracking, and a payment logger. Your data stays on your device. Optional $24 one-time premium — no subscription.">
 <link rel="canonical" href="https://mydebtdashboard.com/">
 
 <!-- Open Graph / social sharing -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="DebtFree Dashboard">
 <meta property="og:title" content="DebtFree Dashboard — See Your Debt-Free Date">
-<meta property="og:description" content="A free, private debt payoff planner that shows your real debt-free date in 60 seconds. Avalanche, Snowball & Hybrid strategies, a What-If slider, and promo-APR tracking. $12 one-time premium, no subscription.">
+<meta property="og:description" content="A free, private debt payoff planner that shows your real debt-free date in 60 seconds. Avalanche, Snowball & Hybrid strategies, a What-If slider, and promo-APR tracking. $24 one-time premium, no subscription.">
 <meta property="og:url" content="https://mydebtdashboard.com/">
 <meta property="og:image" content="https://mydebtdashboard.com/assets/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="DebtFree Dashboard — See Your Debt-Free Date">
-<meta name="twitter:description" content="Free, private debt payoff planner. See your real debt-free date in 60 seconds. $12 one-time premium, no subscription.">
+<meta name="twitter:description" content="Free, private debt payoff planner. See your real debt-free date in 60 seconds. $24 one-time premium, no subscription.">
 <meta name="twitter:image" content="https://mydebtdashboard.com/assets/og-card.png">
 
 <!-- Structured data: the application (built from live v1.34.0 feature set) -->
@@ -43,10 +43,10 @@
     },
     {
       "@type": "Offer",
-      "price": "12",
+      "price": "24",
       "priceCurrency": "USD",
       "name": "Premium (one-time)",
-      "description": "One-time $12 unlock, no subscription: What-If lump-sum modeling and planned windfalls, a payoff-by-payoff roadmap with a minimums chart, recurring bills and sinking funds, an amortization schedule with CSV export, sortable Portfolio table, and estimated-interest / true-cost tracking."
+      "description": "One-time $24 unlock, no subscription: What-If lump-sum modeling and planned windfalls, a payoff-by-payoff roadmap with a minimums chart, recurring bills and sinking funds, an amortization schedule with CSV export, sortable Portfolio table, and estimated-interest / true-cost tracking."
     }
   ],
   "featureList": [
@@ -1279,7 +1279,16 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-NCP56TD9BG');
+  // v1.51.1 — owner devices: open any page once with ?internal=1 and this
+  // browser's events are tagged traffic_type=internal, which the GA data filter
+  // drops. ?internal=0 turns it back off. Stored per browser, never sent anywhere else.
+  var _dfInternal = false;
+  try {
+    if (/[?&]internal=1(&|$)/.test(location.search)) localStorage.setItem('debtfree_internal', '1');
+    if (/[?&]internal=0(&|$)/.test(location.search)) localStorage.removeItem('debtfree_internal');
+    _dfInternal = localStorage.getItem('debtfree_internal') === '1';
+  } catch (e) {}
+  gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
 </script>
 <script>
   // DebtFree Dashboard — arrival + in-app browser tracking (mirrors the app's
@@ -1450,7 +1459,7 @@
     {
       "@type": "Question",
       "name": "What exactly do I get?",
-      "acceptedAnswer": { "@type": "Answer", "text": "You open the dashboard in any web browser \u2014 Chrome, Safari, Firefox \u2014 free, with no account and no sign-up. The free tier takes you all the way to debt-free. A one-time $12 unlocks the premium planning tools, which you activate right in the app with a license key. No subscription, and it works offline after the first load." }
+      "acceptedAnswer": { "@type": "Answer", "text": "You open the dashboard in any web browser \u2014 Chrome, Safari, Firefox \u2014 free, with no account and no sign-up. The free tier takes you all the way to debt-free. A one-time $24 unlocks the premium planning tools, which you activate right in the app with a license key. No subscription, and it works offline after the first load." }
     },
     {
       "@type": "Question",
@@ -1491,7 +1500,7 @@
          onerror="this.style.display='none'; var f=this.nextElementSibling; if(f) f.style.display='inline-block';">
     <span class="nav-brand-fallback" style="display:none;">DebtFree <span>Dashboard</span></span>
   </a>
-  <span class="price-tag">Free to use · Premium $12 one-time</span>
+  <span class="price-tag">Free to use · Premium $24 one-time</span>
   <div class="nav-buy-group">
     <a href="https://mydebtdashboard.com/app/dashboard.html"
    class="nav-cta"
@@ -1518,7 +1527,7 @@
     <div class="hero-left">
       <div class="hero-kicker">Free to use · No account · Works offline</div>
       <h1 class="hero-headline">See your real<br>debt-free date.<br><em>Free.</em></h1>
-      <p class="hero-sub">Credit cards, auto loans, student loans, even your mortgage — one payoff plan with crystal-clear math in 60 seconds. Free for your whole payoff journey. A one-time <strong style="color:var(--ink)">$12</strong> unlocks the premium planning suite. No subscription, ever.</p>
+      <p class="hero-sub">Credit cards, auto loans, student loans, even your mortgage — one payoff plan with crystal-clear math in 60 seconds. Free for your whole payoff journey. A one-time <strong style="color:var(--ink)">$24</strong> unlocks the premium planning suite. No subscription, ever.</p>
       <div class="hero-actions">
         <a href="https://mydebtdashboard.com/app/dashboard.html"
            class="btn-primary-lg"
@@ -1531,7 +1540,7 @@
       <div class="hero-reassure">
         <span>Free, unlimited debts</span>
         <span>Data stays on your device</span>
-        <span>Premium just $12 once</span>
+        <span>Premium just $24 once</span>
       </div>
     </div>
     <div class="hero-right">
@@ -1773,7 +1782,7 @@
       Simple pricing
       <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
     </div>
-    <h2 class="section-title" style="color:var(--ink); text-align:center">Free to start.<br>$12 to go deeper.</h2>
+    <h2 class="section-title" style="color:var(--ink); text-align:center">Free to start.<br>$24 to go deeper.</h2>
     <p style="max-width:520px;margin:16px auto 0;color:var(--text-mid);text-align:center;">The free tier takes you all the way to debt-free. Premium adds the planning and analysis tools — a one-time payment, never a subscription.</p>
 
     <div class="pricing-grid">
@@ -1806,11 +1815,11 @@
 
       <!-- PREMIUM -->
       <div class="pricing-card premium">
-        <div class="tier-tag" style="color:var(--amber);background:rgba(217,154,31,0.1)">One-time $12</div>
+        <div class="tier-tag" style="color:var(--amber);background:rgba(217,154,31,0.1)">One-time $24</div>
         <div class="pricing-name">Premium</div>
         <div class="price-display" style="justify-content:flex-start">
           <span class="price-dollar">$</span>
-          <span class="price-amount">12</span>
+          <span class="price-amount">24</span>
         </div>
         <div class="price-note" style="text-align:left">Pay once, yours forever — no subscription</div>
         <div class="deadline-inline" data-deadline hidden style="margin:0 0 18px"><span data-deadline-text></span></div>
@@ -1828,7 +1837,7 @@
    class="btn-buy" style="margin-top:24px"
    data-cta-label="pricing-premium"
    data-cta-location="pricing-section">
-  Get Premium — $12 →
+  Get Premium — $24 →
 </a>
       </div>
 
@@ -1852,7 +1861,7 @@
           <span>What exactly do I get when I buy?</span>
           <span class="faq-toggle">+</span>
         </div>
-        <div class="faq-a">You open the dashboard in any web browser — Chrome, Safari, Firefox — free, with no account and no sign-up. The free tier takes you all the way to debt-free. A one-time $12 unlocks the premium planning tools, which you activate right in the app with a license key. No subscription, and it works offline after the first load.</div>
+        <div class="faq-a">You open the dashboard in any web browser — Chrome, Safari, Firefox — free, with no account and no sign-up. The free tier takes you all the way to debt-free. A one-time $24 unlocks the premium planning tools, which you activate right in the app with a license key. No subscription, and it works offline after the first load.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
@@ -1900,7 +1909,7 @@
         Open the Dashboard — Free <span class="arrow">→</span>
       </a>
     </div>
-    <p style="color:var(--text-muted); font-size:0.78rem; margin-top:16px">Free to use · No account · Premium $12 one-time</p>
+    <p style="color:var(--text-muted); font-size:0.78rem; margin-top:16px">Free to use · No account · Premium $24 one-time</p>
   </div>
 </section>
 
@@ -1935,13 +1944,18 @@ function toggleFaq(el) {
 // a UTC instant so the cutoff is the same moment for a reader in Perth as
 // it is in Dracut — a local-time string would move the deadline by up to
 // a day depending on who is looking.
+// v1.50.1 — the launch price ended; the countdown is retired. Kept as code
+// (a past instant hides every [data-deadline] node) so a future price change
+// can reuse it by setting a new date and prices.
 var PRICE_DEADLINE = Date.parse('2026-10-02T03:59:59Z');
-var PRICE_NOW = 12, PRICE_NEXT = 24;
+var PRICE_NOW = 24, PRICE_NEXT = 24;
+var PRICE_COUNTDOWN_RETIRED = true;
 
 // Prices come from the numbers above rather than literal text, so
 // tools/set-price.py (which rewrites "$12" everywhere) cannot reach into
 // this copy and turn "goes to $24" into nonsense.
 function priceDeadlineLine() {
+  if (PRICE_COUNTDOWN_RETIRED) return null;          // v1.50.1
   var left = PRICE_DEADLINE - Date.now();
   if (left <= 0) return null;                       // expired: caller hides
   var days = Math.ceil(left / 86400000);

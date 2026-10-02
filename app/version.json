@@ -1,12 +1,9 @@
 {
-  "version": "1.51.0",
-  "releaseDate": "2026-10-01",
-  "releaseName": "What’s next?",
+  "version": "1.51.1",
+  "releaseDate": "2026-10-02",
+  "releaseName": "Premium is now $24",
   "notes": [
-    "New: a “What’s next?” guide. Tap Next at the top of any tab to see where you are and what to do next — add a debt, fill in due dates, enter your monthly plan, choose a payoff order, log a payment, back up. Each step has a button that takes you straight there.",
-    "Until those six steps are done, the next one shows at the top of the Dashboard. Hide it with the × any time; the Next button always brings the full list back.",
-    "Once you’re set up, the same list shows what needs attention right now, like payments due this week or a backup that’s getting old.",
-    "“Still planned for this month” now appears only in the last 10 days of a month, when it actually matters, instead of from the 1st.",
-    "In the last days of a month, Coming Up could leave out a card or bill due early the next month if you had already paid it for the current month — on September 30, a debt due October 7 could be missing. Everything due in the next 7 days now shows, and marking a bill from that row marks it for the month it’s due."
+    "Premium is now $24, one time. If you already unlocked Premium, nothing changes: your license keeps working, on every device, with every update.",
+    "The launch-price countdown has been removed now that the launch price has ended."
   ]
 }

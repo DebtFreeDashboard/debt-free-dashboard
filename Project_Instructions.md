@@ -56,7 +56,7 @@ instead: `C:\Users\kevin\Documents\GitHub\debt-free-dashboard` (pull first).
 
 DebtFree Dashboard — a single-file PWA debt payoff tool. `dashboard.html` is the
 entire app (HTML/CSS/JS, localStorage, Chart.js, no backend). Freemium: generous
-free tier, $12 one-time premium via Gumroad, verified by license key.
+free tier, $24 one-time premium via Gumroad, verified by license key.
 
 Kevin is a non-coder founder and product owner. He decides direction; Claude
 handles technical execution end to end.

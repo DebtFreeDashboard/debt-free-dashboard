@@ -2851,7 +2851,16 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-NCP56TD9BG');
+  // v1.51.1 — owner devices: open any page once with ?internal=1 and this
+  // browser's events are tagged traffic_type=internal, which the GA data filter
+  // drops. ?internal=0 turns it back off. Stored per browser, never sent anywhere else.
+  var _dfInternal = false;
+  try {
+    if (/[?&]internal=1(&|$)/.test(location.search)) localStorage.setItem('debtfree_internal', '1');
+    if (/[?&]internal=0(&|$)/.test(location.search)) localStorage.removeItem('debtfree_internal');
+    _dfInternal = localStorage.getItem('debtfree_internal') === '1';
+  } catch (e) {}
+  gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
   // Fire a distinct event on every hosted dashboard load so boost traffic
   // can be isolated from all other site traffic in GA.
   gtag('event', 'app_opened', {
@@ -3465,7 +3474,7 @@
           <div class="blur-overlay">
             <div style="font-size:1.4rem;">🔒</div>
             <div class="lock-card-title">Payoff by payoff</div>
-            <div class="lock-card-desc" style="max-width:280px;">The month each debt clears, the minimum that rolls over, and a chart of your minimums stepping down. Unlock for $12.</div>
+            <div class="lock-card-desc" style="max-width:280px;">The month each debt clears, the minimum that rolls over, and a chart of your minimums stepping down. Unlock for $24.</div>
             <div class="lock-card-cta">Unlock</div>
           </div>
         </div>
@@ -3537,7 +3546,7 @@
         <div class="blur-overlay">
           <div style="font-size:1.4rem;">🔒</div>
           <div class="lock-card-title">Schedule future windfalls into your plan</div>
-          <div class="lock-card-desc" style="max-width:280px;">Add a bonus or tax refund on a future date and your Freedom Date updates automatically. Unlock everything for a one-time $12.</div>
+          <div class="lock-card-desc" style="max-width:280px;">Add a bonus or tax refund on a future date and your Freedom Date updates automatically. Unlock everything for a one-time $24.</div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
@@ -3747,7 +3756,7 @@
         <div class="blur-overlay">
           <div style="font-size:1.4rem;">🔒</div>
           <div class="lock-card-title">Unlock Lump Sum Paydown</div>
-          <div class="lock-card-desc" style="max-width:260px;">Model a tax refund, bonus, or windfall and watch your debt-free date jump. $12 one-time.</div>
+          <div class="lock-card-desc" style="max-width:260px;">Model a tax refund, bonus, or windfall and watch your debt-free date jump. $24 one-time.</div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
@@ -3834,9 +3843,9 @@
           <div class="lock-card-title">Model a 0% balance transfer</div>
           <div class="lock-card-desc" style="max-width:320px;">
             See what a 0% offer really works out to for your debts &mdash; fee included, and whether
-            you&rsquo;d clear it before the rate jumps. One-time $12.
+            you&rsquo;d clear it before the rate jumps. One-time $24.
           </div>
-          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-transfer')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
+          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-transfer')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $24</a>
         </div>
       </div>
     </div>
@@ -3939,10 +3948,10 @@
         <div id="unlock-pending">
           <div class="deadline-inline" data-deadline hidden style="margin-bottom:10px;"><span data-deadline-text></span></div>
           <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
-            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$12</strong> unlocks the planning suite: What-If lump sums, payoff-by-payoff detail with the minimums chart, bills, sinking funds, the amortization schedule, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
+            DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$24</strong> unlocks the planning suite: What-If lump sums, payoff-by-payoff detail with the minimums chart, bills, sinking funds, the amortization schedule, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
-            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('settings')" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $12</a>
+            <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('settings')" style="flex:1;min-width:150px;text-align:center;text-decoration:none;">Get Premium — $24</a>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
             <div class="form-field" style="flex:2;min-width:180px;">
@@ -4036,9 +4045,9 @@
           <div style="font-size:1.4rem;">&#128274;</div>
           <div class="lock-card-title">Dial in your debt-free date</div>
           <div class="lock-card-desc" style="max-width:300px;">
-            Pick any target date and instantly see the exact monthly payment to hit it. Unlock the full planning suite for a one-time $12.
+            Pick any target date and instantly see the exact monthly payment to hit it. Unlock the full planning suite for a one-time $24.
           </div>
-          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-dialdate')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $12</a>
+          <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-dialdate')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $24</a>
         </div>
       </div>
     </div>
@@ -4155,7 +4164,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.0';
+const APP_VERSION = '1.51.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4163,6 +4172,16 @@ const APP_VERSION = '1.51.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.1',
+    date: 'October 2, 2026',
+    name: 'Premium is now $24',
+    whatsNew: [
+      'Premium is now $24, one time. If you already unlocked Premium, nothing changes: your license keeps working, on every device, with every update.',
+      'The launch-price countdown has been removed now that the launch price has ended.',
+    ],
+    fixes: []
+  },
   {
     version: '1.51.0',
     date: 'October 1, 2026',
@@ -10998,13 +11017,18 @@ function dueTagFor(d) {
 // a UTC instant so the cutoff is the same moment for a reader in Perth as
 // it is in Dracut — a local-time string would move the deadline by up to
 // a day depending on who is looking.
+// v1.50.1 — the launch price ended; the countdown is retired. Kept as code
+// (a past instant hides every [data-deadline] node) so a future price change
+// can reuse it by setting a new date and prices.
 var PRICE_DEADLINE = Date.parse('2026-10-02T03:59:59Z');
-var PRICE_NOW = 12, PRICE_NEXT = 24;
+var PRICE_NOW = 24, PRICE_NEXT = 24;
+var PRICE_COUNTDOWN_RETIRED = true;
 
 // Prices come from the numbers above rather than literal text, so
 // tools/set-price.py (which rewrites "$12" everywhere) cannot reach into
 // this copy and turn "goes to $24" into nonsense.
 function priceDeadlineLine() {
+  if (PRICE_COUNTDOWN_RETIRED) return null;          // v1.50.1
   var left = PRICE_DEADLINE - Date.now();
   if (left <= 0) return null;                       // expired: caller hides
   var days = Math.ceil(left / 86400000);
