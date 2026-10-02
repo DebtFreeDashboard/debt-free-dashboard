@@ -1,8 +1,8 @@
 {
-  "version": "1.51.2",
+  "version": "1.51.3",
   "releaseDate": "2026-10-02",
-  "releaseName": "Internal fix",
+  "releaseName": "Guide fix",
   "notes": [
-    "Internal change only — nothing to see. Nothing about your debts, payments or plan is affected."
+    "The “What’s next?” guide no longer ticks off setup steps while you are only trying out the example data. Steps now count once you start with your own numbers."
   ]
 }

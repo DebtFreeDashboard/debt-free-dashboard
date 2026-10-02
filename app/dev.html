@@ -4164,7 +4164,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.2';
+const APP_VERSION = '1.51.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4172,6 +4172,15 @@ const APP_VERSION = '1.51.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.3',
+    date: 'October 2, 2026',
+    name: 'Guide fix',
+    whatsNew: [],
+    fixes: [
+      'The \u201cWhat\u2019s next?\u201d guide no longer ticks off setup steps while you are only trying out the example data. Steps now count once you start with your own numbers.'
+    ]
+  },
   {
     version: '1.51.2',
     date: 'October 2, 2026',
@@ -6207,6 +6216,9 @@ function guideSet(k, v) {
   try { localStorage.setItem(GUIDE_KEY, JSON.stringify(st)); } catch (e) {}
 }
 function guideMark(k) {
+  // v1.51.3 — playing with the example is not setup. Nothing done in demo
+  // mode may complete a step.
+  if (typeof _demoMode !== 'undefined' && _demoMode) return;
   var st = guideState();
   if (st[k]) return;
   guideSet(k, true);
@@ -15943,6 +15955,12 @@ function seedDemo() {
 function exitDemo(persistDismissal) {
   if (!_demoMode) return;
   _demoMode = false;
+  // v1.51.3 — a browser that explored the demo on 1.51.0–1.51.2 may carry
+  // plan/order ticks earned on example data. Leaving the demo starts setup clean.
+  try {
+    var _gs = guideState();
+    if (_gs.plan || _gs.order) { delete _gs.plan; delete _gs.order; localStorage.setItem(GUIDE_KEY, JSON.stringify(_gs)); }
+  } catch (e) {}
   debts = [];
   payments = [];
   lumpSums = [];
