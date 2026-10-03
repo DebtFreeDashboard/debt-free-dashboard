@@ -1,8 +1,8 @@
 {
-  "version": "1.51.3",
-  "releaseDate": "2026-10-02",
-  "releaseName": "Guide fix",
+  "version": "1.51.4",
+  "releaseDate": "2026-10-03",
+  "releaseName": "Clearer pending payments",
   "notes": [
-    "The “What’s next?” guide no longer ticks off setup steps while you are only trying out the example data. Steps now count once you start with your own numbers."
+    "Logging a future-dated payment from the quick “Log a Payment” pop-up now ends on a clear confirmation showing the amount, the debt and the date, with “Log another payment” and “Close”. Before, the form stayed open with the amount cleared, so it looked as if nothing had been saved."
   ]
 }

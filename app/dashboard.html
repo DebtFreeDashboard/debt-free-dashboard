@@ -4013,9 +4013,21 @@
       <div class="modal-title">Log a Payment</div>
       <button class="modal-close" aria-label="Close" onclick="closeQuickLog()">&times;</button>
     </div>
-    <div id="quicklog-future-warn" class="alert warning" style="display:none;margin-bottom:14px;gap:8px;align-items:center;">
-      <span>&#9888;</span><span>Future-dated payment saved as pending — it won't affect your balance until that date arrives.</span>
+    <!-- v1.51.4 — a future-dated payment ends on this confirmation instead of
+         leaving the emptied form open, which read as "nothing was saved". -->
+    <div id="quicklog-done" style="display:none;" role="status" aria-live="polite">
+      <div class="alert" style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px;">
+        <span>&#10003;</span><span><strong>Payment saved as pending.</strong><br><span id="quicklog-done-text"></span></span>
+      </div>
+      <div class="alert warning" style="display:flex;gap:8px;align-items:flex-start;margin-bottom:0;">
+        <span>&#9888;</span><span>It won't affect your balance until that date arrives. It is listed in your Payment Log, where it can be removed.</span>
+      </div>
+      <div class="modal-actions" style="margin-top:20px;">
+        <button class="btn btn-ghost" onclick="quickLogAnother()">Log another payment</button>
+        <button class="btn btn-primary" id="quicklog-done-close" onclick="closeQuickLog()">Close</button>
+      </div>
     </div>
+    <div id="quicklog-form">
     <div class="form-grid" style="grid-template-columns:1fr;">
       <div class="form-field field-full">
         <label>Debt Account</label>
@@ -4034,6 +4046,7 @@
       <button class="btn btn-ghost" onclick="closeQuickLog()">Cancel</button>
       <button class="btn btn-primary" onclick="quickLogPayment()">Log Payment</button>
     </div>
+    </div>
   </div>
 </div>
 
@@ -4041,7 +4054,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.3';
+const APP_VERSION = '1.51.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4049,6 +4062,15 @@ const APP_VERSION = '1.51.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.4',
+    date: 'October 3, 2026',
+    name: 'Clearer pending payments',
+    whatsNew: [],
+    fixes: [
+      'Logging a future-dated payment from the quick \u201cLog a Payment\u201d pop-up now ends on a clear confirmation showing the amount, the debt and the date, with \u201cLog another payment\u201d and \u201cClose\u201d. Before, the form stayed open with the amount cleared, so it looked as if nothing had been saved.'
+    ]
+  },
   {
     version: '1.51.3',
     date: 'October 2, 2026',
@@ -8998,12 +9020,34 @@ function openQuickLog() {
   if (!modal) return;
   populateDebtSelects(); // ensure qlog select is fresh
   const dateEl = document.getElementById('qlog-date');
-  if (dateEl && !dateEl.value) dateEl.value = localDateStr();
-  const warn = document.getElementById('quicklog-future-warn');
-  if (warn) warn.style.display = 'none';
+  // v1.51.4 — always start on today. A date left over from an earlier
+  // future-dated entry would quietly make the next payment pending too.
+  if (dateEl) dateEl.value = localDateStr();
+  _quickLogView('form');
   modal.classList.remove('hidden');
   const amt = document.getElementById('qlog-amount');
   if (amt) amt.focus();
+}
+
+// v1.51.4 — the pop-up has two faces: the form, and the pending confirmation.
+function _quickLogView(which) {
+  const form = document.getElementById('quicklog-form');
+  const done = document.getElementById('quicklog-done');
+  if (form) form.style.display = which === 'done' ? 'none' : '';
+  if (done) done.style.display = which === 'done' ? '' : 'none';
+}
+function _quickLogDateLabel(iso) {
+  const p = String(iso).split('-');
+  const d = new Date(+p[0], (+p[1]) - 1, +p[2]);
+  if (isNaN(d.getTime())) return String(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+// Same debt and date stay selected: several scheduled payments are usually
+// entered in one sitting.
+function quickLogAnother() {
+  _quickLogView('form');
+  const amt = document.getElementById('qlog-amount');
+  if (amt) { amt.value = ''; amt.focus(); }
 }
 
 function closeQuickLog(e) {
@@ -9023,9 +9067,12 @@ function quickLogPayment() {
   if (result === null) return;
   document.getElementById('qlog-amount').value = '';
   if (result.status === 'future') {
-    // Keep the modal open so the pending explanation is seen
-    const warn = document.getElementById('quicklog-future-warn');
-    if (warn) warn.style.display = 'flex';
+    // Keep the modal open, but on a confirmation — not the emptied form.
+    const txt = document.getElementById('quicklog-done-text');
+    if (txt) txt.textContent = fmtDec(result.amount) + ' to ' + result.debtName + ', dated ' + _quickLogDateLabel(date) + '.';
+    _quickLogView('done');
+    const cb = document.getElementById('quicklog-done-close');
+    if (cb) cb.focus();
     return;
   }
   closeQuickLog();
