@@ -4054,7 +4054,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.4';
+const APP_VERSION = '1.51.5';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4062,6 +4062,15 @@ const APP_VERSION = '1.51.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.5',
+    date: 'October 4, 2026',
+    name: 'Payoff Order in payoff order',
+    whatsNew: [],
+    fixes: [
+      'On the Strategy tab with Avalanche selected, the Payoff Order table now lists your debts in the order your plan clears them, earliest payoff date first, so the # column matches the Payoff by Payoff list underneath it. Before, the rows were sorted by interest paid, so a debt that clears later could show as #1. No dates, payments or interest figures changed.'
+    ]
+  },
   {
     version: '1.51.4',
     date: 'October 3, 2026',
@@ -14130,11 +14139,9 @@ function renderStrategy() {
   (schedResult.perDebt || []).forEach(function(p) { schedPerDebt[p.id] = p; });
   const schedMonths = schedResult.months || 1;
 
-  // v1.9.1 — re-sort display by ACTUAL interest descending so the row order
-  // matches the Interest Paid column. Tiebreaker is passive interest cost
-  // descending, which preserves "exposure if plan changes" as a quiet
-  // secondary signal among the $0-actual cards. The simulation engine's
-  // internal sort (passive cost) is still the optimal allocation strategy.
+  // Display order for Avalanche (see the v1.51.5 note below). The simulation
+  // engine's internal sort (passive cost) is still what allocates the money;
+  // this only decides which row is shown first.
   const _now = new Date();
   const _lumps = plannedDisbursements();
   if (strategy === 'avalanche') {
@@ -14143,7 +14150,16 @@ function renderStrategy() {
     sorted.forEach(function(d) {
       _passiveMap[d.id] = computePassiveInterestCost(d, _h, _lumps, _now);
     });
+    // v1.51.5 — the card is called Payoff Order and carries a # column, so the
+    // rows follow the order the plan actually clears them: earliest payoff
+    // first. They used to be sorted by interest paid, which put a debt that
+    // clears a year later at #1, and since v1.50.0 the Payoff by Payoff list
+    // sits directly underneath showing the real sequence. Interest paid, then
+    // passive cost, only break ties between debts that clear the same month.
     sorted.sort(function(a, b) {
+      const am = (perDebtMap[a.id] || {}).paidOffMonth || Infinity;
+      const bm = (perDebtMap[b.id] || {}).paidOffMonth || Infinity;
+      if (am !== bm) return am - bm;
       const ai = (perDebtMap[a.id] || {}).interestPaid || 0;
       const bi = (perDebtMap[b.id] || {}).interestPaid || 0;
       if (Math.abs(ai - bi) > 0.01) return bi - ai;

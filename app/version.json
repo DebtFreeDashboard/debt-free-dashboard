@@ -1,8 +1,8 @@
 {
-  "version": "1.51.4",
-  "releaseDate": "2026-10-03",
-  "releaseName": "Clearer pending payments",
+  "version": "1.51.5",
+  "releaseDate": "2026-10-04",
+  "releaseName": "Payoff Order in payoff order",
   "notes": [
-    "Logging a future-dated payment from the quick “Log a Payment” pop-up now ends on a clear confirmation showing the amount, the debt and the date, with “Log another payment” and “Close”. Before, the form stayed open with the amount cleared, so it looked as if nothing had been saved."
+    "On the Strategy tab with Avalanche selected, the Payoff Order table now lists your debts in the order your plan clears them, earliest payoff date first, so the # column matches the Payoff by Payoff list underneath it. Before, the rows were sorted by interest paid, so a debt that clears later could show as #1. No dates, payments or interest figures changed."
   ]
 }
