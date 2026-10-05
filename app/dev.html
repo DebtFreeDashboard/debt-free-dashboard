@@ -4177,7 +4177,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.7';
+const APP_VERSION = '1.51.8';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4185,6 +4185,15 @@ const APP_VERSION = '1.51.7';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.8',
+    date: 'October 5, 2026',
+    name: 'Sync carries due dates',
+    whatsNew: [],
+    fixes: [
+      'Fixed details such as due dates not reaching your other device after a sync. Anything entered before late September could stay on the device it was typed on, because each device kept its own copy. Both devices now settle on the same, fuller copy.'
+    ]
+  },
   {
     version: '1.51.7',
     date: 'October 5, 2026',
@@ -14971,6 +14980,37 @@ function _smResolveDebtCollisions(local, remote, idSeed) {
 // least one side going in. A debt that satisfies it on NEITHER side predates
 // the ledger (or was hand-edited before v1.11) and is left exactly as the
 // record says, because there the ledger is not the source of truth.
+// Two copies of one record with the same stamp. The answer must not depend on
+// which side is "local", or the devices disagree forever. The fuller record
+// wins (then a fixed text order, so it is always the same one), and any field
+// it leaves empty is filled from the other copy.
+function _smTieMerge(x, y) {
+  function filled(r) {
+    var n = 0;
+    Object.keys(r).forEach(function (k) {
+      if (k !== 'updatedAt' && r[k] !== null && r[k] !== undefined && r[k] !== '') n++;
+    });
+    return n;
+  }
+  function text(r) {
+    var o = {};
+    Object.keys(r).sort().forEach(function (k) { if (k !== 'updatedAt') o[k] = r[k]; });
+    return JSON.stringify(o);
+  }
+  var fx = filled(x), fy = filled(y);
+  var win = fx !== fy ? (fx > fy ? x : y) : (text(x) <= text(y) ? x : y);
+  var lose = win === x ? y : x;
+  var out = _smClone(win);
+  Object.keys(lose).forEach(function (k) {
+    if (k === 'updatedAt') return;
+    var v = out[k];
+    if ((v === null || v === undefined || v === '') && lose[k] !== null && lose[k] !== undefined && lose[k] !== '') {
+      out[k] = _smClone(lose[k]);
+    }
+  });
+  return out;
+}
+
 function _smRound2(n) { return Math.round(n * 100) / 100; }
 function _smLedgerBalance(p, debt) {
   var id = debt.id, sum = Number(debt.originalBalance) || 0;
@@ -15063,6 +15103,15 @@ function mergeBackups(localIn, remoteIn) {
       if (b > a) {
         if (_smHash(map[k]) !== _smHash(rec)) updated++;
         map[k] = rec;
+      } else if (b === a && _smHash(map[k]) !== _smHash(rec)) {
+        // v1.51.8 — same stamp, different content. This is the normal state
+        // of anything last edited BEFORE change tracking existed (v1.49):
+        // neither copy carries a stamp. "Local wins" meant each device kept
+        // its own copy and re-uploaded it, so the two never converged — due
+        // dates entered on one device never reached the other.
+        var merged = _smTieMerge(map[k], rec);
+        if (_smHash(merged) !== _smHash(map[k])) updated++;
+        map[k] = merged;
       }
     }
 
