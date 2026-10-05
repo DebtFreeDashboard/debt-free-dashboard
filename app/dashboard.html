@@ -4054,7 +4054,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.5';
+const APP_VERSION = '1.51.6';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4062,6 +4062,15 @@ const APP_VERSION = '1.51.5';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.6',
+    date: 'October 5, 2026',
+    name: 'Setup progress',
+    whatsNew: [],
+    fixes: [
+      'The app now notes, anonymously, when a get-started step is finished (for example \u201cfirst payment logged\u201d), so we can see where setup gets stuck and make it easier. It records only which step was finished. It never records amounts, balances or the names of your debts. Nothing on screen changed.'
+    ]
+  },
   {
     version: '1.51.5',
     date: 'October 4, 2026',
@@ -6290,7 +6299,44 @@ function guideGo(id) {
   if (fn) fn();
 }
 
+// v1.51.6 — setup progress. The guide's own events (guide_open, guide_action,
+// guide_skip) say when someone tapped the guide; steps are completed by what
+// the person does in the app, so nothing said whether setup actually moved.
+// guide_step_done fires ONCE per step per device, guide_complete once when
+// all six are done. `preexisting` is 'yes' for steps that were already done
+// the first time this code ran on a device (an existing user opening a new
+// version), so they are not counted as the guide working. It sends the step
+// name only: no amounts, no debt names.
+//
+// Demo mode never completes a step, but it does set the baseline: the example
+// only shows on an empty device, so a first debt added from there is new work.
+function guideTrackProgress() {
+  try {
+    var st = guideState();
+    if (typeof _demoMode !== 'undefined' && _demoMode) {
+      if (!st.gt) guideSet('gt', {});
+      return;
+    }
+    var first = !st.gt;
+    var sent = Object.assign({}, st.gt || {});
+    var steps = guideSteps();
+    var changed = first;
+    var flag = first ? 'yes' : 'no';
+    steps.forEach(function (x) {
+      if (!x.done || sent[x.id]) return;
+      sent[x.id] = 1; changed = true;
+      trackShare('guide_step_done', { _category: 'activation', step: x.id, preexisting: flag });
+    });
+    if (!sent._all && steps.every(function (x) { return x.done; })) {
+      sent._all = 1; changed = true;
+      trackShare('guide_complete', { _category: 'activation', preexisting: flag });
+    }
+    if (changed) guideSet('gt', sent);
+  } catch (e) {}
+}
+
 function renderGuide() {
+  guideTrackProgress();
   var btn = document.getElementById('guide-btn');
   var badge = document.getElementById('guide-badge');
   var card = document.getElementById('guide-card');
