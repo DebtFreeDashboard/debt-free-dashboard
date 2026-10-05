@@ -4054,7 +4054,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.6';
+const APP_VERSION = '1.51.7';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4062,6 +4062,17 @@ const APP_VERSION = '1.51.6';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.7',
+    date: 'October 5, 2026',
+    name: 'Sync balance fix',
+    whatsNew: [],
+    fixes: [
+      'Fixed a two-device sync problem that could leave the wrong balance on both devices. If one device had been unused for a while, opening it and syncing could bring back an older balance and older plan settings, even though the payments logged on the other device were all still there. Sync now works each balance out from the full list of payments, interest and corrections after merging, so both devices end on the same, correct numbers. If this happened to you: on the device that had the right numbers, open the cloud icon, tap \u201cUndo sync\u201d, then sync again.',
+      'A sync no longer shows a celebration for a change you did not make.',
+      'Fixed the square share image, where a two-line description printed over the numbers underneath it.'
+    ]
+  },
   {
     version: '1.51.6',
     date: 'October 5, 2026',
@@ -8559,10 +8570,12 @@ function drawShareCard(content, format) {
   ctx.fillText('DASHBOARD', inX + 120, top + 78);
 
   // Vertical rhythm — story has more room so spread things out
-  const emojiY   = isStory ? panelY + 520 : panelY + 400;
-  const bigY     = isStory ? panelY + 720 : panelY + 560;
-  const subY     = isStory ? panelY + 800 : panelY + 630;
-  const stripY   = isStory ? panelY + panelH - 320 : panelY + panelH - 210;
+  // v1.51.7 — square block moved up and the stat strip down: a description
+  // that wraps to two lines used to print straight through the stats.
+  const emojiY   = isStory ? panelY + 520 : panelY + 330;
+  const bigY     = isStory ? panelY + 720 : panelY + 480;
+  const subY     = isStory ? panelY + 800 : panelY + 545;
+  const stripY   = isStory ? panelY + panelH - 320 : panelY + panelH - 190;
   const urlY     = panelY + panelH - 70;
   const maxW     = panelW - 120;
 
@@ -14818,6 +14831,82 @@ function _smResolveDebtCollisions(local, remote, idSeed) {
   return out;
 }
 
+// ── v1.51.7 — the ledger outranks the record ─────────────────────────────
+// A debt's balance is not an independent fact: it is
+//   originalBalance + Σaccruals + Σadjustments − Σ(non-pending payments).
+// The merge unions the ledger rows but takes the debt RECORD whole from the
+// side with the newer stamp. Those two rules disagree whenever the newer
+// record belongs to the device that knew FEWER payments — which is exactly
+// what happens when a device that has been away is opened: the month's
+// interest accrues, the record is stamped "now", and it then beats the
+// record on the device where the payments were actually logged. The payment
+// rows survive, the balance they produced does not, and the total is wrong on
+// both devices after the next sync. (Reported 2026-10-05.)
+//
+// So after the collections are merged, each debt's balance is recomputed from
+// the merged ledger. Guard: only when the identity held for that debt on at
+// least one side going in. A debt that satisfies it on NEITHER side predates
+// the ledger (or was hand-edited before v1.11) and is left exactly as the
+// record says, because there the ledger is not the source of truth.
+function _smRound2(n) { return Math.round(n * 100) / 100; }
+function _smLedgerBalance(p, debt) {
+  var id = debt.id, sum = Number(debt.originalBalance) || 0;
+  _smArr(p.accruals).forEach(function (a) { if (a && a.debtId === id) sum += Number(a.amount) || 0; });
+  _smArr(p.adjustments).forEach(function (a) { if (a && a.debtId === id) sum += Number(a.amount) || 0; });
+  _smArr(p.payments).forEach(function (x) { if (x && x.debtId === id && !x.pending) sum -= Number(x.amount) || 0; });
+  return Math.max(0, _smRound2(sum));
+}
+function _smLedgerHolds(p, id) {
+  var d = null;
+  _smArr(p.debts).forEach(function (x) { if (x && x.id === id) d = x; });
+  if (!d) return false;
+  return Math.abs((Number(d.balance) || 0) - _smLedgerBalance(p, d)) < 0.005;
+}
+function _smReconcileBalances(local, remote, out, summary) {
+  var fixed = 0;
+  _smArr(out.debts).forEach(function (d) {
+    if (!d) return;
+    var want = _smLedgerBalance(out, d);
+    if (Math.abs((Number(d.balance) || 0) - want) < 0.005) return;
+    if (!_smLedgerHolds(local, d.id) && !_smLedgerHolds(remote, d.id)) return;
+    d.balance = want;
+    fixed++;
+  });
+  if (fixed && summary) summary.rebalanced = fixed;
+}
+
+// Two devices can each accrue the same month for the same debt, from
+// different balances. The row is keyed (debtId, month) so only one survives,
+// and "newer stamp wins" picks the late catch-up accrual from the device that
+// had been away — the one computed from the staler balance. Prefer the row
+// from the side that knew more of that debt's ledger; on a tie, the row that
+// was written first.
+function _smPreferInformedAccruals(local, remote, out) {
+  function info(p, id) {
+    var n = 0;
+    _smArr(p.payments).forEach(function (x) { if (x && x.debtId === id && !x.pending) n++; });
+    _smArr(p.adjustments).forEach(function (x) { if (x && x.debtId === id) n++; });
+    return n;
+  }
+  function index(p) {
+    var m = {};
+    _smArr(p.accruals).forEach(function (a) { if (a) m[_smKey(a, ['debtId', 'month'])] = a; });
+    return m;
+  }
+  var L = index(local), R = index(remote);
+  out.accruals = _smArr(out.accruals).map(function (a) {
+    var k = _smKey(a, ['debtId', 'month']);
+    var l = L[k], r = R[k];
+    if (!l || !r) return a;
+    if (Math.abs((Number(l.amount) || 0) - (Number(r.amount) || 0)) < 0.005) return a;
+    var il = info(local, a.debtId), ir = info(remote, a.debtId);
+    if (il !== ir) return il > ir ? l : r;
+    var tl = _smMs(l.updatedAt), tr = _smMs(r.updatedAt);
+    if (tl && tr && tl !== tr) return tl < tr ? l : r;
+    return a;
+  });
+}
+
 function mergeBackups(localIn, remoteIn) {
   var local = _smClone(localIn) || {};
   var remote = _smClone(remoteIn) || {};
@@ -14863,8 +14952,14 @@ function mergeBackups(localIn, remoteIn) {
     if (removed) summary.removed[c.name] = removed;
   });
 
-  var localAt = _smMs(local.syncMeta && local.syncMeta.updatedAt) || _smMs(local.exportDate);
-  var remoteAt = _smMs(remote.syncMeta && remote.syncMeta.updatedAt) || _smMs(remote.exportDate);
+  // v1.51.7 — a payload that carries syncMeta but no settings stamp has never
+  // had its settings changed: that is the OLDEST possible clock. Only a
+  // pre-sync backup (no syncMeta at all) falls back to its export date.
+  _smPreferInformedAccruals(local, remote, out);
+  _smReconcileBalances(local, remote, out, summary);
+
+  var localAt = local.syncMeta ? _smMs(local.syncMeta.updatedAt) : _smMs(local.exportDate);
+  var remoteAt = remote.syncMeta ? _smMs(remote.syncMeta.updatedAt) : _smMs(remote.exportDate);
   var newer = remoteAt > localAt ? remote : local;
   _SM_SCALARS.forEach(function (k) {
     out[k] = (newer[k] !== undefined) ? newer[k]
@@ -14877,7 +14972,7 @@ function mergeBackups(localIn, remoteIn) {
   out.nextId = Math.max(_smMaxId([out]) + 1, parseInt(local.nextId, 10) || 1, parseInt(remote.nextId, 10) || 1);
   out.syncMeta = {
     deviceId: (local.syncMeta && local.syncMeta.deviceId) || null,
-    updatedAt: new Date(Math.max(localAt, remoteAt) || Date.now()).toISOString(),
+    updatedAt: Math.max(localAt, remoteAt) ? new Date(Math.max(localAt, remoteAt)).toISOString() : null,
     deletions: _smTombList(tombs)
   };
   return { payload: out, summary: summary };
@@ -14985,7 +15080,10 @@ function syncMeta() {
   try { at = localStorage.getItem(LS_SYNC_SCALARS_AT); } catch (e) {}
   return {
     deviceId: syncDeviceId(),
-    updatedAt: at || new Date().toISOString(),
+    // v1.51.7 — null, not "now". A device whose plan settings were never
+    // changed since tracking began used to claim the current time on every
+    // sync, so its stale settings beat a real change made on another device.
+    updatedAt: at || null,
     deletions: syncDeletions()
   };
 }
@@ -15676,10 +15774,11 @@ function applyBackupPayload(data) {
       document.getElementById('extra-payment').value = extraMonthly || '';
       document.getElementById('strategy-select').value = strategy;
       _milestonesBaselined = false;
-      shownMilestones = milestoneKeysAchieved();
-      persistMilestones();
-      // v1.40.0 — the restored file's badges are already-history, not news.
-      try { localStorage.setItem('debtfree_badges_seeded', '1'); } catch (e) {}
+      // v1.51.7 — the incoming plan baseline is installed BEFORE the milestone
+      // baseline is taken. The "X months sooner" badges measure against it, so
+      // taking the snapshot first compared the new plan with the OLD anchor,
+      // and a sync that swapped the anchor then celebrated "A month sooner"
+      // for a change nobody made.
       planBaseline = (data && data.planBaseline && data.planBaseline.ym)
         ? data.planBaseline : null;
       try {
@@ -15687,6 +15786,10 @@ function applyBackupPayload(data) {
         else localStorage.removeItem('debtfree_baseline');
       } catch (e) {}
       ensurePlanBaseline();
+      shownMilestones = milestoneKeysAchieved();
+      persistMilestones();
+      // v1.40.0 — the restored file's badges are already-history, not news.
+      try { localStorage.setItem('debtfree_badges_seeded', '1'); } catch (e) {}
       _milestonesBaselined = true;
 
       selectStrategy(strategy);

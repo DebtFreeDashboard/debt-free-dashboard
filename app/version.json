@@ -1,8 +1,10 @@
 {
-  "version": "1.51.6",
+  "version": "1.51.7",
   "releaseDate": "2026-10-05",
-  "releaseName": "Setup progress",
+  "releaseName": "Sync balance fix",
   "notes": [
-    "The app now notes, anonymously, when a get-started step is finished (for example “first payment logged”), so we can see where setup gets stuck and make it easier. It records only which step was finished. It never records amounts, balances or the names of your debts. Nothing on screen changed."
+    "Fixed a two-device sync problem that could leave the wrong balance on both devices. If one device had been unused for a while, opening it and syncing could bring back an older balance and older plan settings, even though the payments logged on the other device were all still there. Sync now works each balance out from the full list of payments, interest and corrections after merging, so both devices end on the same, correct numbers. If this happened to you: on the device that had the right numbers, open the cloud icon, tap “Undo sync”, then sync again.",
+    "A sync no longer shows a celebration for a change you did not make.",
+    "Fixed the square share image, where a two-line description printed over the numbers underneath it."
   ]
 }
