@@ -1,10 +1,8 @@
 {
-  "version": "1.52.0",
+  "version": "1.52.1",
   "releaseDate": "2026-10-05",
-  "releaseName": "Wins that always match your numbers",
+  "releaseName": "Wins page note",
   "notes": [
-    "The Wins page now reads every win straight from your numbers each time you open it. If a payment is deleted or a balance corrected, the page reflects it right away, the same as the rest of the dashboard.",
-    "Best month yet now means what it says: a month that took more off your balances than any month in the year before it.",
-    "Streak and on-plan wins count your longest run, so a missed month does not erase a run you completed."
+    "Added a short note on the Wins page explaining that badges follow your current numbers, so one can switch off if a balance moves back."
   ]
 }
