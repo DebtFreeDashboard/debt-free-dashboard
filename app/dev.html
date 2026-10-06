@@ -4177,7 +4177,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.11';
+const APP_VERSION = '1.52.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4185,6 +4185,18 @@ const APP_VERSION = '1.51.11';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.52.0',
+    date: 'October 5, 2026',
+    name: 'Wins that always match your numbers',
+    whatsNew: [
+      'The Wins page now reads every win straight from your numbers each time you open it. If a payment is deleted or a balance corrected, the page reflects it right away, the same as the rest of the dashboard.'
+    ],
+    fixes: [
+      'Best month yet now means what it says: a month that took more off your balances than any month in the year before it.',
+      'Streak and on-plan wins count your longest run, so a missed month does not erase a run you completed.'
+    ]
+  },
   {
     version: '1.51.11',
     date: 'October 5, 2026',
@@ -5600,6 +5612,51 @@ function paymentStreak() {
   return { length: len, last: months[months.length - 1], usedGrace: graceLeft === 0 };
 }
 
+// v1.52.0 - the Wins page is read straight from the ledger every time it is
+// drawn, so the run-type wins need "the longest there has ever been", not
+// "the one in progress": a year-long streak is still a fact after a missed
+// month. Same counting rule as paymentStreak(), applied to every month a run
+// could end on.
+function longestStreak() {
+  const months = activeMonths();
+  if (!months.length) return 0;
+  const have = {}; months.forEach(function(m){ have[m] = true; });
+  const earliest = months[0];
+  let best = 0;
+  months.forEach(function(end){
+    let cursor = end, len = 0, graceLeft = 1, guard = 0;
+    while (guard++ < 600) {
+      if (have[cursor]) { len++; }
+      else if (graceLeft > 0 && len > 0 && _monthDiff(earliest, cursor) > 0) { graceLeft--; }
+      else break;
+      cursor = _monthAdd(cursor, -1);
+    }
+    if (len > best) best = len;
+  });
+  return Math.max(best, paymentStreak().length);
+}
+
+// A month that beat every active month in the eleven before it. The old test
+// ("two active months, one of them positive") was true for nearly everyone
+// and said nothing about a best month.
+function bestMonthRecord() {
+  const months = activeMonths();
+  let found = null;
+  months.forEach(function(m){
+    let prior = null;
+    months.forEach(function(k){
+      const age = _monthDiff(k, m);
+      if (age < 1 || age > 11) return;
+      const v = monthNet(k);
+      if (prior === null || v > prior) prior = v;
+    });
+    if (prior === null) return;
+    const v = monthNet(m);
+    if (v > 0 && v > Math.max(prior, 0) + 0.005) found = m;
+  });
+  return found;   // the most recent record month, or null
+}
+
 function paymentCount() {
   return payments.filter(function(p){ return !p.pending && p.amount > 0; }).length;
 }
@@ -5674,6 +5731,22 @@ function recordPlanTargets() {
     }
   }
   if (changed) { try { localStorage.setItem('debtfree_plan_targets', JSON.stringify(planTargets)); } catch (e) {} }
+}
+// Longest run of completed months on plan, ever (see longestStreak()).
+function onPlanBest() {
+  const live = monthlyTarget();
+  const months = activeMonths();
+  if (!months.length) return 0;
+  const now = _thisMonthKey();
+  let c = months[0], run = 0, best = 0, guard = 0;
+  while (c < now && guard++ < 600) {
+    const target = planTargets[c] != null ? planTargets[c] : live;
+    const paidIn = payments.filter(function(p){ return !p.pending && _monthKey(p.date) === c; })
+                           .reduce(function(a, p){ return a + p.amount; }, 0);
+    if (target > 0 && paidIn + 0.005 >= target) { run++; if (run > best) best = run; } else run = 0;
+    c = _monthAdd(c, 1);
+  }
+  return best;
 }
 function onPlanRun() {
   const live = monthlyTarget();
@@ -5763,7 +5836,7 @@ function _badge(id, track, icon, name, desc, got, near) {
  [24,'Two years running'],[36,'Three years running']].forEach(function(t){
   _badge('a.streak.'+t[0], 'a', '🗓️', t[1],
     'Money went to your debts in ' + t[0] + ' months in a row.',
-    function(){ return paymentStreak().length >= t[0]; },
+    function(){ return longestStreak() >= t[0]; },
     function(){ return _near(paymentStreak().length, t[0], _monthsLeft); });
 });
 [[10,'10 payments logged'],[25,'25 payments logged'],[50,'50 payments logged'],[100,'100 payments logged']].forEach(function(t){
@@ -5773,12 +5846,12 @@ function _badge(id, track, icon, name, desc, got, near) {
     function(){ return _near(paymentCount(), t[0], _countLeft); });
 });
 _badge('a.best', 'a', '📈', 'Best month yet',
-  'Your largest month of balance reduction in the last twelve.',
-  function(){ const b = bestMonthRecent(); return b.count >= 2 && b.amount > 0; });
+  'A month that took more off your balances than any month in the year before it.',
+  function(){ return bestMonthRecord() !== null; });
 [[3,'Three months on plan'],[6,'Six months on plan'],[12,'Twelve months on plan']].forEach(function(t){
   _badge('a.onplan.'+t[0], 'a', '✅', t[1],
     'Covered your minimums plus your extra, ' + t[0] + ' months running.',
-    function(){ return onPlanRun() >= t[0]; },
+    function(){ return onPlanBest() >= t[0]; },
     function(){ return _near(onPlanRun(), t[0], _monthsLeft); });
 });
 
@@ -5876,20 +5949,15 @@ function badgesEarnedNow() {
   BADGES.forEach(function(b){ try { if (b.got()) out.push(b.id); } catch (e) {} });
   return out;
 }
-// Sticky: earned once, earned for good. Correcting a number downward (as
-// progressPct was corrected in 1.39.4) must never take a badge back.
-// v1.51.11 - the plan-forecast wins are the exception. "Your plan avoids half
-// the interest" and "a month sooner" are statements about the plan as it is
-// set NOW, so they show as earned only while they are true. Kept sticky, one
-// minute with a large extra typed in left a claim on the page that the real
-// plan did not support.
-function _msIsLive(id) { return id.indexOf('c.') === 0 || id === 'd.tuned'; }
+// v1.52.0 - EVERY win is read from the numbers now, each time the page is
+// drawn. There is no stored "earned" list behind the page any more: a stored
+// list is a snapshot, and a snapshot can disagree with the ledger (a win kept
+// after the payment behind it was deleted, or withheld after a correction
+// that made it true). shownMilestones survives only as the memory of which
+// celebration cards have already been shown.
 function badgeIsEarned(id) {
-  if (_msIsLive(id)) {
-    const b = badgeById(id);
-    try { return !!(b && b.got()); } catch (e) { return false; }
-  }
-  return Array.isArray(shownMilestones) && shownMilestones.indexOf(id) !== -1;
+  const b = badgeById(id);
+  try { return !!(b && b.got()); } catch (e) { return false; }
 }
 
 // The three closest unearned badges, at most two from any one track so the
@@ -6315,9 +6383,9 @@ function checkMilestones() {
   // Without one it is left alone and looked at again the next time something
   // real happens; 1.51.10 hid the card but still marked it earned. The live
   // plan wins are noted either way: the page shows those by what is true now.
-  const earnedNow = fresh.filter(function(k){ return _msIsLive(k) || _msMayCelebrate(k, causes); });
-  if (!earnedNow.length) return;
-  earnedNow.forEach(_msEarn);
+  // v1.52.0 - all noted, so none can celebrate later for something that
+  // was already on the page. The page itself no longer reads this list.
+  fresh.forEach(_msEarn);
   persistMilestones();
 
   // Priority: debt-free > an account cleared > ground covered > everything

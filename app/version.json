@@ -1,8 +1,10 @@
 {
-  "version": "1.51.11",
+  "version": "1.52.0",
   "releaseDate": "2026-10-05",
-  "releaseName": "Wins backed by the numbers",
+  "releaseName": "Wins that always match your numbers",
   "notes": [
-    "Tightened the Wins page so every win is backed by the numbers. A win is now only marked earned when something real caused it, such as a recorded payment; edits, removed debts and synced changes no longer switch one on quietly. Months on plan are judged against the target each month actually had, so lowering your extra later does not rewrite earlier months. Plan forecast wins, like interest avoided and months sooner, show as earned only while your current plan supports them. Deleting a payment logged by mistake also takes back any win it triggered. First card under $1,000 now counts only for a card that started above that."
+    "The Wins page now reads every win straight from your numbers each time you open it. If a payment is deleted or a balance corrected, the page reflects it right away, the same as the rest of the dashboard.",
+    "Best month yet now means what it says: a month that took more off your balances than any month in the year before it.",
+    "Streak and on-plan wins count your longest run, so a missed month does not erase a run you completed."
   ]
 }
