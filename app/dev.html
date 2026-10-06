@@ -4177,7 +4177,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.10';
+const APP_VERSION = '1.51.11';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4185,6 +4185,15 @@ const APP_VERSION = '1.51.10';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.11',
+    date: 'October 5, 2026',
+    name: 'Wins backed by the numbers',
+    whatsNew: [],
+    fixes: [
+      'Tightened the Wins page so every win is backed by the numbers. A win is now only marked earned when something real caused it, such as a recorded payment; edits, removed debts and synced changes no longer switch one on quietly. Months on plan are judged against the target each month actually had, so lowering your extra later does not rewrite earlier months. Plan forecast wins, like interest avoided and months sooner, show as earned only while your current plan supports them. Deleting a payment logged by mistake also takes back any win it triggered. First card under $1,000 now counts only for a card that started above that.'
+    ]
+  },
   {
     version: '1.51.10',
     date: 'October 5, 2026',
@@ -5635,12 +5644,44 @@ function monthlyTarget() {
   const t = mins + planExtra();
   return isFinite(t) ? t : 0;
 }
+// v1.51.11 - each month keeps the target it had. This used to judge every past
+// month against TODAY's target, so lowering the extra, clearing a card or
+// editing a minimum quietly turned old months into "on plan" months. The
+// current month follows the live figure; once a month ends its figure is
+// frozen. Months from before this existed are frozen at the figure in force
+// the first time this runs, which is the best information there is.
+let planTargets = {};   // { 'YYYY-MM': dollars }
+function sanitizePlanTargets(o) {
+  const out = {};
+  if (o && typeof o === 'object') Object.keys(o).forEach(function (k) {
+    const v = Number(o[k]);
+    if (/^\d{4}-\d{2}$/.test(k) && isFinite(v) && v > 0) out[k] = Math.round(v * 100) / 100;
+  });
+  return out;
+}
+function recordPlanTargets() {
+  const t = Math.round(monthlyTarget() * 100) / 100;
+  if (!(t > 0)) return;
+  const now = _thisMonthKey();
+  let changed = false;
+  if (planTargets[now] !== t) { planTargets[now] = t; changed = true; }
+  const months = activeMonths();
+  if (months.length) {
+    let c = months[0], g = 0;
+    while (c < now && g++ < 600) {
+      if (planTargets[c] == null) { planTargets[c] = t; changed = true; }
+      c = _monthAdd(c, 1);
+    }
+  }
+  if (changed) { try { localStorage.setItem('debtfree_plan_targets', JSON.stringify(planTargets)); } catch (e) {} }
+}
 function onPlanRun() {
-  const target = monthlyTarget();
-  if (target <= 0) return 0;
+  const live = monthlyTarget();
+  if (live <= 0) return 0;
   const now = _thisMonthKey();
   let cursor = _monthAdd(now, -1), run = 0, guard = 0;   // completed months only
   while (guard++ < 600) {
+    const target = planTargets[cursor] != null ? planTargets[cursor] : live;
     const paidIn = payments.filter(function(p){ return !p.pending && _monthKey(p.date) === cursor; })
                            .reduce(function(a, p){ return a + p.amount; }, 0);
     if (paidIn + 0.005 >= target) { run++; cursor = _monthAdd(cursor, -1); } else break;
@@ -5765,7 +5806,9 @@ _badge('b.card.50', 'b', '💳', 'Half off one card',
   function(){ return _bestCardPct() >= 50; });
 _badge('b.card.1k', 'b', '💳', 'First card under $1,000',
   'An open account has dropped below a thousand dollars.',
-  function(){ const l = _lowestActiveBalance(); return l !== null && l < 1000; });
+  // v1.51.11 - only a card that STARTED at $1,000 or more. Adding a small
+  // card to the list is not a balance dropping below a thousand.
+  function(){ return debts.some(function(d){ return d.balance > 0 && d.balance < 1000 && d.originalBalance >= 1000; }); });
 [[1,'First card cleared'],[2,'Second card cleared'],[3,'Third card cleared'],
  [5,'Fifth card cleared'],[10,'Tenth card cleared']].forEach(function(t){
   _badge('b.elim.'+t[0], 'b', '✅', t[1],
@@ -5835,7 +5878,17 @@ function badgesEarnedNow() {
 }
 // Sticky: earned once, earned for good. Correcting a number downward (as
 // progressPct was corrected in 1.39.4) must never take a badge back.
+// v1.51.11 - the plan-forecast wins are the exception. "Your plan avoids half
+// the interest" and "a month sooner" are statements about the plan as it is
+// set NOW, so they show as earned only while they are true. Kept sticky, one
+// minute with a large extra typed in left a claim on the page that the real
+// plan did not support.
+function _msIsLive(id) { return id.indexOf('c.') === 0 || id === 'd.tuned'; }
 function badgeIsEarned(id) {
+  if (_msIsLive(id)) {
+    const b = badgeById(id);
+    try { return !!(b && b.got()); } catch (e) { return false; }
+  }
   return Array.isArray(shownMilestones) && shownMilestones.indexOf(id) !== -1;
 }
 
@@ -6185,6 +6238,65 @@ function _msResetCauses() {
   _msCauseAt = { l: 0, p: 0, m: 0 };
   try { localStorage.setItem(LS_MS_SIG, JSON.stringify(_msSigs())); } catch (e) {}
 }
+// When each win was earned, and when one was taken back. Needed so a win can
+// be withdrawn (a payment logged by mistake and deleted) and STAY withdrawn
+// after a sync, instead of the other device handing it straight back.
+var LS_MS_LOG = 'debtfree_ms_log';
+var _msLog = {};
+function _msEarn(k) {
+  if (shownMilestones.indexOf(k) === -1) shownMilestones.push(k);
+  var x = _msLog[k] || (_msLog[k] = {});
+  x.e = new Date().toISOString();
+}
+function _msRevoke(k) {
+  var i = shownMilestones.indexOf(k);
+  if (i !== -1) shownMilestones.splice(i, 1);
+  (_msLog[k] || (_msLog[k] = {})).r = new Date().toISOString();
+}
+// Lists are unioned; a key is dropped if it was taken back and not earned
+// again since. Pure, so the merge and the device use the same rule.
+function _msCombine(lists, logs) {
+  var log = {}, seen = {};
+  logs.forEach(function (l) {
+    if (!l || typeof l !== 'object') return;
+    Object.keys(l).forEach(function (k) {
+      var x = l[k]; if (!x || typeof x !== 'object' || k.length > 40) return;
+      var o = log[k] || (log[k] = {});
+      if (typeof x.e === 'string' && (!o.e || x.e > o.e)) o.e = x.e;
+      if (typeof x.r === 'string' && (!o.r || x.r > o.r)) o.r = x.r;
+    });
+  });
+  lists.forEach(function (a) {
+    (Array.isArray(a) ? a : []).forEach(function (k) { if (typeof k === 'string' && k.length <= 40) seen[k] = 1; });
+  });
+  var list = Object.keys(seen).filter(function (k) {
+    var x = log[k];
+    return !(x && x.r && !(x.e && x.e > x.r));
+  }).sort();
+  var sorted = {};
+  Object.keys(log).sort().forEach(function (k) {
+    var o = {}; if (log[k].e) o.e = log[k].e; if (log[k].r) o.r = log[k].r;
+    sorted[k] = o;
+  });
+  return { list: list, log: sorted };
+}
+function _msIsProgressKey(k) {
+  return k.indexOf('a.') === 0 || k.indexOf('b.') === 0 || k.indexOf('elim:') === 0 || k === 'debtfree' || k === 'd.pay1';
+}
+// A recorded payment was removed. Any progress win earned since that payment
+// was logged, and no longer true without it, was never really earned.
+function _msRevokeAfterUndo(sinceMs) {
+  if (!sinceMs) return;
+  var now = milestoneKeysAchieved(), hit = false;
+  shownMilestones.slice().forEach(function (k) {
+    if (!_msIsProgressKey(k) || now.indexOf(k) !== -1) return;
+    var e = _msLog[k] && _msLog[k].e;
+    if (!e || Date.parse(e) < sinceMs) return;
+    _msRevoke(k); hit = true;
+  });
+  if (hit) persistMilestones();
+}
+
 function _msMayCelebrate(k, c) {
   if (k === 'd.debt1' || k === 'd.plan' || k.indexOf('d.lump') === 0) return true;
   if (k.indexOf('c.') === 0 || k === 'd.tuned') return c.p || c.l;
@@ -6193,13 +6305,19 @@ function _msMayCelebrate(k, c) {
 }
 
 function checkMilestones() {
+  recordPlanTargets();
   const causes = _msCauses();
   const achieved = milestoneKeysAchieved();
   let fresh = achieved.filter(function(k){ return shownMilestones.indexOf(k) === -1; });
   if (!fresh.length) return;
 
-  // Record them all as shown (we only *display* one, but none should re-fire)
-  fresh.forEach(function(k){ if (shownMilestones.indexOf(k) === -1) shownMilestones.push(k); });
+  // v1.51.11 - a win is only EARNED when there is a cause for it (see above).
+  // Without one it is left alone and looked at again the next time something
+  // real happens; 1.51.10 hid the card but still marked it earned. The live
+  // plan wins are noted either way: the page shows those by what is true now.
+  const earnedNow = fresh.filter(function(k){ return _msIsLive(k) || _msMayCelebrate(k, causes); });
+  if (!earnedNow.length) return;
+  earnedNow.forEach(_msEarn);
   persistMilestones();
 
   // Priority: debt-free > an account cleared > ground covered > everything
@@ -6221,7 +6339,10 @@ function checkMilestones() {
 }
 
 function persistMilestones() {
-  try { localStorage.setItem('debtfree_milestones', JSON.stringify(shownMilestones)); } catch (e) {}
+  try {
+    localStorage.setItem('debtfree_milestones', JSON.stringify(shownMilestones));
+    localStorage.setItem(LS_MS_LOG, JSON.stringify(_msLog));
+  } catch (e) {}
 }
 
 // ── REFERENTIAL INTEGRITY (added in v1.3.9) ──
@@ -8378,10 +8499,9 @@ function saveEditDebt() {
     const _key = 'elim:' + d.id;
     const _i = shownMilestones.indexOf(_key);
     if (_i !== -1) {
-      shownMilestones.splice(_i, 1);
+      _msRevoke(_key);
       // 'debtfree' too — you're no longer debt-free, and reaching it again counts.
-      const _df = shownMilestones.indexOf('debtfree');
-      if (_df !== -1) shownMilestones.splice(_df, 1);
+      ['debtfree', 'b.debtfree'].forEach(function (k) { if (shownMilestones.indexOf(k) !== -1) _msRevoke(k); });
       persistMilestones();
     }
   }
@@ -10741,6 +10861,10 @@ function deletePayment(paymentId) {
   const d = debts.find(x => x.id === p.debtId);
   if (d) {
     recomputeBalance(d.id);
+  }
+  // v1.51.11 - wins that only existed because of this payment go with it.
+  if (!p.pending) {
+    _msRevokeAfterUndo(Number(p.id) > 1e12 ? Number(p.id) : Date.parse(p.updatedAt || ''));
   }
 
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
@@ -15263,9 +15387,16 @@ function mergeBackups(localIn, remoteIn) {
   });
   summary.scalarsFrom = remoteAt > localAt ? 'remote' : 'local';
 
-  var ms = {};
-  _smArr(local.milestones).concat(_smArr(remote.milestones)).forEach(function (k) { if (typeof k === 'string') ms[k] = 1; });
-  out.milestones = Object.keys(ms).sort();
+  var msc = _msCombine([local.milestones, remote.milestones], [local.milestoneLog, remote.milestoneLog]);
+  out.milestones = msc.list;
+  out.milestoneLog = msc.log;
+  if (!Array.isArray(remote.milestones)) out.milestonesLegacy = true;
+  // Month targets: the higher figure wins a disagreement, so a month is never
+  // called on plan by one device against a lower bar than the other saw.
+  var pt = {}, lpt = sanitizePlanTargets(local.planTargets), rpt = sanitizePlanTargets(remote.planTargets);
+  Object.keys(lpt).concat(Object.keys(rpt)).forEach(function (k) { pt[k] = Math.max(lpt[k] || 0, rpt[k] || 0); });
+  var ptOut = {}; Object.keys(pt).sort().forEach(function (k) { ptOut[k] = pt[k]; });
+  out.planTargets = ptOut;
 
   out.version = 2;
   out.exportDate = new Date().toISOString();
@@ -16006,6 +16137,8 @@ function buildBackupPayload() {
     // v1.51.10 - the earned-badge list, so a win earned on one device is not
     // celebrated a second time on the other.
     milestones: (shownMilestones || []).slice().sort(),
+    milestoneLog: _msCombine([], [_msLog]).log,   // v1.51.11 (sorted copy)
+    planTargets: planTargets,      // v1.51.11
     // v1.49.0 — what the merge needs: which device wrote this, when its
     // one-per-plan settings last changed, and what it has deleted.
     syncMeta: syncMeta()
@@ -16152,7 +16285,10 @@ function applyBackupPayload(data) {
       // minute (a streak, "a month sooner", months on plan), so each sync
       // quietly un-earned them and they celebrated again later. The list
       // from the other device is folded in too.
-      _msAbsorb(data.milestones);
+      var _legacyWins = !Array.isArray(data.milestones) || data.milestonesLegacy === true;
+      planTargets = sanitizePlanTargets(data.planTargets);
+      try { localStorage.setItem('debtfree_plan_targets', JSON.stringify(planTargets)); } catch (e) {}
+      _msAbsorb(data.milestones, data.milestoneLog, _legacyWins);
       // v1.40.0 — the restored file's badges are already-history, not news.
       try { localStorage.setItem('debtfree_badges_seeded', '1'); } catch (e) {}
       // The gate stays shut until the very end (see below): the badge maths
@@ -16173,14 +16309,20 @@ function applyBackupPayload(data) {
       render();
       // v1.51.10 - second pass, now that everything has been recalculated
       // from the incoming data, then open the gate.
-      _msAbsorb(null);
+      _msAbsorb(null, null, _legacyWins);
+      recordPlanTargets();
       _msResetCauses();
       _milestonesBaselined = true;
 }
-function _msAbsorb(extra) {
-  var add = milestoneKeysAchieved();
-  if (Array.isArray(extra)) add = add.concat(extra.filter(function (k) { return typeof k === 'string' && k.length < 40; }));
-  add.forEach(function (k) { if (shownMilestones.indexOf(k) === -1) shownMilestones.push(k); });
+// v1.51.11 - the earned list is this device's list plus the incoming one,
+// nothing else. Only a file from before the list travelled (no list in it)
+// falls back to "whatever is true right now", so an old backup does not
+// restore to an empty Wins page.
+function _msAbsorb(extra, log, legacy) {
+  var c = _msCombine([shownMilestones, extra, legacy ? milestoneKeysAchieved().filter(function (k) {
+    var x = _msLog[k]; return !(x && x.r && !(x.e && x.e > x.r));
+  }) : []], [_msLog, log]);
+  shownMilestones = c.list; _msLog = c.log;
   persistMilestones();
 }
 // v1.6.0 — Shared sanitization helper used by load() and importData().
@@ -17008,6 +17150,8 @@ try {
     persistMilestones();
   }
 } catch (e) { shownMilestones = []; }
+try { _msLog = JSON.parse(localStorage.getItem(LS_MS_LOG) || '{}') || {}; } catch (e) { _msLog = {}; }
+try { planTargets = sanitizePlanTargets(JSON.parse(localStorage.getItem('debtfree_plan_targets') || '{}')); } catch (e) { planTargets = {}; }
 
 // v1.40.0 — upgrade seeding. An existing user's stored list holds the OLD keys
 // only, so without this every one of the 65 new badges would read as freshly

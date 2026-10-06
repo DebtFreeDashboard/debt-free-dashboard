@@ -1,8 +1,8 @@
 {
-  "version": "1.51.10",
+  "version": "1.51.11",
   "releaseDate": "2026-10-05",
-  "releaseName": "Celebrations only for real wins",
+  "releaseName": "Wins backed by the numbers",
   "notes": [
-    "Celebration cards now appear only for something that just happened: a payment or balance update you recorded, a new month, or a change you made to your plan. They no longer pop up after a sync, a restore, or an edit to a setting or account detail. Syncing also no longer forgets wins you had already earned, and a win earned on one device is not celebrated again on the other."
+    "Tightened the Wins page so every win is backed by the numbers. A win is now only marked earned when something real caused it, such as a recorded payment; edits, removed debts and synced changes no longer switch one on quietly. Months on plan are judged against the target each month actually had, so lowering your extra later does not rewrite earlier months. Plan forecast wins, like interest avoided and months sooner, show as earned only while your current plan supports them. Deleting a payment logged by mistake also takes back any win it triggered. First card under $1,000 now counts only for a card that started above that."
   ]
 }
