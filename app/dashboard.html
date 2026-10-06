@@ -4054,7 +4054,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.9';
+const APP_VERSION = '1.51.10';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4062,6 +4062,15 @@ const APP_VERSION = '1.51.9';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.10',
+    date: 'October 5, 2026',
+    name: 'Celebrations only for real wins',
+    whatsNew: [],
+    fixes: [
+      'Celebration cards now appear only for something that just happened: a payment or balance update you recorded, a new month, or a change you made to your plan. They no longer pop up after a sync, a restore, or an edit to a setting or account detail. Syncing also no longer forgets wins you had already earned, and a win earned on one device is not celebrated again on the other.'
+    ]
+  },
   {
     version: '1.51.9',
     date: 'October 5, 2026',
@@ -6013,9 +6022,57 @@ function milestoneContent(key) {
 // Called after every save/render. Fires at most ONE card per pass (the
 // highest-priority new milestone), so a big payment that crosses several
 // thresholds at once celebrates the best one rather than spamming a stack.
+// v1.51.10 - a celebration needs a CAUSE. Every badge is a statement about
+// the current numbers, and plenty of things move the numbers that are not an
+// accomplishment: lowering the extra makes past months count as "on plan",
+// correcting an APR shifts the interest forecast, a new month moves the
+// projection, a sync brings in the other device's changes. Those used to pop
+// a card. Now a card shows only when the thing that just changed is the kind
+// of thing the badge is about:
+//   progress badges  -> a payment or balance update was just recorded
+//   showing-up badges-> that, or a new month began
+//   plan badges      -> the plan was just changed (method, extra, lump sums,
+//                       rolled minimums), or a payment was recorded
+// Anything else that turns a badge on is recorded as earned, quietly.
+var LS_MS_SIG = 'debtfree_ms_sig';
+var _msCauseAt = { l: 0, p: 0, m: 0 };
+function _msSigs() {
+  var n = 0, sum = 0, an = 0, asum = 0;
+  (payments || []).forEach(function (x) { if (x && !x.pending) { n++; sum += Number(x.amount) || 0; } });
+  (adjustments || []).forEach(function (x) { if (x) { an++; asum += Number(x.amount) || 0; } });
+  var lumps = (lumpSums || []).map(function (l) { return [l.id, l.amount, l.date, l.debtId].join(':'); }).sort().join('|');
+  return {
+    l: [n, Math.round(sum * 100), an, Math.round(asum * 100)].join(','),
+    p: [strategy, Math.round(planExtra() * 100), lumps].join(','),
+    m: _thisMonthKey()
+  };
+}
+function _msCauses() {
+  var cur = _msSigs(), prev = null, now = Date.now();
+  try { prev = JSON.parse(localStorage.getItem(LS_MS_SIG) || 'null'); } catch (e) {}
+  if (prev) ['l', 'p', 'm'].forEach(function (k) { if (prev[k] !== cur[k]) _msCauseAt[k] = now; });
+  if (!prev || prev.l !== cur.l || prev.p !== cur.p || prev.m !== cur.m) {
+    try { localStorage.setItem(LS_MS_SIG, JSON.stringify(cur)); } catch (e) {}
+  }
+  // A short window, not just this pass: one action can render more than once.
+  return { l: now - _msCauseAt.l < 4000, p: now - _msCauseAt.p < 4000, m: now - _msCauseAt.m < 4000 };
+}
+// After a sync, restore or import: what arrived is history, not news.
+function _msResetCauses() {
+  _msCauseAt = { l: 0, p: 0, m: 0 };
+  try { localStorage.setItem(LS_MS_SIG, JSON.stringify(_msSigs())); } catch (e) {}
+}
+function _msMayCelebrate(k, c) {
+  if (k === 'd.debt1' || k === 'd.plan' || k.indexOf('d.lump') === 0) return true;
+  if (k.indexOf('c.') === 0 || k === 'd.tuned') return c.p || c.l;
+  if (k.indexOf('a.') === 0) return c.l || c.m;
+  return c.l;
+}
+
 function checkMilestones() {
+  const causes = _msCauses();
   const achieved = milestoneKeysAchieved();
-  const fresh = achieved.filter(function(k){ return shownMilestones.indexOf(k) === -1; });
+  let fresh = achieved.filter(function(k){ return shownMilestones.indexOf(k) === -1; });
   if (!fresh.length) return;
 
   // Record them all as shown (we only *display* one, but none should re-fire)
@@ -6034,6 +6091,8 @@ function checkMilestones() {
     if (k.indexOf('c.') === 0) return 5;
     return 9;
   };
+  fresh = fresh.filter(function(k){ return _msMayCelebrate(k, causes); });
+  if (!fresh.length) return;
   fresh.sort(function(a, b){ return priority(a) - priority(b); });
   celebrateMilestone(fresh[0]);
 }
@@ -15081,6 +15140,10 @@ function mergeBackups(localIn, remoteIn) {
   });
   summary.scalarsFrom = remoteAt > localAt ? 'remote' : 'local';
 
+  var ms = {};
+  _smArr(local.milestones).concat(_smArr(remote.milestones)).forEach(function (k) { if (typeof k === 'string') ms[k] = 1; });
+  out.milestones = Object.keys(ms).sort();
+
   out.version = 2;
   out.exportDate = new Date().toISOString();
   out.nextId = Math.max(_smMaxId([out]) + 1, parseInt(local.nextId, 10) || 1, parseInt(remote.nextId, 10) || 1);
@@ -15728,7 +15791,7 @@ function driveSyncDo(quiet) {
       if (/40[34]/.test(err.message)) localStorage.removeItem(LS_DRIVE_FILEID);
       driveToast('warn', (err && err.message) || 'Sync failed. Nothing was changed.');
     })
-    .then(function(){ _driveBusy = false; updateDriveUI(); });
+    .then(function(){ _driveBusy = false; _milestonesBaselined = true; updateDriveUI(); });
 }
 
 // Kept as the name the OAuth redirect resumes into.
@@ -15743,7 +15806,7 @@ function driveUndoRestore() {
     localStorage.removeItem(LS_DRIVE_UNDO);
     driveToast('ok', 'Previous data put back.');
     updateDriveUI();
-  } catch(e) { driveToast('warn', 'Could not undo.'); }
+  } catch(e) { _milestonesBaselined = true; driveToast('warn', 'Could not undo.'); }
 }
 
 function updateDriveUI() {
@@ -15817,6 +15880,9 @@ function buildBackupPayload() {
     // Premium/license are deliberately NOT exported: a backup file can be
     // shared, and we don't want it to become a way to hand out premium.
     theme: theme,
+    // v1.51.10 - the earned-badge list, so a win earned on one device is not
+    // celebrated a second time on the other.
+    milestones: (shownMilestones || []).slice().sort(),
     // v1.49.0 — what the merge needs: which device wrote this, when its
     // one-per-plan settings last changed, and what it has deleted.
     syncMeta: syncMeta()
@@ -15857,6 +15923,7 @@ function importData(event) {
     try {
       applyBackupPayload(JSON.parse(e.target.result));
     } catch(err) {
+      _milestonesBaselined = true;
       showBackupMsg('warn', 'Could not read backup file. Make sure it is a valid DebtFree export.');
     }
   };
@@ -15957,11 +16024,16 @@ function applyBackupPayload(data) {
         else localStorage.removeItem('debtfree_baseline');
       } catch (e) {}
       ensurePlanBaseline();
-      shownMilestones = milestoneKeysAchieved();
-      persistMilestones();
+      // v1.51.10 - ADD to the earned list, never replace it. Replacing it
+      // dropped every badge that was earned earlier but is not true this
+      // minute (a streak, "a month sooner", months on plan), so each sync
+      // quietly un-earned them and they celebrated again later. The list
+      // from the other device is folded in too.
+      _msAbsorb(data.milestones);
       // v1.40.0 — the restored file's badges are already-history, not news.
       try { localStorage.setItem('debtfree_badges_seeded', '1'); } catch (e) {}
-      _milestonesBaselined = true;
+      // The gate stays shut until the very end (see below): the badge maths
+      // reads plan results that are only rebuilt by the renders that follow.
 
       selectStrategy(strategy);
       // After import, clear any stale sessionStorage backups and set session flag.
@@ -15976,6 +16048,17 @@ function applyBackupPayload(data) {
       } catch(e) {}
       save();
       render();
+      // v1.51.10 - second pass, now that everything has been recalculated
+      // from the incoming data, then open the gate.
+      _msAbsorb(null);
+      _msResetCauses();
+      _milestonesBaselined = true;
+}
+function _msAbsorb(extra) {
+  var add = milestoneKeysAchieved();
+  if (Array.isArray(extra)) add = add.concat(extra.filter(function (k) { return typeof k === 'string' && k.length < 40; }));
+  add.forEach(function (k) { if (shownMilestones.indexOf(k) === -1) shownMilestones.push(k); });
+  persistMilestones();
 }
 // v1.6.0 — Shared sanitization helper used by load() and importData().
 // Backfills fields that old backups may be missing (postPromoApr, promoApr,
