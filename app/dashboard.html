@@ -3774,7 +3774,6 @@
       </div>
       <div id="badge-note" style="font-size:0.74rem;line-height:1.45;color:var(--text-muted);margin:-2px 0 12px;">Badges are worked out from your numbers each time you open this page. A badge lights when your numbers reach it and can switch off if they move back, for example when interest posts or a balance is corrected. Streak and on-plan badges count your longest run.</div>
       <div id="badge-tracks"></div>
-      <div class="chip-detail" id="chip-detail" style="display:none"></div>
     </div>
 
   </div>
@@ -3852,6 +3851,18 @@
   </div>
 
   <!-- What's New Modal (v1.7.1) -->
+  <div id="badge-modal" class="modal-overlay hidden" onclick="closeBadgeModal(event)" role="dialog" aria-modal="true" aria-labelledby="badge-modal-name">
+    <div class="modal" style="max-width:380px;text-align:center;">
+      <div id="badge-modal-icon" style="font-size:2.4rem;line-height:1;margin-bottom:8px;"></div>
+      <div id="badge-modal-name" style="font-family:var(--font-display);font-size:1.25rem;font-weight:900;color:var(--text);margin-bottom:8px;"></div>
+      <div style="margin-bottom:12px;"><span id="badge-modal-status" class="tag tag-muted"></span></div>
+      <div id="badge-modal-desc" style="font-size:0.9rem;line-height:1.5;color:var(--text-muted);"></div>
+      <div style="margin-top:18px;">
+        <button id="badge-modal-close" class="btn btn-primary" onclick="closeBadgeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <div id="whatsnew-modal" class="modal-overlay hidden" onclick="closeWhatsNewModal(event)">
     <div class="modal" style="max-width:560px;max-height:85vh;overflow-y:auto;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px;">
@@ -4055,7 +4066,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.52.1';
+const APP_VERSION = '1.52.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4063,6 +4074,15 @@ const APP_VERSION = '1.52.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.52.2',
+    date: 'October 5, 2026',
+    name: 'Badge details pop up',
+    whatsNew: [],
+    fixes: [
+      'Tapping a badge on the Wins page now opens its details in a pop-up. They used to appear in a box at the bottom of the page, where they were easy to miss.'
+    ]
+  },
   {
     version: '1.52.1',
     date: 'October 5, 2026',
@@ -14558,24 +14578,38 @@ function renderStrategy() {
 
 // v1.40.0 — a chip is a name; the description lives one tap down, so 65 badges
 // stay scannable. Tapping the open one closes it.
-let _openBadgeId = null;
+// v1.52.2 - a pop-up, not a box at the foot of the card. The box sat below
+// all four tracks, so tapping a badge near the top changed something a full
+// screen further down and looked like it had done nothing.
 function showBadgeDetail(id) {
-  const box = document.getElementById('chip-detail');
+  const modal = document.getElementById('badge-modal');
   const b = badgeById(id);
-  if (!box || !b) return;
-  if (_openBadgeId === id) { box.style.display = 'none'; _openBadgeId = null; return; }
-  _openBadgeId = id;
+  if (!modal || !b) return;
   const got = badgeIsEarned(id);
-  let extra = '';
+  let status = got ? 'Earned' : 'Not yet';
   if (!got) {
     let n = null;
     try { n = b.near(); } catch (e) { n = null; }
-    if (n && n.text) extra = ' &middot; ' + escapeHtml(n.text) + ' to go';
+    if (n && n.text) status = / left$/.test(n.text) ? n.text : n.text + ' to go';
   }
-  box.innerHTML = '<b>' + b.icon + ' ' + escapeHtml(b.name) + '</b>' +
-    (got ? ' &middot; earned' : '') + extra + '<br>' + escapeHtml(b.desc);
-  box.style.display = 'block';
+  document.getElementById('badge-modal-icon').textContent = b.icon;
+  document.getElementById('badge-modal-name').textContent = b.name;
+  const st = document.getElementById('badge-modal-status');
+  st.textContent = status;
+  st.className = 'tag ' + (got ? 'tag-accent' : 'tag-muted');
+  document.getElementById('badge-modal-desc').textContent = b.desc;
+  modal.classList.remove('hidden');
+  const btn = document.getElementById('badge-modal-close');
+  if (btn) { try { btn.focus(); } catch (e) {} }
 }
+function closeBadgeModal(evt) {
+  if (evt && evt.currentTarget && evt.target !== evt.currentTarget) return;
+  const modal = document.getElementById('badge-modal');
+  if (modal) modal.classList.add('hidden');
+}
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeBadgeModal();
+});
 
 function toggleTrackRest(track, count) {
   const box = document.getElementById('rest-' + track);

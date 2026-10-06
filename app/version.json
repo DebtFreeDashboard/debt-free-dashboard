@@ -1,8 +1,8 @@
 {
-  "version": "1.52.1",
+  "version": "1.52.2",
   "releaseDate": "2026-10-05",
-  "releaseName": "Wins page note",
+  "releaseName": "Badge details pop up",
   "notes": [
-    "Added a short note on the Wins page explaining that badges follow your current numbers, so one can switch off if a balance moves back."
+    "Tapping a badge on the Wins page now opens its details in a pop-up. They used to appear in a box at the bottom of the page, where they were easy to miss."
   ]
 }
