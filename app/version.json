@@ -1,8 +1,8 @@
 {
-  "version": "1.51.8",
+  "version": "1.51.9",
   "releaseDate": "2026-10-05",
-  "releaseName": "Sync carries due dates",
+  "releaseName": "Sync keeps both devices in step",
   "notes": [
-    "Fixed details such as due dates not reaching your other device after a sync. Anything entered before late September could stay on the device it was typed on, because each device kept its own copy. Both devices now settle on the same, fuller copy."
+    "Fixed several ways two devices could disagree after a sync. If each device added a bill, a set-aside fund, a debt or a balance correction before syncing, one could replace the other; both are now kept. Changing a debt's rate, minimum or due date on one device is no longer undone by logging a payment on the other. Changing the monthly extra on one device and the strategy on another now keeps both. A custom payoff order now follows you to your other device."
   ]
 }

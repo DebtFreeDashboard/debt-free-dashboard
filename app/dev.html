@@ -4177,7 +4177,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.51.8';
+const APP_VERSION = '1.51.9';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4185,6 +4185,15 @@ const APP_VERSION = '1.51.8';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.51.9',
+    date: 'October 5, 2026',
+    name: 'Sync keeps both devices in step',
+    whatsNew: [],
+    fixes: [
+      'Fixed several ways two devices could disagree after a sync. If each device added a bill, a set-aside fund, a debt or a balance correction before syncing, one could replace the other; both are now kept. Changing a debt\'s rate, minimum or due date on one device is no longer undone by logging a payment on the other. Changing the monthly extra on one device and the strategy on another now keeps both. A custom payoff order now follows you to your other device.'
+    ]
+  },
   {
     version: '1.51.8',
     date: 'October 5, 2026',
@@ -7756,7 +7765,7 @@ function addDebt() {
   if (termMonths !== null && (isNaN(termMonths) || termMonths <= 0 || termMonths > 600)) termMonths = null;
 
   debts.push({
-    id: nextId++, name, type,
+    id: mintId(), name, type,
     balance: finalBalance,
     originalBalance: finalBalance,
     apr: hasPromo ? promoApr : apr,
@@ -8293,7 +8302,7 @@ function saveEditDebt() {
     const delta = round2(d.balance - ledgerBal);
     if (Math.abs(delta) >= 0.01) {
       adjustments.push({
-        id: nextId++,
+        id: mintId(),
         debtId: d.id,
         amount: delta,
         date: localDateStr(),
@@ -11257,7 +11266,7 @@ function sanitizeBill(b) {
   // 'YYYY-MM' or absent. Anything else is discarded rather than trusted.
   var pt = (typeof b.paidThrough === 'string' && /^\d{4}-\d{2}$/.test(b.paidThrough))
     ? b.paidThrough : null;
-  return { id: isNaN(id) ? nextId++ : id, name: name, amount: amount, dueDay: day,
+  return { id: isNaN(id) ? mintId() : id, name: name, amount: amount, dueDay: day,
            paidThrough: pt,
            updatedAt: (typeof b.updatedAt === 'string') ? b.updatedAt : null };   // v1.49.0
 }
@@ -11287,7 +11296,7 @@ function addBill() {
     amtEl.classList.add('field-invalid'); amtEl.focus(); return;
   }
 
-  bills.push({ id: nextId++, name: name.slice(0, 60), amount: amount,
+  bills.push({ id: mintId(), name: name.slice(0, 60), amount: amount,
                dueDay: sanitizeDueDay(dayEl ? dayEl.value : null) });
   nameEl.value = ''; amtEl.value = ''; if (dayEl) dayEl.value = '';
   save(); render();
@@ -11477,7 +11486,7 @@ function sanitizeFund(f) {
   var id = parseInt(f.id, 10);
   return {
     updatedAt: (typeof f.updatedAt === 'string') ? f.updatedAt : null,   // v1.49.0
-    id: isNaN(id) ? nextId++ : id,
+    id: isNaN(id) ? mintId() : id,
     name: name, monthly: monthly, target: target, saved: saved,
     counted: f.counted !== false          // default on: the honest reading
   };
@@ -14873,6 +14882,13 @@ var _SM_DEBT_REFS = [
 var _SM_TOMB_TTL_DAYS = 400;    // longer than any plausible offline gap
 var _SM_TOMB_MAX      = 800;    // a cap so the payload cannot grow forever
 
+// v1.51.9 - ids that two devices cannot both hand out. The shared nextId
+// counter is identical on every device straight after a sync, so two devices
+// that each added a bill, a fund, a balance correction or a debt before
+// syncing again minted the SAME id for different things, and the merge kept
+// one. Time plus a random tail does not repeat across devices.
+function mintId() { return Date.now() * 1000 + Math.floor(Math.random() * 1000); }
+
 function _smClone(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
 function _smArr(v) { return Array.isArray(v) ? v : []; }
 function _smMs(iso) { var t = Date.parse(iso || ''); return isNaN(t) ? 0 : t; }
@@ -14884,7 +14900,7 @@ function _smKey(rec, key) {
 // answered yes just because a timestamp moved.
 function _smHash(rec) {
   var o = {}, keys = Object.keys(rec || {}).filter(function (k) {
-    return k !== 'updatedAt' && k !== 'debtName';
+    return k !== 'updatedAt' && k !== 'debtName' && k !== 'editedAt';
   }).sort();
   keys.forEach(function (k) { o[k] = rec[k]; });
   return JSON.stringify(o);
@@ -14988,13 +15004,13 @@ function _smTieMerge(x, y) {
   function filled(r) {
     var n = 0;
     Object.keys(r).forEach(function (k) {
-      if (k !== 'updatedAt' && r[k] !== null && r[k] !== undefined && r[k] !== '') n++;
+      if (k !== 'updatedAt' && k !== 'editedAt' && r[k] !== null && r[k] !== undefined && r[k] !== '') n++;
     });
     return n;
   }
   function text(r) {
     var o = {};
-    Object.keys(r).sort().forEach(function (k) { if (k !== 'updatedAt') o[k] = r[k]; });
+    Object.keys(r).sort().forEach(function (k) { if (k !== 'updatedAt' && k !== 'editedAt') o[k] = r[k]; });
     return JSON.stringify(o);
   }
   var fx = filled(x), fy = filled(y);
@@ -15009,6 +15025,28 @@ function _smTieMerge(x, y) {
     }
   });
   return out;
+}
+
+function _smOrderAt(p) { return _smMs(p && p.syncMeta && p.syncMeta.debtOrderAt); }
+
+// v1.51.9 - logging a payment changes a debt's balance, which stamps the whole
+// record as newer, so it used to overwrite an APR, minimum, due day or name
+// changed on the other device. The balance comes from the ledger anyway, so
+// the details are decided separately: whichever side last edited the DETAILS
+// (editedAt) supplies them; the balance stays with the record that won.
+function _smMergeDebtEdits(local, remote, out) {
+  function index(p) { var m = {}; _smArr(p.debts).forEach(function (d) { if (d) m[String(d.id)] = d; }); return m; }
+  var L = index(local), R = index(remote);
+  out.debts = _smArr(out.debts).map(function (d) {
+    var l = L[String(d.id)], r = R[String(d.id)];
+    if (!l || !r) return d;
+    var best = _smMs(l.editedAt) >= _smMs(r.editedAt) ? l : r;
+    if (_smMs(best.editedAt) <= _smMs(d.editedAt)) return d;
+    var m = _smClone(best);
+    m.balance = d.balance;
+    m.updatedAt = d.updatedAt;
+    return m;
+  });
 }
 
 function _smRound2(n) { return Math.round(n * 100) / 100; }
@@ -15118,7 +15156,24 @@ function mergeBackups(localIn, remoteIn) {
     _smArr(local[c.name]).forEach(function (r) { if (r) put(r, false); });
     _smArr(remote[c.name]).forEach(function (r) { if (r) put(r, true); });
 
-    out[c.name] = order.filter(function (k) { return map[k]; }).map(function (k) { return map[k]; });
+    // v1.51.9 - one order for both devices. "Mine first, then what the other
+    // device added" gave each device a different list for the same records.
+    // The Drive copy's order leads and anything only this device has follows,
+    // so the second device to sync lands on exactly what the first uploaded.
+    // Debts are the exception when THIS device re-ordered them more recently
+    // (the custom payoff order is the order of this list).
+    var lead = remote, tail = local;
+    if (c.name === 'debts' && _smOrderAt(local) > _smOrderAt(remote)) { lead = local; tail = remote; }
+    var seq = [], seen = {};
+    [lead, tail].forEach(function (p) {
+      _smArr(p[c.name]).forEach(function (r) {
+        if (!r) return;
+        var k = _smKey(r, c.key);
+        if (seen[k] || !map[k]) return;
+        seen[k] = true; seq.push(k);
+      });
+    });
+    out[c.name] = seq.map(function (k) { return map[k]; });
     if (added) summary.added[c.name] = added;
     if (updated) summary.updated[c.name] = updated;
     if (removed) summary.removed[c.name] = removed;
@@ -15127,15 +15182,25 @@ function mergeBackups(localIn, remoteIn) {
   // v1.51.7 — a payload that carries syncMeta but no settings stamp has never
   // had its settings changed: that is the OLDEST possible clock. Only a
   // pre-sync backup (no syncMeta at all) falls back to its export date.
+  _smMergeDebtEdits(local, remote, out);
   _smPreferInformedAccruals(local, remote, out);
   _smReconcileBalances(local, remote, out, summary);
 
   var localAt = local.syncMeta ? _smMs(local.syncMeta.updatedAt) : _smMs(local.exportDate);
   var remoteAt = remote.syncMeta ? _smMs(remote.syncMeta.updatedAt) : _smMs(remote.exportDate);
   var newer = remoteAt > localAt ? remote : local;
+  // v1.51.9 - each setting has its own clock. They used to travel as one set,
+  // so changing the extra on one device and the strategy on another kept only
+  // one of the two. A payload from before this falls back to the shared clock.
+  var lEach = local.syncMeta && local.syncMeta.scalarsAt;
+  var rEach = remote.syncMeta && remote.syncMeta.scalarsAt;
+  var eachOut = {};
   _SM_SCALARS.forEach(function (k) {
-    out[k] = (newer[k] !== undefined) ? newer[k]
+    var la = lEach ? _smMs(lEach[k]) : localAt, ra = rEach ? _smMs(rEach[k]) : remoteAt;
+    var src = ra > la ? remote : (la > ra ? local : newer);
+    out[k] = (src[k] !== undefined) ? src[k]
            : (local[k] !== undefined ? local[k] : remote[k]);
+    if (Math.max(la, ra)) eachOut[k] = new Date(Math.max(la, ra)).toISOString();
   });
   summary.scalarsFrom = remoteAt > localAt ? 'remote' : 'local';
 
@@ -15145,6 +15210,9 @@ function mergeBackups(localIn, remoteIn) {
   out.syncMeta = {
     deviceId: (local.syncMeta && local.syncMeta.deviceId) || null,
     updatedAt: Math.max(localAt, remoteAt) ? new Date(Math.max(localAt, remoteAt)).toISOString() : null,
+    scalarsAt: eachOut,
+    debtOrderAt: Math.max(_smOrderAt(local), _smOrderAt(remote))
+      ? new Date(Math.max(_smOrderAt(local), _smOrderAt(remote))).toISOString() : null,
     deletions: _smTombList(tombs)
   };
   return { payload: out, summary: summary };
@@ -15247,6 +15315,11 @@ function syncSetDeletions(list) {
 // so they need one timestamp, not six.
 var LS_SYNC_SCALARS_AT = 'debtfree_sync_scalars_at';
 
+var LS_SYNC_SCALARS_EACH = 'debtfree_sync_scalars_each';
+var LS_SYNC_ORDER_AT = 'debtfree_sync_order_at';
+function _syncReadStr(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function _syncReadJson(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+
 function syncMeta() {
   var at;
   try { at = localStorage.getItem(LS_SYNC_SCALARS_AT); } catch (e) {}
@@ -15256,6 +15329,8 @@ function syncMeta() {
     // changed since tracking began used to claim the current time on every
     // sync, so its stale settings beat a real change made on another device.
     updatedAt: at || null,
+    scalarsAt: _syncReadJson(LS_SYNC_SCALARS_EACH) || {},
+    debtOrderAt: _syncReadStr(LS_SYNC_ORDER_AT) || null,
     deletions: syncDeletions()
   };
 }
@@ -15280,6 +15355,14 @@ function _syncScalarSnapshot() {
 // edited it.
 var _syncApplying = false;
 
+function _smDetailHash(rec) {
+  var o = {};
+  Object.keys(rec || {}).sort().forEach(function (k) {
+    if (k !== 'updatedAt' && k !== 'editedAt' && k !== 'balance') o[k] = rec[k];
+  });
+  return JSON.stringify(o);
+}
+
 function syncTrackChanges() {
   var live = _syncLiveCollections();
   var shadow = null;
@@ -15296,6 +15379,7 @@ function syncTrackChanges() {
   var firstRun = !shadow || _syncApplying;
   _syncApplying = false;
 
+  var detail = {}, prevDetail = shadow && shadow.__debtDetail;
   _SM_COLLECTIONS.forEach(function (c) {
     var rows = _smArr(live[c.name]);
     var prev = (shadow && shadow[c.name]) || {};
@@ -15311,6 +15395,13 @@ function syncTrackChanges() {
       // v1.49.2 — every collection is stamped now, not just the ones that
       // used to be called mutable: updatedAt is what decides every conflict.
       if (!firstRun && prev[k] !== h) r.updatedAt = now;
+      // v1.51.9 - a second clock for debts that ignores the balance, so a
+      // payment does not count as "edited the details". See _smMergeDebtEdits.
+      if (c.name === 'debts') {
+        var eh = _smDetailHash(r);
+        detail[k] = eh;
+        if (!firstRun && prevDetail && prevDetail[k] !== undefined && prevDetail[k] !== eh) r.editedAt = now;
+      }
     });
     if (!firstRun) {
       Object.keys(prev).forEach(function (k) {
@@ -15326,6 +15417,27 @@ function syncTrackChanges() {
     try { localStorage.setItem(LS_SYNC_SCALARS_AT, now); } catch (e) {}
   }
   next.__scalars = sc;
+  next.__debtDetail = detail;
+
+  // v1.51.9 - per-setting clocks, and a clock for the order of the debt list.
+  var eachNow = { strategy: strategy, extraMonthly: extraMonthly, monthlyBudget: monthlyBudget,
+                  planBaseline: planBaseline, interestAccrualEnabled: interestAccrualEnabled, theme: theme };
+  var eachHash = {}, eachAt = _syncReadJson(LS_SYNC_SCALARS_EACH) || {}, eachChanged = false;
+  _SM_SCALARS.forEach(function (k) {
+    eachHash[k] = JSON.stringify(eachNow[k] === undefined ? null : eachNow[k]);
+    if (!firstRun && shadow && shadow.__each && shadow.__each[k] !== undefined && shadow.__each[k] !== eachHash[k]) {
+      eachAt[k] = now; eachChanged = true;
+    }
+  });
+  next.__each = eachHash;
+  var ids = _smArr(debts).map(function (d) { return String(d.id); });
+  if (!firstRun && shadow && Array.isArray(shadow.__order)) {
+    var was = shadow.__order.filter(function (i) { return ids.indexOf(i) !== -1; });
+    var is = ids.filter(function (i) { return shadow.__order.indexOf(i) !== -1; });
+    if (was.join(',') !== is.join(',')) { try { localStorage.setItem(LS_SYNC_ORDER_AT, now); } catch (e) {} }
+  }
+  next.__order = ids;
+  if (eachChanged) { try { localStorage.setItem(LS_SYNC_SCALARS_EACH, JSON.stringify(eachAt)); } catch (e) {} }
 
   try {
     localStorage.setItem(LS_SYNC_SHADOW, JSON.stringify(next));
@@ -15922,6 +16034,16 @@ function applyBackupPayload(data) {
       // device is not undone by the next merge from a third copy.
       if (data.syncMeta && Array.isArray(data.syncMeta.deletions)) {
         syncSetDeletions(data.syncMeta.deletions);
+      }
+      // v1.51.9 - keep the clocks that came with the merged settings and
+      // order, so this device does not re-upload them looking older than
+      // they are.
+      if (data.syncMeta) {
+        try {
+          if (data.syncMeta.updatedAt) localStorage.setItem(LS_SYNC_SCALARS_AT, data.syncMeta.updatedAt);
+          if (data.syncMeta.scalarsAt) localStorage.setItem(LS_SYNC_SCALARS_EACH, JSON.stringify(data.syncMeta.scalarsAt));
+          if (data.syncMeta.debtOrderAt) localStorage.setItem(LS_SYNC_ORDER_AT, data.syncMeta.debtOrderAt);
+        } catch (e) {}
       }
       if (_impToggle) _impToggle.checked = interestAccrualEnabled;
       // v1.13.2 — apply imported theme if present (premium/license are NOT
