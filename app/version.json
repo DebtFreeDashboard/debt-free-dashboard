@@ -1,8 +1,9 @@
 {
-  "version": "1.52.2",
-  "releaseDate": "2026-10-05",
-  "releaseName": "Badge details pop up",
+  "version": "1.53.0",
+  "releaseDate": "2026-10-07",
+  "releaseName": "This month, so far",
   "notes": [
-    "Tapping a badge on the Wins page now opens its details in a pop-up. They used to appear in a box at the bottom of the page, where they were easy to miss."
+    "After you log a payment, the “Where your extra goes” card now shows what you have logged to that debt this month and what the plan still has going to it, for example “$420 logged in October · $1,260 still planned”. It used to appear only in the last 10 days of the month.",
+    "In the last 10 days of the month that line adds “Your Freedom Date counts on it”, and once the month’s planned amount is logged it says so."
   ]
 }

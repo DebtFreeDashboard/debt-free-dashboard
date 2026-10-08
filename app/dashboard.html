@@ -4066,7 +4066,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.52.2';
+const APP_VERSION = '1.53.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4074,6 +4074,16 @@ const APP_VERSION = '1.52.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.53.0',
+    date: 'October 7, 2026',
+    name: 'This month, so far',
+    whatsNew: [
+      'After you log a payment, the “Where your extra goes” card now shows what you have logged to that debt this month and what the plan still has going to it, for example “$420 logged in October · $1,260 still planned”. It used to appear only in the last 10 days of the month.',
+      'In the last 10 days of the month that line adds “Your Freedom Date counts on it”, and once the month’s planned amount is logged it says so.'
+    ],
+    fixes: []
+  },
   {
     version: '1.52.2',
     date: 'October 5, 2026',
@@ -6764,13 +6774,16 @@ document.addEventListener('click', function (e) {
 // logged yet, per debt, largest first. Month 1 of getPlanSim() already nets
 // what's been paid this month; a pending payment dated this month is applied
 // in month 1 too, but it's already on the books, so it isn't "still planned".
-function stillPlannedThisMonth() {
+function stillPlannedThisMonth(anyDay) {
+  // v1.53.0 — anyDay skips the last-10-days gate below. The "Where your extra
+  // goes" card passes it once a payment is logged this month; the guide still
+  // calls with no argument and keeps the gate.
   // v1.51.0 — only in the last 10 days of the month. Earlier than that it is
   // just "the rest of this month's plan" — true, but not news; it matters as
   // the 1st approaches, when an unlogged amount would move the Freedom Date.
   const _t = new Date();
   const _daysLeft = new Date(_t.getFullYear(), _t.getMonth() + 1, 0).getDate() - _t.getDate();
-  if (_daysLeft >= 10) return null;
+  if (!anyDay && _daysLeft >= 10) return null;
   const sim = getPlanSim();
   if (!sim || !sim.monthlyData || !sim.monthlyData.length) return null;
   const m1 = sim.monthlyData[0];
@@ -12129,23 +12142,60 @@ function renderNextDebt() {
   // month 1 that isn't logged yet is money the Freedom Date assumes arrives
   // before the 1st. Nothing showed it, so on the 1st the date simply moved
   // (Sep 27: $740 to Discover; unlogged, Oct 1 read Sep 2027 instead of Aug).
+  //
+  // v1.53.0 — the line is now about THIS debt and appears as soon as a payment
+  // to it is logged this month: "$420 logged in October · $1,260 still
+  // planned". v1.51.0 held it back to the last 10 days, so logging a payment
+  // on the 7th changed nothing on the card. The last 10 days keep their job:
+  // that is when "Your Freedom Date counts on it." is added, and when the line
+  // shows even with nothing logged here yet.
   const _monthEl = document.getElementById('nd-plan-month');
   if (_monthEl) {
-    const _left = stillPlannedThisMonth();
+    const _now = new Date();
+    const _ym = monthKeyOf(_now);
+    const _mName = _now.toLocaleDateString('en-US', { month: 'long' });
+    const _late = (new Date(_now.getFullYear(), _now.getMonth() + 1, 0).getDate() - _now.getDate()) < 10;
+    // Logged to this debt this month. Pending entries are on the books but
+    // not paid yet, so they count on neither side of the line.
+    const _logged = (payments || []).reduce(function(t, p) {
+      return (!p.pending && String(p.debtId) === String(target.id) && String(p.date || '').slice(0, 7) === _ym)
+        ? t + (parseFloat(p.amount) || 0) : t;
+    }, 0);
+    const _plan = stillPlannedThisMonth(true);
+    const _row = _plan ? _plan.rows.find(function(r) { return String(r.id) === String(target.id); }) : null;
+    const _left = _row ? _row.amount : 0;
     // Only for people who log payments: someone who has never logged one has
     // "not logged" for every debt, and the line would just restate the month.
     const _cut = new Date(); _cut.setDate(_cut.getDate() - 45);
     const _cutStr = localDateStr(_cut);
     const _logs = (payments || []).some(function(p) { return !p.pending && String(p.date || '') >= _cutStr; });
-    if (_logs && _left && _left.total >= 1) {
-      const _mName = new Date().toLocaleDateString('en-US', { month: 'long' });
-      // Name the debt this card is about when it's in the list.
-      const _mine = _left.rows.find(function(r) { return r.id === target.id; });
-      const _top = _mine || _left.rows[0];
-      _monthEl.textContent = 'Still planned for ' + _mName + ': ' + fmt(_left.total) +
-        (_left.rows.length === 1 ? ' to ' + _top.name
-          : ' across ' + _left.rows.length + ' debts, ' + fmt(_top.amount) + ' of it to ' + _top.name) +
-        '. Your Freedom Date counts on it.';
+    // Other debts still unlogged — only said in the last 10 days, where the
+    // Freedom Date warning is, because the date counts on those too.
+    const _others = (_late && _logs && _plan) ? _plan.rows.filter(function(r) { return String(r.id) !== String(target.id); }) : [];
+    const _othersTxt = _others.length
+      ? fmt(_others.reduce(function(t, r) { return t + r.amount; }, 0)) + ' across ' + _others.length + ' other debt' + (_others.length === 1 ? '' : 's')
+      : '';
+    const _counts = '. Your Freedom Date counts on it.';
+    // What the plan had for this debt this month before anything was logged.
+    const _planSend = Math.min(Math.max(0, parseFloat(target.minPayment) || 0) + planExtra(), target.balance + _logged);
+    let _txt = '';
+    if (_logged >= 1 && _left >= 1) {
+      _txt = fmt(_logged) + ' logged in ' + _mName + ' · ' + fmt(_left) + ' still planned' +
+        (_late ? (_othersTxt ? ', plus ' + _othersTxt : '') + _counts : '');
+    } else if (_logged >= 1) {
+      // Nothing more planned here this month. Name the plan figure only when
+      // what was logged IS the plan figure; otherwise say what was logged.
+      _txt = (Math.abs(_logged - _planSend) < 1
+        ? _mName + '’s ' + fmt(_logged) + ' is logged.'
+        : fmt(_logged) + ' logged in ' + _mName + ' · nothing more planned here this month.') +
+        (_othersTxt ? ' Still planned: ' + _othersTxt + _counts : '');
+    } else if (_late && _logs && _left >= 1) {
+      _txt = 'Still planned for ' + _mName + ': ' + fmt(_left) + (_othersTxt ? ', plus ' + _othersTxt : '') + _counts;
+    } else if (_othersTxt) {
+      _txt = 'Still planned for ' + _mName + ': ' + _othersTxt + _counts;
+    }
+    if (_txt) {
+      _monthEl.textContent = _txt;
       _monthEl.style.display = 'block';
       if (_planBox) _planBox.style.display = 'block';
     } else {
