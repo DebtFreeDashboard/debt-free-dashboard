@@ -1,9 +1,8 @@
 {
-  "version": "1.53.0",
-  "releaseDate": "2026-10-07",
-  "releaseName": "This month, so far",
+  "version": "1.53.1",
+  "releaseDate": "2026-10-10",
+  "releaseName": "Form labels respond to clicks",
   "notes": [
-    "After you log a payment, the “Where your extra goes” card now shows what you have logged to that debt this month and what the plan still has going to it, for example “$420 logged in October · $1,260 still planned”. It used to appear only in the last 10 days of the month.",
-    "In the last 10 days of the month that line adds “Your Freedom Date counts on it”, and once the month’s planned amount is logged it says so."
+    "Clicking a field’s label, such as Balance or APR on the add-a-debt form, now puts the cursor in that field. Before, clicking the label did nothing, which made the form feel unresponsive."
   ]
 }

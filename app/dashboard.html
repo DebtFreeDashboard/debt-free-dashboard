@@ -2977,15 +2977,15 @@
       </div>
       <div class="form-grid form-grid-action form-grid-log" style="margin-top:14px;">
         <div class="form-field field-full">
-          <label>Debt Account</label>
+          <label for="log-debt-select">Debt Account</label>
           <select id="log-debt-select"></select>
         </div>
         <div class="form-field">
-          <label>Amount Paid ($)</label>
+          <label for="log-amount">Amount Paid ($)</label>
           <input type="text" inputmode="decimal" id="log-amount" placeholder="250" min="0" step="1"  data-affix="$"/>
         </div>
         <div class="form-field">
-          <label>Date</label>
+          <label for="log-date">Date</label>
           <input type="date" id="log-date" />
         </div>
         <div class="form-field form-field-action" style="justify-content:flex-end">
@@ -3007,11 +3007,11 @@
       </div>
       <div class="form-grid">
         <div class="form-field">
-          <label>Debt Name <span class="field-optional">optional</span></label>
+          <label for="debt-name">Debt Name <span class="field-optional">optional</span></label>
           <input type="text" id="debt-name" placeholder="Rewards Visa" />
         </div>
         <div class="form-field">
-          <label>Type</label>
+          <label for="debt-type">Type</label>
           <select id="debt-type" onchange="onDebtTypeChange('add')">
             <option value="cc">Credit Card</option>
             <option value="student">Student Loan</option>
@@ -3022,11 +3022,11 @@
           </select>
         </div>
         <div class="form-field">
-          <label>Balance ($)</label>
+          <label for="debt-balance">Balance ($)</label>
           <input type="text" inputmode="decimal" id="debt-balance" placeholder="5000" min="0" step="1" oninput="updateFeePreview(); clearFieldError(this);"  data-affix="$"/>
         </div>
         <div class="form-field">
-          <label>APR (%)</label>
+          <label for="debt-apr">APR (%)</label>
           <input type="text" inputmode="decimal" id="debt-apr" placeholder="22.99" min="0" max="100" step="0.01"
             oninput="validateAprField(this); clearFieldError(this);" onblur="validateAprField(this)" />
           <div id="apr-warning" style="display:none;font-size:0.72rem;color:var(--accent3);margin-top:4px;font-family:var(--font-mono);">
@@ -3034,13 +3034,13 @@
           </div>
         </div>
         <div class="form-field">
-          <label>Due Day <span class="field-optional">optional</span></label>
+          <label for="debt-due-day">Due Day <span class="field-optional">optional</span></label>
           <input type="text" inputmode="numeric" id="debt-due-day" placeholder="15" min="1" max="31"
             oninput="clearFieldError(this)" />
           <div class="field-hint">Day of the month it&rsquo;s due</div>
         </div>
         <div class="form-field">
-          <label>Min Payment ($) <span class="field-optional">optional</span></label>
+          <label for="debt-min">Min Payment ($) <span class="field-optional">optional</span></label>
           <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
             oninput="clearFieldError(this)"  data-affix="$"/>
           <div class="field-hint" id="min-hint">Blank = we'll estimate it</div>
@@ -3061,21 +3061,21 @@
         <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">🎯 Promotional APR Details</div>
         <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
           <div class="form-field">
-            <label>Promo APR (%)</label>
+            <label for="debt-promo-apr">Promo APR (%)</label>
             <input type="text" inputmode="decimal" id="debt-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
           </div>
           <div class="form-field">
-            <label>Promo End Date</label>
+            <label for="debt-promo-end">Promo End Date</label>
             <input type="date" id="debt-promo-end" />
           </div>
           <div class="form-field">
-            <label>Post-Promo APR (%)</label>
+            <label for="debt-post-promo-apr">Post-Promo APR (%)</label>
             <input type="text" inputmode="decimal" id="debt-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
           </div>
         </div>
         <div class="form-grid" style="grid-template-columns:1fr 2fr; margin-top:10px;">
           <div class="form-field">
-            <label>Transfer Fee (%)</label>
+            <label for="debt-transfer-fee">Transfer Fee (%)</label>
             <input type="text" inputmode="decimal" id="debt-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateFeePreview()" />
           </div>
           <div id="promo-fee-preview" style="display:flex;align-items:flex-end;padding-bottom:10px;">
@@ -3101,15 +3101,15 @@
           <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
           <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
             <div class="form-field">
-              <label>Original Principal ($)</label>
+              <label for="debt-orig-principal">Original Principal ($)</label>
               <input type="text" inputmode="decimal" id="debt-orig-principal" min="0" step="1" placeholder="25000" />
             </div>
             <div class="form-field">
-              <label>Term (months)</label>
+              <label for="debt-term-months">Term (months)</label>
               <input type="number" id="debt-term-months" min="1" max="600" step="1" placeholder="72" />
             </div>
             <div class="form-field">
-              <label>Origination Date</label>
+              <label for="debt-orig-date">Origination Date</label>
               <input type="date" id="debt-orig-date" />
             </div>
           </div>
@@ -3385,17 +3385,17 @@
       </div>
       <div id="lump-debt-field" style="display:none;margin-bottom:12px;">
         <div class="form-field field-full">
-          <label>Debt Account</label>
+          <label for="lump-debt-select">Debt Account</label>
           <select id="lump-debt-select"></select>
         </div>
       </div>
       <div class="form-grid form-grid-action form-grid-lump" style="margin-top:4px;">
         <div class="form-field">
-          <label>Amount ($)</label>
+          <label for="lump-amount">Amount ($)</label>
           <input type="text" inputmode="decimal" id="lump-amount" placeholder="5000" min="1" step="100"  data-affix="$"/>
         </div>
         <div class="form-field">
-          <label>Expected Date</label>
+          <label for="lump-date">Expected Date</label>
           <input type="date" id="lump-date" />
         </div>
         <div class="form-field form-field-action" style="justify-content:flex-end">
@@ -3688,19 +3688,19 @@
 
         <div class="form-grid" style="grid-template-columns:1fr 1fr">
           <div class="form-field">
-            <label>Transfer to</label>
+            <label for="xfer-dest">Transfer to</label>
             <select id="xfer-dest" onchange="renderTransfer()"></select>
           </div>
           <div class="form-field">
-            <label>0% period (months)</label>
+            <label for="xfer-months">0% period (months)</label>
             <input type="number" id="xfer-months" value="13" min="1" max="60" step="1" oninput="renderTransfer()" />
           </div>
           <div class="form-field">
-            <label>Transfer fee (%)</label>
+            <label for="xfer-fee">Transfer fee (%)</label>
             <input type="text" inputmode="decimal" id="xfer-fee" value="5" min="0" max="10" step="0.1" oninput="renderTransfer()" />
           </div>
           <div class="form-field">
-            <label>Rate after 0% ends (%)</label>
+            <label for="xfer-apr">Rate after 0% ends (%)</label>
             <input type="text" inputmode="decimal" id="xfer-apr" value="24.99" min="0" max="40" step="0.01" oninput="renderTransfer()" />
           </div>
         </div>
@@ -3832,7 +3832,7 @@
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
             <div class="form-field" style="flex:2;min-width:180px;">
-              <label>License key</label>
+              <label for="license-input">License key</label>
               <input type="text" id="license-input" placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX" />
             </div>
             <button class="btn btn-ghost" onclick="verifyLicense()" style="flex:1;min-width:120px;">Activate</button>
@@ -3911,7 +3911,7 @@
         Choose when you want to be debt-free. We'll calculate the extra monthly payment it takes to get there.
       </p>
       <div class="form-field">
-        <label>Target debt-free date</label>
+        <label for="dialdate-target">Target debt-free date</label>
         <input type="month" id="dialdate-target" onchange="runDialDate()" />
       </div>
       <div id="dialdate-result" style="margin-top:20px;"></div>
@@ -4042,15 +4042,15 @@
     <div id="quicklog-form">
     <div class="form-grid" style="grid-template-columns:1fr;">
       <div class="form-field field-full">
-        <label>Debt Account</label>
+        <label for="qlog-debt-select">Debt Account</label>
         <select id="qlog-debt-select"></select>
       </div>
       <div class="form-field">
-        <label>Amount Paid ($)</label>
+        <label for="qlog-amount">Amount Paid ($)</label>
         <input type="text" inputmode="decimal" id="qlog-amount" placeholder="250" min="0" step="1" />
       </div>
       <div class="form-field">
-        <label>Date</label>
+        <label for="qlog-date">Date</label>
         <input type="date" id="qlog-date" />
       </div>
     </div>
@@ -4066,7 +4066,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.53.0';
+const APP_VERSION = '1.53.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4074,6 +4074,15 @@ const APP_VERSION = '1.53.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.53.1',
+    date: 'October 10, 2026',
+    name: 'Form labels respond to clicks',
+    whatsNew: [],
+    fixes: [
+      'Clicking a field’s label, such as Balance or APR on the add-a-debt form, now puts the cursor in that field. Before, clicking the label did nothing, which made the form feel unresponsive.'
+    ]
+  },
   {
     version: '1.53.0',
     date: 'October 7, 2026',
@@ -8107,23 +8116,23 @@ function openClosedDebtModal(id) {
     '<p class="cdm-note">Did you actually move this balance to another card? If so it wasn\u2019t paid off, and counting it as one overstates your progress.</p>' +
     '<button class="btn btn-ghost cdm-toggle" onclick="document.getElementById(\'cdm-form\').style.display=\'block\'; this.style.display=\'none\';">This was a balance transfer</button>' +
     '<div id="cdm-form" style="display:none;">' +
-      '<div class="form-field"><label>Moved to</label>' +
+      '<div class="form-field"><label for="cdm-dest">Moved to</label>' +
         '<select id="cdm-dest">' + opts + '<option value="_other">Another card (not tracked here)</option></select>' +
       '</div>' +
-      '<div class="form-field" id="cdm-other-wrap" style="display:none;"><label>Card name</label>' +
+      '<div class="form-field" id="cdm-other-wrap" style="display:none;"><label for="cdm-other">Card name</label>' +
         '<input type="text" id="cdm-other" placeholder="e.g. Citi 0% offer"></div>' +
       '<p class="cdm-hint">Only the part you <em>moved</em> stops counting as progress. If you paid some of this ' +
         'balance down yourself before transferring the rest, enter just the transferred amount &mdash; the rest ' +
         'stays credited to you.</p>' +
       '<div class="form-grid" style="grid-template-columns:1fr 1fr">' +
-        '<div class="form-field"><label>Amount moved ($)</label>' +
+        '<div class="form-field"><label for="cdm-amount">Amount moved ($)</label>' +
           '<input type="text" inputmode="decimal" id="cdm-amount" step="0.01" min="0" max="' + (st.totalPaid || d.originalBalance).toFixed(2) + '" ' +
           'value="' + (st.totalPaid || d.originalBalance).toFixed(2) + '" oninput="_cdmPreview()"></div>' +
-        '<div class="form-field"><label>Transfer fee ($)</label>' +
+        '<div class="form-field"><label for="cdm-fee">Transfer fee ($)</label>' +
           '<input type="text" inputmode="decimal" id="cdm-fee" step="0.01" min="0" value="0"></div>' +
       '</div>' +
       '<div class="cdm-split" id="cdm-split"></div>' +
-      '<div class="form-field"><label>Date</label>' +
+      '<div class="form-field"><label for="cdm-date">Date</label>' +
         '<input type="date" id="cdm-date" value="' + (st.payoffDate || new Date().toISOString().slice(0,10)) + '"></div>' +
       '<div class="cdm-actions">' +
         '<button class="btn btn-ghost" onclick="closeClosedDebtModal()">Cancel</button>' +
@@ -13552,7 +13561,7 @@ function renderTransfer() {
              '<span class="xfer-src-name">' + escapeHtml(d.name) + '</span>' +
              '<span class="xfer-src-bal">' + fmtDec(d.balance) + ' &middot; ' + (d.apr || 0) + '%</span></label>' +
         '<div class="xfer-amt-wrap" id="xfer-amt-wrap-' + d.id + '" style="display:none;">' +
-          '<label class="xfer-amt-label">Move how much?</label>' +
+          '<label class="xfer-amt-label" for="xfer-amt-' + d.id + '">Move how much?</label>' +
           '<input type="number" class="xfer-amt" id="xfer-amt-' + d.id + '" step="0.01" min="0" ' +
             'max="' + d.balance.toFixed(2) + '" value="' + d.balance.toFixed(2) + '" oninput="renderTransfer()">' +
           '<button type="button" class="xfer-amt-all" onclick="_xferSetAll(' + d.id + ')">All</button>' +
@@ -17456,11 +17465,11 @@ if (isInStandaloneMode() ||
     <div class="form-error" id="edit-debt-error" style="display:none;"></div>
     <div class="modal-form-grid">
       <div class="form-field" style="grid-column:1/-1">
-        <label>Debt Name</label>
+        <label for="edit-name">Debt Name</label>
         <input type="text" id="edit-name" placeholder="e.g. Chase Sapphire" />
       </div>
       <div class="form-field" style="grid-column:1/-1">
-        <label>Type</label>
+        <label for="edit-type">Type</label>
         <select id="edit-type" onchange="onDebtTypeChange('edit')">
           <option value="cc">Credit Card</option>
           <option value="student">Student Loan</option>
@@ -17471,11 +17480,11 @@ if (isInStandaloneMode() ||
         </select>
       </div>
       <div class="form-field">
-        <label>Balance ($)</label>
+        <label for="edit-balance">Balance ($)</label>
         <input type="text" inputmode="decimal" id="edit-balance" min="0" step="1" oninput="updateEditFeePreview()" />
       </div>
       <div class="form-field">
-        <label>APR (%)</label>
+        <label for="edit-apr">APR (%)</label>
         <input type="text" inputmode="decimal" id="edit-apr" min="0" max="100" step="0.01"
           oninput="validateAprField(this)" onblur="validateAprField(this)" />
         <div id="edit-apr-warning" style="display:none;font-size:0.72rem;color:var(--accent3);margin-top:4px;font-family:var(--font-mono);">
@@ -17483,11 +17492,11 @@ if (isInStandaloneMode() ||
         </div>
       </div>
       <div class="form-field" style="grid-column:1/-1">
-        <label>Min Payment ($)</label>
+        <label for="edit-min">Min Payment ($)</label>
         <input type="text" inputmode="decimal" id="edit-min" min="0" step="1" />
       </div>
       <div class="form-field" style="grid-column:1/-1">
-        <label>Due Day <span class="field-optional">optional</span></label>
+        <label for="edit-due-day">Due Day <span class="field-optional">optional</span></label>
         <input type="text" inputmode="numeric" id="edit-due-day" min="1" max="31" placeholder="15" />
       </div>
 
@@ -17505,19 +17514,19 @@ if (isInStandaloneMode() ||
     <div id="edit-promo-fields" style="display:none;margin-bottom:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:16px;">
       <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:10px;">
         <div class="form-field">
-          <label>Promo APR (%)</label>
+          <label for="edit-promo-apr">Promo APR (%)</label>
           <input type="text" inputmode="decimal" id="edit-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
         </div>
         <div class="form-field">
-          <label>Promo End Date</label>
+          <label for="edit-promo-end">Promo End Date</label>
           <input type="date" id="edit-promo-end" />
         </div>
         <div class="form-field">
-          <label>Post-Promo APR (%)</label>
+          <label for="edit-post-promo-apr">Post-Promo APR (%)</label>
           <input type="text" inputmode="decimal" id="edit-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
         </div>
         <div class="form-field">
-          <label>Transfer Fee (%)</label>
+          <label for="edit-transfer-fee">Transfer Fee (%)</label>
           <input type="text" inputmode="decimal" id="edit-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateEditFeePreview()" />
         </div>
       </div>
@@ -17542,15 +17551,15 @@ if (isInStandaloneMode() ||
         <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
         <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
           <div class="form-field">
-            <label>Original Principal ($)</label>
+            <label for="edit-orig-principal">Original Principal ($)</label>
             <input type="text" inputmode="decimal" id="edit-orig-principal" min="0" step="1" />
           </div>
           <div class="form-field">
-            <label>Term (months)</label>
+            <label for="edit-term-months">Term (months)</label>
             <input type="number" id="edit-term-months" min="1" max="600" step="1" />
           </div>
           <div class="form-field">
-            <label>Origination Date</label>
+            <label for="edit-orig-date">Origination Date</label>
             <input type="date" id="edit-orig-date" />
           </div>
         </div>
