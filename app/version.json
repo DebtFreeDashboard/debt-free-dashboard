@@ -1,8 +1,8 @@
 {
-  "version": "1.53.1",
+  "version": "1.53.2",
   "releaseDate": "2026-10-10",
-  "releaseName": "Form labels respond to clicks",
+  "releaseName": "License activations recorded",
   "notes": [
-    "Clicking a field’s label, such as Balance or APR on the add-a-debt form, now puts the cursor in that field. Before, clicking the label did nothing, which made the form feel unresponsive."
+    "Activating Premium with your license key now records the activation with Gumroad, where purchases are handled. Nothing changes in how you unlock Premium."
   ]
 }

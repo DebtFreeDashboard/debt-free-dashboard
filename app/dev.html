@@ -4189,7 +4189,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.53.1';
+const APP_VERSION = '1.53.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4197,6 +4197,15 @@ const APP_VERSION = '1.53.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.53.2',
+    date: 'October 10, 2026',
+    name: 'License activations recorded',
+    whatsNew: [],
+    fixes: [
+      'Activating Premium with your license key now records the activation with Gumroad, where purchases are handled. Nothing changes in how you unlock Premium.'
+    ]
+  },
   {
     version: '1.53.1',
     date: 'October 10, 2026',
@@ -10174,7 +10183,11 @@ async function verifyLicense() {
     var body = new URLSearchParams();
     body.append('product_id', GUMROAD_PRODUCT_ID);
     body.append('license_key', key);
-    body.append('increment_uses_count', 'false'); // never inflate the usage counter
+    // v1.53.2 - count activations against the key in Gumroad (Sales -> the
+    // sale -> license "Uses"). This is the only call to Gumroad and it runs
+    // only from the Activate button, so the count is one per successful
+    // activation, never per app open. Gumroad does not count failed keys.
+    body.append('increment_uses_count', 'true');
     var res = await fetch('https://api.gumroad.com/v2/licenses/verify', { method: 'POST', body: body });
     var data = await res.json();
     if (data && data.success) {
