@@ -1,8 +1,8 @@
 {
-  "version": "1.54.4",
-  "releaseDate": "2026-10-14",
-  "releaseName": "Optimized stays current",
+  "version": "1.54.5",
+  "releaseDate": "2026-10-15",
+  "releaseName": "Groundwork for Google Play purchases",
   "notes": [
-    "On the Optimized strategy, adding or editing a debt, or changing your extra payment, now works out the best order again right away. Before, the order was only worked out when you picked the strategy, so later changes could leave the plan on an out-of-date order."
+    "Groundwork for buying Premium inside the Google Play version of the app. Nothing changes here on the web, and nothing changes for anyone who already has Premium."
   ]
 }

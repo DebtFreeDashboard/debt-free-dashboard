@@ -3966,9 +3966,17 @@
         </div>
         <div id="unlock-pending">
           <div class="deadline-inline" data-deadline hidden style="margin-bottom:10px;"><span data-deadline-text></span></div>
-          <p class="play-only" style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
+          <p class="play-only" id="play-premium-note" style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
             DebtFree Dashboard is free to use for your whole payoff journey. Premium isn&rsquo;t sold in the Google Play version yet. If you already own it, enter your license key below.
           </p>
+          <div class="play-only" id="play-buy-wrap" style="display:none;margin-bottom:10px;">
+            <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
+              DebtFree Dashboard is free to use for your whole payoff journey. A one-time purchase unlocks the planning suite: What-If lump sums, payoff-by-payoff detail with the minimums chart, bills, sinking funds, the amortization schedule, estimated-interest tracking, and the premium views. Pay once, no subscription. It stays with your Google account, so it comes back on a new phone.
+            </p>
+            <button class="btn btn-primary" id="play-buy-btn" type="button" onclick="buyOnPlay()" style="width:100%;">Unlock Premium</button>
+            <div id="play-buy-msg" style="margin-top:8px;font-size:0.78rem;font-family:var(--font-mono);"></div>
+            <p style="font-size:0.72rem;color:var(--text-muted);margin-top:8px;">Bought Premium on the website? Enter that license key below.</p>
+          </div>
           <p class="price-copy" style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
             DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$24</strong> unlocks the planning suite: What-If lump sums, payoff-by-payoff detail with the minimums chart, bills, sinking funds, the amortization schedule, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
           </p>
@@ -4211,7 +4219,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.4';
+const APP_VERSION = '1.54.5';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4219,6 +4227,15 @@ const APP_VERSION = '1.54.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.5',
+    date: 'October 15, 2026',
+    name: 'Groundwork for Google Play purchases',
+    whatsNew: [],
+    fixes: [
+      'Groundwork for buying Premium inside the Google Play version of the app. Nothing changes here on the web, and nothing changes for anyone who already has Premium.'
+    ]
+  },
   {
     version: '1.54.4',
     date: 'October 14, 2026',
@@ -10333,6 +10350,133 @@ async function verifyLicense() {
     trackShare('license_error', { _category: 'revenue' });
   }
 }
+
+// ═══════════════════════════════════════════
+//  v1.55.0 — GOOGLE PLAY BILLING (Play build only)
+// ═══════════════════════════════════════════
+// Inside the Google Play app (IS_PLAY_BUILD), Premium is sold through Google
+// Play: the Digital Goods API reads the product and the user's purchases, and
+// the Payment Request API runs Google's purchase sheet. Two rules shape this:
+//   • Play is the source of truth. A purchase it lists = Premium, on any phone
+//     signed into that Google account; one it stops listing (refunded) = gone,
+//     but only if Play granted it (a Gumroad license is never touched).
+//   • Google refunds a purchase nobody acknowledges within 3 days, and only a
+//     server can acknowledge. PLAY_VERIFY_URL is that server (Cloudflare
+//     Worker, tools/play-billing/worker.mjs): it receives the purchase token
+//     and product id, nothing else. Unreachable = try again next launch.
+// Dormant until PLAY_VERIFY_URL is set: the Play app then shows the
+// "not sold here yet" note, exactly as before.
+var PLAY_SKU = 'premium_unlock';
+var PLAY_VERIFY_URL = '';
+var PLAY_SOURCE_KEY = 'debtfree_premium_source';   // 'play' when Play granted Premium
+var PLAY_ACK_KEY = 'debtfree_play_ack';            // purchase token the server has confirmed
+var _playSvc = null, _playPrice = null, _playBusy = false;
+
+function playBillingReady() {
+  return !!(IS_PLAY_BUILD && PLAY_VERIFY_URL && _playSvc && _playPrice);
+}
+function _playGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function _playSet(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+function _playPriceText(p) {
+  if (!p || p.value == null) return null;
+  try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: p.currency || 'USD' }).format(Number(p.value)); }
+  catch (e) { return '$' + p.value; }
+}
+async function initPlayBilling() {
+  if (!IS_PLAY_BUILD || !PLAY_VERIFY_URL || typeof window.getDigitalGoodsService !== 'function') { renderPlayBuy(); return; }
+  try { _playSvc = await window.getDigitalGoodsService('https://play.google.com/billing'); } catch (e) { _playSvc = null; }
+  if (!_playSvc) { renderPlayBuy(); return; }
+  try {
+    var d = await _playSvc.getDetails([PLAY_SKU]);
+    var item = (d || []).find(function (x) { return x.itemId === PLAY_SKU; });
+    _playPrice = item ? _playPriceText(item.price) : null;
+  } catch (e) { _playPrice = null; }
+  await syncPlayEntitlement();
+  renderPlayBuy();
+  if (playBillingReady()) trackOnce('play_billing_ready', 'play_billing_ready', { _category: 'revenue' });
+}
+async function syncPlayEntitlement() {
+  if (!_playSvc) return;
+  var list;
+  try { list = await _playSvc.listPurchases(); } catch (e) { return; }   // offline: change nothing
+  var p = (list || []).find(function (x) { return x.itemId === PLAY_SKU; });
+  if (p && p.purchaseToken) {
+    if (!isPremium) trackShare('play_entitlement_restored', { _category: 'revenue' });
+    grantPlayPremium();
+    if (_playGet(PLAY_ACK_KEY) !== p.purchaseToken) verifyPlayPurchase(p.purchaseToken);
+  } else if (_playGet(PLAY_SOURCE_KEY) === 'play' && isPremium && !licenseKey) {
+    revokePlayPremium('not_listed');
+  }
+}
+function grantPlayPremium() {
+  _playSet(PLAY_SOURCE_KEY, 'play');
+  if (isPremium) return;
+  isPremium = true;
+  save(); applyPremiumState(); render();
+}
+function revokePlayPremium(reason) {
+  _playSet(PLAY_SOURCE_KEY, null); _playSet(PLAY_ACK_KEY, null);
+  if (licenseKey) return;   // a website license is its own entitlement
+  isPremium = false;
+  save(); applyPremiumState(); render();
+  trackShare('play_entitlement_revoked', { _category: 'revenue', reason: reason });
+}
+// Confirms (and acknowledges) with Google through our server. Only a definite
+// "not purchased" answer revokes; network or server errors change nothing.
+async function verifyPlayPurchase(token) {
+  if (!PLAY_VERIFY_URL || !token) return null;
+  try {
+    var res = await fetch(PLAY_VERIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ purchaseToken: token, productId: PLAY_SKU }) });
+    if (!res.ok) return null;
+    var data = await res.json();
+    if (data && data.valid) { _playSet(PLAY_ACK_KEY, token); return true; }
+    if (data && (data.reason === 'not_purchased' || data.reason === 'not_found') && _playGet(PLAY_SOURCE_KEY) === 'play') revokePlayPremium(data.reason);
+    return false;
+  } catch (e) { return null; }
+}
+async function buyOnPlay() {
+  if (_playBusy || !playBillingReady()) return;
+  var msg = document.getElementById('play-buy-msg');
+  var say = function (t, c) { if (msg) { msg.textContent = t; msg.style.color = c || 'var(--text-muted)'; } };
+  _playBusy = true;
+  trackShare('play_purchase_start', { _category: 'revenue', debt_count: debts.length });
+  try {
+    var req = new PaymentRequest([{ supportedMethods: 'https://play.google.com/billing', data: { sku: PLAY_SKU } }],
+      { total: { label: 'Total', amount: { currency: 'USD', value: '0' } } });
+    var res;
+    try { res = await req.show(); }
+    catch (e) { say(''); trackShare('play_purchase_cancel', { _category: 'revenue' }); return; }
+    var token = res && res.details && res.details.purchaseToken;
+    if (!token) { try { await res.complete('fail'); } catch (e) {} say('The purchase did not go through. Nothing was charged.', 'var(--accent3)'); trackShare('play_purchase_error', { _category: 'revenue', stage: 'no_token' }); return; }
+    grantPlayPremium();
+    try { await res.complete('success'); } catch (e) {}
+    say('\u2713 Premium unlocked. Thank you for supporting the project!', 'var(--accent)');
+    trackShare('play_purchase_success', { _category: 'revenue', debt_count: debts.length });
+    verifyPlayPurchase(token);
+  } catch (e) {
+    say('Couldn\u2019t open Google Play billing. Try again in a moment.', 'var(--accent3)');
+    trackShare('play_purchase_error', { _category: 'revenue', stage: 'request' });
+  } finally { _playBusy = false; }
+}
+function renderPlayBuy() {
+  var ready = playBillingReady();
+  var note = document.getElementById('play-premium-note');
+  var wrap = document.getElementById('play-buy-wrap');
+  if (note) note.style.display = ready ? 'none' : '';
+  if (wrap) wrap.style.display = ready ? '' : 'none';
+  var btn = document.getElementById('play-buy-btn');
+  if (btn && ready) btn.textContent = 'Unlock Premium \u2014 ' + _playPrice;
+}
+// Re-check when the app comes back to the foreground (a refund, or a purchase
+// finished on another device), at most every 10 minutes.
+var _playLastSync = 0;
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState !== 'visible' || !_playSvc) return;
+  if (Date.now() - _playLastSync < 10 * 60 * 1000) return;
+  _playLastSync = Date.now();
+  syncPlayEntitlement();
+});
 
 function deactivateLicenseLocally() {
   // Lets a user clear premium on a shared/return device. Does not touch Gumroad.
@@ -17496,6 +17640,8 @@ load();
 // v1.13.0 — apply theme + premium state at boot
 applyTheme();
 applyPremiumState();
+// v1.55.0 — Google Play Billing (no-op outside the Play app). Async, never blocks boot.
+try { initPlayBilling(); } catch (e) {}
 (function() {
   var li = document.getElementById('license-input');
   if (li && licenseKey) li.value = licenseKey;
