@@ -1,0 +1,52 @@
+{
+  "slug": "debt-consolidation-calculator",
+  "title": "Debt Consolidation Calculator",
+  "metaDescription": "Debt consolidation calculator: compare your current debts with one new loan side by side, including monthly payment, total interest and payoff date.",
+  "h1": "Debt Consolidation Calculator: Current Debts vs One New Loan",
+  "lede": "This calculator puts two paths side by side, the current debts as they are and one new consolidation loan, and shows the monthly payment, total interest and payoff date for each.",
+  "sections": [
+    {
+      "h2": "Two paths, measured the same way",
+      "html": "<p>On the current side, the calculator runs the existing debts with their own balances, rates and minimum payments. On the consolidation side, it combines those balances into one loan with the APR, term and origination fee entered.</p><p>Each side gets three results: what is paid each month, the total interest, and the month the last dollar is paid. The side-by-side view shows exactly where one path costs more and the other costs less. It doesn’t pick a winner.</p><p>The two paths can come out close, or one can be far ahead. Small changes in the loan’s rate or term can flip the result, so running a few versions of the new loan shows how sensitive the comparison is.</p>"
+    },
+    {
+      "h2": "Four things that decide which side costs less",
+      "html": "<ol><li><strong>The rate.</strong> The new loan’s APR compared with the rates on the existing debts, weighted by how big each balance is. A loan rate below a few of the debts but above others can land on either side.</li><li><strong>The term.</strong> A longer term spreads the balance over more months, which lowers the payment. More months also means more months of interest, so a smaller payment and a smaller total don’t always go together.</li><li><strong>The fee.</strong> An origination fee is a cost the current path doesn’t have. A 5% fee on a $10,000 loan is $500. The calculator includes the fee on the consolidation side.</li><li><strong>What happens to the old accounts.</strong> The comparison assumes the old balances stay at zero once they are paid off.</li></ol>"
+    },
+    {
+      "h2": "Why a lower monthly payment can still cost more",
+      "html": "<p>The monthly payment is the number people see first, and it is often lower on the consolidation side. But the payment and the total cost answer different questions.</p><p>A loan with a lower rate and a much longer term can show a smaller payment and more total interest at the same time. A loan with a similar rate and a shorter term can show a higher payment and less total interest. That is why the calculator shows all three results, not just the payment. Looking at only one of them can tell a different story than the full picture.</p>"
+    },
+    {
+      "h2": "What the comparison leaves out",
+      "html": "<p>The math covers the debts and the loan as entered. It doesn’t model new charges. If cards that were paid off by the loan pick up new balances, those balances add to the real cost of the consolidation path, and the side-by-side figures won’t include them. Some people close or set aside old cards for this reason. Others keep them open. The calculator doesn’t assume either.</p><p>The current side also assumes the same minimum payments continue. Adding extra each month would change that path’s results. The <a href=\"/calculators/debt-payoff-calculator/\">debt payoff calculator</a> shows the current debts with an extra amount, and the <a href=\"/calculators/balance-transfer-calculator/\">balance transfer calculator</a> covers moving card debt to a promo card instead of a loan. For a single loan by itself, the <a href=\"/calculators/personal-loan-payoff-calculator/\">personal loan payoff calculator</a> shows how extra payments shorten the term.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How does the calculator compare consolidation with keeping my debts?",
+      "a": "It runs the current debts with their own balances, rates and minimum payments. Then it combines those balances into one loan using the APR, term and origination fee entered. Each path shows its monthly payment, total interest and payoff date side by side, so the differences are easy to see."
+    },
+    {
+      "q": "Can a consolidation loan with a lower rate cost more overall?",
+      "a": "It can. If the new loan has a much longer term than the current payoff timeline, interest builds for more months, which can outweigh the lower rate. An origination fee also adds cost. The calculator shows total interest and payoff date for both paths, not only the monthly payment."
+    },
+    {
+      "q": "How is the origination fee handled?",
+      "a": "The fee is counted as part of the consolidation path’s cost. A fee is a percentage of the loan, so a 5% fee on a $10,000 loan is $500. Lenders handle fees in different ways, commonly taking it from the money paid out or adding it to the balance, so the loan agreement shows the exact terms."
+    },
+    {
+      "q": "Does the calculator account for new charges on paid-off cards?",
+      "a": "No. It assumes the old balances stay at zero once the loan pays them off. If new charges build up on those cards, the real cost of the consolidation path would be higher than the figure shown. The comparison is a snapshot of the debts as they are today."
+    },
+    {
+      "q": "Why is the monthly payment lower but the total interest higher?",
+      "a": "A longer loan term spreads the balance over more months, which lowers each payment. More months also means interest is charged for longer. Depending on the rate and term, the total interest can end up higher even when the monthly payment looks better. The side-by-side results show both numbers."
+    }
+  ],
+  "related": [
+    "debt-payoff-calculator",
+    "balance-transfer-calculator",
+    "personal-loan-payoff-calculator"
+  ]
+}

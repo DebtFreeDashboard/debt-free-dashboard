@@ -205,7 +205,10 @@ async function boot(b, file, at) {
     return out;
   });
   const a = await nums(before.page), c = await nums(p2.page);
-  check('all four strategies identical to v1.41.2',
+  // v1.54.0 deliberately changed Avalanche (highest rate charged each month,
+  // tools/test-avalanche.js), so it is compared only for the other three.
+  delete a.avalanche; delete c.avalanche;
+  check('Optimized, Snowball and Hybrid identical to v1.41.2 (Avalanche changed on purpose in v1.54.0)',
         JSON.stringify(a) === JSON.stringify(c), `${JSON.stringify(a)} vs ${JSON.stringify(c)}`);
   check('no JS errors on the persistence page', p2.errs.length === 0, p2.errs.slice(0, 2).join(' | ') || 'none');
 

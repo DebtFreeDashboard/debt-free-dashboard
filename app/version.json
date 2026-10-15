@@ -1,8 +1,10 @@
 {
-  "version": "1.53.2",
-  "releaseDate": "2026-10-10",
-  "releaseName": "License activations recorded",
+  "version": "1.54.0",
+  "releaseDate": "2026-10-14",
+  "releaseName": "Avalanche, fixed — and free calculators",
   "notes": [
-    "Activating Premium with your license key now records the activation with Gumroad, where purchases are handled. Nothing changes in how you unlock Premium."
+    "Avalanche now truly pays your highest-rate debt first. Before, it ranked debts by how many dollars of interest they would cost, which could put a large 18% balance ahead of a smaller 24% card. If you use Avalanche, your payoff order may change. For most plans the new order costs less interest, and Optimized still finds the cheapest order for your exact numbers.",
+    "A card on a 0% promo now gets only its minimum while the promo lasts, since extra money there saves no interest yet. The month the promo ends and the higher rate starts, it moves up the line.",
+    "New free calculators at mydebtdashboard.com/calculators. Each answers one question and can load its numbers straight into your dashboard. If you already have a plan, it asks before adding anything."
   ]
 }

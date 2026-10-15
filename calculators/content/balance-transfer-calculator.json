@@ -1,0 +1,53 @@
+{
+  "slug": "balance-transfer-calculator",
+  "title": "Balance Transfer Calculator",
+  "metaDescription": "Balance transfer calculator: see the fee in dollars, what is left when the promo ends, the payment to clear it in time and total cost vs your current card.",
+  "h1": "Balance Transfer Calculator",
+  "lede": "Compare moving a balance to a promo-rate card with leaving it where it is. The calculator shows the fee in dollars, what would be left when the promo ends, and the total cost of each path.",
+  "sections": [
+    {
+      "h2": "The fee comes first",
+      "html": "<p>A balance transfer commonly carries a fee, set as a percentage of the amount moved, and it is added to the new balance on day one. A 3% fee on $1,000 is $30, so the new card starts at $1,030.</p><p>Even with a 0% promo, that fee is a real cost. It is the price of the lower rate, and every comparison in the calculator includes it. Because the fee is a percentage, it grows with the amount moved.</p>"
+    },
+    {
+      "h2": "The promo clock",
+      "html": "<p>The promo rate, often 0%, lasts until a set month. After that, whatever balance is left starts collecting interest at the post-promo APR. The calculator shows two key numbers here:</p><ul><li><strong>What's left at promo end</strong> at your monthly payment.</li><li><strong>The payment that clears it inside the promo.</strong> At 0%, $1,030 over 12 months is about $86 a month.</li></ul><p>If the promo rate is above 0%, a small amount of interest builds during the promo as well, and the payment needed to clear it in time rises a little to cover that. The end date matters as much as the rate. A payment that clears the balance one month after the promo ends puts that last month at the higher APR.</p>"
+    },
+    {
+      "h2": "Side by side with staying put",
+      "html": "<p>On the current card, the cost is the interest at the current APR, month after month, at the same payment. On the transfer card, the cost is the fee plus any interest during the promo plus any interest after it ends.</p><p>Both paths use the same monthly payment, so the only things that differ are the rates, the fee and the timing. That keeps the comparison focused on cost alone rather than on how much goes out each month.</p><p>Which path costs less comes down to a few things:</p><ul><li><strong>Fee size:</strong> a larger fee takes more of the interest savings.</li><li><strong>Promo length:</strong> a longer promo gives the payment more months at the low rate.</li><li><strong>Payment amount:</strong> when the payment clears the balance inside the promo, the fee is close to the whole cost.</li><li><strong>Post-promo APR:</strong> if a large balance remains and the new rate is higher than the old one, the gap can narrow or flip.</li></ul>"
+    },
+    {
+      "h2": "What the comparison leaves out",
+      "html": "<p>The calculator assumes the full balance moves at once, no new purchases on either card, and steady rates. New purchases on a transfer card can carry a different rate, and how payments are split between balances varies by card agreement. Promo terms also vary, so the card's own terms are the final word.</p><p>A “no interest if paid in full” offer is a different setup; the <a href=\"/calculators/deferred-interest-calculator/\">deferred interest calculator</a> covers it. For replacing several debts with one fixed-rate loan, the <a href=\"/calculators/debt-consolidation-calculator/\">debt consolidation calculator</a> runs that comparison, and the <a href=\"/calculators/credit-card-interest-calculator/\">credit card interest calculator</a> breaks down the current card's interest by day and month.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How is a balance transfer fee calculated?",
+      "a": "It is commonly a percentage of the amount transferred, added to the new card's balance right away. A 3% fee on a $1,000 transfer is $30, so the new balance starts at $1,030. Some offers set a minimum dollar fee. The exact fee is listed in the card's terms, and the calculator uses the percentage you enter."
+    },
+    {
+      "q": "How much do I need to pay each month to clear a transfer before the promo ends?",
+      "a": "At a 0% promo, the payment is the balance plus the fee, divided by the number of promo months. A $1,030 balance over 12 months comes to about $86 a month. The calculator does this for your numbers and also handles promo rates above 0%, where a little interest adds to the required payment."
+    },
+    {
+      "q": "What happens to the balance when the promo ends?",
+      "a": "Whatever balance remains starts accruing interest at the post-promo APR from that month on. The calculator shows how much would be left at the end of the promo at your monthly payment, and the interest that leftover balance adds until it is paid off."
+    },
+    {
+      "q": "Is a balance transfer cheaper than keeping my current card?",
+      "a": "It depends on the fee, the promo length, the payment and the rate after the promo. When the payment clears the balance before the promo ends, the main cost is the fee. When a large balance remains afterward at a high rate, the cost can rise. The calculator shows both totals side by side."
+    },
+    {
+      "q": "Does the transfer fee count as interest?",
+      "a": "No. The fee is a one-time charge added to the balance when the transfer posts, separate from interest. The calculator lists it on its own and also includes it in the total cost of the transfer path, so the comparison with staying on the current card counts every dollar."
+    }
+  ],
+  "related": [
+    "deferred-interest-calculator",
+    "debt-consolidation-calculator",
+    "credit-card-interest-calculator",
+    "credit-card-payoff-calculator"
+  ]
+}

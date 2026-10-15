@@ -1,0 +1,57 @@
+{
+  "slug": "debt-free-date-calculator",
+  "title": "Debt Free Date Calculator",
+  "metaDescription": "Debt free date calculator: find out how long it will take to pay off your debt, with the estimated month and year, months to go and each debt's payoff date.",
+  "h1": "Debt Free Date Calculator: How Long Will It Take?",
+  "lede": "This calculator estimates the month and year your last debt reaches zero, how many months away that is, and when each individual debt is paid off along the way.",
+  "sections": [
+    {
+      "h2": "What the date stands for",
+      "html": "<p>The debt-free date is the month the final balance reaches zero, based on the debts, rates and payments entered. It sits at the end of a month-by-month schedule: interest is added, minimums and any extra are paid, and freed-up payments roll forward until nothing is left.</p><p>Alongside the headline date, the calculator lists each debt's own payoff month. Those smaller dates show how the timeline is built, one cleared debt at a time.</p><p>Every date here is an estimate. It holds only as long as the inputs do, so a plan that changes along the way will land on a different month than the one shown today.</p>"
+    },
+    {
+      "h2": "What moves the date",
+      "html": "<ul><li><strong>Monthly extra.</strong> Usually the biggest lever. Each added dollar goes straight to principal on the focus debt, and the effect carries forward through every later payoff. The <a href=\"/calculators/extra-payment-calculator/\">extra payment calculator</a> compares several amounts side by side.</li><li><strong>Interest rates.</strong> Higher rates mean more of each payment goes to interest, so less reduces the balance. A $1,000 balance at 24% APR adds about $20 of interest in a month; at 12% APR, about $10.</li><li><strong>Rollover.</strong> When a debt is cleared, its minimum joins the next payment. This is why the gaps between later payoffs often shrink.</li><li><strong>Promo endings.</strong> A 0% balance that switches to a higher rate partway through can push the date out, since interest starts building from that month.</li><li><strong>New charges.</strong> The calculator assumes none. Any new balance added in real life moves the actual date later.</li></ul>"
+    },
+    {
+      "h2": "Why the first months feel slow",
+      "html": "<p>Early in a plan, balances are at their highest, so interest takes its largest bite. A bigger share of each payment covers that month's interest, and a smaller share reduces what is owed.</p><p>As balances shrink, interest shrinks with them and more of each payment goes to principal. Add rollover on top, and the pace usually picks up in the second half of the timeline. A date several years out can therefore contain a slow start and a much faster finish.</p>"
+    },
+    {
+      "h2": "Why a date can help",
+      "html": "<p>A balance is abstract. A month and year is something people can circle on a calendar, mention to a partner or count down toward. Some people find a concrete finish line makes a long plan easier to stick with, and the per-debt dates work as checkpoints along the way.</p><p>Others find a far-off date discouraging and prefer to watch the balance fall or count cleared debts instead. The date is the same information either way, just framed as time rather than dollars.</p>"
+    },
+    {
+      "h2": "Working the other direction",
+      "html": "<p>This page starts with a payment and finds the date. When the date is the fixed part, such as a goal tied to a life event, the <a href=\"/calculators/pay-off-debt-by-date-calculator/\">pay off debt by a date calculator</a> works backward to the monthly amount that reaches it. A one-time amount, such as a tax refund or bonus, can also pull the date in, and the <a href=\"/calculators/lump-sum-debt-calculator/\">lump sum debt calculator</a> shows which debt it moves the most.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How long will it take to pay off my debt?",
+      "a": "It depends on the balances, the interest rates, the minimum payments and any extra paid each month. The calculator steps through those month by month and reports the estimated month the last balance reaches zero, plus how many months away that is. Changing any input updates the estimate immediately."
+    },
+    {
+      "q": "Why do my individual debts have different payoff dates?",
+      "a": "The extra money goes to one focus debt at a time, while the others receive only their minimums. The focus debt is cleared first, then its payment rolls to the next one. Each debt's date reflects where it sits in that order and how much is left on it when its turn comes."
+    },
+    {
+      "q": "Why does a small change in the monthly payment move the date so much?",
+      "a": "An extra dollar reduces principal right away, which lowers next month's interest, which leaves more of the following payment for principal. That effect compounds month after month, and rollover passes it on to every debt later in the order. The payoff date reflects all of that accumulated change, not just the first month."
+    },
+    {
+      "q": "Does the date account for my 0% promotional rate ending?",
+      "a": "Yes, when a promo end month and post-promo rate are entered. The calculator charges 0% on that balance until the end month and the post-promo rate afterward. If a balance is still there when the promo ends, the interest that starts then is reflected in the later payoff date."
+    },
+    {
+      "q": "Can the debt-free date change after I calculate it?",
+      "a": "Yes. It is an estimate based on the inputs at that moment. New charges, a rate change, a missed payment, a larger payment or a one-time lump sum would all shift the real timeline. Re-entering current balances from time to time produces an updated date that reflects what has actually happened."
+    }
+  ],
+  "related": [
+    "pay-off-debt-by-date-calculator",
+    "extra-payment-calculator",
+    "debt-payoff-calculator",
+    "lump-sum-debt-calculator"
+  ]
+}

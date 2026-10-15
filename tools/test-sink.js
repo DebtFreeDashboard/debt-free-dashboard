@@ -34,7 +34,9 @@ const plan = p => p.evaluate(()=>{_planSimCache={key:null,res:null};const s=getP
       const s=getPlanSim(); o[st]=s.months+'/'+Math.round(s.totalInterest*100)/100;});
     strategy='avalanche'; _planSimCache={key:null,res:null}; return o;});
   const a=await shape(OLD.pg), c=await shape(NEW.pg);
-  ck('no funds -> all four strategies identical to v1.42.0', JSON.stringify(a)===JSON.stringify(c),
+  // v1.54.0 deliberately changed Avalanche (see tools/test-avalanche.js).
+  const a3=Object.assign({},a), c3=Object.assign({},c); delete a3.avalanche; delete c3.avalanche;
+  ck('no funds -> Optimized, Snowball and Hybrid identical to v1.42.0 (Avalanche changed on purpose in v1.54.0)', JSON.stringify(a3)===JSON.stringify(c3),
      JSON.stringify(a));
   const trackOnly=await NEW.pg.evaluate(()=>{
     sinkingFunds.length=0;

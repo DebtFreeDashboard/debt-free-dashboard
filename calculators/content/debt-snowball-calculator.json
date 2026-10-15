@@ -1,0 +1,57 @@
+{
+  "slug": "debt-snowball-calculator",
+  "title": "Debt Snowball Calculator",
+  "metaDescription": "Debt snowball calculator: see the smallest-to-largest payoff order, the month each debt is gone, and how every freed-up minimum rolls into the next debt.",
+  "h1": "Debt Snowball Calculator: Smallest Balance First",
+  "lede": "This calculator lines up your debts from smallest balance to largest, then shows the month each one is paid off and how every freed-up payment rolls into the next debt.",
+  "sections": [
+    {
+      "h2": "How the snowball lines up your debts",
+      "html": "<p>The snowball method sorts debts by one thing only: the size of the balance. The smallest balance goes first, the largest goes last, and interest rates play no part in the order.</p><p>Every debt still gets its minimum payment each month. Any money beyond the minimums goes to the debt at the top of the list. Once that debt reaches zero, the next smallest balance becomes the new focus.</p>"
+    },
+    {
+      "h2": "Where the rolling payment comes from",
+      "html": "<p>The name comes from what happens after each payoff. A paid-off debt's minimum does not vanish from the budget. It joins the extra and moves to the next debt, so the payment aimed at the focus debt grows each time something is cleared.</p><p>A small example shows the pattern:</p><ol><li>The smallest debt has a $40 minimum, and there is $100 of monthly extra. That debt receives $140 a month.</li><li>When it is paid off, the next debt receives its own minimum plus that $140.</li><li>When that one is gone, its minimum joins the pile too, and the amount keeps building.</li></ol><p>The final payment on a debt is often smaller than the full amount available. In the calculator, whatever is left over that month spills to the next debt right away rather than waiting for the following month.</p>"
+    },
+    {
+      "h2": "Why some people choose it",
+      "html": "<p>The snowball is built around early, visible progress. Small balances can disappear within months, and each one removes a bill, a due date and a statement from the pile.</p><p>Some people find that a closed account is easier to feel than a lower interest charge. A string of quick payoffs can make a long plan seem more manageable, and fewer accounts can make the monthly routine simpler to track. Others care less about those wins and focus on the dollar cost instead. Both views are about what keeps a plan going, which the calculator cannot measure.</p>"
+    },
+    {
+      "h2": "The interest trade-off, in plain terms",
+      "html": "<p>Because the snowball ignores rates, it can leave a high-rate balance waiting while smaller, cheaper debts are cleared first. During that wait, the high-rate debt keeps charging interest on its full balance.</p><p>How much that costs depends on the debts. If the smallest balance also carries the highest rate, the snowball and the interest-first approach pick the same order and the cost is the same. If the largest balance carries the highest rate, the gap tends to be wider. The <a href=\"/calculators/debt-avalanche-calculator/\">debt avalanche calculator</a> runs the interest-first order, and the <a href=\"/calculators/snowball-vs-avalanche-calculator/\">snowball vs avalanche calculator</a> shows the difference for the same set of debts.</p>"
+    },
+    {
+      "h2": "Reading your snowball timeline",
+      "html": "<p>The results list each debt in the order it is cleared, with its payoff month. The gaps between those months are worth a look. The first payoff often comes quickly, and later gaps can stretch out because the remaining balances are larger.</p><p>The final row gives the debt-free month, the total interest paid and the total paid overall. Changing the monthly extra and watching those dates shift shows how sensitive the timeline is to the amount going in.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What is the debt snowball method?",
+      "a": "It is a way to order debt payments. Every debt gets its minimum, and any extra money goes to the smallest balance. When that balance is paid off, its payment moves to the next smallest, and so on until everything is cleared. The growing payment is the snowball. Interest rates do not affect the order."
+    },
+    {
+      "q": "Does the snowball cost more interest than the avalanche?",
+      "a": "It can, but not always. When the smallest balances carry low rates and a large balance carries a high rate, the snowball usually costs more interest because the expensive debt waits longer. When the smallest balance also has the highest rate, both methods pick the same order and the cost is identical. The size of the gap depends entirely on the debts involved."
+    },
+    {
+      "q": "Do the other debts still get paid while the smallest one is the focus?",
+      "a": "Yes. Every debt receives at least its minimum payment every month. Only the money beyond the minimums is directed to the smallest balance. This keeps all accounts current while one debt gets the extra attention, and it is why the plan depends on the minimums being entered accurately."
+    },
+    {
+      "q": "What if my smallest debt is on a 0% promotional rate?",
+      "a": "The snowball still puts it first, because the order is set by balance size alone. The calculator keeps that balance at 0% until the promo end month and then applies the post-promo rate. Running the same debts through the avalanche order shows whether a different sequence would change the total interest."
+    },
+    {
+      "q": "Is the debt snowball the same as consolidating debt?",
+      "a": "No. The snowball keeps every debt separate and changes only where the extra money goes each month. Consolidation replaces several debts with one new loan, which has its own rate, term and fees. They are different approaches with different math, and the snowball involves no new account at all."
+    }
+  ],
+  "related": [
+    "debt-avalanche-calculator",
+    "snowball-vs-avalanche-calculator",
+    "which-debt-to-pay-off-first",
+    "multiple-credit-card-payoff-calculator"
+  ]
+}

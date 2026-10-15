@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Card Interest Calculator | DebtFree Dashboard</title>
+<meta name="description" content="Credit card interest calculator: turn a balance and APR into interest per day and per month, and see the total interest at a given monthly payment.">
+<link rel="canonical" href="https://mydebtdashboard.com/calculators/credit-card-interest-calculator/">
+<link rel="icon" href="/assets/logo/debtfree-mark-transparent.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DebtFree Dashboard">
+<meta property="og:title" content="Credit Card Interest Calculator | DebtFree Dashboard">
+<meta property="og:description" content="Credit card interest calculator: turn a balance and APR into interest per day and per month, and see the total interest at a given monthly payment.">
+<meta property="og:url" content="https://mydebtdashboard.com/calculators/credit-card-interest-calculator/">
+<meta property="og:image" content="https://mydebtdashboard.com/assets/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/calculators/assets/calc.css?v=1.54.0">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mydebtdashboard.com/calculators/credit-card-interest-calculator/","url":"https://mydebtdashboard.com/calculators/credit-card-interest-calculator/","name":"Credit Card Interest Calculator","description":"Credit card interest calculator: turn a balance and APR into interest per day and per month, and see the total interest at a given monthly payment.","dateModified":"2026-10-15","isPartOf":{"@type":"WebSite","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"WebApplication","name":"Credit Card Interest Calculator","url":"https://mydebtdashboard.com/calculators/credit-card-interest-calculator/","applicationCategory":"FinanceApplication","operatingSystem":"Any web browser","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://mydebtdashboard.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://mydebtdashboard.com/calculators/"},{"@type":"ListItem","position":3,"name":"Credit Card Interest Calculator","item":"https://mydebtdashboard.com/calculators/credit-card-interest-calculator/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How do you calculate credit card interest per month?","acceptedAnswer":{"@type":"Answer","text":"A close estimate is the balance times the APR, divided by 12. A $1,000 balance at 24% APR comes to about $20 for the month. Statements usually work from a daily rate and the average daily balance, so the real charge can land slightly above or below that estimate depending on the billing cycle."}},{"@type":"Question","name":"What is a daily periodic rate?","acceptedAnswer":{"@type":"Answer","text":"It is the APR divided into a daily rate, commonly by dividing by 365. A 24% APR becomes about 0.066% per day. Many cards apply that daily rate to the balance each day of the billing cycle and add it up, which is why the timing of payments within a cycle can change the interest slightly."}},{"@type":"Question","name":"Why am I charged interest when I make a payment every month?","acceptedAnswer":{"@type":"Answer","text":"Interest is charged on the balance carried from one statement to the next. Many cards commonly offer a grace period on new purchases only when the full statement balance is paid by the due date. When part of the balance carries over, interest applies to what remains, even when a payment was made on time."}},{"@type":"Question","name":"Does a bigger payment lower the total interest?","acceptedAnswer":{"@type":"Answer","text":"Yes. Each month's interest is based on the balance left after the last payment. A bigger payment leaves a smaller balance, so the next interest charge is smaller, and the card is paid off sooner. Fewer months at a lower balance add up to less total interest."}},{"@type":"Question","name":"Why is my statement interest different from the calculator?","acceptedAnswer":{"@type":"Answer","text":"The calculator uses a simple monthly estimate. A statement usually uses the average daily balance, the exact number of days in the billing cycle, and any purchases, fees or rate changes during the month. Those details move the real charge a bit in either direction, so the calculator is meant as a close estimate."}}]}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  var _dfInternal = false;
+  try {
+    if (/[?&]internal=1(&|$)/.test(location.search)) localStorage.setItem('debtfree_internal', '1');
+    if (/[?&]internal=0(&|$)/.test(location.search)) localStorage.removeItem('debtfree_internal');
+    _dfInternal = localStorage.getItem('debtfree_internal') === '1';
+  } catch (e) {}
+  gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
+</script>
+</head>
+<body>
+<nav class="nav"><a href="/" class="nav-brand" aria-label="DebtFree Dashboard home"><img src="/assets/logo/debtfree-logo-horizontal-light.svg" alt="DebtFree Dashboard" width="150" height="32" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fb" style="display:none">DebtFree Dashboard</span></a><div class="nav-links"><a class="txt" href="/calculators/">All calculators</a><a class="nav-cta" href="/app/dashboard.html" data-cta="nav">Open the free dashboard</a></div></nav>
+<main class="wrap">
+<div class="crumbs"><a href="/">Home</a> / <a href="/calculators/">Calculators</a> / Credit Card Interest Calculator</div>
+<header class="hero"><h1>Credit Card Interest Calculator</h1><p class="lede">See what a card balance costs in interest each day and each month, and how much interest adds up in total at the payment you choose.</p><div class="trust"><span>Free</span><span>No sign-up</span><span>Nothing leaves your device</span><span>Same math as the dashboard</span></div></header>
+<section class="calc" id="calc" aria-label="Calculator">
+<div class="fields"><div class="f"><label for="balance">Card balance</label><div class="affix">$<input id="balance" type="text" inputmode="decimal" value="4500"></div></div><div class="f"><label for="apr">APR</label><div class="affix suffix"><input id="apr" type="text" inputmode="decimal" value="22.99">%</div></div><div class="f"><label for="payment">Monthly payment</label><div class="affix">$<input id="payment" type="text" inputmode="decimal" value="150"></div><span class="hint">optional</span></div></div>
+<div class="results" id="calc-results" aria-live="polite"></div>
+<div class="handoff"><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><span class="sub">Loads these numbers. No account needed.</span></div>
+</section>
+<script type="application/json" id="calc-config">{"slug":"credit-card-interest-calculator","widget":"interest","mode":null,"strategy":"avalanche","allowPromo":false,"defaultType":"cc","debtName":null}</script>
+<article class="content">
+<h2>APR, monthly rate and daily rate</h2>
+<p>A card's rate is usually quoted as an <strong>APR</strong>, an annual percentage rate. Interest is not charged once a year, though, so the APR gets broken into smaller pieces:</p><ul><li><strong>Monthly rate:</strong> the APR divided by 12. A 24% APR is 2% a month.</li><li><strong>Daily periodic rate:</strong> the APR divided by 365, which is how many card statements figure it. A 24% APR is about 0.066% a day.</li></ul><p>They are the same rate, just measured over different stretches of time.</p>
+<h2>From a balance to a monthly charge</h2>
+<p>Applied to a $1,000 balance at 24% APR, those rates come to about 66 cents of interest a day, or about $20 for the month. A balance twice as large means twice the interest. A lower APR shrinks the charge by the same proportion.</p><p>Statements commonly use the <em>average daily balance</em>, so the timing of payments and purchases inside a billing cycle nudges the real number up or down. This calculator gives a simple estimate rather than a statement match.</p><p>The monthly estimate is two steps: the APR divided by 12 gives the monthly rate, and the balance times that rate gives the charge. At 18% APR, the monthly rate is 1.5%, so a $2,000 balance picks up about $30 for the month.</p>
+<h2>Interest that lands on the balance</h2>
+<p>When a payment does not cover the full balance, the month's interest becomes part of what is owed. Next month, interest is figured on that slightly larger number. Over a year, this means the interest paid on a carried balance can come out a bit higher than the APR alone would suggest.</p><p>The per-day figure shows the same idea at a smaller scale. Each day a balance sits on the card, it adds a few cents or a few dollars, and those days add up to the monthly charge.</p>
+<h2>Why total interest depends on the payment</h2>
+<p>Interest is figured fresh every month on whatever balance is left. A larger payment lowers next month's balance, which lowers next month's interest, and that keeps repeating. A payment just above the monthly interest leaves the balance high for a long time, so the same APR produces far more interest in total.</p><p>That is why the calculator asks for a payment before it shows total interest. Changing the payment shows how much the total moves. The <a href="/calculators/credit-card-payoff-calculator/">credit card payoff calculator</a> turns the same inputs into a payoff month, and the <a href="/calculators/minimum-payment-calculator/">minimum payment calculator</a> shows the total when the payment follows a shrinking minimum.</p>
+<h2>What the estimate leaves out</h2>
+<p>The numbers assume one steady APR, no new purchases, and no fees. A promo rate that ends, a cash advance at a different rate, or a balance carried from month to month on new purchases would all change the real figure. For a promo rate with a fee, the <a href="/calculators/balance-transfer-calculator/">balance transfer calculator</a> handles both pieces.</p>
+</article>
+<section class="cta"><div><h2>A calculator is a snapshot. Your plan keeps moving.</h2><p>The free dashboard keeps your debt-free date current as you pay &mdash; and it picks up right where this page leaves off.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><p class="fine">Your numbers go from this page into the dashboard on this device. Nothing is sent to a server.</p></div><ul>
+<li>Your debt-free date updates every time you log a payment</li>
+<li>Snowball, Avalanche, your own order &mdash; plus Optimized, which finds the cheapest order</li>
+<li>0% promo rates that switch automatically when they end</li>
+<li>What-If slider: see what extra money does, instantly</li>
+<li>No account, no bank login &mdash; your data stays on your device</li>
+<li>Free with unlimited debts. Premium is a one-time $24.</li></ul></section>
+<section class="faq"><h2>Questions people ask</h2>
+<details><summary>How do you calculate credit card interest per month?</summary><p>A close estimate is the balance times the APR, divided by 12. A $1,000 balance at 24% APR comes to about $20 for the month. Statements usually work from a daily rate and the average daily balance, so the real charge can land slightly above or below that estimate depending on the billing cycle.</p></details>
+<details><summary>What is a daily periodic rate?</summary><p>It is the APR divided into a daily rate, commonly by dividing by 365. A 24% APR becomes about 0.066% per day. Many cards apply that daily rate to the balance each day of the billing cycle and add it up, which is why the timing of payments within a cycle can change the interest slightly.</p></details>
+<details><summary>Why am I charged interest when I make a payment every month?</summary><p>Interest is charged on the balance carried from one statement to the next. Many cards commonly offer a grace period on new purchases only when the full statement balance is paid by the due date. When part of the balance carries over, interest applies to what remains, even when a payment was made on time.</p></details>
+<details><summary>Does a bigger payment lower the total interest?</summary><p>Yes. Each month's interest is based on the balance left after the last payment. A bigger payment leaves a smaller balance, so the next interest charge is smaller, and the card is paid off sooner. Fewer months at a lower balance add up to less total interest.</p></details>
+<details><summary>Why is my statement interest different from the calculator?</summary><p>The calculator uses a simple monthly estimate. A statement usually uses the average daily balance, the exact number of days in the billing cycle, and any purchases, fees or rate changes during the month. Those details move the real charge a bit in either direction, so the calculator is meant as a close estimate.</p></details>
+</section>
+<aside class="founder"><div class="av" aria-hidden="true">K</div><div><h2>Why I built this</h2><p>I’m Kevin. About a year ago I sat down with my own credit card balances and couldn’t get a straight answer to one question: when does this actually end? Most tools I found wanted an account or a bank login. So I built the one I wanted &mdash; the same math running on this page &mdash; and I use it on my own debt every month.</p><p class="sig">&mdash; Kevin, founder of DebtFree Dashboard</p></div></aside>
+<section class="related"><h2>Related calculators</h2><div class="card-grid"><a class="card-link" href="/calculators/credit-card-payoff-calculator/"><strong>Credit Card Payoff Calculator</strong><span>One card: payoff date, interest, or the payment it takes.</span></a><a class="card-link" href="/calculators/minimum-payment-calculator/"><strong>Minimum Payment Calculator</strong><span>How long minimum payments really take.</span></a><a class="card-link" href="/calculators/balance-transfer-calculator/"><strong>Balance Transfer Calculator</strong><span>Fee, promo length and what is left when 0% ends.</span></a></div></section>
+<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>
+</main>
+<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
+<script src="/calculators/assets/engine.js?v=1.54.0"></script>
+<script src="/calculators/assets/calc.js?v=1.54.0"></script>
+</body>
+</html>

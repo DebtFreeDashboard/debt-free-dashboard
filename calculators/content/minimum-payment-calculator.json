@@ -1,0 +1,56 @@
+{
+  "slug": "minimum-payment-calculator",
+  "title": "Minimum Payment Calculator",
+  "metaDescription": "See how long it takes to pay off a credit card with minimum payments. Compare a shrinking minimum with a fixed payment, in years and total interest.",
+  "h1": "How Long to Pay Off a Credit Card With Minimum Payments",
+  "lede": "This calculator shows how many years a credit card takes to clear when only the minimum is paid, and how much interest that adds. It also shows what changes if today's minimum stays fixed instead of shrinking.",
+  "sections": [
+    {
+      "h2": "How a card minimum is commonly figured",
+      "html": "<p>Card issuers use different formulas, and the exact one is in the cardholder agreement. One common version is <strong>1% of the balance plus that month's interest</strong>, with a floor such as $25 when that total is small. The calculator uses that formula by default, and every piece of it can be edited. Some issuers use a flat percentage of the balance instead. That version shrinks too, for the same reason.</p><p>On a $5,000 balance at 24% APR, the month's interest is about $100. Add 1% of the balance, $50, and the minimum is about $150.</p>"
+    },
+    {
+      "h2": "Why a shrinking minimum stretches things out",
+      "html": "<p>Under that formula, only 1% of the balance goes to principal each month. As the balance falls, the minimum falls with it. Once that same card is down to $2,500, the minimum is about $75, and only $25 of it reduces the balance.</p><p>So the payment keeps getting smaller right along with the balance. The balance drops quickly in dollars at first, then more and more slowly. That long tail is where most of the years come from.</p><p>Near the end, 1% of the balance plus interest drops below the floor, and the floor becomes the minimum. From there, the payment stops shrinking and the balance clears faster. A higher floor ends the tail sooner; a lower one lets it run longer. Changing the floor in the calculator shows how much it matters for a given balance.</p>"
+    },
+    {
+      "h2": "The fixed-payment comparison",
+      "html": "<p>The second result keeps paying today's minimum, the same dollar amount, every month until the card is gone. Interest still shrinks as the balance falls, but the payment does not, so a growing share of each payment goes to principal.</p><p>The calculator shows the years and total interest for both versions, plus the difference between them. On many balances that gap is large, because the fixed payment never gets pulled into the long tail.</p>"
+    },
+    {
+      "h2": "Where the interest piles up",
+      "html": "<p>In the shrinking-minimum version, the balance spends many months at fairly low levels, and each of those months adds a small interest charge. None of them looks large on its own. Added together over years, they can come to a large share of the original balance.</p><p>The fixed payment passes through those low balances much faster, so far fewer of those small charges ever happen.</p>"
+    },
+    {
+      "h2": "Reading the results",
+      "html": "<p>The difference line is the cost, in years and dollars, of the payment falling along with the balance. Both results assume no new purchases and a fixed APR, with interest charged monthly at the APR divided by 12. They are estimates, not a statement. The <a href=\"/calculators/credit-card-payoff-calculator/\">credit card payoff calculator</a> tests any fixed payment or target month, the <a href=\"/calculators/credit-card-interest-calculator/\">credit card interest calculator</a> shows the daily and monthly charge, and the <a href=\"/calculators/extra-payment-calculator/\">extra payment calculator</a> shows what extra on top of minimums does across several debts.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How long does it take to pay off a credit card with minimum payments?",
+      "a": "It depends on the balance, the APR and the card's minimum formula. When the minimum shrinks as the balance falls, payoff can stretch across many years because the payment keeps getting smaller. The calculator shows the estimated years and total interest for your own numbers, along with a fixed-payment version for comparison."
+    },
+    {
+      "q": "How is a credit card minimum payment calculated?",
+      "a": "Formulas vary by issuer and are listed in the cardholder agreement. A common one is 1% of the balance plus that month's interest and any fees, with a dollar floor when the result is small. Some cards use a flat percentage of the balance instead. The calculator lets you edit the percentage and the floor."
+    },
+    {
+      "q": "Why does my minimum payment keep going down?",
+      "a": "Most minimum formulas are tied to the current balance. As the balance falls, both the interest and the percentage of the balance get smaller, so the minimum drops too. A smaller payment means less principal is paid each month, which is why the balance shrinks more slowly over time."
+    },
+    {
+      "q": "What is the difference between the two results?",
+      "a": "The first result recalculates the minimum every month, so the payment shrinks as the balance does. The second takes today's minimum and keeps paying that same amount every month. The difference shows how many years and how much interest the shrinking payment adds compared with holding the payment steady."
+    },
+    {
+      "q": "Can I change the minimum payment formula?",
+      "a": "Yes. The percentage of the balance and the dollar floor are both editable, so the calculator can match the formula in a specific cardholder agreement more closely. Changing them shows how sensitive the payoff time is to each piece, especially the floor, which controls how long the tail at the end lasts."
+    }
+  ],
+  "related": [
+    "credit-card-payoff-calculator",
+    "credit-card-interest-calculator",
+    "extra-payment-calculator"
+  ]
+}

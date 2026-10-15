@@ -1,0 +1,57 @@
+{
+  "slug": "debt-payoff-calculator",
+  "title": "Debt Payoff Calculator",
+  "metaDescription": "Free debt payoff calculator for multiple debts. See your debt-free date, total interest and payoff order under Snowball, Avalanche and your own order.",
+  "h1": "Debt Payoff Calculator for All Your Debts at Once",
+  "lede": "This calculator takes every debt you list, plus any monthly extra, and estimates when the last one is paid off, what the interest adds up to, and the order the debts clear under three different approaches.",
+  "sections": [
+    {
+      "h2": "What a payoff plan is",
+      "html": "<p>A payoff plan is a schedule. It answers three questions: how much goes to each debt every month, which debt gets any money beyond the minimums, and what happens to a payment once its debt is gone.</p><p>Without a plan, each balance moves on its own track. With one, the debts work as a group. When one is paid off, its minimum payment does not disappear. It moves to the next debt in line, so the amount aimed at the remaining balances grows over time.</p><p>The calculator runs that schedule month by month until every balance reaches zero. The result is an estimate, not a promise, because real life brings new charges, rate changes and uneven payments that no model can see in advance.</p>"
+    },
+    {
+      "h2": "The inputs that move the numbers",
+      "html": "<ul><li><strong>Balance.</strong> What is owed today on each debt. Larger balances take longer to clear and give interest more room to build.</li><li><strong>APR.</strong> The yearly interest rate. The calculator divides it by 12 and charges that slice of the balance each month. A $1,000 balance at 24% APR picks up about $20 of interest in a month.</li><li><strong>Minimum payment.</strong> The required amount for each debt. If a minimum is smaller than one month of interest, the balance would never shrink, so the calculator raises it to that month's interest plus $1 and flags the change.</li><li><strong>Monthly extra.</strong> Anything paid beyond all the minimums combined. This input often changes the result more than any other, and the <a href=\"/calculators/extra-payment-calculator/\">extra payment calculator</a> compares several amounts side by side.</li></ul><p>A debt on a 0% promotional rate can also carry an end month and the rate it switches to afterward. The calculator keeps it at 0% until that month, then applies the new rate.</p>"
+    },
+    {
+      "h2": "Reading the three result columns",
+      "html": "<p>The results run the same debts and the same monthly total three ways. The only thing that changes between columns is which debt receives the extra money first.</p><ul><li><strong>Snowball</strong> sends the extra to the smallest balance first.</li><li><strong>Avalanche</strong> sends it to the debt with the highest interest rate first.</li><li><strong>Your order</strong> follows the sequence you set, which can reflect things the math does not know about, such as a debt owed to family or a payment that feels heavier than the rest.</li></ul><p>Each column lists a debt-free month, the number of months to get there, total interest and total paid. When the columns land close together, the order matters little for those particular debts. When they spread apart, the gap shows what the ordering choice is worth in dollars and months. The <a href=\"/calculators/snowball-vs-avalanche-calculator/\">snowball vs avalanche calculator</a> looks at that gap in more detail.</p>"
+    },
+    {
+      "h2": "What the balance chart adds",
+      "html": "<p>The chart plots the total remaining balance month by month. Early on the line often falls slowly, because a bigger share of each payment goes to interest while balances are high.</p><p>As debts are cleared and their minimums roll forward, the line tends to bend downward faster. Those bends usually line up with the payoff month of each debt in the order list. A long, gentle slope near the start is common. It reflects how interest behaves on larger balances rather than a plan that is stalling.</p>"
+    },
+    {
+      "h2": "Why real statements can differ",
+      "html": "<p>The calculator uses a monthly model: interest is charged once a month at APR divided by 12, then payments are applied. Many card issuers commonly figure interest daily on an average balance, so actual charges can be off by a few dollars a month.</p><p>The estimate also assumes no new charges, steady rates and the same payment every month. When any of those change, running the numbers again gives an updated picture. For a closer look at the finish line and each debt's individual payoff month, the <a href=\"/calculators/debt-free-date-calculator/\">debt-free date calculator</a> puts the date front and center.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How does a debt payoff calculator work?",
+      "a": "It takes each debt's balance, interest rate and minimum payment, adds any monthly extra, and steps forward one month at a time. Each month it adds interest, applies the minimums, sends the extra to one focus debt, and moves freed-up payments to the next debt when one is paid off. It repeats until every balance is zero, then reports that month and the total interest."
+    },
+    {
+      "q": "Does the order I pay my debts in really matter?",
+      "a": "Sometimes a lot, sometimes barely. The total paid each month is the same in every order, so the difference comes only from which balances stay around longer and how much interest they charge while they do. Debts with very different rates tend to show a bigger gap between orders. Debts with similar rates and balances often show a gap of only a few dollars."
+    },
+    {
+      "q": "Why did the calculator change one of my minimum payments?",
+      "a": "If a minimum payment is less than one month of interest on that debt, the balance would grow instead of shrink, and the schedule would never finish. In that case the calculator raises the payment to that month's interest plus $1 so the debt can eventually reach zero. A note appears whenever this happens so the change is visible."
+    },
+    {
+      "q": "Can car loans and student loans go in, or only credit cards?",
+      "a": "Any debt with a balance, an interest rate and a monthly payment fits the same model. An installment loan's regular payment works as its minimum. One difference in real life: loan payments usually stay the same as the balance falls, while card minimums commonly shrink. The calculator uses the minimum as entered for every month."
+    },
+    {
+      "q": "How accurate is the debt-free date?",
+      "a": "It is an estimate built on the numbers entered and a few assumptions: no new charges, rates that stay the same unless a promo end month is set, and the same payment each month. Interest is figured monthly here, while many cards commonly figure it daily, so real statements can differ slightly. Updated inputs produce an updated estimate."
+    }
+  ],
+  "related": [
+    "debt-snowball-calculator",
+    "debt-avalanche-calculator",
+    "extra-payment-calculator",
+    "which-debt-to-pay-off-first"
+  ]
+}

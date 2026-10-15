@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debt Free Date Calculator | DebtFree Dashboard</title>
+<meta name="description" content="Debt free date calculator: find out how long it will take to pay off your debt, with the estimated month and year, months to go and each debt's payoff date.">
+<link rel="canonical" href="https://mydebtdashboard.com/calculators/debt-free-date-calculator/">
+<link rel="icon" href="/assets/logo/debtfree-mark-transparent.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DebtFree Dashboard">
+<meta property="og:title" content="Debt Free Date Calculator | DebtFree Dashboard">
+<meta property="og:description" content="Debt free date calculator: find out how long it will take to pay off your debt, with the estimated month and year, months to go and each debt's payoff date.">
+<meta property="og:url" content="https://mydebtdashboard.com/calculators/debt-free-date-calculator/">
+<meta property="og:image" content="https://mydebtdashboard.com/assets/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/calculators/assets/calc.css?v=1.54.0">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mydebtdashboard.com/calculators/debt-free-date-calculator/","url":"https://mydebtdashboard.com/calculators/debt-free-date-calculator/","name":"Debt Free Date Calculator","description":"Debt free date calculator: find out how long it will take to pay off your debt, with the estimated month and year, months to go and each debt's payoff date.","dateModified":"2026-10-15","isPartOf":{"@type":"WebSite","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"WebApplication","name":"Debt Free Date Calculator","url":"https://mydebtdashboard.com/calculators/debt-free-date-calculator/","applicationCategory":"FinanceApplication","operatingSystem":"Any web browser","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://mydebtdashboard.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://mydebtdashboard.com/calculators/"},{"@type":"ListItem","position":3,"name":"Debt Free Date Calculator","item":"https://mydebtdashboard.com/calculators/debt-free-date-calculator/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How long will it take to pay off my debt?","acceptedAnswer":{"@type":"Answer","text":"It depends on the balances, the interest rates, the minimum payments and any extra paid each month. The calculator steps through those month by month and reports the estimated month the last balance reaches zero, plus how many months away that is. Changing any input updates the estimate immediately."}},{"@type":"Question","name":"Why do my individual debts have different payoff dates?","acceptedAnswer":{"@type":"Answer","text":"The extra money goes to one focus debt at a time, while the others receive only their minimums. The focus debt is cleared first, then its payment rolls to the next one. Each debt's date reflects where it sits in that order and how much is left on it when its turn comes."}},{"@type":"Question","name":"Why does a small change in the monthly payment move the date so much?","acceptedAnswer":{"@type":"Answer","text":"An extra dollar reduces principal right away, which lowers next month's interest, which leaves more of the following payment for principal. That effect compounds month after month, and rollover passes it on to every debt later in the order. The payoff date reflects all of that accumulated change, not just the first month."}},{"@type":"Question","name":"Does the date account for my 0% promotional rate ending?","acceptedAnswer":{"@type":"Answer","text":"Yes, when a promo end month and post-promo rate are entered. The calculator charges 0% on that balance until the end month and the post-promo rate afterward. If a balance is still there when the promo ends, the interest that starts then is reflected in the later payoff date."}},{"@type":"Question","name":"Can the debt-free date change after I calculate it?","acceptedAnswer":{"@type":"Answer","text":"Yes. It is an estimate based on the inputs at that moment. New charges, a rate change, a missed payment, a larger payment or a one-time lump sum would all shift the real timeline. Re-entering current balances from time to time produces an updated date that reflects what has actually happened."}}]}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  var _dfInternal = false;
+  try {
+    if (/[?&]internal=1(&|$)/.test(location.search)) localStorage.setItem('debtfree_internal', '1');
+    if (/[?&]internal=0(&|$)/.test(location.search)) localStorage.removeItem('debtfree_internal');
+    _dfInternal = localStorage.getItem('debtfree_internal') === '1';
+  } catch (e) {}
+  gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
+</script>
+</head>
+<body>
+<nav class="nav"><a href="/" class="nav-brand" aria-label="DebtFree Dashboard home"><img src="/assets/logo/debtfree-logo-horizontal-light.svg" alt="DebtFree Dashboard" width="150" height="32" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fb" style="display:none">DebtFree Dashboard</span></a><div class="nav-links"><a class="txt" href="/calculators/">All calculators</a><a class="nav-cta" href="/app/dashboard.html" data-cta="nav">Open the free dashboard</a></div></nav>
+<main class="wrap">
+<div class="crumbs"><a href="/">Home</a> / <a href="/calculators/">Calculators</a> / Debt Free Date Calculator</div>
+<header class="hero"><h1>Debt Free Date Calculator: How Long Will It Take?</h1><p class="lede">This calculator estimates the month and year your last debt reaches zero, how many months away that is, and when each individual debt is paid off along the way.</p><div class="trust"><span>Free</span><span>No sign-up</span><span>Nothing leaves your device</span><span>Same math as the dashboard</span></div></header>
+<section class="calc" id="calc" aria-label="Calculator">
+<div class="debt-head"><h2 class="ct">Your debts</h2><span class="sub muted sm">Minimum blank = estimated</span></div><div id="debt-rows"></div><button type="button" class="btn-add" id="add-debt">+ Add a debt</button><div class="opts"><div class="f"><label for="extra">Extra per month, on top of minimums</label><div class="affix">$<input id="extra" type="text" inputmode="decimal" value="200"></div><span class="hint">Can be $0</span></div><div class="f"><label for="strategy">Strategy</label><select id="strategy"><option value="avalanche" selected>Avalanche — highest rate first</option><option value="snowball">Snowball — smallest balance first</option><option value="hybrid">Your order — top of the list first</option></select></div></div>
+<div class="results" id="calc-results" aria-live="polite"></div>
+<div class="handoff"><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><span class="sub">Loads these numbers. No account needed.</span></div>
+</section>
+<script type="application/json" id="calc-config">{"slug":"debt-free-date-calculator","widget":"multi","mode":"date","strategy":"avalanche","allowPromo":true,"defaultType":"cc","debtName":null,"debts":[{"name":"Rewards card","type":"cc","balance":6800,"apr":24.99,"min":204},{"name":"Everyday card","type":"cc","balance":2300,"apr":21.49,"min":69},{"name":"Store card","type":"cc","balance":900,"apr":29.99,"min":35},{"name":"Car loan","type":"auto","balance":14500,"apr":7.9,"min":395},{"name":"Personal loan","type":"personal","balance":5200,"apr":12.5,"min":175}]}</script>
+<article class="content">
+<h2>What the date stands for</h2>
+<p>The debt-free date is the month the final balance reaches zero, based on the debts, rates and payments entered. It sits at the end of a month-by-month schedule: interest is added, minimums and any extra are paid, and freed-up payments roll forward until nothing is left.</p><p>Alongside the headline date, the calculator lists each debt's own payoff month. Those smaller dates show how the timeline is built, one cleared debt at a time.</p><p>Every date here is an estimate. It holds only as long as the inputs do, so a plan that changes along the way will land on a different month than the one shown today.</p>
+<h2>What moves the date</h2>
+<ul><li><strong>Monthly extra.</strong> Usually the biggest lever. Each added dollar goes straight to principal on the focus debt, and the effect carries forward through every later payoff. The <a href="/calculators/extra-payment-calculator/">extra payment calculator</a> compares several amounts side by side.</li><li><strong>Interest rates.</strong> Higher rates mean more of each payment goes to interest, so less reduces the balance. A $1,000 balance at 24% APR adds about $20 of interest in a month; at 12% APR, about $10.</li><li><strong>Rollover.</strong> When a debt is cleared, its minimum joins the next payment. This is why the gaps between later payoffs often shrink.</li><li><strong>Promo endings.</strong> A 0% balance that switches to a higher rate partway through can push the date out, since interest starts building from that month.</li><li><strong>New charges.</strong> The calculator assumes none. Any new balance added in real life moves the actual date later.</li></ul>
+<h2>Why the first months feel slow</h2>
+<p>Early in a plan, balances are at their highest, so interest takes its largest bite. A bigger share of each payment covers that month's interest, and a smaller share reduces what is owed.</p><p>As balances shrink, interest shrinks with them and more of each payment goes to principal. Add rollover on top, and the pace usually picks up in the second half of the timeline. A date several years out can therefore contain a slow start and a much faster finish.</p>
+<h2>Why a date can help</h2>
+<p>A balance is abstract. A month and year is something people can circle on a calendar, mention to a partner or count down toward. Some people find a concrete finish line makes a long plan easier to stick with, and the per-debt dates work as checkpoints along the way.</p><p>Others find a far-off date discouraging and prefer to watch the balance fall or count cleared debts instead. The date is the same information either way, just framed as time rather than dollars.</p>
+<h2>Working the other direction</h2>
+<p>This page starts with a payment and finds the date. When the date is the fixed part, such as a goal tied to a life event, the <a href="/calculators/pay-off-debt-by-date-calculator/">pay off debt by a date calculator</a> works backward to the monthly amount that reaches it. A one-time amount, such as a tax refund or bonus, can also pull the date in, and the <a href="/calculators/lump-sum-debt-calculator/">lump sum debt calculator</a> shows which debt it moves the most.</p>
+</article>
+<section class="cta"><div><h2>A calculator is a snapshot. Your plan keeps moving.</h2><p>The free dashboard keeps your debt-free date current as you pay &mdash; and it picks up right where this page leaves off.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><p class="fine">Your numbers go from this page into the dashboard on this device. Nothing is sent to a server.</p></div><ul>
+<li>Your debt-free date updates every time you log a payment</li>
+<li>Snowball, Avalanche, your own order &mdash; plus Optimized, which finds the cheapest order</li>
+<li>0% promo rates that switch automatically when they end</li>
+<li>What-If slider: see what extra money does, instantly</li>
+<li>No account, no bank login &mdash; your data stays on your device</li>
+<li>Free with unlimited debts. Premium is a one-time $24.</li></ul></section>
+<section class="faq"><h2>Questions people ask</h2>
+<details><summary>How long will it take to pay off my debt?</summary><p>It depends on the balances, the interest rates, the minimum payments and any extra paid each month. The calculator steps through those month by month and reports the estimated month the last balance reaches zero, plus how many months away that is. Changing any input updates the estimate immediately.</p></details>
+<details><summary>Why do my individual debts have different payoff dates?</summary><p>The extra money goes to one focus debt at a time, while the others receive only their minimums. The focus debt is cleared first, then its payment rolls to the next one. Each debt's date reflects where it sits in that order and how much is left on it when its turn comes.</p></details>
+<details><summary>Why does a small change in the monthly payment move the date so much?</summary><p>An extra dollar reduces principal right away, which lowers next month's interest, which leaves more of the following payment for principal. That effect compounds month after month, and rollover passes it on to every debt later in the order. The payoff date reflects all of that accumulated change, not just the first month.</p></details>
+<details><summary>Does the date account for my 0% promotional rate ending?</summary><p>Yes, when a promo end month and post-promo rate are entered. The calculator charges 0% on that balance until the end month and the post-promo rate afterward. If a balance is still there when the promo ends, the interest that starts then is reflected in the later payoff date.</p></details>
+<details><summary>Can the debt-free date change after I calculate it?</summary><p>Yes. It is an estimate based on the inputs at that moment. New charges, a rate change, a missed payment, a larger payment or a one-time lump sum would all shift the real timeline. Re-entering current balances from time to time produces an updated date that reflects what has actually happened.</p></details>
+</section>
+<aside class="founder"><div class="av" aria-hidden="true">K</div><div><h2>Why I built this</h2><p>I’m Kevin. About a year ago I sat down with my own credit card balances and couldn’t get a straight answer to one question: when does this actually end? Most tools I found wanted an account or a bank login. So I built the one I wanted &mdash; the same math running on this page &mdash; and I use it on my own debt every month.</p><p class="sig">&mdash; Kevin, founder of DebtFree Dashboard</p></div></aside>
+<section class="related"><h2>Related calculators</h2><div class="card-grid"><a class="card-link" href="/calculators/pay-off-debt-by-date-calculator/"><strong>Pay Off Debt by a Date Calculator</strong><span>Pick a date. See the monthly amount it takes.</span></a><a class="card-link" href="/calculators/extra-payment-calculator/"><strong>Debt Payoff Calculator With Extra Payments</strong><span>What $50, $100 or $500 more a month changes.</span></a><a class="card-link" href="/calculators/debt-payoff-calculator/"><strong>Debt Payoff Calculator</strong><span>Every debt, every strategy, one debt-free date.</span></a><a class="card-link" href="/calculators/lump-sum-debt-calculator/"><strong>Lump Sum Debt Payment Calculator</strong><span>Where a tax refund or bonus saves the most.</span></a></div></section>
+<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>
+</main>
+<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
+<script src="/calculators/assets/engine.js?v=1.54.0"></script>
+<script src="/calculators/assets/calc.js?v=1.54.0"></script>
+</body>
+</html>

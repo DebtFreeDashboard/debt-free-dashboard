@@ -1,0 +1,53 @@
+{
+  "slug": "lump-sum-debt-calculator",
+  "title": "Lump Sum Debt Payment Calculator",
+  "metaDescription": "Lump sum debt payment calculator for a tax refund or bonus: test applying it to each debt and see them ranked by interest saved and months saved.",
+  "h1": "Lump Sum Payment Calculator: Where a Tax Refund or Bonus Goes Furthest",
+  "lede": "This calculator takes a one-time amount, like a tax refund or a bonus, and tests applying it to each debt, then ranks the options by interest saved and months saved.",
+  "sections": [
+    {
+      "h2": "One amount, several places it could land",
+      "html": "<p>A windfall can only be applied once, and every debt it could go to is a different result. The calculator runs the whole payoff plan once without the lump. Then it runs it again for each debt, with the lump applied to that debt up front.</p><p>It also tests the plan’s current focus debt, the one already getting the extra money. Each version is compared with the no-lump baseline. The list is then ranked by how much total interest it removes and how many months it takes off the debt-free date.</p><p>Because each test runs the full plan, the results include every effect that follows from the lump: lower interest on the debt it lands on, an earlier payoff for that debt, and the freed minimum moving on to the next one.</p>"
+    },
+    {
+      "h2": "Why the highest APR doesn’t always win",
+      "html": "<p>Interest saved comes down to two things: the rate on the money removed, and how long that money would otherwise have stayed on the balance. Rate gets most of the attention. Time matters just as much.</p><p>Here is a simple example. $1,000 off a 24% balance avoids about $20 of interest a month. $1,000 off an 18% balance avoids about $15 a month. If the plan was already going to clear the small 24% debt in a few months, the lump only saves interest for those few months. The 18% debt might have stayed on the books for years, so $15 a month adds up over a much longer stretch.</p><p>That is why the ranking can put a lower-rate debt at the top. It isn’t always the case, and the order of the plan, the balances and any promo end dates all change it.</p>"
+    },
+    {
+      "h2": "Interest saved and months saved can disagree",
+      "html": "<p>The two rankings don’t always match. Wiping out a small debt completely frees its minimum payment right away. In the calculator, that freed minimum rolls into the monthly extra for the next debt, which can pull the debt-free date in sooner.</p><p>Meanwhile, the same lump on a large high-rate balance may save more interest but leave every minimum in place. So one choice can lead on interest while another leads on months. Some people care most about total cost. Others care most about the date or fewer bills each month. The calculator shows both numbers so the trade-off is visible.</p>"
+    },
+    {
+      "h2": "What the ranking assumes",
+      "html": "<p>The lump is applied in the first month, and the rest of the plan stays the same: the same monthly extra and the same order for everything else. Debts on a 0% promo save little from a lump until the promo ends, and the ranking reflects that.</p><p>All figures are estimates from a monthly model. For a steady monthly amount instead of a one-time one, the <a href=\"/calculators/extra-payment-calculator/\">extra payment calculator</a> is built for that. The <a href=\"/calculators/which-debt-to-pay-off-first/\">which debt to pay off first</a> page compares full payoff orders, and the <a href=\"/calculators/debt-free-date-calculator/\">debt-free date calculator</a> shows the date by itself.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Which debt saves the most when a tax refund goes to it?",
+      "a": "It depends on the rates, the balances and where each debt sits in the payoff order. The calculator tests the refund on each debt and on the plan’s focus debt, then ranks them by interest saved and months saved. The top result for one set of debts can be different for another."
+    },
+    {
+      "q": "Why isn’t the highest-interest debt always at the top?",
+      "a": "Interest saved depends on the rate and on how long the money would have stayed on the balance. If a small high-rate debt was going to be paid off soon anyway, a lump there only saves a few months of interest. A lump on a lower-rate debt that would have lasted years can save more in total."
+    },
+    {
+      "q": "Why do interest saved and months saved give different answers?",
+      "a": "Clearing a small debt completely frees its minimum payment, which rolls into the next debt and can move the debt-free date sooner. A lump on a larger balance may save more interest but keep every minimum in place. The calculator shows both so the difference is clear."
+    },
+    {
+      "q": "When does the calculator apply the lump sum?",
+      "a": "It applies the full amount in the first month, before the regular plan continues. Everything else stays the same, including the monthly extra and the order of the other debts. Each option is then compared with the same plan without any lump, which is how interest saved and months saved are measured."
+    },
+    {
+      "q": "What about a debt on a 0% promo?",
+      "a": "While a promo rate is 0%, a lump on that balance doesn’t reduce interest right away, because none is being charged. Its effect shows up after the promo ends, when the rate switches to the regular APR. The ranking reflects this, so a 0% promo debt often lands lower on the list."
+    }
+  ],
+  "related": [
+    "extra-payment-calculator",
+    "which-debt-to-pay-off-first",
+    "debt-free-date-calculator",
+    "debt-payoff-calculator"
+  ]
+}

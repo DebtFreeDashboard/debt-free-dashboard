@@ -1,0 +1,53 @@
+{
+  "slug": "pay-off-debt-by-date-calculator",
+  "title": "Pay Off Debt by a Date Calculator",
+  "metaDescription": "Pay off debt by a date calculator: pick a target month to be debt free and see the monthly extra and total monthly payment it takes to get there.",
+  "h1": "How Much to Pay to Be Debt Free by a Certain Date",
+  "lede": "Pick a target month, and this calculator works backward to the monthly extra, and the total monthly payment, it would take for your last debt to reach zero by then.",
+  "sections": [
+    {
+      "h2": "Starting from the finish line",
+      "html": "<p>Most payoff tools start with a payment and produce a date. This one flips that around. The target month is fixed, and the calculator searches for the monthly extra that brings the final payoff in on or before it.</p><p>The result comes in two parts: the extra above all the minimums combined, and the total monthly payment including those minimums. It also shows the total interest at that pace, since a faster schedule leaves less time for interest to build.</p>"
+    },
+    {
+      "h2": "Why the amount does not scale evenly",
+      "html": "<p>It might seem that cutting the timeline in half would simply double the payment. Several things keep it from working that way.</p><ul><li><strong>Minimums are a fixed base.</strong> The required minimums are paid no matter what. Only the extra changes, so a modest rise in the total can mean a large jump in the extra. If minimums total $300 and a goal takes $400 a month, the extra is $100. A goal that takes $500 a month means $200 extra. The total rose by a quarter while the extra doubled.</li><li><strong>Each month cut costs more than the last.</strong> Pulling a far-off date in by a month takes a small increase. Pulling an already close date in by a month takes a much bigger one, because the same balance is being squeezed into fewer payments.</li><li><strong>Interest shrinks as the timeline shortens.</strong> A faster plan carries less interest, which slightly softens the increase. Without interest, a $1,200 balance takes $100 a month for 12 months or $200 a month for 6. With interest, the shorter plan's payment comes out a little less than double the longer one's.</li><li><strong>Rollover changes the shape.</strong> Each payoff frees a minimum, and when that happens shifts as the extra changes.</li></ul>"
+    },
+    {
+      "h2": "Targets that are too far or too close",
+      "html": "<p>If the target month is later than the date minimums alone would reach, the extra needed is zero. The current payments already get there first, and the <a href=\"/calculators/debt-free-date-calculator/\">debt-free date calculator</a> shows when that is.</p><p>At the other end, a very close target can produce a monthly figure larger than a household budget allows. The calculator still reports it, since knowing the number is useful either way. Moving the target out a few months and comparing the results shows how quickly the amount falls.</p><p>Promo rates matter here too. A 0% balance that switches to a higher rate before the target month adds interest the plan has to cover.</p>"
+    },
+    {
+      "h2": "Why the result lands on a whole month",
+      "html": "<p>The schedule moves in whole months, so a range of extra amounts can all finish in the same month. A slightly smaller amount might land one month later. The result is a monthly extra that reaches the target under the calculator's monthly model.</p><p>For a single credit card with a set number of months, the <a href=\"/calculators/credit-card-payoff-calculator/\">credit card payoff calculator</a> solves the same kind of question for one balance. To see what different extra amounts do without a fixed goal, the <a href=\"/calculators/extra-payment-calculator/\">extra payment calculator</a> compares a ladder of options.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How much do I need to pay to be debt free by a certain date?",
+      "a": "It depends on your balances, rates, minimums and how many months away the target is. The calculator tries different monthly extra amounts until the last debt reaches zero on or before the chosen month, then reports that extra and the total monthly payment including minimums. The figure is an estimate under a monthly interest model."
+    },
+    {
+      "q": "Why does moving my target date a few months make such a big difference?",
+      "a": "The same total balance has to fit into fewer payments, and the minimums do not change, so all of the increase lands on the extra. That effect is strongest when the target is already close. Far-off targets are less sensitive, because each removed month is a small share of the whole timeline."
+    },
+    {
+      "q": "What if the result says I need $0 extra?",
+      "a": "That means the current minimum payments are already on track to clear every debt by the target month, assuming no new charges and steady rates. The debt-free date under minimums alone falls earlier than the goal. Any extra paid on top of that would move the finish line earlier still."
+    },
+    {
+      "q": "Does the calculator include interest when it finds the payment?",
+      "a": "Yes. Every month of the schedule charges interest at each debt's APR divided by 12 before payments are applied, including any post-promo rate once a promo ends. The monthly amount it reports covers that interest as well as the balances, and the total interest at that pace is shown alongside it."
+    },
+    {
+      "q": "Is the monthly amount split evenly across my debts?",
+      "a": "No. Each debt receives its minimum, and the extra goes to one focus debt at a time following the chosen order. When a debt is paid off, its payment rolls into the next one. The total monthly payment stays the same, but where it goes changes as debts are cleared."
+    }
+  ],
+  "related": [
+    "debt-free-date-calculator",
+    "extra-payment-calculator",
+    "credit-card-payoff-calculator",
+    "debt-payoff-calculator"
+  ]
+}

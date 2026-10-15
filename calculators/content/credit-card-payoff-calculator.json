@@ -1,0 +1,57 @@
+{
+  "slug": "credit-card-payoff-calculator",
+  "title": "Credit Card Payoff Calculator",
+  "metaDescription": "Credit card payoff calculator for one card: see how many months a payment takes and its total interest, or the payment needed to clear it by a set month.",
+  "h1": "Credit Card Payoff Calculator",
+  "lede": "Find out how long one credit card will take to pay off at a set monthly payment, and what it costs in interest. Or pick a number of months and see the payment it would take.",
+  "sections": [
+    {
+      "h2": "Two ways to ask the question",
+      "html": "<p>The calculator works in either direction. With a <strong>monthly payment</strong>, it counts the months to a zero balance and adds up the interest along the way. With a <strong>number of months</strong>, it solves for the payment that clears the card right on time.</p><p>Both start from the same three facts: the balance, the APR, and either the payment or the timeline. The results also show total paid, which is the starting balance plus all the interest, and the month the card reaches zero.</p>"
+    },
+    {
+      "h2": "What happens to a card balance each month",
+      "html": "<p>Card interest is commonly charged monthly at roughly the APR divided by 12. A 24% APR works out to about 2% a month. On a $1,000 balance, that is about $20 of interest for the month.</p><p>If the payment is $50, about $20 covers that interest and $30 reduces the balance. The next month starts at $970. Interest on $970 is about $19.40, so $30.60 goes to the balance. The split shifts a little every month.</p><p>The same cycle repeats until the balance reaches zero. The final payment is usually smaller than the rest, since it only has to cover what is left plus that month's interest.</p>"
+    },
+    {
+      "h2": "Why the first payments barely seem to move it",
+      "html": "<p>Early on, interest takes its biggest bite because the balance is at its highest. In the example above, 40% of the first payment goes to interest. As the balance drops, interest shrinks and more of each payment goes to principal, but the change is gradual.</p><p>The closer a payment sits to the monthly interest, the slower this goes. A payment just a few dollars above interest can take many years. If a payment is less than one month of interest, the balance would never shrink, so the calculator raises it to interest plus $1 and says so in the results.</p><p>The <a href=\"/calculators/credit-card-interest-calculator/\">credit card interest calculator</a> breaks the rate down by day and month, and the <a href=\"/calculators/minimum-payment-calculator/\">minimum payment calculator</a> shows what happens when the payment follows the card's shrinking minimum.</p>"
+    },
+    {
+      "h2": "Picking a timeline instead of a payment",
+      "html": "<p>A shorter timeline needs a larger payment, but the total interest is lower because the balance spends less time sitting at the APR. A longer timeline lowers the payment and raises the interest. Some people start from what fits the budget each month; others start from a month they want the card gone by.</p><p>Total paid makes the trade-off visible in dollars. Trying a few different timelines side by side shows how the monthly payment and the total interest move in opposite directions.</p><p>For more than one card at once, the <a href=\"/calculators/multiple-credit-card-payoff-calculator/\">multiple credit card payoff calculator</a> handles the order and the rollover between cards.</p>"
+    },
+    {
+      "h2": "What the estimate assumes",
+      "html": "<p>The math assumes no new purchases, a fixed APR, and one interest charge per month. Statements usually figure interest on the average daily balance, so payment timing and the number of days in a billing cycle can move the real totals slightly. The result is a close estimate, not a statement.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How is credit card interest calculated each month?",
+      "a": "Card interest is commonly figured from the APR divided into a daily or monthly rate and applied to the balance. As a rough monthly view, the balance times the APR divided by 12 gets close. A $1,000 balance at 24% APR picks up about $20 of interest in a month. This calculator uses that monthly method."
+    },
+    {
+      "q": "Why is my credit card balance going down so slowly?",
+      "a": "When a payment is only a little higher than the monthly interest, most of it goes to interest and only a small amount reduces the balance. That gap widens slowly as the balance falls. The calculator shows the months and total interest for any payment, which makes it easy to see how much the split matters."
+    },
+    {
+      "q": "What happens if my payment is less than the interest?",
+      "a": "The balance would grow instead of shrinking, and it would never reach zero. To keep the results meaningful, the calculator raises the payment to one month of interest plus $1 and notes that it made the change. The results then show the payoff at that adjusted amount."
+    },
+    {
+      "q": "Does the calculator include new purchases on the card?",
+      "a": "No. It assumes the balance only changes through interest and payments. New purchases would add to the balance and push the payoff date later, while a lower APR or a larger payment would pull it sooner. The results describe one balance being paid down with nothing added."
+    },
+    {
+      "q": "How accurate is the payoff date?",
+      "a": "It is an estimate. The calculator uses one interest charge per month, while card statements usually use daily balances and billing cycles of different lengths. Those differences are small on a single month but can shift the final payoff by a month or so and change total interest by a modest amount."
+    }
+  ],
+  "related": [
+    "minimum-payment-calculator",
+    "credit-card-interest-calculator",
+    "multiple-credit-card-payoff-calculator",
+    "balance-transfer-calculator"
+  ]
+}

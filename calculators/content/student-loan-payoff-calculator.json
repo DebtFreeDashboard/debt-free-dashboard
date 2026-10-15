@@ -1,0 +1,49 @@
+{
+  "slug": "student-loan-payoff-calculator",
+  "title": "Student Loan Payoff Calculator",
+  "metaDescription": "Student loan payoff calculator for multiple loans at different rates: see when each loan is paid off, total interest, and how extra payments move the date.",
+  "h1": "Student Loan Payoff Calculator for Multiple Loans",
+  "lede": "This calculator takes several student loans at different rates, adds an extra monthly amount, and shows when each loan is paid off and what the whole group costs in interest.",
+  "sections": [
+    {
+      "h2": "One bill, several loans underneath",
+      "html": "<p>Student loan statements often group several separate loans under one bill. Each loan has its own balance and its own interest rate, even when the payment shows up as a single number.</p><p>A combined total hides which loans are the expensive ones. A loan at 7% and a loan at 4% can sit side by side on the same statement, building interest at very different speeds. The calculator treats each loan as its own line, so the rates and balances stay visible.</p><p>Listing loans one by one also changes the math, not just the view. Averaging the rates and treating everything as one balance can give a different interest total than tracking each loan on its own, because the balances shrink at different speeds.</p>"
+    },
+    {
+      "h2": "Where the extra money goes",
+      "html": "<p>Every loan gets its required payment each month. In the calculator, the extra amount goes to one focus loan at a time, following the order chosen. That could be highest rate first, smallest balance first, or a custom order. The <a href=\"/calculators/debt-avalanche-calculator/\">avalanche</a> and <a href=\"/calculators/debt-snowball-calculator/\">snowball</a> pages explain those two orders in depth.</p><p>Rate matters because of how interest builds. An extra $100 on a 7% loan avoids about 58 cents of interest the next month. The same $100 on a 4% loan avoids about 33 cents. Small numbers, but the difference repeats every month the money stays off the balance.</p><p>How a loan servicer splits an extra payment across several loans can vary. The calculator follows the order set on the page and puts the extra on one loan until it is gone.</p>"
+    },
+    {
+      "h2": "What happens when one loan is paid off",
+      "html": "<p>Once a loan reaches zero, its required payment doesn’t disappear from the plan. It joins the extra amount and moves to the next loan in line. The total paid each month stays the same, but more of it goes toward principal.</p><p>That is why the per-loan payoff months often look like a staircase. The first loan takes the longest relative to its size. Each later loan is hit with a bigger monthly amount and tends to fall faster. Not sure which loan to start with? The <a href=\"/calculators/which-debt-to-pay-off-first/\">which debt to pay off first</a> page ranks the possible orders by interest and months.</p>"
+    },
+    {
+      "h2": "What the calculator assumes",
+      "html": "<p>The results come from a straight monthly model. Each month, interest is the balance times the rate divided by 12, then the required payment, then the extra.</p><p>Rates and payments are held steady at the values entered until each loan is paid off. Some loans carry variable rates, and a rate change would shift the results. Running the calculator again with updated numbers shows the new picture. All dates and interest totals are estimates, not quotes from a servicer.</p><p>The calculator also assumes every required payment is made each month and that no loan is paused or changed along the way. It covers the payoff math only. Program rules and repayment plan options are outside what it models. Each result shows the payoff month for every loan, the order they are cleared, and the total interest for the whole group.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Which student loan gets the extra payment first?",
+      "a": "That depends on the order chosen in the calculator. Highest rate first puts the extra where interest builds fastest. Smallest balance first clears individual loans sooner. A custom order follows whatever ranking is set. The calculator shows payoff months and total interest for the order selected, so different orders can be compared."
+    },
+    {
+      "q": "Why list each student loan separately instead of the total?",
+      "a": "Each loan has its own rate, and a single total hides that. When loans are listed separately, the calculator can direct extra money to one loan at a time and show when each one is paid off. The combined interest also comes out more accurately than averaging the rates."
+    },
+    {
+      "q": "What happens to a loan’s payment after it’s paid off?",
+      "a": "In the calculator, the payment from a paid-off loan rolls into the extra amount for the next loan in the order. The monthly total stays the same, but more of it goes to principal on the remaining loans. That is why later loans tend to be paid off faster than the first one."
+    },
+    {
+      "q": "Does the calculator handle variable-rate student loans?",
+      "a": "It holds each loan’s rate steady at the number entered. A variable rate can change over time, which would change the interest and possibly the payoff date. Entering the current rate gives a snapshot. If the rate changes later, running the calculator again with the new rate shows the updated estimate."
+    }
+  ],
+  "related": [
+    "debt-avalanche-calculator",
+    "debt-snowball-calculator",
+    "which-debt-to-pay-off-first",
+    "extra-payment-calculator"
+  ]
+}

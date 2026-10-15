@@ -1,0 +1,53 @@
+{
+  "slug": "personal-loan-payoff-calculator",
+  "title": "Personal Loan Payoff Calculator",
+  "metaDescription": "Personal loan payoff calculator: see how extra monthly payments or a one-time amount shorten a fixed-rate loan’s term, with months and interest saved.",
+  "h1": "Personal Loan Payoff Calculator",
+  "lede": "This calculator shows how much sooner a fixed-rate personal loan could be paid off with extra monthly payments, a one-time amount, or both, and how much interest that removes.",
+  "sections": [
+    {
+      "h2": "A fixed payment built around a fixed end date",
+      "html": "<p>A typical personal loan is an installment loan. The rate is fixed, the term is set in months, and the payment is sized so the balance reaches zero on the last scheduled payment.</p><p>Every payment covers that month’s interest first. A $10,000 balance at 12% APR builds about $100 of interest in a month, so on a $300 payment, roughly $200 goes to principal. As the balance falls, the interest part gets smaller and the principal part gets bigger, even though the payment never changes.</p><p>The fixed term is what makes personal loans predictable. Without extra payments, the payoff date is known from the start. That same structure means the only way the date moves earlier is by paying more than the schedule asks for.</p>"
+    },
+    {
+      "h2": "How extra payments shorten the term",
+      "html": "<p>Extra money skips the schedule. In the calculator, anything above the regular payment goes directly to principal. The balance drops faster than planned, so each later month builds a little less interest.</p><p>The payment amount stays the same, so the change shows up at the end of the loan. Months fall off the back of the term. The result shows the new payoff date, how many months that removes, and the interest saved compared with paying exactly on schedule.</p><p>A one-time amount works the same way, just all at once. Because it lowers the balance right away, its interest savings start in the very next month. The <a href=\"/calculators/extra-payment-calculator/\">extra payment calculator</a> compares a range of monthly amounts if that is the main question.</p>"
+    },
+    {
+      "h2": "Why the origination fee isn’t part of the payoff math",
+      "html": "<p>Many personal loans charge an origination fee when the loan is made. It is commonly taken out of the money paid out, so the amount received is smaller than the amount borrowed. Some loans add it to the balance instead.</p><p>Either way, the fee is already settled by the time payments begin. What is owed is the current balance, and that is what the calculator starts from. Paying early doesn’t usually return any of the fee, and paying on schedule doesn’t add more. That is why there is no fee box here. The fee does matter when comparing a new loan with keeping existing debts, which is what the <a href=\"/calculators/debt-consolidation-calculator/\">debt consolidation calculator</a> covers.</p>"
+    },
+    {
+      "h2": "Reading the estimate",
+      "html": "<p>The calculator uses a monthly model: balance times APR divided by 12, then the payment, then any extra. Real lenders often figure interest daily, so actual numbers can differ slightly from the estimate.</p><p>How a lender applies extra money can vary too. Some put it toward principal right away. Others may treat it as paying the next installment early. The loan agreement describes how extra payments are handled and whether any prepayment terms apply. With a personal loan alongside cards or other debts, the <a href=\"/calculators/debt-payoff-calculator/\">debt payoff calculator</a> puts them all in one plan.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Does paying extra on a personal loan reduce the monthly payment?",
+      "a": "On a typical fixed-rate personal loan, no. The scheduled payment stays the same. Extra payments lower the principal, which lowers the interest each month, so the loan ends earlier. The calculator shows this as a new payoff date and the number of months removed from the term."
+    },
+    {
+      "q": "Does paying a personal loan off early get the origination fee back?",
+      "a": "Usually not. The origination fee is commonly charged when the loan is made, either taken from the money paid out or added to the balance. Once payments start, it is already part of what happened. That is why the calculator starts from the current balance and doesn’t ask for the fee."
+    },
+    {
+      "q": "How much interest does an extra payment save on a personal loan?",
+      "a": "It depends on the rate, the balance and how many months remain. Each extra dollar removes interest for every month it stays off the balance, so money applied earlier tends to save more. The calculator shows the interest saved and months saved for the amounts entered."
+    },
+    {
+      "q": "Is there a penalty for paying a personal loan off early?",
+      "a": "Many personal loans don’t have one, but some agreements include prepayment terms. The loan agreement says whether any apply. The calculator doesn’t include prepayment fees, so a loan that has one would show a little less savings than the estimate here."
+    },
+    {
+      "q": "Why is the payoff date only an estimate?",
+      "a": "The calculator figures interest monthly, while lenders often figure it daily. Payment dates, the number of days in each month and how a lender applies extra money can all shift the real date slightly. The estimate shows the size and direction of the change, not an exact final payment date."
+    }
+  ],
+  "related": [
+    "extra-payment-calculator",
+    "car-loan-payoff-calculator",
+    "debt-consolidation-calculator",
+    "lump-sum-debt-calculator"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "slug": "which-debt-to-pay-off-first",
+  "title": "Which Debt to Pay Off First",
+  "metaDescription": "Which debt to pay off first? Compare Snowball, Avalanche, your own order and the lowest-interest order found, ranked by total interest and months to payoff.",
+  "h1": "Which Debt to Pay Off First? Compare Every Order",
+  "lede": "This calculator ranks four payoff orders for the same debts, from smallest balance first to the lowest-interest order the math can find, by total interest and months to payoff.",
+  "sections": [
+    {
+      "h2": "It depends on what “first” is measured by",
+      "html": "<p>The question sounds like it has one answer, but it really has several. The order that clears a debt soonest is not always the order with the lowest total interest, and neither is always the one that finishes everything fastest.</p><p>So the calculator does not hand back a single verdict. It runs four orders on the same debts and the same monthly total, then lists them side by side:</p><ul><li><strong>Snowball:</strong> smallest balance first.</li><li><strong>Avalanche:</strong> highest interest rate first.</li><li><strong>Custom:</strong> any order you set.</li><li><strong>Lowest interest found:</strong> the calculator searches through possible orders and reports the one with the smallest total interest.</li></ul>"
+    },
+    {
+      "h2": "Five things that change the answer",
+      "html": "<ol><li><strong>The spread between rates.</strong> When rates are far apart, order matters more. When they are close, the four results often bunch together.</li><li><strong>Balance sizes.</strong> A small balance can be cleared fast and its payment freed up. A large one ties up the extra for longer, whatever its rate.</li><li><strong>Promo end dates.</strong> A 0% balance is cheap today, but if its promo ends partway through the plan and the rate jumps, it may become the most expensive debt later.</li><li><strong>The size of each minimum.</strong> Clearing a debt with a large minimum releases a large payment into the rollover, which speeds up everything after it.</li><li><strong>Loans versus cards.</strong> An installment loan near the end of its term may be paid off by its own schedule soon anyway, while a card balance has no end date unless payments clear it.</li></ol>"
+    },
+    {
+      "h2": "Why the cheapest order can surprise",
+      "html": "<p>A strict highest-rate-first order is usually the lowest-cost of the simple methods. But rollover adds a timing effect. Every month a debt stays open, its minimum is locked to that debt. Clear it sooner and that minimum starts working on the next balance.</p><p>Occasionally that timing outweighs a small difference in rates, especially when a debt has a small balance and an unusually large minimum. That is why the lowest-interest order the calculator finds can differ from the avalanche. When it matches the avalanche, the rate ranking was already the cheapest path for those debts.</p><p>The <a href=\"/calculators/debt-avalanche-calculator/\">debt avalanche calculator</a> covers the rate-first order in detail, and the <a href=\"/calculators/debt-snowball-calculator/\">debt snowball calculator</a> covers the balance-first order.</p>"
+    },
+    {
+      "h2": "Reading the ranked results",
+      "html": "<p>Each order shows total interest, months to payoff and the sequence debts are cleared. When the top and bottom of the list are close, the choice of order carries little cost for these debts, and other preferences can come into play without much effect on the math.</p><p>When the spread is wide, the ranking shows what each approach costs relative to the cheapest one. Some people weigh that number against the pace of early payoffs; others go by the dollar figure alone. A direct two-way look at the most common pairing is on the <a href=\"/calculators/snowball-vs-avalanche-calculator/\">snowball vs avalanche calculator</a>.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Is it better to pay off the smallest debt or the highest interest debt first?",
+      "a": "The math and the preference can point different ways. Targeting the highest rate usually keeps total interest lower. Targeting the smallest balance usually produces the first payoff sooner. The calculator shows both results for the same debts, so the size of the trade-off is visible in dollars and months rather than in general terms."
+    },
+    {
+      "q": "What is the lowest-interest order the calculator finds?",
+      "a": "It is the order, among the ones the calculator checks, that produces the smallest total interest for your debts and monthly amount. With a small number of debts, every possible order can be tested. It often matches the avalanche, but rollover timing sometimes makes a slightly different order cheaper."
+    },
+    {
+      "q": "Where does a 0% promo balance belong in the order?",
+      "a": "It depends on when the promo ends and what the rate becomes. A balance that stays at 0% well past the rest of the plan costs nothing in interest during that time. One that jumps to a high rate soon may be among the most expensive debts within months. The calculator models the switch at the end month entered."
+    },
+    {
+      "q": "Which comes first, a car loan or a credit card?",
+      "a": "The calculator does not decide that, but it shows what each order costs. Credit cards often carry higher rates than car loans, which tends to move them up in interest-based orders. A loan close to its final payment may clear on its own schedule soon. Entering both and comparing the orders shows the dollar difference for those specific debts."
+    },
+    {
+      "q": "Why are all four orders so close together?",
+      "a": "When rates are similar, balances are small, or the monthly extra is large relative to the debts, there is little room for order to matter. Each balance is cleared quickly whatever the sequence, so interest does not have time to build differently. A close result means the choice of order has little effect on cost for these particular debts."
+    }
+  ],
+  "related": [
+    "snowball-vs-avalanche-calculator",
+    "debt-avalanche-calculator",
+    "debt-snowball-calculator",
+    "lump-sum-debt-calculator"
+  ]
+}

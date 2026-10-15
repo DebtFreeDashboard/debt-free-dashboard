@@ -1,0 +1,53 @@
+{
+  "slug": "deferred-interest-calculator",
+  "title": "Deferred Interest Calculator",
+  "metaDescription": "Deferred interest calculator for “no interest if paid in full” deals: the payment that clears the balance in time, and the interest charged if it doesn’t.",
+  "h1": "Deferred Interest Calculator: Will the Balance Clear in Time?",
+  "lede": "This calculator shows whether a monthly payment clears a “no interest if paid in full” balance before the promo ends, and estimates the interest that could be charged if it doesn’t.",
+  "sections": [
+    {
+      "h2": "Deferred interest is not the same as 0% APR",
+      "html": "<p>With a true 0% APR promo, no interest builds during the promo period. When the promo ends, interest starts on whatever is left, and only from that point forward.</p><p>Deferred interest works differently. Interest typically keeps building in the background from the purchase date at the plan’s standard APR. It just isn’t charged yet. If the full balance is paid by the deadline, that background interest is commonly waived.</p><p>If any balance remains at the deadline, the agreement typically allows all of that background interest to be added at once, going back to the purchase date. Both kinds of offers can be advertised with the words “no interest.” The phrase “if paid in full” is the usual sign of the deferred kind. Terms vary, and the agreement itself is the final word on how a specific plan works.</p>"
+    },
+    {
+      "h2": "Why the deadline is all or nothing",
+      "html": "<p>This is what makes the math feel so different. A small leftover balance can trigger interest figured on the whole purchase over the whole promo, not just on the part still owed.</p><p>Here is a simple example. A $1,200 purchase on a 12-month plan takes $100 a month to clear on time. At $90 a month, $120 is still owed when the promo ends. Under typical deferred interest terms, the charge at that point reflects a full year of background interest on the balance as it was paid down, not interest on the $120 alone.</p><p>That is why the calculator’s first answer is a yes or no: does the payment entered clear the balance before the deadline?</p>"
+    },
+    {
+      "h2": "When the minimum payment falls short",
+      "html": "<p>The required minimum on a deferred interest plan commonly isn’t sized to clear the balance by the deadline. Paying exactly the minimum every month, on time, can still leave a balance at the end.</p><p>The calculator works out the monthly payment that brings the balance to zero inside the promo window, assuming no new charges are added to it. Comparing that number with the actual payment shows the gap, if there is one, in dollars per month.</p><p>New purchases on the same account can change the picture. Payments may be split across balances in ways the agreement spells out, so a deferred balance can shrink more slowly than the calculator assumes.</p>"
+    },
+    {
+      "h2": "How to read the results",
+      "html": "<ul><li><strong>Payment to clear in time:</strong> the monthly amount that pays off the purchase before the promo ends.</li><li><strong>Clears or doesn’t:</strong> whether the payment entered gets the balance to zero by the deadline.</li><li><strong>Estimated deferred interest:</strong> the background interest that would be added if a balance remains, built from the standard APR divided by 12 each month.</li></ul><p>The interest figure is an estimate. The real amount depends on how the agreement calculates it, the exact days in each billing cycle, and any other balances on the same account. For how an APR turns into a monthly charge, the <a href=\"/calculators/credit-card-interest-calculator/\">credit card interest calculator</a> breaks it down. A true 0% promo with a transfer fee works differently, and the <a href=\"/calculators/balance-transfer-calculator/\">balance transfer calculator</a> covers that kind of offer.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What does “no interest if paid in full” mean?",
+      "a": "It usually describes a deferred interest plan. Interest builds in the background at the standard APR from the purchase date. If the whole balance is paid by the promo deadline, that interest is commonly waived. If any balance is left, the background interest is typically charged all at once. Exact terms vary by agreement."
+    },
+    {
+      "q": "What happens if most of the balance is paid but not all of it?",
+      "a": "Under typical deferred interest terms, even a small remaining balance can trigger the full amount of background interest, going back to the purchase date. The charge is commonly based on the balance over the whole promo period, not just the amount left over. The calculator estimates that figure so the size of the gap is visible."
+    },
+    {
+      "q": "Is deferred interest the same as a 0% APR promo?",
+      "a": "No. A true 0% APR promo charges no interest during the promo, and interest only starts on the remaining balance after it ends. With deferred interest, interest is building quietly the whole time and can be added back to the purchase date if the balance isn’t fully paid by the deadline."
+    },
+    {
+      "q": "Why doesn’t the minimum payment clear the balance in time?",
+      "a": "The required minimum on these plans is commonly set by a formula that isn’t tied to the promo deadline. It keeps the account in good standing but may be too small to reach zero before the promo ends. The calculator shows the monthly amount that does clear the balance in time, so the two numbers can be compared."
+    },
+    {
+      "q": "How exact is the deferred interest estimate?",
+      "a": "It is an estimate. The calculator uses the standard APR divided by 12 each month on the balance. Actual charges can differ because of daily interest calculations, billing cycle dates, other purchases on the account and the specific terms in the agreement. It is meant to show the rough size of the cost, not a statement amount."
+    }
+  ],
+  "related": [
+    "balance-transfer-calculator",
+    "credit-card-interest-calculator",
+    "credit-card-payoff-calculator",
+    "holiday-debt-payoff-calculator"
+  ]
+}

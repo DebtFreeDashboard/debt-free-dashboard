@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Loan Payoff Calculator | DebtFree Dashboard</title>
+<meta name="description" content="Student loan payoff calculator for multiple loans at different rates: see when each loan is paid off, total interest, and how extra payments move the date.">
+<link rel="canonical" href="https://mydebtdashboard.com/calculators/student-loan-payoff-calculator/">
+<link rel="icon" href="/assets/logo/debtfree-mark-transparent.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DebtFree Dashboard">
+<meta property="og:title" content="Student Loan Payoff Calculator | DebtFree Dashboard">
+<meta property="og:description" content="Student loan payoff calculator for multiple loans at different rates: see when each loan is paid off, total interest, and how extra payments move the date.">
+<meta property="og:url" content="https://mydebtdashboard.com/calculators/student-loan-payoff-calculator/">
+<meta property="og:image" content="https://mydebtdashboard.com/assets/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/calculators/assets/calc.css?v=1.54.0">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mydebtdashboard.com/calculators/student-loan-payoff-calculator/","url":"https://mydebtdashboard.com/calculators/student-loan-payoff-calculator/","name":"Student Loan Payoff Calculator","description":"Student loan payoff calculator for multiple loans at different rates: see when each loan is paid off, total interest, and how extra payments move the date.","dateModified":"2026-10-15","isPartOf":{"@type":"WebSite","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"WebApplication","name":"Student Loan Payoff Calculator","url":"https://mydebtdashboard.com/calculators/student-loan-payoff-calculator/","applicationCategory":"FinanceApplication","operatingSystem":"Any web browser","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://mydebtdashboard.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://mydebtdashboard.com/calculators/"},{"@type":"ListItem","position":3,"name":"Student Loan Payoff Calculator","item":"https://mydebtdashboard.com/calculators/student-loan-payoff-calculator/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Which student loan gets the extra payment first?","acceptedAnswer":{"@type":"Answer","text":"That depends on the order chosen in the calculator. Highest rate first puts the extra where interest builds fastest. Smallest balance first clears individual loans sooner. A custom order follows whatever ranking is set. The calculator shows payoff months and total interest for the order selected, so different orders can be compared."}},{"@type":"Question","name":"Why list each student loan separately instead of the total?","acceptedAnswer":{"@type":"Answer","text":"Each loan has its own rate, and a single total hides that. When loans are listed separately, the calculator can direct extra money to one loan at a time and show when each one is paid off. The combined interest also comes out more accurately than averaging the rates."}},{"@type":"Question","name":"What happens to a loan’s payment after it’s paid off?","acceptedAnswer":{"@type":"Answer","text":"In the calculator, the payment from a paid-off loan rolls into the extra amount for the next loan in the order. The monthly total stays the same, but more of it goes to principal on the remaining loans. That is why later loans tend to be paid off faster than the first one."}},{"@type":"Question","name":"Does the calculator handle variable-rate student loans?","acceptedAnswer":{"@type":"Answer","text":"It holds each loan’s rate steady at the number entered. A variable rate can change over time, which would change the interest and possibly the payoff date. Entering the current rate gives a snapshot. If the rate changes later, running the calculator again with the new rate shows the updated estimate."}}]}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  var _dfInternal = false;
+  try {
+    if (/[?&]internal=1(&|$)/.test(location.search)) localStorage.setItem('debtfree_internal', '1');
+    if (/[?&]internal=0(&|$)/.test(location.search)) localStorage.removeItem('debtfree_internal');
+    _dfInternal = localStorage.getItem('debtfree_internal') === '1';
+  } catch (e) {}
+  gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
+</script>
+</head>
+<body>
+<nav class="nav"><a href="/" class="nav-brand" aria-label="DebtFree Dashboard home"><img src="/assets/logo/debtfree-logo-horizontal-light.svg" alt="DebtFree Dashboard" width="150" height="32" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fb" style="display:none">DebtFree Dashboard</span></a><div class="nav-links"><a class="txt" href="/calculators/">All calculators</a><a class="nav-cta" href="/app/dashboard.html" data-cta="nav">Open the free dashboard</a></div></nav>
+<main class="wrap">
+<div class="crumbs"><a href="/">Home</a> / <a href="/calculators/">Calculators</a> / Student Loan Payoff Calculator</div>
+<header class="hero"><h1>Student Loan Payoff Calculator for Multiple Loans</h1><p class="lede">This calculator takes several student loans at different rates, adds an extra monthly amount, and shows when each loan is paid off and what the whole group costs in interest.</p><div class="trust"><span>Free</span><span>No sign-up</span><span>Nothing leaves your device</span><span>Same math as the dashboard</span></div></header>
+<section class="calc" id="calc" aria-label="Calculator">
+<div class="debt-head"><h2 class="ct">Your debts</h2><span class="sub muted sm">Minimum blank = estimated</span></div><div id="debt-rows"></div><button type="button" class="btn-add" id="add-debt">+ Add a debt</button><div class="opts"><div class="f"><label for="extra">Extra per month, on top of minimums</label><div class="affix">$<input id="extra" type="text" inputmode="decimal" value="150"></div><span class="hint">Can be $0</span></div><div class="f"><label for="strategy">Strategy</label><select id="strategy"><option value="avalanche" selected>Avalanche — highest rate first</option><option value="snowball">Snowball — smallest balance first</option><option value="hybrid">Your order — top of the list first</option></select></div></div>
+<div class="results" id="calc-results" aria-live="polite"></div>
+<div class="handoff"><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><span class="sub">Loads these numbers. No account needed.</span></div>
+</section>
+<script type="application/json" id="calc-config">{"slug":"student-loan-payoff-calculator","widget":"multi","mode":"compare","strategy":"avalanche","allowPromo":false,"defaultType":"student","debtName":null,"debts":[{"name":"Undergrad loan A","type":"student","balance":8200,"apr":4.99,"min":87},{"name":"Undergrad loan B","type":"student","balance":5500,"apr":3.73,"min":55},{"name":"Grad loan","type":"student","balance":18400,"apr":7.05,"min":214},{"name":"Private loan","type":"student","balance":9700,"apr":9.25,"min":124}]}</script>
+<article class="content">
+<h2>One bill, several loans underneath</h2>
+<p>Student loan statements often group several separate loans under one bill. Each loan has its own balance and its own interest rate, even when the payment shows up as a single number.</p><p>A combined total hides which loans are the expensive ones. A loan at 7% and a loan at 4% can sit side by side on the same statement, building interest at very different speeds. The calculator treats each loan as its own line, so the rates and balances stay visible.</p><p>Listing loans one by one also changes the math, not just the view. Averaging the rates and treating everything as one balance can give a different interest total than tracking each loan on its own, because the balances shrink at different speeds.</p>
+<h2>Where the extra money goes</h2>
+<p>Every loan gets its required payment each month. In the calculator, the extra amount goes to one focus loan at a time, following the order chosen. That could be highest rate first, smallest balance first, or a custom order. The <a href="/calculators/debt-avalanche-calculator/">avalanche</a> and <a href="/calculators/debt-snowball-calculator/">snowball</a> pages explain those two orders in depth.</p><p>Rate matters because of how interest builds. An extra $100 on a 7% loan avoids about 58 cents of interest the next month. The same $100 on a 4% loan avoids about 33 cents. Small numbers, but the difference repeats every month the money stays off the balance.</p><p>How a loan servicer splits an extra payment across several loans can vary. The calculator follows the order set on the page and puts the extra on one loan until it is gone.</p>
+<h2>What happens when one loan is paid off</h2>
+<p>Once a loan reaches zero, its required payment doesn’t disappear from the plan. It joins the extra amount and moves to the next loan in line. The total paid each month stays the same, but more of it goes toward principal.</p><p>That is why the per-loan payoff months often look like a staircase. The first loan takes the longest relative to its size. Each later loan is hit with a bigger monthly amount and tends to fall faster. Not sure which loan to start with? The <a href="/calculators/which-debt-to-pay-off-first/">which debt to pay off first</a> page ranks the possible orders by interest and months.</p>
+<h2>What the calculator assumes</h2>
+<p>The results come from a straight monthly model. Each month, interest is the balance times the rate divided by 12, then the required payment, then the extra.</p><p>Rates and payments are held steady at the values entered until each loan is paid off. Some loans carry variable rates, and a rate change would shift the results. Running the calculator again with updated numbers shows the new picture. All dates and interest totals are estimates, not quotes from a servicer.</p><p>The calculator also assumes every required payment is made each month and that no loan is paused or changed along the way. It covers the payoff math only. Program rules and repayment plan options are outside what it models. Each result shows the payoff month for every loan, the order they are cleared, and the total interest for the whole group.</p>
+</article>
+<section class="cta"><div><h2>A calculator is a snapshot. Your plan keeps moving.</h2><p>The free dashboard keeps your debt-free date current as you pay &mdash; and it picks up right where this page leaves off.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><p class="fine">Your numbers go from this page into the dashboard on this device. Nothing is sent to a server.</p></div><ul>
+<li>Your debt-free date updates every time you log a payment</li>
+<li>Snowball, Avalanche, your own order &mdash; plus Optimized, which finds the cheapest order</li>
+<li>0% promo rates that switch automatically when they end</li>
+<li>What-If slider: see what extra money does, instantly</li>
+<li>No account, no bank login &mdash; your data stays on your device</li>
+<li>Free with unlimited debts. Premium is a one-time $24.</li></ul></section>
+<section class="faq"><h2>Questions people ask</h2>
+<details><summary>Which student loan gets the extra payment first?</summary><p>That depends on the order chosen in the calculator. Highest rate first puts the extra where interest builds fastest. Smallest balance first clears individual loans sooner. A custom order follows whatever ranking is set. The calculator shows payoff months and total interest for the order selected, so different orders can be compared.</p></details>
+<details><summary>Why list each student loan separately instead of the total?</summary><p>Each loan has its own rate, and a single total hides that. When loans are listed separately, the calculator can direct extra money to one loan at a time and show when each one is paid off. The combined interest also comes out more accurately than averaging the rates.</p></details>
+<details><summary>What happens to a loan’s payment after it’s paid off?</summary><p>In the calculator, the payment from a paid-off loan rolls into the extra amount for the next loan in the order. The monthly total stays the same, but more of it goes to principal on the remaining loans. That is why later loans tend to be paid off faster than the first one.</p></details>
+<details><summary>Does the calculator handle variable-rate student loans?</summary><p>It holds each loan’s rate steady at the number entered. A variable rate can change over time, which would change the interest and possibly the payoff date. Entering the current rate gives a snapshot. If the rate changes later, running the calculator again with the new rate shows the updated estimate.</p></details>
+</section>
+<aside class="founder"><div class="av" aria-hidden="true">K</div><div><h2>Why I built this</h2><p>I’m Kevin. About a year ago I sat down with my own credit card balances and couldn’t get a straight answer to one question: when does this actually end? Most tools I found wanted an account or a bank login. So I built the one I wanted &mdash; the same math running on this page &mdash; and I use it on my own debt every month.</p><p class="sig">&mdash; Kevin, founder of DebtFree Dashboard</p></div></aside>
+<section class="related"><h2>Related calculators</h2><div class="card-grid"><a class="card-link" href="/calculators/debt-avalanche-calculator/"><strong>Debt Avalanche Calculator</strong><span>Highest rate first, including 0% promos that end.</span></a><a class="card-link" href="/calculators/debt-snowball-calculator/"><strong>Debt Snowball Calculator</strong><span>Smallest balance first, with the rollover shown month by month.</span></a><a class="card-link" href="/calculators/which-debt-to-pay-off-first/"><strong>Which Debt to Pay Off First</strong><span>Ranks the payoff orders by what they cost you.</span></a><a class="card-link" href="/calculators/extra-payment-calculator/"><strong>Debt Payoff Calculator With Extra Payments</strong><span>What $50, $100 or $500 more a month changes.</span></a></div></section>
+<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>
+</main>
+<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
+<script src="/calculators/assets/engine.js?v=1.54.0"></script>
+<script src="/calculators/assets/calc.js?v=1.54.0"></script>
+</body>
+</html>

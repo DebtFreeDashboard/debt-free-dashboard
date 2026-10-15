@@ -1,0 +1,57 @@
+{
+  "slug": "extra-payment-calculator",
+  "title": "Debt Payoff Calculator With Extra Payments",
+  "metaDescription": "Debt payoff calculator with extra payments: compare your current plan with adding $50, $100, $250 or $500 a month and see the months and interest saved.",
+  "h1": "Debt Payoff Calculator With Extra Payments",
+  "lede": "See how much sooner your debts could be paid off, and how much less interest builds up, when an extra amount goes in each month. The ladder lines up +$50, +$100, +$250 and +$500 next to your own number.",
+  "sections": [
+    {
+      "h2": "Where an extra dollar actually lands",
+      "html": "<p>Every month, each debt first picks up interest, then gets its minimum payment. Minimums are mostly set to cover that interest plus a slice of principal. An extra payment is different: once the minimums are covered, every extra dollar goes straight to principal on one focus debt.</p><p>A smaller principal means a smaller interest charge the next month, and the month after that. So an extra $50 does more than lower the balance by $50. It also trims every interest charge that would have followed on that $50.</p>"
+    },
+    {
+      "h2": "How extra payments stack with rollover",
+      "html": "<p>The effect grows once the first debt is gone. When the focus debt hits zero, its old minimum joins the extra and both move to the next debt in line. Any leftover from a partial final payment moves over the same month.</p><p>That is why an extra amount tends to pay off more than one debt early. It clears the first debt sooner, which starts the rollover sooner, which clears the second debt sooner, and so on down the list. The calculator tracks that chain month by month, and the <a href=\"/calculators/debt-free-date-calculator/\">debt-free date calculator</a> shows where it ends for each debt.</p>"
+    },
+    {
+      "h2": "Reading the ladder: when the first $50 does the most",
+      "html": "<p>The ladder often shows <strong>diminishing returns in months</strong>. Going from no extra to $50 can cut a lot of time, while going from $250 to $500 may cut fewer months than you might expect. The reason is simple: once the plan is already short, there are fewer months left to remove.</p><p>The pattern is not always smooth, though. A few situations can produce a bigger jump than the step before:</p><ul><li>Minimums that barely cover interest, where even a small extra finally gets the balance moving.</li><li>A 0% promo that ends, where a slightly larger extra clears the debt before the higher rate starts.</li><li>An extra that finishes a debt one month earlier, which pulls the whole rollover chain forward.</li></ul><p>Interest saved and months saved can also tell different stories. Some people watch the months because the end date is what keeps them going; others watch the dollars because that is money that stays theirs.</p>"
+    },
+    {
+      "h2": "Monthly extra vs a one-time amount",
+      "html": "<p>This calculator assumes the same extra every month. A tax refund or bonus works differently because it lands once, then the plan carries on at its normal pace. The <a href=\"/calculators/lump-sum-debt-calculator/\">lump sum calculator</a> tests where a single amount moves the payoff most.</p><p>Working the other way is also possible. Instead of picking an extra and seeing the date, the <a href=\"/calculators/pay-off-debt-by-date-calculator/\">pay off by date calculator</a> starts from a target month and solves for the extra it would take.</p>"
+    },
+    {
+      "h2": "What these numbers assume",
+      "html": "<p>Results are estimates. The model holds interest rates steady, adds no new charges, and treats each month as one interest charge at APR divided by 12. Real statements are figured on daily balances, so actual totals can land a little differently. The order the extra follows comes from the strategy chosen; the <a href=\"/calculators/debt-payoff-calculator/\">debt payoff calculator</a> covers how those orders compare.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Does an extra payment go toward principal?",
+      "a": "In this calculator, yes. Interest and every minimum payment are covered first, and anything extra reduces the principal of the focus debt. Lenders commonly apply payments to interest and fees first and then principal, and some have their own rules for amounts above the minimum, so a loan agreement or card terms describe exactly how a specific account handles it."
+    },
+    {
+      "q": "Why does the calculator put all the extra on one debt?",
+      "a": "Concentrating the extra clears one debt as fast as possible, which frees its minimum to roll forward sooner. Spreading the same amount across every debt lowers all the balances a little but delays the first payoff and the rollover that comes with it. The calculator follows the strategy order to decide which debt gets the extra."
+    },
+    {
+      "q": "Why do the months saved get smaller as the extra gets bigger?",
+      "a": "Each step up the ladder works on a plan that is already shorter. If the extra has already brought the payoff down to a couple of years, the next $250 has fewer months it can remove. Interest saved usually keeps rising with a larger extra, but the number of months each added dollar removes tends to shrink."
+    },
+    {
+      "q": "What if I can only add extra in some months?",
+      "a": "The calculator uses one steady extra amount for every month, so it does not model on-and-off payments. An uneven extra still lowers principal whenever it is paid, so the real result would fall somewhere between the no-extra plan and the full-extra plan. A one-time amount can be tested on the lump sum calculator."
+    },
+    {
+      "q": "Does the extra amount include my minimum payments?",
+      "a": "No. The extra is on top of the minimums. If your minimums add up to $300 and you enter $100 as the extra, the plan assumes $400 goes out each month in total. That $400 stays the same for the whole plan, even as debts are paid off and their minimums roll forward."
+    }
+  ],
+  "related": [
+    "debt-free-date-calculator",
+    "lump-sum-debt-calculator",
+    "pay-off-debt-by-date-calculator",
+    "debt-payoff-calculator"
+  ]
+}

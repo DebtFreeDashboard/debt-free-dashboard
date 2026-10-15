@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debt Avalanche Calculator | DebtFree Dashboard</title>
+<meta name="description" content="Debt avalanche calculator: see your debts ordered by interest cost, the month each is paid off, total interest, and how 0% promo end dates change the order.">
+<link rel="canonical" href="https://mydebtdashboard.com/calculators/debt-avalanche-calculator/">
+<link rel="icon" href="/assets/logo/debtfree-mark-transparent.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DebtFree Dashboard">
+<meta property="og:title" content="Debt Avalanche Calculator | DebtFree Dashboard">
+<meta property="og:description" content="Debt avalanche calculator: see your debts ordered by interest cost, the month each is paid off, total interest, and how 0% promo end dates change the order.">
+<meta property="og:url" content="https://mydebtdashboard.com/calculators/debt-avalanche-calculator/">
+<meta property="og:image" content="https://mydebtdashboard.com/assets/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/calculators/assets/calc.css?v=1.54.0">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mydebtdashboard.com/calculators/debt-avalanche-calculator/","url":"https://mydebtdashboard.com/calculators/debt-avalanche-calculator/","name":"Debt Avalanche Calculator","description":"Debt avalanche calculator: see your debts ordered by interest cost, the month each is paid off, total interest, and how 0% promo end dates change the order.","dateModified":"2026-10-15","isPartOf":{"@type":"WebSite","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"WebApplication","name":"Debt Avalanche Calculator","url":"https://mydebtdashboard.com/calculators/debt-avalanche-calculator/","applicationCategory":"FinanceApplication","operatingSystem":"Any web browser","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://mydebtdashboard.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://mydebtdashboard.com/calculators/"},{"@type":"ListItem","position":3,"name":"Debt Avalanche Calculator","item":"https://mydebtdashboard.com/calculators/debt-avalanche-calculator/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the debt avalanche method?","acceptedAnswer":{"@type":"Answer","text":"It is a way to order debt payments by interest cost. Every debt gets its minimum, and any extra money goes to the debt charging the most interest. When that debt is paid off, its payment moves to the next most expensive one. Balance size does not set the order; the rate and the interest it produces do."}},{"@type":"Question","name":"Does the avalanche always save the most interest?","acceptedAnswer":{"@type":"Answer","text":"It usually saves the most among simple ordering methods, but not in every case. Rollover timing can occasionally make a different order slightly cheaper, for example when clearing a debt with an unusually large minimum frees up cash sooner. Differences like that are often small, and the comparison tools show them in dollars."}},{"@type":"Question","name":"How does the calculator handle a 0% balance that will go up later?","acceptedAnswer":{"@type":"Answer","text":"It keeps the balance at 0% until the promo end month entered, then charges the post-promo rate from that point on. The avalanche here ranks each balance by the rate it is charging that month. A 0% balance gets only its minimum until the promo ends; from that month on, it is ranked by its new rate."}},{"@type":"Question","name":"Why does my first payoff take so long with the avalanche?","acceptedAnswer":{"@type":"Answer","text":"If the debt with the highest rate is also a large balance, it takes longer to clear than a small debt would. Meanwhile every other debt is only getting its minimum. The first payoff arrives later, but once it does, its minimum rolls into the next debt and later payoffs tend to come faster."}},{"@type":"Question","name":"What APR is used for monthly interest?","acceptedAnswer":{"@type":"Answer","text":"The calculator divides each debt's APR by 12 and charges that rate on the balance once a month. For example, a 24% APR becomes 2% a month, so a $500 balance would add about $10 of interest that month. Many cards commonly calculate interest daily, so actual statements can differ by small amounts."}}]}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  var _dfInternal = false;
+  try {
+    if (/[?&]internal=1(&|$)/.test(location.search)) localStorage.setItem('debtfree_internal', '1');
+    if (/[?&]internal=0(&|$)/.test(location.search)) localStorage.removeItem('debtfree_internal');
+    _dfInternal = localStorage.getItem('debtfree_internal') === '1';
+  } catch (e) {}
+  gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
+</script>
+</head>
+<body>
+<nav class="nav"><a href="/" class="nav-brand" aria-label="DebtFree Dashboard home"><img src="/assets/logo/debtfree-logo-horizontal-light.svg" alt="DebtFree Dashboard" width="150" height="32" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fb" style="display:none">DebtFree Dashboard</span></a><div class="nav-links"><a class="txt" href="/calculators/">All calculators</a><a class="nav-cta" href="/app/dashboard.html" data-cta="nav">Open the free dashboard</a></div></nav>
+<main class="wrap">
+<div class="crumbs"><a href="/">Home</a> / <a href="/calculators/">Calculators</a> / Debt Avalanche Calculator</div>
+<header class="hero"><h1>Debt Avalanche Calculator: Highest Interest First</h1><p class="lede">This calculator orders your debts by how much interest they cost, then shows when each one is paid off and the total interest under that order, including the effect of any 0% promo that ends along the way.</p><div class="trust"><span>Free</span><span>No sign-up</span><span>Nothing leaves your device</span><span>Same math as the dashboard</span></div></header>
+<section class="calc" id="calc" aria-label="Calculator">
+<div class="debt-head"><h2 class="ct">Your debts</h2><span class="sub muted sm">Minimum blank = estimated</span></div><div id="debt-rows"></div><button type="button" class="btn-add" id="add-debt">+ Add a debt</button><div class="opts"><div class="f"><label for="extra">Extra per month, on top of minimums</label><div class="affix">$<input id="extra" type="text" inputmode="decimal" value="250"></div><span class="hint">Can be $0</span></div></div>
+<div class="results" id="calc-results" aria-live="polite"></div>
+<div class="handoff"><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><span class="sub">Loads these numbers. No account needed.</span></div>
+</section>
+<script type="application/json" id="calc-config">{"slug":"debt-avalanche-calculator","widget":"multi","mode":"avalanche","strategy":"avalanche","allowPromo":true,"defaultType":"cc","debtName":null,"debts":[{"name":"Rewards card","type":"cc","balance":6800,"apr":24.99,"min":204},{"name":"Transfer card","type":"cc","balance":4000,"apr":0,"min":120,"hasPromo":true,"promoApr":0,"promoMonths":8,"postApr":26.99},{"name":"Store card","type":"cc","balance":900,"apr":29.99,"min":35},{"name":"Car loan","type":"auto","balance":14500,"apr":7.9,"min":395},{"name":"Personal loan","type":"personal","balance":5200,"apr":12.5,"min":175}]}</script>
+<article class="content">
+<h2>Interest cost sets the order</h2>
+<p>The avalanche method aims extra money at the debt with the highest interest rate. Every debt still gets its minimum. Whatever is left over goes to the most expensive balance until it is gone, and then the next most expensive takes its place.</p><p>The logic is simple arithmetic. A dollar that pays down a 27% balance stops a 27% charge on that dollar. The same dollar on a 9% balance stops a 9% charge. Each month, $1,000 at 27% APR adds about $22.50 of interest, while $1,000 at 9% adds about $7.50.</p><p>As with any rolling plan, a cleared debt's minimum moves forward and joins the extra, so the payment on the next target is larger than the last.</p>
+<h2>The 0% promo problem</h2>
+<p>"Highest APR first" sounds clear until a balance sits at 0% for a while. Ranked by today's rate, a 0% card lands at the bottom of the list. But if that promo ends in four months and the rate jumps to 27%, it may soon be the most expensive debt in the group.</p><p>A plain rate sort misses that. The avalanche in this calculator re-checks every rate each month. While a balance sits at 0%, it gets only its minimum, because extra money on it stops no interest yet. The month its promo ends, it is ranked by its new rate and can move straight to the front of the line. Until the end month, the calculator charges 0% on that balance. After it, the post-promo rate applies.</p><p>For a deeper look at a single promo balance, the <a href="/calculators/balance-transfer-calculator/">balance transfer calculator</a> shows what remains when a promo period ends.</p>
+<h2>What the math tends to show</h2>
+<p>Among the simple ordering methods, the avalanche usually produces the lowest total interest or comes very close. That follows directly from sending money where the rate is highest.</p><p>It is not always the single lowest-cost order, though. When a debt with a large minimum is cleared early, that minimum rolls forward sooner, and occasionally that timing beats a strict rate ranking. The <a href="/calculators/which-debt-to-pay-off-first/">which debt to pay off first</a> page compares several orders, including the lowest-interest order the math can find.</p><p>The other trade-off is timing. If the highest-rate debt is also a large one, the first payoff can take a while, and the list of open accounts stays the same length for longer.</p>
+<h2>When avalanche and snowball agree</h2>
+<p>If the smallest balance also carries the highest rate, both methods start in the same place. When the ordering by balance and the ordering by rate match all the way down, the results are identical. The <a href="/calculators/debt-snowball-calculator/">debt snowball calculator</a> runs the smallest-balance order for comparison.</p>
+<h2>Reading the avalanche results</h2>
+<p>The results show the order debts are cleared, each one's payoff month, the debt-free month, total interest and total paid. A promo balance only starts receiving the extra once its 0% period ends and its new rate is the highest in the group.</p><p>Total interest is the figure this method is designed around. Changing the monthly extra and watching that number move shows how much of the interest cost comes from the timeline itself.</p>
+</article>
+<section class="cta"><div><h2>A calculator is a snapshot. Your plan keeps moving.</h2><p>The free dashboard keeps your debt-free date current as you pay &mdash; and it picks up right where this page leaves off.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><p class="fine">Your numbers go from this page into the dashboard on this device. Nothing is sent to a server.</p></div><ul>
+<li>Your debt-free date updates every time you log a payment</li>
+<li>Snowball, Avalanche, your own order &mdash; plus Optimized, which finds the cheapest order</li>
+<li>0% promo rates that switch automatically when they end</li>
+<li>What-If slider: see what extra money does, instantly</li>
+<li>No account, no bank login &mdash; your data stays on your device</li>
+<li>Free with unlimited debts. Premium is a one-time $24.</li></ul></section>
+<section class="faq"><h2>Questions people ask</h2>
+<details><summary>What is the debt avalanche method?</summary><p>It is a way to order debt payments by interest cost. Every debt gets its minimum, and any extra money goes to the debt charging the most interest. When that debt is paid off, its payment moves to the next most expensive one. Balance size does not set the order; the rate and the interest it produces do.</p></details>
+<details><summary>Does the avalanche always save the most interest?</summary><p>It usually saves the most among simple ordering methods, but not in every case. Rollover timing can occasionally make a different order slightly cheaper, for example when clearing a debt with an unusually large minimum frees up cash sooner. Differences like that are often small, and the comparison tools show them in dollars.</p></details>
+<details><summary>How does the calculator handle a 0% balance that will go up later?</summary><p>It keeps the balance at 0% until the promo end month entered, then charges the post-promo rate from that point on. The avalanche here ranks each balance by the rate it is charging that month. A 0% balance gets only its minimum until the promo ends; from that month on, it is ranked by its new rate.</p></details>
+<details><summary>Why does my first payoff take so long with the avalanche?</summary><p>If the debt with the highest rate is also a large balance, it takes longer to clear than a small debt would. Meanwhile every other debt is only getting its minimum. The first payoff arrives later, but once it does, its minimum rolls into the next debt and later payoffs tend to come faster.</p></details>
+<details><summary>What APR is used for monthly interest?</summary><p>The calculator divides each debt's APR by 12 and charges that rate on the balance once a month. For example, a 24% APR becomes 2% a month, so a $500 balance would add about $10 of interest that month. Many cards commonly calculate interest daily, so actual statements can differ by small amounts.</p></details>
+</section>
+<aside class="founder"><div class="av" aria-hidden="true">K</div><div><h2>Why I built this</h2><p>I’m Kevin. About a year ago I sat down with my own credit card balances and couldn’t get a straight answer to one question: when does this actually end? Most tools I found wanted an account or a bank login. So I built the one I wanted &mdash; the same math running on this page &mdash; and I use it on my own debt every month.</p><p class="sig">&mdash; Kevin, founder of DebtFree Dashboard</p></div></aside>
+<section class="related"><h2>Related calculators</h2><div class="card-grid"><a class="card-link" href="/calculators/debt-snowball-calculator/"><strong>Debt Snowball Calculator</strong><span>Smallest balance first, with the rollover shown month by month.</span></a><a class="card-link" href="/calculators/snowball-vs-avalanche-calculator/"><strong>Snowball vs Avalanche Calculator</strong><span>Both methods side by side on your numbers.</span></a><a class="card-link" href="/calculators/which-debt-to-pay-off-first/"><strong>Which Debt to Pay Off First</strong><span>Ranks the payoff orders by what they cost you.</span></a><a class="card-link" href="/calculators/balance-transfer-calculator/"><strong>Balance Transfer Calculator</strong><span>Fee, promo length and what is left when 0% ends.</span></a></div></section>
+<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>
+</main>
+<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
+<script src="/calculators/assets/engine.js?v=1.54.0"></script>
+<script src="/calculators/assets/calc.js?v=1.54.0"></script>
+</body>
+</html>

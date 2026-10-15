@@ -1,0 +1,57 @@
+{
+  "slug": "holiday-debt-payoff-calculator",
+  "title": "Holiday Debt Payoff Calculator",
+  "metaDescription": "Holiday debt payoff calculator: enter what went on the card, the APR and a target month to see the monthly payment to clear it and the interest it adds.",
+  "h1": "Holiday Debt Payoff Calculator",
+  "lede": "Gifts, travel and hosting tend to land on a card all at once. This calculator shows the monthly payment it takes to pay off holiday debt by a month you pick, and how much interest the season adds along the way.",
+  "sections": [
+    {
+      "h2": "A balance with a clear start and finish",
+      "html": "<p>Holiday spending is different from debt that built up slowly. The amount is known, it arrived over a few weeks, and many people already have a month in mind for being done with it, like the end of winter or before summer.</p><p>The calculator takes three inputs: the amount spent, the card's APR, and the number of months to clear it. It returns the monthly payment and the interest that payment carries. Because the spending is a one-time amount, the question is short and concrete: how much a month, for how many months.</p>"
+    },
+    {
+      "h2": "The simple split, and what interest adds",
+      "html": "<p>A $900 balance split over three months is $300 a month before interest. Interest makes each payment a little larger than that. At 24% APR, the first month's interest on $900 is about $18, and it shrinks each month as the balance drops.</p><p>The calculator does that month-by-month math for you, so the payment it shows already includes the interest. The total interest figure is the extra cost of carrying the holiday spending on the card instead of having it paid off at once. A lower APR or a shorter timeline makes that figure smaller; a higher APR or a longer timeline makes it larger.</p>"
+    },
+    {
+      "h2": "Shorter or longer: what changes",
+      "html": "<p>Fewer months means a bigger payment and less interest. More months means a smaller payment and more interest, since the balance sits at the APR longer. Neither is wrong.</p><p>Some people prefer the shorter path so the balance is gone before the next round of birthdays or vacations. Others prefer a longer path so the payment leaves room for everything else in the budget. Changing the number of months in the calculator shows both sides with real numbers.</p><p>If the spending went on a card with a true 0% intro rate, entering 0% as the APR shows the payment as the balance divided by the months, as long as the target month falls before the promo ends.</p>"
+    },
+    {
+      "h2": "Seeing what the season really cost",
+      "html": "<p>Some people find it useful to think of the interest as part of the holiday itself. A gift bought for $100 and paid off over a few months ends up costing a bit more than $100 once interest is counted.</p><p>The calculator shows that amount for the whole balance, so the full cost of the season becomes one clear number: what was spent, plus what carrying it added.</p>"
+    },
+    {
+      "h2": "When the holiday balance isn't on its own",
+      "html": "<p>If the card already had a balance before the holidays, the calculator treats everything as one balance. The <a href=\"/calculators/credit-card-payoff-calculator/\">credit card payoff calculator</a> handles a full card balance, and the <a href=\"/calculators/multiple-credit-card-payoff-calculator/\">multiple credit card payoff calculator</a> covers spending spread across several cards.</p><p>Store cards with a “no interest if paid in full” offer often work differently from a standard 0% rate. The <a href=\"/calculators/deferred-interest-calculator/\">deferred interest calculator</a> shows what happens if a balance is still there when that offer ends.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How much do I need to pay each month to clear holiday debt by spring?",
+      "a": "It depends on the amount, the APR and how many months are left until the target. Dividing the balance by the months gives a starting point, and interest adds a bit on top. The calculator does the full month-by-month math and shows the payment that brings the balance to zero in the month you pick."
+    },
+    {
+      "q": "How much interest will my holiday spending add?",
+      "a": "That depends on the balance, the APR and how long it takes to pay off. As a rough guide, a $900 balance at 24% APR picks up about $18 of interest in the first month, less each month after as the balance falls. The calculator adds up every month for the total."
+    },
+    {
+      "q": "What if I used a store card with a no-interest offer?",
+      "a": "Offers described as “no interest if paid in full” commonly use deferred interest. Interest builds in the background and can be charged back to the purchase date if a balance remains when the offer ends. Terms vary by agreement. The deferred interest calculator shows the payment needed to clear it in time."
+    },
+    {
+      "q": "What if my card already had a balance before the holidays?",
+      "a": "This calculator treats the amount entered as a single balance with one APR. Entering only the holiday amount shows the cost of that spending on its own. Entering the whole card balance shows the full picture. The credit card payoff calculator covers a full card balance in more detail."
+    },
+    {
+      "q": "Does the calculator include new purchases after the holidays?",
+      "a": "No. It assumes the balance only changes through interest and payments. New charges in January or February would add to the balance and push the payoff later at the same monthly payment. The results describe the holiday balance being paid down with nothing new added."
+    }
+  ],
+  "related": [
+    "credit-card-payoff-calculator",
+    "deferred-interest-calculator",
+    "multiple-credit-card-payoff-calculator",
+    "pay-off-debt-by-date-calculator"
+  ]
+}

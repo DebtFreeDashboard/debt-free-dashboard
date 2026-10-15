@@ -1,0 +1,53 @@
+{
+  "slug": "debt-to-income-ratio-calculator",
+  "title": "Debt-to-Income Ratio Calculator",
+  "metaDescription": "Debt to income ratio calculator: enter gross monthly income and monthly debt payments to see your DTI percentage, with housing-only and total-debt ratios.",
+  "h1": "Debt-to-Income Ratio Calculator",
+  "lede": "This calculator divides monthly debt payments by gross monthly income to show a debt-to-income ratio, or DTI, as a percentage.",
+  "sections": [
+    {
+      "h2": "What the ratio measures",
+      "html": "<p>Debt-to-income ratio compares what goes out each month for debt payments with what comes in before taxes. The formula is simple: total monthly debt payments divided by gross monthly income, times 100.</p><p>For example, $1,500 in monthly payments on a $5,000 gross monthly income is a DTI of 30%. That means 30 cents of every pre-tax dollar is already committed to debt payments.</p><p>It measures payments, not balances. Two people with the same total debt can have very different ratios if one has lower monthly payments. It also uses gross income, the amount before taxes and deductions, not take-home pay.</p>"
+    },
+    {
+      "h2": "What counts as a monthly debt payment",
+      "html": "<p>The calculator has a line for each common type:</p><ul><li>Rent or mortgage payment</li><li>Car loan payments</li><li>Student loan payments</li><li>Credit card minimum payments</li><li>Personal loan payments</li><li>Other required monthly debt payments</li></ul><p>For credit cards, the ratio uses the minimum payment due, not the full balance or the amount actually paid. Everyday costs like groceries, utilities and insurance are typically not part of DTI, even though they come out of the same paycheck.</p><p>How paused or deferred payments are counted can vary from one lender to another. The calculator simply uses whatever amount is entered on each line, and a blank line counts as zero.</p>"
+    },
+    {
+      "h2": "Front-end vs back-end ratio",
+      "html": "<p>DTI is commonly figured two ways. The <strong>front-end ratio</strong> uses housing payments only, rent or mortgage, divided by gross income. The <strong>back-end ratio</strong> uses all monthly debt payments, housing included.</p><p>The back-end number is the one most people mean when they say DTI. The calculator shows both. Lenders commonly look at one or both when reviewing an application. What counts as high or low varies by lender and by type of loan, so there isn’t one cutoff that applies everywhere.</p><p>The two ratios can tell different stories. Someone with a modest rent and several loan payments might have a low front-end ratio and a much higher back-end ratio. Someone with a large housing payment and few other debts might see the two numbers sit close together.</p>"
+    },
+    {
+      "h2": "How paying off a debt changes the number",
+      "html": "<p>Because DTI is built from payments, it moves when a payment goes away. Using the earlier example, removing a $300 car payment brings $1,500 down to $1,200. On the same $5,000 income, the ratio falls from 30% to 24%.</p><p>Paying down a credit card works differently. The minimum payment usually shrinks a little as the balance falls, so DTI drifts down slowly rather than dropping all at once. Paying off an installment loan removes its whole payment the month it ends.</p><p>To see when each payment is likely to disappear, the <a href=\"/calculators/debt-free-date-calculator/\">debt-free date calculator</a> shows a payoff month for every debt. The <a href=\"/calculators/debt-payoff-calculator/\">debt payoff calculator</a> shows how an extra monthly amount moves those dates.</p><p>Income changes move the ratio too. A raise lowers DTI even if every payment stays the same, and a drop in income raises it. The calculator shows the ratio for the numbers entered today.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How is debt-to-income ratio calculated?",
+      "a": "The calculator adds up all required monthly debt payments, including rent or mortgage, car, student loan, credit card minimums and personal loans. That total is divided by gross monthly income, the amount before taxes, and multiplied by 100 to get a percentage. For example, $1,500 in payments on $5,000 of gross income is 30%."
+    },
+    {
+      "q": "Is DTI based on gross income or take-home pay?",
+      "a": "DTI is commonly figured on gross monthly income, the amount earned before taxes and other deductions. That is why the calculator asks for gross income. Using take-home pay would produce a higher percentage for the same payments, so the two numbers aren’t interchangeable."
+    },
+    {
+      "q": "What is the difference between front-end and back-end DTI?",
+      "a": "Front-end DTI includes only housing payments, like rent or a mortgage, divided by gross income. Back-end DTI includes every monthly debt payment, housing included. The back-end ratio is the number most people mean by DTI. The calculator shows both."
+    },
+    {
+      "q": "What DTI do lenders look for?",
+      "a": "Lenders commonly look at DTI when reviewing an application, but the levels they use vary by lender and by type of loan. There isn’t a single number that applies everywhere. The calculator shows the ratio itself so it can be compared with whatever a specific lender lists in its own requirements."
+    },
+    {
+      "q": "Do credit card balances count in DTI?",
+      "a": "DTI uses the minimum monthly payment on each card, not the full balance. A higher balance usually means a higher minimum, so balances affect the ratio indirectly. Paying a card down tends to lower its minimum a little, while paying off an installment loan removes its whole payment at once."
+    }
+  ],
+  "related": [
+    "debt-payoff-calculator",
+    "debt-free-date-calculator",
+    "minimum-payment-calculator",
+    "car-loan-payoff-calculator"
+  ]
+}

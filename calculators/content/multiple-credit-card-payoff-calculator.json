@@ -1,0 +1,57 @@
+{
+  "slug": "multiple-credit-card-payoff-calculator",
+  "title": "Multiple Credit Card Payoff Calculator",
+  "metaDescription": "Multiple credit card payoff calculator: list every card, add an extra amount, and see the order they clear, each card's payoff month and the total interest.",
+  "h1": "Multiple Credit Card Payoff Calculator",
+  "lede": "Put all of your cards into one plan and see when each one reaches zero. The calculator shows the order they clear, the month you finish, and the total interest across every card.",
+  "sections": [
+    {
+      "h2": "Why several cards feel heavier than one",
+      "html": "<p>Each card has its own balance, its own APR, its own minimum and its own due date. Interest builds separately on every one of them. Paying the minimum on all of them can take a real chunk of the budget while every balance moves slowly.</p><p>The calculator puts every card on one timeline. Instead of tracking five separate countdowns, the results show a single plan with one finish month.</p>"
+    },
+    {
+      "h2": "Entering each card",
+      "html": "<p>Each card needs its balance, APR and minimum payment, as they appear on the latest statement. The plan holds each minimum steady, even though many cards lower their minimum as the balance falls. Holding it steady is what lets the rollover work, because those dollars keep going toward the remaining cards instead of shrinking along with the balances.</p><p>If a minimum is lower than one month of interest on that card, the calculator raises it to interest plus $1 so the balance can still move, and flags the change.</p>"
+    },
+    {
+      "h2": "One focus card, minimums on the rest",
+      "html": "<p>Every card gets its minimum payment each month. Any extra goes to one card at a time, called the focus card, and the order decides which card that is. Smallest balance first, highest rate first, or an order you set yourself are all options.</p><p>Which order costs less depends on the mix of balances and rates. The <a href=\"/calculators/which-debt-to-pay-off-first/\">which debt to pay off first</a> page ranks the orders, and the <a href=\"/calculators/snowball-vs-avalanche-calculator/\">snowball vs avalanche calculator</a> shows the gap between the two most common ones.</p><p>A card with a 0% intro rate stays at 0% in the calculator until its promo end month, then switches to its regular APR. That can change which card gets the focus, since a card that costs nothing today may cost the most later. The <a href=\"/calculators/balance-transfer-calculator/\">balance transfer calculator</a> looks at that kind of promo on its own.</p>"
+    },
+    {
+      "h2": "What happens when a card hits zero",
+      "html": "<p>When a card is paid off, its minimum does not leave the plan. It joins the extra and moves to the next card. Say three cards have minimums of $30, $45 and $60, and there is $100 of extra:</p><ol><li>The $100 extra goes to the first focus card, the one with the $30 minimum, on top of that minimum.</li><li>Once the $30-minimum card is gone, the extra becomes $130.</li><li>Once the $45-minimum card is gone, the extra becomes $175, going to the last card on top of its own $60 minimum.</li></ol><p>The total going out each month stays the same; it just gets more concentrated as cards drop off. If the last payment on a card is only partial, the leftover moves to the next card that same month.</p>"
+    },
+    {
+      "h2": "Reading the card-by-card results",
+      "html": "<p>The results list each card's payoff month and the order they clear, along with the overall debt-free month and total interest. Gaps between payoff months show where the rollover speeds things up: later cards often go faster because more money reaches them. All results are estimates that assume no new charges and steady rates.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How does paying off one card help with the others?",
+      "a": "Once a card is paid off, the minimum you were paying on it is still part of the monthly total. In the calculator, that amount joins the extra and goes to the next card. Each card that clears adds its minimum to the pile, so later cards tend to get paid off faster than the first one."
+    },
+    {
+      "q": "Do all my cards still get a payment every month?",
+      "a": "Yes. The calculator pays the minimum on every card with a balance each month. Only the extra, plus any minimums freed up from cards already paid off, goes to the focus card. That keeps every account current in the plan while one card gets the extra attention."
+    },
+    {
+      "q": "What order does the calculator pay the cards in?",
+      "a": "It depends on the order chosen. Smallest balance first, highest rate first, and a custom order you set are all available. Total interest and the finish month can differ between orders, sometimes by a lot and sometimes by very little, depending on how different the balances and rates are."
+    },
+    {
+      "q": "What if one of my cards has a 0% intro rate?",
+      "a": "The calculator keeps that card at 0% until the promo end month, then charges its regular APR from that point on. The highest-interest-cost order accounts for that future rate, so a 0% card can move up the list as its promo end gets closer."
+    },
+    {
+      "q": "Does the plan assume I stop using the cards?",
+      "a": "The calculator assumes no new charges on any card. It shows how the current balances get paid down with interest, minimums and extra. New charges would add to a balance and push that card's payoff later, which would shift the dates for every card behind it in the order."
+    }
+  ],
+  "related": [
+    "which-debt-to-pay-off-first",
+    "snowball-vs-avalanche-calculator",
+    "credit-card-payoff-calculator",
+    "balance-transfer-calculator"
+  ]
+}

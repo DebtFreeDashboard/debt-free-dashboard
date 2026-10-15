@@ -1,0 +1,57 @@
+{
+  "slug": "snowball-vs-avalanche-calculator",
+  "title": "Snowball vs Avalanche Calculator",
+  "metaDescription": "Snowball vs avalanche calculator: run both methods on your own debts and see the difference in total interest, months to payoff and debt-free date.",
+  "h1": "Snowball vs Avalanche Calculator for Your Own Debts",
+  "lede": "This calculator runs both methods on the same debts and the same monthly amount, then shows exactly how far apart they land in dollars of interest and months to payoff.",
+  "sections": [
+    {
+      "h2": "One budget, two orders",
+      "html": "<p>Both methods spend the same total each month. Both pay every minimum and roll a cleared debt's payment into the next one. The only difference is which debt receives the extra money first: the smallest balance under the snowball, the most expensive balance under the avalanche.</p><p>Because the monthly total is identical, any gap in the results comes from one source: how long each balance stays open and what it charges in the meantime. The comparison turns that into a single dollar figure and a month count for your specific debts.</p>"
+    },
+    {
+      "h2": "When the gap tends to be tiny",
+      "html": "<p>For many sets of debts, the two methods land close together. That tends to happen when:</p><ul><li><strong>The rates are similar.</strong> If every debt charges roughly the same rate, it matters little which one is cleared first.</li><li><strong>The smallest balance is also the most expensive.</strong> Then both methods choose the same first target, and sometimes the same full order, producing identical results.</li><li><strong>The timeline is short.</strong> A large monthly extra clears everything quickly, leaving less time for any rate difference to add up.</li><li><strong>There are only two or three debts.</strong> Fewer debts means fewer ways for the orders to diverge.</li></ul>"
+    },
+    {
+      "h2": "When the gap tends to grow",
+      "html": "<p>The difference widens when the snowball's first targets are cheap and the debt it saves for last is expensive. A common pattern is a few small, low-rate balances alongside one large, high-rate card. The snowball clears the small ones first while the large balance keeps charging its full rate.</p><p>Long timelines widen the gap too. When the monthly extra is modest, every month the expensive balance waits adds to the difference. Promo rates that end partway through can also shift the result, since a 0% balance may become the costliest debt later in the plan.</p>"
+    },
+    {
+      "h2": "Both sides, stated plainly",
+      "html": "<p>Some people prefer the snowball because early payoffs are visible and frequent, and closing accounts can make a long plan feel shorter. For them, a modest interest gap may be a reasonable price for that sense of progress.</p><p>Others prefer the avalanche because it is built to keep total interest as low as the simple methods allow, and the dollar figure is what they track. Some use a blend, clearing one tiny balance first and then switching to rate order.</p><p>The calculator does not pick a side. It shows the cost of each so the trade-off is concrete. For a ranked list that also includes a custom order and the lowest-interest order the math can find, the <a href=\"/calculators/which-debt-to-pay-off-first/\">which debt to pay off first</a> page goes further. The single-method pages for the <a href=\"/calculators/debt-snowball-calculator/\">snowball</a> and the <a href=\"/calculators/debt-avalanche-calculator/\">avalanche</a> explain each one on its own.</p>"
+    },
+    {
+      "h2": "Reading the difference",
+      "html": "<p>The comparison shows each method's debt-free month, months to payoff and total interest, along with the difference between them. It is common to see a dollar gap with little or no change in months, because the same total goes out each month either way and only the interest portion shifts.</p><p>A difference near zero means the order hardly matters for these debts. A larger figure shows what the snowball's early wins cost in interest for this particular set.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Which saves more money, snowball or avalanche?",
+      "a": "On the same debts with the same monthly amount, the avalanche usually produces equal or lower total interest because it targets the most expensive balance first. How much lower varies a great deal. For some sets of debts the difference is a few dollars; for others, especially with one large high-rate balance, it can be much larger."
+    },
+    {
+      "q": "Why are my snowball and avalanche results exactly the same?",
+      "a": "That happens when both methods choose the same order. If the smallest balance also has the highest rate, and the pattern holds down the list, the two methods are doing the same thing. It can also happen with a single debt or when a large monthly extra clears everything almost at once."
+    },
+    {
+      "q": "Why is there an interest difference but no difference in months?",
+      "a": "The total paid each month is identical under both methods, so the payoff timeline changes only when the interest gap is big enough to shift the final payment into a different month. Smaller interest differences often get absorbed within the same final month."
+    },
+    {
+      "q": "Can I combine the two methods?",
+      "a": "Some people do, for example clearing one very small balance first and then following rate order for the rest. The calculator's custom order option allows any sequence, so a blended order can be compared directly against the pure snowball and pure avalanche results using the same debts and monthly amount."
+    },
+    {
+      "q": "Does the comparison include 0% promotional balances?",
+      "a": "Yes. Each promo balance stays at its promo rate until the end month entered, then switches to its post-promo rate. The avalanche accounts for that future rate when ordering, while the snowball orders by balance size alone. A promo ending partway through the plan can noticeably change the gap between the two."
+    }
+  ],
+  "related": [
+    "debt-snowball-calculator",
+    "debt-avalanche-calculator",
+    "which-debt-to-pay-off-first",
+    "debt-payoff-calculator"
+  ]
+}

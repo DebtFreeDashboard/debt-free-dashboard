@@ -1,0 +1,57 @@
+{
+  "slug": "debt-avalanche-calculator",
+  "title": "Debt Avalanche Calculator",
+  "metaDescription": "Debt avalanche calculator: see your debts ordered by interest cost, the month each is paid off, total interest, and how 0% promo end dates change the order.",
+  "h1": "Debt Avalanche Calculator: Highest Interest First",
+  "lede": "This calculator orders your debts by how much interest they cost, then shows when each one is paid off and the total interest under that order, including the effect of any 0% promo that ends along the way.",
+  "sections": [
+    {
+      "h2": "Interest cost sets the order",
+      "html": "<p>The avalanche method aims extra money at the debt with the highest interest rate. Every debt still gets its minimum. Whatever is left over goes to the most expensive balance until it is gone, and then the next most expensive takes its place.</p><p>The logic is simple arithmetic. A dollar that pays down a 27% balance stops a 27% charge on that dollar. The same dollar on a 9% balance stops a 9% charge. Each month, $1,000 at 27% APR adds about $22.50 of interest, while $1,000 at 9% adds about $7.50.</p><p>As with any rolling plan, a cleared debt's minimum moves forward and joins the extra, so the payment on the next target is larger than the last.</p>"
+    },
+    {
+      "h2": "The 0% promo problem",
+      "html": "<p>\"Highest APR first\" sounds clear until a balance sits at 0% for a while. Ranked by today's rate, a 0% card lands at the bottom of the list. But if that promo ends in four months and the rate jumps to 27%, it may soon be the most expensive debt in the group.</p><p>A plain rate sort misses that. The avalanche in this calculator re-checks every rate each month. While a balance sits at 0%, it gets only its minimum, because extra money on it stops no interest yet. The month its promo ends, it is ranked by its new rate and can move straight to the front of the line. Until the end month, the calculator charges 0% on that balance. After it, the post-promo rate applies.</p><p>For a deeper look at a single promo balance, the <a href=\"/calculators/balance-transfer-calculator/\">balance transfer calculator</a> shows what remains when a promo period ends.</p>"
+    },
+    {
+      "h2": "What the math tends to show",
+      "html": "<p>Among the simple ordering methods, the avalanche usually produces the lowest total interest or comes very close. That follows directly from sending money where the rate is highest.</p><p>It is not always the single lowest-cost order, though. When a debt with a large minimum is cleared early, that minimum rolls forward sooner, and occasionally that timing beats a strict rate ranking. The <a href=\"/calculators/which-debt-to-pay-off-first/\">which debt to pay off first</a> page compares several orders, including the lowest-interest order the math can find.</p><p>The other trade-off is timing. If the highest-rate debt is also a large one, the first payoff can take a while, and the list of open accounts stays the same length for longer.</p>"
+    },
+    {
+      "h2": "When avalanche and snowball agree",
+      "html": "<p>If the smallest balance also carries the highest rate, both methods start in the same place. When the ordering by balance and the ordering by rate match all the way down, the results are identical. The <a href=\"/calculators/debt-snowball-calculator/\">debt snowball calculator</a> runs the smallest-balance order for comparison.</p>"
+    },
+    {
+      "h2": "Reading the avalanche results",
+      "html": "<p>The results show the order debts are cleared, each one's payoff month, the debt-free month, total interest and total paid. A promo balance only starts receiving the extra once its 0% period ends and its new rate is the highest in the group.</p><p>Total interest is the figure this method is designed around. Changing the monthly extra and watching that number move shows how much of the interest cost comes from the timeline itself.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "What is the debt avalanche method?",
+      "a": "It is a way to order debt payments by interest cost. Every debt gets its minimum, and any extra money goes to the debt charging the most interest. When that debt is paid off, its payment moves to the next most expensive one. Balance size does not set the order; the rate and the interest it produces do."
+    },
+    {
+      "q": "Does the avalanche always save the most interest?",
+      "a": "It usually saves the most among simple ordering methods, but not in every case. Rollover timing can occasionally make a different order slightly cheaper, for example when clearing a debt with an unusually large minimum frees up cash sooner. Differences like that are often small, and the comparison tools show them in dollars."
+    },
+    {
+      "q": "How does the calculator handle a 0% balance that will go up later?",
+      "a": "It keeps the balance at 0% until the promo end month entered, then charges the post-promo rate from that point on. The avalanche here ranks each balance by the rate it is charging that month. A 0% balance gets only its minimum until the promo ends; from that month on, it is ranked by its new rate."
+    },
+    {
+      "q": "Why does my first payoff take so long with the avalanche?",
+      "a": "If the debt with the highest rate is also a large balance, it takes longer to clear than a small debt would. Meanwhile every other debt is only getting its minimum. The first payoff arrives later, but once it does, its minimum rolls into the next debt and later payoffs tend to come faster."
+    },
+    {
+      "q": "What APR is used for monthly interest?",
+      "a": "The calculator divides each debt's APR by 12 and charges that rate on the balance once a month. For example, a 24% APR becomes 2% a month, so a $500 balance would add about $10 of interest that month. Many cards commonly calculate interest daily, so actual statements can differ by small amounts."
+    }
+  ],
+  "related": [
+    "debt-snowball-calculator",
+    "snowball-vs-avalanche-calculator",
+    "which-debt-to-pay-off-first",
+    "balance-transfer-calculator"
+  ]
+}

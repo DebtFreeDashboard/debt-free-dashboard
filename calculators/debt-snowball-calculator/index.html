@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debt Snowball Calculator | DebtFree Dashboard</title>
+<meta name="description" content="Debt snowball calculator: see the smallest-to-largest payoff order, the month each debt is gone, and how every freed-up minimum rolls into the next debt.">
+<link rel="canonical" href="https://mydebtdashboard.com/calculators/debt-snowball-calculator/">
+<link rel="icon" href="/assets/logo/debtfree-mark-transparent.svg" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#ffffff">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DebtFree Dashboard">
+<meta property="og:title" content="Debt Snowball Calculator | DebtFree Dashboard">
+<meta property="og:description" content="Debt snowball calculator: see the smallest-to-largest payoff order, the month each debt is gone, and how every freed-up minimum rolls into the next debt.">
+<meta property="og:url" content="https://mydebtdashboard.com/calculators/debt-snowball-calculator/">
+<meta property="og:image" content="https://mydebtdashboard.com/assets/og-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/calculators/assets/calc.css?v=1.54.0">
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://mydebtdashboard.com/calculators/debt-snowball-calculator/","url":"https://mydebtdashboard.com/calculators/debt-snowball-calculator/","name":"Debt Snowball Calculator","description":"Debt snowball calculator: see the smallest-to-largest payoff order, the month each debt is gone, and how every freed-up minimum rolls into the next debt.","dateModified":"2026-10-15","isPartOf":{"@type":"WebSite","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"WebApplication","name":"Debt Snowball Calculator","url":"https://mydebtdashboard.com/calculators/debt-snowball-calculator/","applicationCategory":"FinanceApplication","operatingSystem":"Any web browser","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"DebtFree Dashboard","url":"https://mydebtdashboard.com/"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://mydebtdashboard.com/"},{"@type":"ListItem","position":2,"name":"Calculators","item":"https://mydebtdashboard.com/calculators/"},{"@type":"ListItem","position":3,"name":"Debt Snowball Calculator","item":"https://mydebtdashboard.com/calculators/debt-snowball-calculator/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"What is the debt snowball method?","acceptedAnswer":{"@type":"Answer","text":"It is a way to order debt payments. Every debt gets its minimum, and any extra money goes to the smallest balance. When that balance is paid off, its payment moves to the next smallest, and so on until everything is cleared. The growing payment is the snowball. Interest rates do not affect the order."}},{"@type":"Question","name":"Does the snowball cost more interest than the avalanche?","acceptedAnswer":{"@type":"Answer","text":"It can, but not always. When the smallest balances carry low rates and a large balance carries a high rate, the snowball usually costs more interest because the expensive debt waits longer. When the smallest balance also has the highest rate, both methods pick the same order and the cost is identical. The size of the gap depends entirely on the debts involved."}},{"@type":"Question","name":"Do the other debts still get paid while the smallest one is the focus?","acceptedAnswer":{"@type":"Answer","text":"Yes. Every debt receives at least its minimum payment every month. Only the money beyond the minimums is directed to the smallest balance. This keeps all accounts current while one debt gets the extra attention, and it is why the plan depends on the minimums being entered accurately."}},{"@type":"Question","name":"What if my smallest debt is on a 0% promotional rate?","acceptedAnswer":{"@type":"Answer","text":"The snowball still puts it first, because the order is set by balance size alone. The calculator keeps that balance at 0% until the promo end month and then applies the post-promo rate. Running the same debts through the avalanche order shows whether a different sequence would change the total interest."}},{"@type":"Question","name":"Is the debt snowball the same as consolidating debt?","acceptedAnswer":{"@type":"Answer","text":"No. The snowball keeps every debt separate and changes only where the extra money goes each month. Consolidation replaces several debts with one new loan, which has its own rate, term and fees. They are different approaches with different math, and the snowball involves no new account at all."}}]}]}</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP56TD9BG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  var _dfInternal = false;
+  try {
+    if (/[?&]internal=1(&|$)/.test(location.search)) localStorage.setItem('debtfree_internal', '1');
+    if (/[?&]internal=0(&|$)/.test(location.search)) localStorage.removeItem('debtfree_internal');
+    _dfInternal = localStorage.getItem('debtfree_internal') === '1';
+  } catch (e) {}
+  gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
+</script>
+</head>
+<body>
+<nav class="nav"><a href="/" class="nav-brand" aria-label="DebtFree Dashboard home"><img src="/assets/logo/debtfree-logo-horizontal-light.svg" alt="DebtFree Dashboard" width="150" height="32" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fb" style="display:none">DebtFree Dashboard</span></a><div class="nav-links"><a class="txt" href="/calculators/">All calculators</a><a class="nav-cta" href="/app/dashboard.html" data-cta="nav">Open the free dashboard</a></div></nav>
+<main class="wrap">
+<div class="crumbs"><a href="/">Home</a> / <a href="/calculators/">Calculators</a> / Debt Snowball Calculator</div>
+<header class="hero"><h1>Debt Snowball Calculator: Smallest Balance First</h1><p class="lede">This calculator lines up your debts from smallest balance to largest, then shows the month each one is paid off and how every freed-up payment rolls into the next debt.</p><div class="trust"><span>Free</span><span>No sign-up</span><span>Nothing leaves your device</span><span>Same math as the dashboard</span></div></header>
+<section class="calc" id="calc" aria-label="Calculator">
+<div class="debt-head"><h2 class="ct">Your debts</h2><span class="sub muted sm">Minimum blank = estimated</span></div><div id="debt-rows"></div><button type="button" class="btn-add" id="add-debt">+ Add a debt</button><div class="opts"><div class="f"><label for="extra">Extra per month, on top of minimums</label><div class="affix">$<input id="extra" type="text" inputmode="decimal" value="250"></div><span class="hint">Can be $0</span></div></div>
+<div class="results" id="calc-results" aria-live="polite"></div>
+<div class="handoff"><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><span class="sub">Loads these numbers. No account needed.</span></div>
+</section>
+<script type="application/json" id="calc-config">{"slug":"debt-snowball-calculator","widget":"multi","mode":"snowball","strategy":"snowball","allowPromo":false,"defaultType":"cc","debtName":null,"debts":[{"name":"Rewards card","type":"cc","balance":6800,"apr":24.99,"min":204},{"name":"Everyday card","type":"cc","balance":2300,"apr":21.49,"min":69},{"name":"Store card","type":"cc","balance":900,"apr":29.99,"min":35},{"name":"Car loan","type":"auto","balance":14500,"apr":7.9,"min":395},{"name":"Personal loan","type":"personal","balance":5200,"apr":12.5,"min":175}]}</script>
+<article class="content">
+<h2>How the snowball lines up your debts</h2>
+<p>The snowball method sorts debts by one thing only: the size of the balance. The smallest balance goes first, the largest goes last, and interest rates play no part in the order.</p><p>Every debt still gets its minimum payment each month. Any money beyond the minimums goes to the debt at the top of the list. Once that debt reaches zero, the next smallest balance becomes the new focus.</p>
+<h2>Where the rolling payment comes from</h2>
+<p>The name comes from what happens after each payoff. A paid-off debt's minimum does not vanish from the budget. It joins the extra and moves to the next debt, so the payment aimed at the focus debt grows each time something is cleared.</p><p>A small example shows the pattern:</p><ol><li>The smallest debt has a $40 minimum, and there is $100 of monthly extra. That debt receives $140 a month.</li><li>When it is paid off, the next debt receives its own minimum plus that $140.</li><li>When that one is gone, its minimum joins the pile too, and the amount keeps building.</li></ol><p>The final payment on a debt is often smaller than the full amount available. In the calculator, whatever is left over that month spills to the next debt right away rather than waiting for the following month.</p>
+<h2>Why some people choose it</h2>
+<p>The snowball is built around early, visible progress. Small balances can disappear within months, and each one removes a bill, a due date and a statement from the pile.</p><p>Some people find that a closed account is easier to feel than a lower interest charge. A string of quick payoffs can make a long plan seem more manageable, and fewer accounts can make the monthly routine simpler to track. Others care less about those wins and focus on the dollar cost instead. Both views are about what keeps a plan going, which the calculator cannot measure.</p>
+<h2>The interest trade-off, in plain terms</h2>
+<p>Because the snowball ignores rates, it can leave a high-rate balance waiting while smaller, cheaper debts are cleared first. During that wait, the high-rate debt keeps charging interest on its full balance.</p><p>How much that costs depends on the debts. If the smallest balance also carries the highest rate, the snowball and the interest-first approach pick the same order and the cost is the same. If the largest balance carries the highest rate, the gap tends to be wider. The <a href="/calculators/debt-avalanche-calculator/">debt avalanche calculator</a> runs the interest-first order, and the <a href="/calculators/snowball-vs-avalanche-calculator/">snowball vs avalanche calculator</a> shows the difference for the same set of debts.</p>
+<h2>Reading your snowball timeline</h2>
+<p>The results list each debt in the order it is cleared, with its payoff month. The gaps between those months are worth a look. The first payoff often comes quickly, and later gaps can stretch out because the remaining balances are larger.</p><p>The final row gives the debt-free month, the total interest paid and the total paid overall. Changing the monthly extra and watching those dates shift shows how sensitive the timeline is to the amount going in.</p>
+</article>
+<section class="cta"><div><h2>A calculator is a snapshot. Your plan keeps moving.</h2><p>The free dashboard keeps your debt-free date current as you pay &mdash; and it picks up right where this page leaves off.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><p class="fine">Your numbers go from this page into the dashboard on this device. Nothing is sent to a server.</p></div><ul>
+<li>Your debt-free date updates every time you log a payment</li>
+<li>Snowball, Avalanche, your own order &mdash; plus Optimized, which finds the cheapest order</li>
+<li>0% promo rates that switch automatically when they end</li>
+<li>What-If slider: see what extra money does, instantly</li>
+<li>No account, no bank login &mdash; your data stays on your device</li>
+<li>Free with unlimited debts. Premium is a one-time $24.</li></ul></section>
+<section class="faq"><h2>Questions people ask</h2>
+<details><summary>What is the debt snowball method?</summary><p>It is a way to order debt payments. Every debt gets its minimum, and any extra money goes to the smallest balance. When that balance is paid off, its payment moves to the next smallest, and so on until everything is cleared. The growing payment is the snowball. Interest rates do not affect the order.</p></details>
+<details><summary>Does the snowball cost more interest than the avalanche?</summary><p>It can, but not always. When the smallest balances carry low rates and a large balance carries a high rate, the snowball usually costs more interest because the expensive debt waits longer. When the smallest balance also has the highest rate, both methods pick the same order and the cost is identical. The size of the gap depends entirely on the debts involved.</p></details>
+<details><summary>Do the other debts still get paid while the smallest one is the focus?</summary><p>Yes. Every debt receives at least its minimum payment every month. Only the money beyond the minimums is directed to the smallest balance. This keeps all accounts current while one debt gets the extra attention, and it is why the plan depends on the minimums being entered accurately.</p></details>
+<details><summary>What if my smallest debt is on a 0% promotional rate?</summary><p>The snowball still puts it first, because the order is set by balance size alone. The calculator keeps that balance at 0% until the promo end month and then applies the post-promo rate. Running the same debts through the avalanche order shows whether a different sequence would change the total interest.</p></details>
+<details><summary>Is the debt snowball the same as consolidating debt?</summary><p>No. The snowball keeps every debt separate and changes only where the extra money goes each month. Consolidation replaces several debts with one new loan, which has its own rate, term and fees. They are different approaches with different math, and the snowball involves no new account at all.</p></details>
+</section>
+<aside class="founder"><div class="av" aria-hidden="true">K</div><div><h2>Why I built this</h2><p>I’m Kevin. About a year ago I sat down with my own credit card balances and couldn’t get a straight answer to one question: when does this actually end? Most tools I found wanted an account or a bank login. So I built the one I wanted &mdash; the same math running on this page &mdash; and I use it on my own debt every month.</p><p class="sig">&mdash; Kevin, founder of DebtFree Dashboard</p></div></aside>
+<section class="related"><h2>Related calculators</h2><div class="card-grid"><a class="card-link" href="/calculators/debt-avalanche-calculator/"><strong>Debt Avalanche Calculator</strong><span>Highest rate first, including 0% promos that end.</span></a><a class="card-link" href="/calculators/snowball-vs-avalanche-calculator/"><strong>Snowball vs Avalanche Calculator</strong><span>Both methods side by side on your numbers.</span></a><a class="card-link" href="/calculators/which-debt-to-pay-off-first/"><strong>Which Debt to Pay Off First</strong><span>Ranks the payoff orders by what they cost you.</span></a><a class="card-link" href="/calculators/multiple-credit-card-payoff-calculator/"><strong>Multiple Credit Card Payoff Calculator</strong><span>Several cards, one plan, freed minimums rolling forward.</span></a></div></section>
+<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>
+</main>
+<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
+<script src="/calculators/assets/engine.js?v=1.54.0"></script>
+<script src="/calculators/assets/calc.js?v=1.54.0"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+  "slug": "credit-card-interest-calculator",
+  "title": "Credit Card Interest Calculator",
+  "metaDescription": "Credit card interest calculator: turn a balance and APR into interest per day and per month, and see the total interest at a given monthly payment.",
+  "h1": "Credit Card Interest Calculator",
+  "lede": "See what a card balance costs in interest each day and each month, and how much interest adds up in total at the payment you choose.",
+  "sections": [
+    {
+      "h2": "APR, monthly rate and daily rate",
+      "html": "<p>A card's rate is usually quoted as an <strong>APR</strong>, an annual percentage rate. Interest is not charged once a year, though, so the APR gets broken into smaller pieces:</p><ul><li><strong>Monthly rate:</strong> the APR divided by 12. A 24% APR is 2% a month.</li><li><strong>Daily periodic rate:</strong> the APR divided by 365, which is how many card statements figure it. A 24% APR is about 0.066% a day.</li></ul><p>They are the same rate, just measured over different stretches of time.</p>"
+    },
+    {
+      "h2": "From a balance to a monthly charge",
+      "html": "<p>Applied to a $1,000 balance at 24% APR, those rates come to about 66 cents of interest a day, or about $20 for the month. A balance twice as large means twice the interest. A lower APR shrinks the charge by the same proportion.</p><p>Statements commonly use the <em>average daily balance</em>, so the timing of payments and purchases inside a billing cycle nudges the real number up or down. This calculator gives a simple estimate rather than a statement match.</p><p>The monthly estimate is two steps: the APR divided by 12 gives the monthly rate, and the balance times that rate gives the charge. At 18% APR, the monthly rate is 1.5%, so a $2,000 balance picks up about $30 for the month.</p>"
+    },
+    {
+      "h2": "Interest that lands on the balance",
+      "html": "<p>When a payment does not cover the full balance, the month's interest becomes part of what is owed. Next month, interest is figured on that slightly larger number. Over a year, this means the interest paid on a carried balance can come out a bit higher than the APR alone would suggest.</p><p>The per-day figure shows the same idea at a smaller scale. Each day a balance sits on the card, it adds a few cents or a few dollars, and those days add up to the monthly charge.</p>"
+    },
+    {
+      "h2": "Why total interest depends on the payment",
+      "html": "<p>Interest is figured fresh every month on whatever balance is left. A larger payment lowers next month's balance, which lowers next month's interest, and that keeps repeating. A payment just above the monthly interest leaves the balance high for a long time, so the same APR produces far more interest in total.</p><p>That is why the calculator asks for a payment before it shows total interest. Changing the payment shows how much the total moves. The <a href=\"/calculators/credit-card-payoff-calculator/\">credit card payoff calculator</a> turns the same inputs into a payoff month, and the <a href=\"/calculators/minimum-payment-calculator/\">minimum payment calculator</a> shows the total when the payment follows a shrinking minimum.</p>"
+    },
+    {
+      "h2": "What the estimate leaves out",
+      "html": "<p>The numbers assume one steady APR, no new purchases, and no fees. A promo rate that ends, a cash advance at a different rate, or a balance carried from month to month on new purchases would all change the real figure. For a promo rate with a fee, the <a href=\"/calculators/balance-transfer-calculator/\">balance transfer calculator</a> handles both pieces.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "How do you calculate credit card interest per month?",
+      "a": "A close estimate is the balance times the APR, divided by 12. A $1,000 balance at 24% APR comes to about $20 for the month. Statements usually work from a daily rate and the average daily balance, so the real charge can land slightly above or below that estimate depending on the billing cycle."
+    },
+    {
+      "q": "What is a daily periodic rate?",
+      "a": "It is the APR divided into a daily rate, commonly by dividing by 365. A 24% APR becomes about 0.066% per day. Many cards apply that daily rate to the balance each day of the billing cycle and add it up, which is why the timing of payments within a cycle can change the interest slightly."
+    },
+    {
+      "q": "Why am I charged interest when I make a payment every month?",
+      "a": "Interest is charged on the balance carried from one statement to the next. Many cards commonly offer a grace period on new purchases only when the full statement balance is paid by the due date. When part of the balance carries over, interest applies to what remains, even when a payment was made on time."
+    },
+    {
+      "q": "Does a bigger payment lower the total interest?",
+      "a": "Yes. Each month's interest is based on the balance left after the last payment. A bigger payment leaves a smaller balance, so the next interest charge is smaller, and the card is paid off sooner. Fewer months at a lower balance add up to less total interest."
+    },
+    {
+      "q": "Why is my statement interest different from the calculator?",
+      "a": "The calculator uses a simple monthly estimate. A statement usually uses the average daily balance, the exact number of days in the billing cycle, and any purchases, fees or rate changes during the month. Those details move the real charge a bit in either direction, so the calculator is meant as a close estimate."
+    }
+  ],
+  "related": [
+    "credit-card-payoff-calculator",
+    "minimum-payment-calculator",
+    "balance-transfer-calculator"
+  ]
+}
