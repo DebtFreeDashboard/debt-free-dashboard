@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mydebtdashboard.app",
+      "sha256_cert_fingerprints": [
+        "BD:36:D0:D3:10:E8:8F:9F:B4:19:B3:A4:F4:46:B1:A9:CF:EC:6F:7D:B6:2D:87:91:9C:D1:00:2A:41:B6:37:AB"
+      ]
+    }
+  }
+]
