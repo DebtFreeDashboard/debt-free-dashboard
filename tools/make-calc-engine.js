@@ -65,6 +65,9 @@ function build() {
 var strategy = 'avalanche';
 function currentMonthLedger() { return { paid: {}, accrued: {} }; }
 function _netMonthOne() { return { minCovered: {}, extraAlreadyPaid: 0 }; }
+// The app resolves Optimized to monthly Avalanche when that is cheaper; the
+// calculators always pass an explicit strategy, so this is the identity.
+function effectiveStrategy(s) { return s || strategy; }
 
 // ---- COPIED FROM dashboard.html (begin) ----
 ${consts.join('\n')}
@@ -88,6 +91,15 @@ function optimizedOrder(targets, extra) {
     var arranged = order.map(function (id) { return targets.find(function (d) { return d.id === id; }); });
     return run(arranged, extra, 'hybrid');
   };
+  // Mirrors the app's _preferMonthlyAvalanche(): monthly Avalanche can beat every fixed order.
+  var preferMonthly = function (res) {
+    if (!res) return res;
+    var av = run(targets, extra, 'avalanche');
+    if (av && !av.diverged && av.totalInterest < res.interest - 1e-9) {
+      return { order: res.order, interest: av.totalInterest, months: av.months, exhaustive: res.exhaustive, considered: res.considered + 1, dynamic: true, fixedInterest: res.interest };
+    }
+    return res;
+  };
   var consider = function (order) {
     var r = score(order); considered++;
     if (r && !r.diverged && (!best || r.totalInterest < best.interest - 1e-9)) {
@@ -98,7 +110,7 @@ function optimizedOrder(targets, extra) {
   };
   if (targets.length <= OPTIMIZED_EXHAUSTIVE_LIMIT) {
     _permute(ids).forEach(consider);
-    return best ? { order: best.order, interest: best.interest, months: best.months, exhaustive: true, considered: considered } : null;
+    return preferMonthly(best ? { order: best.order, interest: best.interest, months: best.months, exhaustive: true, considered: considered } : null);
   }
   _seedOrders(targets).forEach(consider);
   if (!best) return null;
@@ -112,7 +124,7 @@ function optimizedOrder(targets, extra) {
       }
     }
   }
-  return { order: best.order, interest: best.interest, months: best.months, exhaustive: false, considered: considered };
+  return preferMonthly({ order: best.order, interest: best.interest, months: best.months, exhaustive: false, considered: considered });
 }
 
 // The debt that receives extra money in month 1 under a strategy.

@@ -4211,7 +4211,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.1';
+const APP_VERSION = '1.54.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4219,6 +4219,15 @@ const APP_VERSION = '1.54.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.2',
+    date: 'October 14, 2026',
+    name: 'Optimized keeps its promise',
+    whatsNew: [],
+    fixes: [
+      'With the new month-by-month Avalanche, a plan with 0% cards could come out a little cheaper on Avalanche than on Optimized. Optimized now compares both and uses whichever costs less, so it is always the lowest-interest option, and the Strategy tab explains which it chose.'
+    ]
+  },
   {
     version: '1.54.1',
     date: 'October 14, 2026',
@@ -7672,7 +7681,8 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
   // this is a no-op and the engine behaves exactly as it did before.
   const _sink = (opts && opts.sinkSchedule) || null;
   if (!debtList.length) return { months: 0, totalInterest: 0, order: [], monthlyData: [], perDebt: [], diverged: false };
-  const strat = customStrategy || strategy;
+  // v1.54.2 — Optimized can resolve to Avalanche's month-by-month order.
+  const strat = effectiveStrategy(customStrategy || strategy);
 
   // Capture simulation start time ONCE — used for all promo boundary calculations
   // AND for lump-date-to-month math.  Normalized to start of month so a lump
@@ -9721,6 +9731,30 @@ function _seedOrders(targets) {
 }
 
 // Returns { order:[ids], interest, months, exhaustive:bool, considered:int } or null.
+// v1.54.2 — Avalanche re-checks rates every month (v1.54.0), so with 0%
+// promos it can beat every FIXED order: it moves to a card the month its promo
+// ends, which one fixed order cannot. Optimized promises the lowest total
+// interest, so when that happens Optimized adopts Avalanche's monthly order
+// (dynamic: true) and simulate() runs it as Avalanche via effectiveStrategy().
+function _preferMonthlyAvalanche(res, targets, extra, disb) {
+  if (!res) return res;
+  const av = simulate(targets.map(function(d) { return {...d}; }), extra, 0, 'avalanche', disb);
+  if (av && !av.diverged && av.totalInterest < res.interest - 1e-9) {
+    const cp = targets.map(function(d) { return {...d}; });
+    avalancheSort(cp, null, null, 1);
+    return { order: cp.map(function(d) { return d.id; }), interest: av.totalInterest, months: av.months,
+             exhaustive: res.exhaustive, considered: res.considered + 1, dynamic: true, fixedInterest: res.interest };
+  }
+  return res;
+}
+function _optUsesAvalanche() { return !!(_optOrderCache && _optOrderCache.res && _optOrderCache.res.dynamic); }
+// The strategy the engine actually runs. Reads the cached Optimized result only
+// (never recomputes), so it is cheap enough to call from inside simulate().
+function effectiveStrategy(s) {
+  s = s || strategy;
+  return (s === 'optimized' && _optUsesAvalanche()) ? 'avalanche' : s;
+}
+
 function computeOptimizedOrder() {
   const targets = _activePlanDebts();
   if (targets.length < 2) return null;
@@ -9739,8 +9773,8 @@ function computeOptimizedOrder() {
         best = { order: all[i], interest: r.totalInterest, months: r.months };
       }
     }
-    return best ? { order: best.order, interest: best.interest, months: best.months,
-                    exhaustive: true, considered: considered } : null;
+    return _preferMonthlyAvalanche(best ? { order: best.order, interest: best.interest, months: best.months,
+                    exhaustive: true, considered: considered } : null, targets, extra, disb);
   }
 
   // Large portfolio: seed, then improve by swapping pairs until nothing helps.
@@ -9768,8 +9802,8 @@ function computeOptimizedOrder() {
       }
     }
   }
-  return { order: best.order, interest: best.interest, months: best.months,
-           exhaustive: false, considered: considered };
+  return _preferMonthlyAvalanche({ order: best.order, interest: best.interest, months: best.months,
+           exhaustive: false, considered: considered }, targets, extra, disb);
 }
 
 // Cached: the search is the most expensive thing on the Strategy tab.
@@ -10656,7 +10690,7 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
   // Sort by strategy. v1.8.0 — Smart Avalanche uses passive interest cost.
   // For projectBalancesAt's purposes we hand it the same `previousLumps` that
   // were filtered to be < targetDate (matches what's actually scheduled).
-  if (strategy === 'avalanche') {
+  if (effectiveStrategy() === 'avalanche') {
     // sim items hold .bal not .balance — synthesize a balance field for the
     // helper without mutating the sim entries permanently.
     var _avShim = sim.map(function(s){ return Object.assign({}, s, {balance: s.bal}); });
@@ -10676,7 +10710,7 @@ function projectBalancesAt(startingBalances, targetMonth, extra, previousLumps) 
   const _extraAlreadyPaid = _net.extraAlreadyPaid;
   for (let month = 1; month <= cap; month++) {
     // v1.54.0 — mirror simulate(): Avalanche re-checks rates every month.
-    if (strategy === 'avalanche' && month > 1) avalancheSort(sim, null, null, month);
+    if (effectiveStrategy() === 'avalanche' && month > 1) avalancheSort(sim, null, null, month);
     let extraLeft = (month === 1) ? Math.max(0, extra - _extraAlreadyPaid) : extra;
     // Accrue interest and apply min payments
     for (let i = 0; i < sim.length; i++) {
@@ -11160,7 +11194,7 @@ function currentAttackDebt() {
   if (strategy === 'snowball') {
     return active.slice().sort(function(a,b){ return a.balance - b.balance; })[0];
   }
-  if (strategy === 'avalanche') {
+  if (effectiveStrategy() === 'avalanche') {
     const copies = active.map(function(d){ return {...d}; });
     avalancheSort(copies, plannedDisbursements(), null);
     return active.find(function(d){ return d.id === copies[0].id; });
@@ -14621,12 +14655,12 @@ function renderStrategy() {
         const last = nameById[oo.order[oo.order.length - 1]] || '';
 
         let headline;
-        const avEdge = oo.interest - avR.totalInterest;
-        if (avEdge > 1) {
-          // v1.54.0 — Avalanche re-checks rates monthly, so with 0% promos it
-          // can beat any single fixed order. Say so rather than claim a win.
-          headline = 'For your debts <strong>Avalanche comes out about ' + fmt(avEdge) +
-            ' lower</strong> than this order, because it moves to a card the month its 0% rate ends \u2014 something one fixed order cannot do.';
+        if (oo.dynamic) {
+          // v1.54.2 — the cheapest plan re-checks rates monthly (Avalanche's
+          // rule), so Optimized runs that. Say what it beat and why.
+          const edge = (oo.fixedInterest || oo.interest) - oo.interest;
+          headline = 'For your debts the lowest-interest plan <strong>re-checks rates every month</strong>, the way Avalanche does. It costs about <strong>' +
+            fmt(edge) + ' less</strong> than the best single fixed order, because it moves to a card the month its 0% rate ends.';
         } else if (gain > 25) {
           headline = 'For your debts this order costs about <strong>' + fmt(gain) +
             ' less in interest</strong> than ' + bestNamedLabel + '.';
@@ -14645,9 +14679,11 @@ function renderStrategy() {
         _optNote.innerHTML =
           '<div class="opt-note-title">&#129504; Why this order &mdash; Optimized</div>' +
           '<div class="opt-note-body">' + headline +
-          ' It starts with <strong>' + escapeHtml(first) + '</strong> and leaves <strong>' + escapeHtml(last) +
-          '</strong> for last, taking into account when each 0% rate ends rather than just today\u2019s rate.</div>' +
-          '<div class="opt-note-basis">' + basis + '</div>';
+          (oo.dynamic
+            ? ' Right now the extra goes to <strong>' + escapeHtml(first) + '</strong>, the highest rate this month.</div>'
+            : ' It starts with <strong>' + escapeHtml(first) + '</strong> and leaves <strong>' + escapeHtml(last) +
+              '</strong> for last, taking into account when each 0% rate ends rather than just today\u2019s rate.</div>') +
+          '<div class="opt-note-basis">' + basis + (oo.dynamic ? ' Also compared against re-checking rates each month.' : '') + '</div>';
         _optNote.style.display = 'block';
       }
     }
@@ -14738,7 +14774,7 @@ function renderStrategy() {
   // order comes from simulate() internally — this sort just controls how the
   // rows appear in the table.  v1.5.0: no more parallel inline simulation.
   let sorted = activeDebts.map(d=>({...d}));
-  if (strategy === 'avalanche') {
+  if (effectiveStrategy() === 'avalanche') {
     // v1.8.0 — Smart Avalanche display order matches simulate()'s priority
     avalancheSort(sorted, plannedDisbursements(), null);
   } else if (strategy === 'snowball') {
@@ -14772,7 +14808,7 @@ function renderStrategy() {
   // this only decides which row is shown first.
   const _now = new Date();
   const _lumps = plannedDisbursements();
-  if (strategy === 'avalanche') {
+  if (effectiveStrategy() === 'avalanche') {
     const _h = estimatePassiveHorizon(sorted, _now);
     const _passiveMap = {};
     sorted.forEach(function(d) {

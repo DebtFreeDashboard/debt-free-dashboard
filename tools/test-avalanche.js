@@ -114,19 +114,51 @@ async function boot(b, premium) {
     ck((tier ? 'premium' : 'free') + ': all sections render without errors or NaN', !out.length && !t.errs.length, out.concat(t.errs).join(' | '));
   }
 
-  console.log('\n--- Optimized is honest when Avalanche beats every fixed order ---');
+  console.log('\n--- Optimized never costs more than Avalanche ---');
   const opt = await pg.evaluate(() => {
+    const pe = (function () { const d = planMonthDate(15); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-15'; })();
     debts = [
-      { id: 101, name: 'Promo A', balance: 5000, originalBalance: 5000, apr: 0, realApr: 29, minPayment: 100, hasPromo: true, promoApr: 0, postPromoApr: 29, promoEnd: (function () { const d = planMonthDate(15); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-15'; })(), includeInStrategy: true, type: 'cc' },
+      { id: 101, name: 'Promo A', balance: 5000, originalBalance: 5000, apr: 0, realApr: 29, minPayment: 100, hasPromo: true, promoApr: 0, postPromoApr: 29, promoEnd: pe, includeInStrategy: true, type: 'cc' },
       { id: 102, name: 'Card 28', balance: 5000, originalBalance: 5000, apr: 28, realApr: 28, minPayment: 150, includeInStrategy: true, type: 'cc' }
     ];
     payments = []; lumpSums = []; extraMonthly = 150; document.getElementById('extra-payment').value = 150;
     selectStrategy('optimized'); showSection('strategy'); renderStrategy();
     const oo = getOptimizedOrder();
-    const av = simulate(_activePlanDebts().map(d => ({ ...d })), planExtra(), 0, 'avalanche', plannedDisbursements());
-    return { note: (document.getElementById('optimized-note') || {}).innerText || '', opt: oo && Math.round(oo.interest), av: Math.round(av.totalInterest) };
+    const act = _activePlanDebts(), ex = planExtra(), disb = plannedDisbursements();
+    const av = simulate(act.map(d => ({ ...d })), ex, 0, 'avalanche', disb);
+    _planSimCache = { key: null, res: null };
+    const plan = getPlanSim();
+    const attack = currentAttackDebt();
+    return { note: (document.getElementById('optimized-note') || {}).innerText || '', dyn: !!oo.dynamic, opt: Math.round(oo.interest), av: Math.round(av.totalInterest),
+      plan: Math.round(plan.totalInterest), eff: effectiveStrategy(), attack: attack && attack.name };
   });
-  ck('when month-by-month Avalanche is cheaper, the Optimized note says so', opt.av < opt.opt ? /Avalanche comes out about/.test(opt.note) : true, JSON.stringify(opt));
+  ck('Optimized costs no more than Avalanche (here it adopts the monthly rule)', opt.opt <= opt.av, JSON.stringify(opt));
+  ck('the Dashboard plan on Optimized is that same cheaper plan', opt.plan === opt.opt, JSON.stringify(opt));
+  ck('the note explains the monthly re-check instead of claiming a fixed order', !opt.dyn || /re-checks rates every month/.test(opt.note), opt.note);
+  ck('Where your extra goes: the 28% card while the other is at 0%', opt.attack === 'Card 28', JSON.stringify(opt));
+  // random portfolios: Optimized <= min(Avalanche, Snowball) always
+  const sweep = await pg.evaluate(() => {
+    let seed = 3; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+    const bad = [];
+    for (let t = 0; t < 60; t++) {
+      const k = 2 + Math.floor(rnd() * 4); const list = [];
+      for (let i = 0; i < k; i++) {
+        const bal = Math.round(500 + rnd() * 9000), apr = Math.round((5 + rnd() * 24) * 100) / 100;
+        const d = { id: 200 + i, name: 'R' + i, balance: bal, originalBalance: bal, apr, realApr: apr, minPayment: Math.max(25, Math.round(bal * 0.025)), includeInStrategy: true, type: 'cc' };
+        if (rnd() < 0.35) { const m = 1 + Math.floor(rnd() * 24); const e = planMonthDate(m); Object.assign(d, { hasPromo: true, promoApr: 0, apr: 0, postPromoApr: apr, promoEnd: e.getFullYear() + '-' + String(e.getMonth() + 1).padStart(2, '0') + '-15' }); }
+        list.push(d);
+      }
+      debts = list; extraMonthly = Math.round(rnd() * 400); document.getElementById('extra-payment').value = extraMonthly;
+      selectStrategy('optimized');
+      _planSimCache = { key: null, res: null };
+      const o = getPlanSim().totalInterest;
+      const a = simulate(_activePlanDebts().map(d => ({ ...d })), planExtra(), 0, 'avalanche', plannedDisbursements()).totalInterest;
+      const s = simulate(_activePlanDebts().map(d => ({ ...d })), planExtra(), 0, 'snowball', plannedDisbursements()).totalInterest;
+      if (o > Math.min(a, s) + 0.01) bad.push(t + ': opt ' + o.toFixed(2) + ' av ' + a.toFixed(2) + ' sb ' + s.toFixed(2));
+    }
+    return bad;
+  });
+  ck('60 random portfolios: the Optimized plan is never costlier than Avalanche or Snowball', !sweep.length, sweep.slice(0, 4).join('; '));
 
   await b.close();
   const pass = R.filter(Boolean).length;

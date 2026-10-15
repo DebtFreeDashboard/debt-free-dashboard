@@ -1,9 +1,8 @@
 {
-  "version": "1.54.1",
+  "version": "1.54.2",
   "releaseDate": "2026-10-14",
-  "releaseName": "Getting ready for Google Play",
+  "releaseName": "Optimized keeps its promise",
   "notes": [
-    "Groundwork for a Google Play version of the app. Nothing changes here on the web.",
-    "Sharper app icon on Android home screens."
+    "With the new month-by-month Avalanche, a plan with 0% cards could come out a little cheaper on Avalanche than on Optimized. Optimized now compares both and uses whichever costs less, so it is always the lowest-interest option, and the Strategy tab explains which it chose."
   ]
 }
