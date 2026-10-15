@@ -4088,7 +4088,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.3';
+const APP_VERSION = '1.54.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4096,6 +4096,15 @@ const APP_VERSION = '1.54.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.4',
+    date: 'October 14, 2026',
+    name: 'Optimized stays current',
+    whatsNew: [],
+    fixes: [
+      'On the Optimized strategy, adding or editing a debt, or changing your extra payment, now works out the best order again right away. Before, the order was only worked out when you picked the strategy, so later changes could leave the plan on an out-of-date order.'
+    ]
+  },
   {
     version: '1.54.3',
     date: 'October 14, 2026',
@@ -6479,7 +6488,8 @@ function _ledgerKey() {
 function _simKeyFor(activeDebts, extra, disb, rollover) {
   // v1.43.0 — sinkKey() included: without it, editing a fund leaves every
   // plan figure showing the previous answer.
-  return JSON.stringify([strategy, extra, rollover, _ledgerKey(), sinkKey(),
+  // v1.54.2 — effectiveStrategy(): Optimized running as monthly Avalanche is a different plan.
+  return JSON.stringify([effectiveStrategy(), extra, rollover, _ledgerKey(), sinkKey(),
     activeDebts.map(function(d){ return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoApr, d.promoEnd, d.postPromoApr]; }),
     disb.map(function(l){ return [l.debtId, l.amount, l.date]; })
   ]);
@@ -9732,6 +9742,7 @@ function selectStrategy(s) {
   // v1.31.0 — Optimized reorders the debts array into the cheapest sequence.
   // simulate() reads array order for anything that isn't avalanche/snowball,
   // so sorting the array IS how the order takes effect.
+  _optOrderCache = { key: null, res: null };   // v1.54.4 — clear BEFORE recomputing
   if (s === 'optimized') applyOptimizedOrder();
 
   // Toggle hybrid drag mode.
@@ -9746,7 +9757,6 @@ function selectStrategy(s) {
   } else {
     document.body.classList.remove('hybrid-mode');
   }
-  _optOrderCache = { key: null, res: null };
 
   // v1.10.1 — strategy change can make auto-lumps stale; let banner re-evaluate
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
@@ -11000,6 +11010,12 @@ function deletePayment(paymentId) {
 //  RENDER
 // ═══════════════════════════════════════════
 function render() {
+  // v1.54.4 — Optimized is re-derived on every render (cached on its inputs,
+  // so this is cheap when nothing changed). Before, the order was computed
+  // only when the strategy was picked, so adding or editing a debt left the
+  // plan running a stale order; and since v1.54.2 the "run as monthly
+  // Avalanche" decision has to be current before any plan figure is drawn.
+  if (strategy === 'optimized') { try { applyOptimizedOrder(); } catch (e) {} }
   syncRolledMinimums();    // v1.38.0 — keep rolled minimums in step with payoffs
   renderRolledSettings();
   renderStats();

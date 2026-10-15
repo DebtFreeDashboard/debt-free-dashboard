@@ -129,13 +129,26 @@ async function boot(b, premium) {
     _planSimCache = { key: null, res: null };
     const plan = getPlanSim();
     const attack = currentAttackDebt();
-    return { note: (document.getElementById('optimized-note') || {}).innerText || '', dyn: !!oo.dynamic, opt: Math.round(oo.interest), av: Math.round(av.totalInterest),
+    render(); renderStrategy();
+    const tag = (document.getElementById('cmp-tag') || {}).textContent || '';
+    return { tag, note: (document.getElementById('optimized-note') || {}).innerText || '', dyn: !!oo.dynamic, opt: Math.round(oo.interest), av: Math.round(av.totalInterest),
       plan: Math.round(plan.totalInterest), eff: effectiveStrategy(), attack: attack && attack.name };
   });
   ck('Optimized costs no more than Avalanche (here it adopts the monthly rule)', opt.opt <= opt.av, JSON.stringify(opt));
   ck('the Dashboard plan on Optimized is that same cheaper plan', opt.plan === opt.opt, JSON.stringify(opt));
   ck('the note explains the monthly re-check instead of claiming a fixed order', !opt.dyn || /re-checks rates every month/.test(opt.note), opt.note);
   ck('Where your extra goes: the 28% card while the other is at 0%', opt.attack === 'Card 28', JSON.stringify(opt));
+  ck('Strategy comparison tag never says Avalanche beats the Optimized plan', !/Avalanche saves/.test(opt.tag), opt.tag);
+  const stale = await pg.evaluate(() => {
+    selectStrategy('optimized');
+    debts.push({ id: 103, name: 'New 30%', balance: 800, originalBalance: 800, apr: 30, realApr: 30, minPayment: 30, includeInStrategy: true, type: 'cc' });
+    save(); render();
+    _planSimCache = { key: null, res: null };
+    const plan = getPlanSim().totalInterest;
+    const oo = getOptimizedOrder();
+    return { plan: Math.round(plan), opt: Math.round(oo.interest), inOrder: oo.order.includes(103) };
+  });
+  ck('adding a debt while on Optimized re-optimizes the plan (no stale order)', stale.inOrder && stale.plan === stale.opt, JSON.stringify(stale));
   // random portfolios: Optimized <= min(Avalanche, Snowball) always
   const sweep = await pg.evaluate(() => {
     let seed = 3; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
