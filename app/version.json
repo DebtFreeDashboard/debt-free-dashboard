@@ -1,8 +1,8 @@
 {
-  "version": "1.54.2",
+  "version": "1.54.3",
   "releaseDate": "2026-10-14",
-  "releaseName": "Optimized keeps its promise",
+  "releaseName": "Neutral examples",
   "notes": [
-    "With the new month-by-month Avalanche, a plan with 0% cards could come out a little cheaper on Avalanche than on Optimized. Optimized now compares both and uses whichever costs less, so it is always the lowest-interest option, and the Strategy tab explains which it chose."
+    "Example names in the app no longer use real card brands."
   ]
 }

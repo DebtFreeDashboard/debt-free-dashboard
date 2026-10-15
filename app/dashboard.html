@@ -3363,7 +3363,7 @@
       <div class="po-sub" id="roadmap-teaser" data-teaser data-teaser-managed style="display:none" onclick="trackTeaserClick('roadmap');goToUnlock()">
         <div class="blur-teaser">
           <div class="blur-content">
-            <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Chase Sapphire paid off</div><div class="roadmap-step-sub">Aug 2026 · $145/mo rolls over</div></div></div>
+            <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Rewards card paid off</div><div class="roadmap-step-sub">Aug 2026 · $145/mo rolls over</div></div></div>
             <div class="roadmap-step"><div class="roadmap-node"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Car Loan paid off</div><div class="roadmap-step-sub">Mar 2027 · $310/mo rolls over</div></div></div>
             <div class="roadmap-step"><div class="roadmap-node roadmap-node--final"></div><div class="roadmap-step-body"><div class="roadmap-step-title">Freedom Date 🎉</div><div class="roadmap-step-sub">Nov 2027</div></div></div>
           </div>
@@ -3435,7 +3435,7 @@
             <div style="font-family:var(--font-mono);color:var(--accent4);font-weight:700;">$3,000</div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;">
-            <div><div style="font-weight:600;">Year-End Bonus</div><div style="font-size:0.72rem;color:var(--text-muted);">Dec 2026 · Chase Sapphire</div></div>
+            <div><div style="font-weight:600;">Year-End Bonus</div><div style="font-size:0.72rem;color:var(--text-muted);">Dec 2026 · Rewards card</div></div>
             <div style="font-family:var(--font-mono);color:var(--accent4);font-weight:700;">$5,000</div>
           </div>
         </div>
@@ -4088,7 +4088,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.2';
+const APP_VERSION = '1.54.3';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4096,6 +4096,15 @@ const APP_VERSION = '1.54.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.3',
+    date: 'October 14, 2026',
+    name: 'Neutral examples',
+    whatsNew: [],
+    fixes: [
+      'Example names in the app no longer use real card brands.'
+    ]
+  },
   {
     version: '1.54.2',
     date: 'October 14, 2026',
@@ -8206,7 +8215,7 @@ function openClosedDebtModal(id) {
         '<select id="cdm-dest">' + opts + '<option value="_other">Another card (not tracked here)</option></select>' +
       '</div>' +
       '<div class="form-field" id="cdm-other-wrap" style="display:none;"><label for="cdm-other">Card name</label>' +
-        '<input type="text" id="cdm-other" placeholder="e.g. Citi 0% offer"></div>' +
+        '<input type="text" id="cdm-other" placeholder="e.g. 0% transfer card"></div>' +
       '<p class="cdm-hint">Only the part you <em>moved</em> stops counting as progress. If you paid some of this ' +
         'balance down yourself before transferring the rest, enter just the transferred amount &mdash; the rest ' +
         'stays credited to you.</p>' +
@@ -17695,7 +17704,7 @@ if (isInStandaloneMode() ||
     <div class="modal-form-grid">
       <div class="form-field" style="grid-column:1/-1">
         <label for="edit-name">Debt Name</label>
-        <input type="text" id="edit-name" placeholder="e.g. Chase Sapphire" />
+        <input type="text" id="edit-name" placeholder="e.g. Travel card" />
       </div>
       <div class="form-field" style="grid-column:1/-1">
         <label for="edit-type">Type</label>

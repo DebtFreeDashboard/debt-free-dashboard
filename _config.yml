@@ -1,0 +1,4 @@
+# GitHub Pages (Jekyll) skips dot-folders by default. Android needs
+# /.well-known/assetlinks.json to trust the Google Play app (Trusted Web Activity).
+include:
+  - .well-known
