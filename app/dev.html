@@ -124,6 +124,24 @@
 </script>
 <!-- ═══ end dev shim ═══ -->
 
+<script>
+  // v1.54.1 — Google Play build (Trusted Web Activity). The Play app launches
+  // /app/dashboard.html?source=twa. sessionStorage (not localStorage) because
+  // a TWA shares Chrome's storage for this origin: a persistent flag would
+  // hide the web purchase flow in the same phone's ordinary browser too.
+  // In the Play build the Gumroad links and prices are hidden, because Play
+  // allows external purchase links only through its native billing library.
+  var IS_PLAY_BUILD = false;
+  try {
+    if (/[?&]source=twa(&|$)/.test(location.search)) sessionStorage.setItem('debtfree_play', '1');
+    IS_PLAY_BUILD = sessionStorage.getItem('debtfree_play') === '1' || /^android-app:\/\//.test(document.referrer || '');
+  } catch (e) {}
+  if (IS_PLAY_BUILD) document.documentElement.classList.add('play-build');
+</script>
+<style>
+  .play-build a[href*="gumroad.com"], .play-build .price-copy, .play-build [data-deadline] { display: none !important; }
+  html:not(.play-build) .play-only { display: none !important; }
+</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2861,6 +2879,7 @@
     _dfInternal = localStorage.getItem('debtfree_internal') === '1';
   } catch (e) {}
   gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
+  if (typeof IS_PLAY_BUILD !== 'undefined' && IS_PLAY_BUILD) gtag('set', 'user_properties', { platform: 'play' });
   // Fire a distinct event on every hosted dashboard load so boost traffic
   // can be isolated from all other site traffic in GA.
   gtag('event', 'app_opened', {
@@ -3474,7 +3493,7 @@
           <div class="blur-overlay">
             <div style="font-size:1.4rem;">🔒</div>
             <div class="lock-card-title">Payoff by payoff</div>
-            <div class="lock-card-desc" style="max-width:280px;">The month each debt clears, the minimum that rolls over, and a chart of your minimums stepping down. Unlock for $24.</div>
+            <div class="lock-card-desc" style="max-width:280px;">The month each debt clears, the minimum that rolls over, and a chart of your minimums stepping down. <span class="price-copy">Unlock for $24.</span></div>
             <div class="lock-card-cta">Unlock</div>
           </div>
         </div>
@@ -3546,7 +3565,7 @@
         <div class="blur-overlay">
           <div style="font-size:1.4rem;">🔒</div>
           <div class="lock-card-title">Schedule future windfalls into your plan</div>
-          <div class="lock-card-desc" style="max-width:280px;">Add a bonus or tax refund on a future date and your Freedom Date updates automatically. Unlock everything for a one-time $24.</div>
+          <div class="lock-card-desc" style="max-width:280px;">Add a bonus or tax refund on a future date and your Freedom Date updates automatically. <span class="price-copy">Unlock everything for a one-time $24.</span></div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
@@ -3756,7 +3775,7 @@
         <div class="blur-overlay">
           <div style="font-size:1.4rem;">🔒</div>
           <div class="lock-card-title">Unlock Lump Sum Paydown</div>
-          <div class="lock-card-desc" style="max-width:260px;">Model a tax refund, bonus, or windfall and watch your debt-free date jump. $24 one-time.</div>
+          <div class="lock-card-desc" style="max-width:260px;">Model a tax refund, bonus, or windfall and watch your debt-free date jump.<span class="price-copy"> $24 one-time.</span></div>
           <div class="lock-card-cta">Unlock</div>
         </div>
       </div>
@@ -3843,7 +3862,7 @@
           <div class="lock-card-title">Model a 0% balance transfer</div>
           <div class="lock-card-desc" style="max-width:320px;">
             See what a 0% offer really works out to for your debts &mdash; fee included, and whether
-            you&rsquo;d clear it before the rate jumps. One-time $24.
+            you&rsquo;d clear it before the rate jumps.<span class="price-copy"> One-time $24.</span>
           </div>
           <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-transfer')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $24</a>
         </div>
@@ -3947,7 +3966,10 @@
         </div>
         <div id="unlock-pending">
           <div class="deadline-inline" data-deadline hidden style="margin-bottom:10px;"><span data-deadline-text></span></div>
-          <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
+          <p class="play-only" style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
+            DebtFree Dashboard is free to use for your whole payoff journey. Premium isn&rsquo;t sold in the Google Play version yet. If you already own it, enter your license key below.
+          </p>
+          <p class="price-copy" style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
             DebtFree Dashboard is free to use for your whole payoff journey. A one-time <strong>$24</strong> unlocks the planning suite: What-If lump sums, payoff-by-payoff detail with the minimums chart, bills, sinking funds, the amortization schedule, estimated-interest tracking, and the premium views. Pay once — yours forever, no subscription, data stays on your device.
           </p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
@@ -4057,7 +4079,7 @@
           <div style="font-size:1.4rem;">&#128274;</div>
           <div class="lock-card-title">Dial in your debt-free date</div>
           <div class="lock-card-desc" style="max-width:300px;">
-            Pick any target date and instantly see the exact monthly payment to hit it. Unlock the full planning suite for a one-time $24.
+            Pick any target date and instantly see the exact monthly payment to hit it. <span class="price-copy">Unlock the full planning suite for a one-time $24.</span>
           </div>
           <a class="btn btn-primary" href="https://debtfreedashboard.gumroad.com/l/prfzv" target="_blank" rel="noopener" onclick="trackBuyClick('whatif-dialdate')" style="margin-top:10px;text-decoration:none;">Unlock Premium &mdash; $24</a>
         </div>
@@ -4189,7 +4211,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.0';
+const APP_VERSION = '1.54.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4197,6 +4219,16 @@ const APP_VERSION = '1.54.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.1',
+    date: 'October 14, 2026',
+    name: 'Getting ready for Google Play',
+    whatsNew: [],
+    fixes: [
+      'Groundwork for a Google Play version of the app. Nothing changes here on the web.',
+      'Sharper app icon on Android home screens.'
+    ]
+  },
   {
     version: '1.54.0',
     date: 'October 14, 2026',

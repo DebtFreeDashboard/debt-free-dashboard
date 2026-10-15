@@ -1,10 +1,9 @@
 {
-  "version": "1.54.0",
+  "version": "1.54.1",
   "releaseDate": "2026-10-14",
-  "releaseName": "Avalanche, fixed — and free calculators",
+  "releaseName": "Getting ready for Google Play",
   "notes": [
-    "Avalanche now truly pays your highest-rate debt first. Before, it ranked debts by how many dollars of interest they would cost, which could put a large 18% balance ahead of a smaller 24% card. If you use Avalanche, your payoff order may change. For most plans the new order costs less interest, and Optimized still finds the cheapest order for your exact numbers.",
-    "A card on a 0% promo now gets only its minimum while the promo lasts, since extra money there saves no interest yet. The month the promo ends and the higher rate starts, it moves up the line.",
-    "New free calculators at mydebtdashboard.com/calculators. Each answers one question and can load its numbers straight into your dashboard. If you already have a plan, it asks before adding anything."
+    "Groundwork for a Google Play version of the app. Nothing changes here on the web.",
+    "Sharper app icon on Android home screens."
   ]
 }
