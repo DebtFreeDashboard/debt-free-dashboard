@@ -1,8 +1,8 @@
 {
-  "version": "1.54.6",
+  "version": "1.54.7",
   "releaseDate": "2026-10-18",
-  "releaseName": "Premium in the Google Play app",
+  "releaseName": "Google Play purchase check",
   "notes": [
-    "Premium can now be bought inside the Google Play version of the app, through Google Play. The website and anyone who already has Premium see no change."
+    "In the Google Play version, if Premium can\u2019t be offered yet, the Premium section now shows a short status code so the problem can be found quickly. No change on the website."
   ]
 }

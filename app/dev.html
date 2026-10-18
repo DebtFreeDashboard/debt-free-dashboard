@@ -3968,6 +3968,7 @@
           <div class="deadline-inline" data-deadline hidden style="margin-bottom:10px;"><span data-deadline-text></span></div>
           <p class="play-only" id="play-premium-note" style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
             DebtFree Dashboard is free to use for your whole payoff journey. Premium isn&rsquo;t sold in the Google Play version yet. If you already own it, enter your license key below.
+            <span id="play-diag" style="display:block;opacity:0.6;margin-top:4px;"></span>
           </p>
           <div class="play-only" id="play-buy-wrap" style="display:none;margin-bottom:10px;">
             <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
@@ -4219,7 +4220,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.6';
+const APP_VERSION = '1.54.7';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4227,6 +4228,15 @@ const APP_VERSION = '1.54.6';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.7',
+    date: 'October 18, 2026',
+    name: 'Google Play purchase check',
+    whatsNew: [],
+    fixes: [
+      'In the Google Play version, if Premium can\u2019t be offered yet, the Premium section now shows a short status code so the problem can be found quickly. No change on the website.'
+    ]
+  },
   {
     version: '1.54.6',
     date: 'October 18, 2026',
@@ -10380,6 +10390,9 @@ var PLAY_VERIFY_URL = 'https://debtfree-verify.debtfreedashboard.workers.dev/ver
 var PLAY_SOURCE_KEY = 'debtfree_premium_source';   // 'play' when Play granted Premium
 var PLAY_ACK_KEY = 'debtfree_play_ack';            // purchase token the server has confirmed
 var _playSvc = null, _playPrice = null, _playBusy = false;
+// v1.54.7: why the buy button isn't showing, shown as a small status code in
+// the Play app's Premium note and sent to GA, so a silent failure is visible.
+var _playReason = '';
 
 function playBillingReady() {
   return !!(IS_PLAY_BUILD && PLAY_VERIFY_URL && _playSvc && _playPrice);
@@ -10391,16 +10404,25 @@ function _playPriceText(p) {
   try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: p.currency || 'USD' }).format(Number(p.value)); }
   catch (e) { return '$' + p.value; }
 }
+function _playFail(code, err) {
+  _playReason = code + (err && err.name ? ' / ' + String(err.name).slice(0, 30) : '');
+  trackShare('play_billing_unavailable', { _category: 'revenue', reason: code });
+}
 async function initPlayBilling() {
-  if (!IS_PLAY_BUILD || !PLAY_VERIFY_URL || typeof window.getDigitalGoodsService !== 'function') { renderPlayBuy(); return; }
-  try { _playSvc = await window.getDigitalGoodsService('https://play.google.com/billing'); } catch (e) { _playSvc = null; }
-  if (!_playSvc) { renderPlayBuy(); return; }
+  if (!IS_PLAY_BUILD || !PLAY_VERIFY_URL) { renderPlayBuy(); return; }
+  if (typeof window.getDigitalGoodsService !== 'function') { _playFail('no_api'); renderPlayBuy(); return; }
+  try { _playSvc = await window.getDigitalGoodsService('https://play.google.com/billing'); }
+  catch (e) { _playSvc = null; _playFail('no_service', e); }
+  if (!_playSvc) { if (!_playReason) _playFail('no_service'); renderPlayBuy(); return; }
   try {
     var d = await _playSvc.getDetails([PLAY_SKU]);
     var item = (d || []).find(function (x) { return x.itemId === PLAY_SKU; });
     _playPrice = item ? _playPriceText(item.price) : null;
-  } catch (e) { _playPrice = null; }
+    if (!item) _playFail('no_product');
+    else if (!_playPrice) _playFail('no_price');
+  } catch (e) { _playPrice = null; _playFail('details_error', e); }
   await syncPlayEntitlement();
+  if (playBillingReady()) _playReason = '';
   renderPlayBuy();
   if (playBillingReady()) trackOnce('play_billing_ready', 'play_billing_ready', { _category: 'revenue' });
 }
@@ -10474,6 +10496,8 @@ function renderPlayBuy() {
   var wrap = document.getElementById('play-buy-wrap');
   if (note) note.style.display = ready ? 'none' : '';
   if (wrap) wrap.style.display = ready ? '' : 'none';
+  var diag = document.getElementById('play-diag');
+  if (diag) diag.textContent = (!ready && _playReason) ? 'Status: ' + _playReason : '';
   var btn = document.getElementById('play-buy-btn');
   if (btn && ready) btn.textContent = 'Unlock Premium \u2014 ' + _playPrice;
 }

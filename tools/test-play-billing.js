@@ -25,7 +25,7 @@ function mockPlay(opts) {
   window.getDigitalGoodsService = async (url) => {
     if (url !== 'https://play.google.com/billing') throw new Error('bad url');
     return {
-      getDetails: async (ids) => ids.includes('premium_unlock') ? [{ itemId: 'premium_unlock', title: 'Premium', price: { currency: 'USD', value: window.__play.priceValue } }] : [],
+      getDetails: async (ids) => (!window.__play.noProduct && ids.includes('premium_unlock')) ? [{ itemId: 'premium_unlock', title: 'Premium', price: { currency: 'USD', value: window.__play.priceValue } }] : [],
       listPurchases: async () => { if (window.__play.offline) throw new Error('offline'); return window.__play.purchases.slice(); }
     };
   };
@@ -106,6 +106,25 @@ function mockPlay(opts) {
     await ctx.close();
   }
 
+  {
+    const t = await boot({ mock: { noProduct: true } });
+    const s = await state(t.pg);
+    const diag = await t.pg.evaluate(() => document.getElementById('play-diag').textContent);
+    ck('product not visible to Play yet: note stays, no button, status code says why', !s.btn && s.note && diag === 'Status: no_product', JSON.stringify({ s, diag }));
+    await t.ctx.close();
+  }
+  {
+    const t = await boot({ mock: { noApi: true } });
+    const diag = await t.pg.evaluate(() => (showSection('settings'), document.getElementById('play-diag').textContent));
+    ck('billing API missing: status code no_api', diag === 'Status: no_api', diag);
+    await t.ctx.close();
+  }
+  {
+    const t = await boot();
+    const diag = await t.pg.evaluate(() => (showSection('settings'), document.getElementById('play-diag').textContent));
+    ck('when the button shows, no status code is left behind', diag === '', diag);
+    await t.ctx.close();
+  }
   console.log('\n--- buying ---');
   {
     const t = await boot();
