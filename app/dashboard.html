@@ -4096,7 +4096,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.5';
+const APP_VERSION = '1.54.6';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4104,6 +4104,15 @@ const APP_VERSION = '1.54.5';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.6',
+    date: 'October 18, 2026',
+    name: 'Premium in the Google Play app',
+    whatsNew: [
+      'Premium can now be bought inside the Google Play version of the app, through Google Play. The website and anyone who already has Premium see no change.'
+    ],
+    fixes: []
+  },
   {
     version: '1.54.5',
     date: 'October 15, 2026',
@@ -10244,7 +10253,7 @@ async function verifyLicense() {
 // Dormant until PLAY_VERIFY_URL is set: the Play app then shows the
 // "not sold here yet" note, exactly as before.
 var PLAY_SKU = 'premium_unlock';
-var PLAY_VERIFY_URL = '';
+var PLAY_VERIFY_URL = 'https://debtfree-verify.debtfreedashboard.workers.dev/verify';
 var PLAY_SOURCE_KEY = 'debtfree_premium_source';   // 'play' when Play granted Premium
 var PLAY_ACK_KEY = 'debtfree_play_ack';            // purchase token the server has confirmed
 var _playSvc = null, _playPrice = null, _playBusy = false;

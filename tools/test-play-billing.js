@@ -1,4 +1,4 @@
-/* test-play-billing.js — v1.55.0 Google Play Billing inside the Play app
+/* test-play-billing.js — Google Play Billing inside the Play app (v1.54.5, live in v1.54.6)
  *
  *   python3 -m http.server 8911     (repo root, another shell)
  *   node tools/test-play-billing.js
@@ -12,6 +12,7 @@ const { chromium } = require('playwright');
 const BASE = process.env.BASE || 'http://localhost:8911';
 const CHART = fs.readFileSync(path.join(path.dirname(require.resolve('chart.js')), 'chart.umd.js'), 'utf8');
 const VERIFY = 'https://verify.test/verify';
+const PROD_VERIFY = 'https://debtfree-verify.debtfreedashboard.workers.dev/verify'; // shipped since v1.54.6
 const R = []; const ck = (l, ok, d) => { R.push(ok); console.log(`${ok ? 'PASS' : 'FAIL'}  ${l}`); if (d && (!ok || process.env.VERBOSE)) console.log('      ' + d); };
 
 // Mock Play: state lives in sessionStorage so it survives reloads within a test.
@@ -46,13 +47,15 @@ function mockPlay(opts) {
     await ctx.route('**/cdn.jsdelivr.net/npm/chart.js**', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: CHART }));
     await ctx.route('**/googletagmanager.com/**', r => r.abort()); await ctx.route('**/clarity.ms/**', r => r.abort());
     const calls = [];
-    await ctx.route(VERIFY, async r => {
+    const verifyHandler = async r => {
       calls.push(JSON.parse(r.request().postData() || '{}'));
       const mode = typeof server === 'function' ? server() : server;
       if (mode === 'down') return r.fulfill({ status: 502, body: '{"error":"server"}', contentType: 'application/json' });
       if (mode === 'refunded') return r.fulfill({ status: 200, body: '{"valid":false,"reason":"not_purchased"}', contentType: 'application/json' });
       return r.fulfill({ status: 200, body: '{"valid":true,"acknowledged":true}', contentType: 'application/json' });
-    });
+    };
+    // Mock both the test URL and the shipped one, so no test ever reaches the real server.
+    await ctx.route(VERIFY, verifyHandler); await ctx.route(PROD_VERIFY, verifyHandler);
     await ctx.addInitScript(([m, s]) => {
       try {
         localStorage.setItem('debtfree_last_seen_version', '99.0.0'); localStorage.setItem('debtfree_demo_dismissed', '1');
@@ -95,11 +98,11 @@ function mockPlay(opts) {
     const ctx = await b.newContext({ serviceWorkers: 'block' });
     await ctx.route('**/cdn.jsdelivr.net/npm/chart.js**', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: CHART }));
     await ctx.route('**/googletagmanager.com/**', r => r.abort()); await ctx.route('**/clarity.ms/**', r => r.abort());
-    await ctx.addInitScript(mockPlay, {});
+    await ctx.addInitScript(mockPlay, {}); await ctx.route(PROD_VERIFY, r => r.abort());
     const pg = await ctx.newPage(); await pg.goto(BASE + '/app/dashboard.html?source=twa'); await pg.waitForTimeout(800);
     const shipped = await pg.evaluate(() => PLAY_VERIFY_URL);
     const s = await state(pg);
-    ck('with no verify server configured, billing stays dormant (note shown, no button)', shipped ? true : (!s.btn && s.note), JSON.stringify({ shipped, s }));
+    ck('shipped build points at the live verify server', shipped === PROD_VERIFY, JSON.stringify({ shipped }));
     await ctx.close();
   }
 

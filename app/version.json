@@ -1,8 +1,8 @@
 {
-  "version": "1.54.5",
-  "releaseDate": "2026-10-15",
-  "releaseName": "Groundwork for Google Play purchases",
+  "version": "1.54.6",
+  "releaseDate": "2026-10-18",
+  "releaseName": "Premium in the Google Play app",
   "notes": [
-    "Groundwork for buying Premium inside the Google Play version of the app. Nothing changes here on the web, and nothing changes for anyone who already has Premium."
+    "Premium can now be bought inside the Google Play version of the app, through Google Play. The website and anyone who already has Premium see no change."
   ]
 }
