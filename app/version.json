@@ -1,8 +1,8 @@
 {
-  "version": "1.54.7",
+  "version": "1.54.8",
   "releaseDate": "2026-10-18",
-  "releaseName": "Google Play purchase check",
+  "releaseName": "Clearer first sync",
   "notes": [
-    "In the Google Play version, if Premium can\u2019t be offered yet, the Premium section now shows a short status code so the problem can be found quickly. No change on the website."
+    "The first time you sync a device that already has debts with a Google Drive backup, the app now lists any debts that came in from the backup and explains how to remove ones from an old plan. Nothing about how syncing works has changed."
   ]
 }

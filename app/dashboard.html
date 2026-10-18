@@ -4097,7 +4097,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.7';
+const APP_VERSION = '1.54.8';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4105,6 +4105,15 @@ const APP_VERSION = '1.54.7';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.8',
+    date: 'October 18, 2026',
+    name: 'Clearer first sync',
+    whatsNew: [],
+    fixes: [
+      'The first time you sync a device that already has debts with a Google Drive backup, the app now lists any debts that came in from the backup and explains how to remove ones from an old plan. Nothing about how syncing works has changed.'
+    ]
+  },
   {
     version: '1.54.7',
     date: 'October 18, 2026',
@@ -10282,7 +10291,8 @@ function _playPriceText(p) {
   catch (e) { return '$' + p.value; }
 }
 function _playFail(code, err) {
-  _playReason = code + (err && err.name ? ' / ' + String(err.name).slice(0, 30) : '');
+  _playReason = code + (err && err.name ? ' / ' + String(err.name).slice(0, 30) : '') +
+    (err && err.message ? ' / ' + String(err.message).replace(/\s+/g, ' ').slice(0, 80) : '');
   trackShare('play_billing_unavailable', { _category: 'revenue', reason: code });
 }
 async function initPlayBilling() {
@@ -16395,6 +16405,13 @@ function driveSyncDo(quiet) {
   try { localStorage.setItem(LS_DRIVE_UNDO, JSON.stringify(buildBackupPayload())); } catch(e) {}
 
   var summary = null;
+  // v1.54.8 — remember what this device held, so the first sync can say which
+  // debts came in from the backup (see driveFirstMergeNotice).
+  var firstSync = !localStorage.getItem(LS_DRIVE_FILEID) && !localStorage.getItem(LS_DRIVE_MERGED_ONCE);
+  var localDebtIds = {};
+  var hadDebts = false;
+  try { (debts || []).forEach(function (d) { localDebtIds[d.id] = true; hadDebts = true; }); } catch (e) {}
+  var broughtIn = [];
   driveFindFileId().then(function(id) {
       if (!id) return null;              // nothing in Drive yet
       return driveFetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media')
@@ -16409,17 +16426,54 @@ function driveSyncDo(quiet) {
         summary = res.summary;
         applyBackupPayload(res.payload);
         save();
+        if (firstSync && hadDebts && !_demoMode) {
+          try { broughtIn = (debts || []).filter(function (d) { return !localDebtIds[d.id]; }); } catch (e) { broughtIn = []; }
+        }
       }
       return driveUploadPayload(buildBackupPayload());
     })
     .then(function() {
-      if (!quiet) driveToast('ok', summary ? syncSummaryText(summary) : 'Backed up to your Google Drive.');
+      try { localStorage.setItem(LS_DRIVE_MERGED_ONCE, '1'); } catch (e) {}
+      if (broughtIn.length) driveFirstMergeNotice(broughtIn);
+      else if (!quiet) driveToast('ok', summary ? syncSummaryText(summary) : 'Backed up to your Google Drive.');
     })
     .catch(function(err) {
       if (/40[34]/.test(err.message)) localStorage.removeItem(LS_DRIVE_FILEID);
       driveToast('warn', (err && err.message) || 'Sync failed. Nothing was changed.');
     })
     .then(function(){ _driveBusy = false; _milestonesBaselined = true; updateDriveUI(); });
+}
+
+// v1.54.8 — the first sync on a device that already has its own debts
+// combines them with whatever is in Drive. That is the safe behaviour (two
+// devices never lose each other's data), but a backup left from an older
+// plan then shows up as extra debts with no explanation. Say once what came
+// in and how to remove it. Deletions sync, so deleting here clears the
+// backup too. No undo button: the combined copy is already uploaded, so
+// putting this device back would only bring them in again on the next sync.
+const LS_DRIVE_MERGED_ONCE = 'debtfree_drive_merged_once';
+function driveFirstMergeNotice(added) {
+  if (document.getElementById('drive-merge-modal')) return;
+  var wrap = document.createElement('div');
+  wrap.className = 'modal-overlay';
+  wrap.id = 'drive-merge-modal';
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  var n = added.length;
+  var shown = added.slice(0, 8).map(function (d) {
+    return '<li>' + escapeHtml(d.name || 'Debt') + ' &middot; ' + fmt(d.balance || 0) + '</li>';
+  }).join('') + (n > 8 ? '<li>and ' + (n - 8) + ' more</li>' : '');
+  wrap.innerHTML = '<div class="modal" style="max-width:440px;">' +
+    '<div style="font-family:var(--font-display);font-size:1.25rem;font-weight:900;color:var(--text);margin-bottom:8px;">Combined with your Google Drive backup</div>' +
+    '<p style="font-size:0.9rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">Your backup had ' + n + (n === 1 ? ' debt' : ' debts') + ' that weren\u2019t on this device, so ' + (n === 1 ? 'it was' : 'they were') + ' added. Nothing on this device was removed.</p>' +
+    '<ul style="font-size:0.88rem;margin:0 0 12px 18px;line-height:1.6;">' + shown + '</ul>' +
+    '<p style="font-size:0.85rem;color:var(--text-muted);line-height:1.5;margin-bottom:16px;">If any of these are from an old plan, delete them here. The backup updates on the next sync, so they won\u2019t come back.</p>' +
+    '<div style="display:flex;justify-content:flex-end;"><button class="btn btn-primary" id="drive-merge-ok" type="button">Got it</button></div></div>';
+  document.body.appendChild(wrap);
+  var close = function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
+  wrap.addEventListener('click', function (e) { if (e.target === wrap) close(); });
+  document.getElementById('drive-merge-ok').onclick = close;
+  try { trackShare('drive_first_merge', { _category: 'retention', debt_count: n }); } catch (e) {}
 }
 
 // Kept as the name the OAuth redirect resumes into.
