@@ -1,8 +1,8 @@
 {
-  "version": "1.54.8",
-  "releaseDate": "2026-10-18",
-  "releaseName": "Clearer first sync",
+  "version": "1.54.9",
+  "releaseDate": "2026-10-20",
+  "releaseName": "Send feedback",
   "notes": [
-    "The first time you sync a device that already has debts with a Google Drive backup, the app now lists any debts that came in from the backup and explains how to remove ones from an old plan. Nothing about how syncing works has changed."
+    "New Send feedback button in Settings. One tap opens an email with your app version already filled in, so it is easy to report anything confusing or wrong. Your debts and numbers are never included."
   ]
 }

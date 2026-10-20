@@ -3999,6 +3999,14 @@
           </p>
         </div>
       </div>
+      <!-- v1.54.9 — Send feedback. One tap opens an email with the version and
+           platform filled in. Never includes any debt data. -->
+      <div id="feedback-row" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+        <div style="font-size:0.85rem;font-weight:600;margin-bottom:4px;">Feedback</div>
+        <p style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;margin-bottom:10px;">Found something confusing, a number that looks wrong, or a layout problem? Tell me. Every message is read.</p>
+        <button class="btn btn-ghost" type="button" onclick="sendFeedback()" style="width:100%;">&#9993; Send feedback</button>
+        <p id="feedback-fallback" style="display:none;font-size:0.75rem;color:var(--text-muted);line-height:1.4;margin-top:8px;">If no email app opened, write to <span style="font-family:var(--font-mono);user-select:all;">debtfreedashboard@gmail.com</span></p>
+      </div>
       <div style="margin-top:12px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
       <div id="backup-msg" style="margin-top:12px;"></div>
     </div>
@@ -4220,7 +4228,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.8';
+const APP_VERSION = '1.54.9';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4228,6 +4236,15 @@ const APP_VERSION = '1.54.8';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.54.9',
+    date: 'October 20, 2026',
+    name: 'Send feedback',
+    whatsNew: [
+      'New Send feedback button in Settings. One tap opens an email with your app version already filled in, so it is easy to report anything confusing or wrong. Your debts and numbers are never included.'
+    ],
+    fixes: []
+  },
   {
     version: '1.54.8',
     date: 'October 18, 2026',
@@ -9009,6 +9026,34 @@ function maskFinancialInputs(root) {
       nodes[i].setAttribute('data-clarity-mask', 'true');
     }
   } catch (e) {}
+}
+
+// v1.54.9 — Send feedback. Opens the device's email app with the version and
+// platform pre-filled so reports are actionable. Deliberately carries no debt
+// data, balances or license details. The address stays visible as a fallback
+// for devices with no email app set up.
+var FEEDBACK_EMAIL = 'debtfreedashboard@gmail.com';
+function feedbackPlatform() {
+  if (IS_PLAY_BUILD) return 'Google Play app';
+  var standalone = (window.navigator && window.navigator.standalone) ||
+    (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  return standalone ? 'Installed web app' : 'Web browser';
+}
+function buildFeedbackMailto() {
+  var ua = (navigator.userAgent || '');
+  var device = /Android/i.test(ua) ? 'Android' : /iPhone|iPad|iPod/i.test(ua) ? 'iPhone/iPad'
+    : /Mac/i.test(ua) ? 'Mac' : /Windows/i.test(ua) ? 'Windows' : /CrOS/i.test(ua) ? 'Chromebook' : 'Other';
+  var subject = 'DebtFree feedback (v' + APP_VERSION + ')';
+  var body = 'What happened, or what would you change?\n\n\n\n' +
+    '---\nApp version: ' + APP_VERSION + '\nPlatform: ' + feedbackPlatform() + '\nDevice: ' + device +
+    '\n(Please don’t include real account numbers.)';
+  return 'mailto:' + FEEDBACK_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+}
+function sendFeedback() {
+  trackShare('feedback_click', { _category: 'engagement', platform: feedbackPlatform() });
+  var fb = document.getElementById('feedback-fallback');
+  if (fb) fb.style.display = 'block';
+  try { window.location.href = buildFeedbackMailto(); } catch (e) {}
 }
 
 function trackShare(action, params) {
