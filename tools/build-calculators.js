@@ -200,11 +200,23 @@ ${GA}
 </head>`;
 }
 const NAV = `<nav class="nav"><a href="/" class="nav-brand" aria-label="DebtFree Dashboard home"><img src="/assets/logo/debtfree-logo-horizontal-light.svg" alt="DebtFree Dashboard" width="150" height="32" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"><span class="fb" style="display:none">DebtFree Dashboard</span></a><div class="nav-links"><a class="txt" href="/calculators/">All calculators</a><a class="nav-cta" href="/app/dashboard.html" data-cta="nav">Open the free dashboard</a></div></nav>`;
-const FOOTER = `<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>`;
+// v1.54.9+ (2026-11-07) — Google Play badge. Official Google artwork, unaltered,
+// stored at /assets/badges/google-play-badge.png. The install link carries a Play
+// install referrer so installs from each placement show up in Play Console.
+// Hidden on iPhone/iPad (can't install) and inside the Play app itself.
+const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.mydebtdashboard.app';
+function PLAY_BADGE(loc) {
+  const ref = encodeURIComponent('utm_source=mydebtdashboard&utm_medium=badge&utm_campaign=' + loc);
+  return `<a class="play-badge" href="${PLAY_URL}&amp;referrer=${ref}" target="_blank" rel="noopener" data-play-badge="${loc}" style="display:inline-block;margin-top:14px;line-height:0"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="162" height="63" loading="lazy" style="display:block;height:auto"></a>`;
+}
+const PLAY_SCRIPT = `<style>.is-ios .play-badge,.in-play-app .play-badge{display:none!important}</style>
+<script>(function(){var h=document.documentElement,u=navigator.userAgent||'';if(/iPhone|iPad|iPod/.test(u)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))h.className+=' is-ios';try{if(sessionStorage.getItem('debtfree_play')==='1')h.className+=' in-play-app'}catch(e){}document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-play-badge]');if(a&&typeof gtag==='function')gtag('event','play_badge_click',{event_category:'acquisition',location:a.getAttribute('data-play-badge'),page_path:location.pathname})});})();</script>`;
+const FOOTER = `<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
+${PLAY_SCRIPT}`;
 const DISCLAIMER = `<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>`;
 const FOUNDER = `<aside class="founder"><div class="av" aria-hidden="true">K</div><div><h2>Why I built this</h2><p>I’m Kevin. About a year ago I sat down with my own credit card balances and couldn’t get a straight answer to one question: when does this actually end? Most tools I found wanted an account or a bank login. So I built the one I wanted &mdash; the same math running on this page &mdash; and I use it on my own debt every month.</p><p class="sig">&mdash; Kevin, founder of DebtFree Dashboard</p></div></aside>`;
-function CTA() {
-  return `<section class="cta"><div><h2>A calculator is a snapshot. Your plan keeps moving.</h2><p>The free dashboard keeps your debt-free date current as you pay &mdash; and it picks up right where this page leaves off.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><p class="fine">Your numbers go from this page into the dashboard on this device. Nothing is sent to a server.</p></div><ul>
+function CTA(loc = 'calculator') {
+  return `<section class="cta"><div><h2>A calculator is a snapshot. Your plan keeps moving.</h2><p>The free dashboard keeps your debt-free date current as you pay &mdash; and it picks up right where this page leaves off.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><p class="fine">Your numbers go from this page into the dashboard on this device. Nothing is sent to a server.</p>${PLAY_BADGE(loc)}</div><ul>
 <li>Your debt-free date updates every time you log a payment</li>
 <li>Snowball, Avalanche, your own order &mdash; plus Optimized, which finds the cheapest order</li>
 <li>0% promo rates that switch automatically when they end</li>
@@ -244,7 +256,7 @@ ${calcInputs(p)}
 <article class="content">
 ${c.sections.map(s => `<h2>${esc(s.h2)}</h2>\n${s.html}`).join('\n')}
 </article>
-${CTA()}
+${CTA(p.slug)}
 <section class="faq"><h2>Questions people ask</h2>
 ${c.faq.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('\n')}
 </section>
@@ -275,7 +287,7 @@ ${NAV}
 <div class="crumbs"><a href="/">Home</a> / Calculators</div>
 <header class="hero"><h1>Free debt payoff calculators</h1><p class="lede">Each one answers a single question with your own numbers &mdash; then hands those numbers to the free dashboard if you want to keep going.</p><div class="trust"><span>Free</span><span>No sign-up</span><span>Nothing leaves your device</span><span>Same math as the dashboard</span></div></header>
 ${GROUPS.map(g => `<section class="hub-group"><h2>${g.title}</h2><div class="card-grid">${PAGES.filter(p => p.group === g.id).map(p => `<a class="card-link" href="/calculators/${p.slug}/"><strong>${esc(all[p.slug].c.title)}</strong><span>${esc(p.short)}</span></a>`).join('')}</div></section>`).join('\n')}
-${CTA().replace(/ data-handoff/g, ' data-cta="hub"')}
+${CTA('calculators_hub').replace(/ data-handoff/g, ' data-cta="hub"')}
 ${FOUNDER}
 ${DISCLAIMER}
 </main>

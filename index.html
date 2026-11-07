@@ -1542,6 +1542,8 @@
         <span>Data stays on your device</span>
         <span>Premium just $24 once</span>
       </div>
+      <!-- 2026-11-07: Google Play badge (hidden on iPhone/iPad and inside the Play app) -->
+      <a class="play-badge" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dhome_hero" target="_blank" rel="noopener" data-play-badge="home_hero" style="display:inline-flex;align-items:center;gap:10px;line-height:1.3;text-decoration:none;margin-top:18px;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.8rem;color:var(--text-muted)">On Android? Get the app.</span></a>
     </div>
     <div class="hero-right">
       <div class="video-frame">
@@ -1930,6 +1932,7 @@
       </a>
     </div>
     <p style="color:var(--text-muted); font-size:0.78rem; margin-top:16px">Free to use · No account · Premium $24 one-time</p>
+    <a class="play-badge" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dhome_final" target="_blank" rel="noopener" data-play-badge="home_final" style="display:inline-flex;align-items:center;gap:10px;line-height:1.3;text-decoration:none;margin-top:14px;justify-content:center;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.8rem;color:var(--text-muted)">On Android? Get the app.</span></a>
   </div>
 </section>
 
@@ -2013,5 +2016,7 @@ if (document.readyState === 'loading') {
 }
 </script>
 
+<style>.is-ios .play-badge,.in-play-app .play-badge{display:none!important}</style>
+<script>(function(){var h=document.documentElement,u=navigator.userAgent||'';if(/iPhone|iPad|iPod/.test(u)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))h.className+=' is-ios';try{if(sessionStorage.getItem('debtfree_play')==='1')h.className+=' in-play-app'}catch(e){}document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-play-badge]');if(a&&typeof gtag==='function')gtag('event','play_badge_click',{event_category:'acquisition',location:a.getAttribute('data-play-badge'),page_path:location.pathname})});})();</script>
 </body>
 </html>
