@@ -4005,6 +4005,7 @@
         <div style="font-size:0.85rem;font-weight:600;margin-bottom:4px;">Feedback</div>
         <p style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;margin-bottom:10px;">Found something confusing, a number that looks wrong, or a layout problem? Tell me. Every message is read.</p>
         <button class="btn btn-ghost" type="button" onclick="sendFeedback()" style="width:100%;">&#9993; Send feedback</button>
+        <button class="btn btn-ghost play-only" type="button" onclick="try{trackShare('review_prompt',{_category:'retention',choice:'settings'})}catch(e){};openPlayListing()" style="width:100%;margin-top:8px;">&#9733; Rate DebtFree on Google Play</button>
         <p id="feedback-fallback" style="display:none;font-size:0.75rem;color:var(--text-muted);line-height:1.4;margin-top:8px;">If no email app opened, write to <span style="font-family:var(--font-mono);user-select:all;">debtfreedashboard@gmail.com</span></p>
       </div>
       <div style="margin-top:12px;font-family:var(--font-mono);font-size:0.68rem;color:var(--text-muted);">Current version: v<span id="current-version"></span></div>
@@ -4228,7 +4229,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.54.9';
+const APP_VERSION = '1.55.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4236,6 +4237,16 @@ const APP_VERSION = '1.54.9';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.55.0',
+    date: 'November 7, 2026',
+    name: 'Rate on Google Play',
+    whatsNew: [
+      'In the Google Play app, you can now rate DebtFree from Settings. After you have been using the app for a week or so, it may also ask once whether you have a minute to leave a review. You can say not now, and it never asks more than a few times.',
+      'The installed app can now turn sideways, which makes it easier to use on tablets and foldable phones.'
+    ],
+    fixes: []
+  },
   {
     version: '1.54.9',
     date: 'October 20, 2026',
@@ -8827,7 +8838,101 @@ function logPaymentCore(debtId, amount, date, note) {
   payments.push(_row);
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save(); render();
+  setTimeout(maybeAskForReview, 2500);
   return { status: 'logged', paymentId: pid, debtName: d.name, amount: actualPayment };
+}
+
+// v1.55.0 — Google Play review prompt. Play build only. A TWA can't call
+// Play's native in-app review sheet, so this is a small in-app card that
+// opens the Play listing. Google's rules: ask at a natural moment, never
+// before the user has had a real chance to use the app, never pre-screen
+// ("do you like it?") before sending people to the store, never reward a
+// review. So: one neutral question, shown right after a logged payment, only
+// once the user has opened the app on 3+ different days across 7+ days and
+// logged 2+ payments. "Not now" waits 60 days; at most 3 asks; any tap on
+// "Leave a review" ends it for good.
+var LS_OPEN_DAYS = 'debtfree_open_days';
+var LS_REVIEW_PROMPT = 'debtfree_review_prompt';
+var PLAY_LISTING_URL = 'https://play.google.com/store/apps/details?id=com.mydebtdashboard.app';
+function recordOpenDay() {
+  try {
+    var d = localDateStr();
+    var a = JSON.parse(localStorage.getItem(LS_OPEN_DAYS) || '[]');
+    if (!Array.isArray(a)) a = [];
+    if (a[a.length - 1] !== d) {
+      a.push(d);
+      if (a.length > 60) a = a.slice(-60);
+      localStorage.setItem(LS_OPEN_DAYS, JSON.stringify(a));
+    }
+  } catch (e) {}
+}
+function _reviewState() {
+  try { return JSON.parse(localStorage.getItem(LS_REVIEW_PROMPT) || '{}') || {}; } catch (e) { return {}; }
+}
+function _saveReviewState(st) {
+  try { localStorage.setItem(LS_REVIEW_PROMPT, JSON.stringify(st)); } catch (e) {}
+}
+function reviewPromptEligible(now) {
+  if (!IS_PLAY_BUILD || _demoMode || !debts.length) return false;
+  var st = _reviewState();
+  if (st.done || (st.shown || 0) >= 3) return false;
+  if (st.last && now - st.last < 60 * 864e5) return false;
+  var days = [];
+  try { days = JSON.parse(localStorage.getItem(LS_OPEN_DAYS) || '[]') || []; } catch (e) {}
+  if (days.length < 3) return false;
+  var first = new Date(days[0] + 'T00:00:00').getTime();
+  if (!(now - first >= 7 * 864e5)) return false;
+  var logged = payments.filter(function (p) { return !p.pending; }).length;
+  return logged >= 2;
+}
+function maybeAskForReview() {
+  var now = Date.now();
+  if (!reviewPromptEligible(now)) return;
+  // Never on top of another dialog (celebration, edit, etc.); the next
+  // logged payment gets another chance.
+  if (document.querySelector('.modal-overlay:not(.hidden)')) return;
+  showReviewPrompt(now);
+}
+function showReviewPrompt(now) {
+  if (document.getElementById('review-prompt')) return;
+  var st = _reviewState();
+  st.shown = (st.shown || 0) + 1; st.last = now || Date.now();
+  _saveReviewState(st);
+  var wrap = document.createElement('div');
+  wrap.className = 'modal-overlay';
+  wrap.id = 'review-prompt';
+  wrap.setAttribute('role', 'dialog');
+  wrap.setAttribute('aria-modal', 'true');
+  wrap.setAttribute('aria-labelledby', 'review-prompt-title');
+  wrap.innerHTML = '<div class="modal" style="max-width:400px;">' +
+    '<div id="review-prompt-title" style="font-family:var(--font-display);font-size:1.2rem;font-weight:900;color:var(--text);margin-bottom:8px;">Got a minute for a review?</div>' +
+    '<p style="font-size:0.9rem;color:var(--text-muted);line-height:1.5;margin-bottom:18px;">DebtFree is built by one person. An honest review on Google Play, good or bad, helps other people find it and tells me what to fix next.</p>' +
+    '<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">' +
+    '<button class="btn btn-ghost" id="review-later" type="button">Not now</button>' +
+    '<button class="btn btn-primary" id="review-go" type="button">Leave a review</button></div></div>';
+  document.body.appendChild(wrap);
+  var close = function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); };
+  var later = function () { close(); try { trackShare('review_prompt', { _category: 'retention', choice: 'later', ask: st.shown }); } catch (e) {} };
+  wrap.addEventListener('click', function (e) { if (e.target === wrap) later(); });
+  document.getElementById('review-later').onclick = later;
+  document.getElementById('review-go').onclick = function () {
+    var s2 = _reviewState(); s2.done = true; _saveReviewState(s2);
+    close();
+    try { trackShare('review_prompt', { _category: 'retention', choice: 'review', ask: st.shown }); } catch (e) {}
+    openPlayListing();
+  };
+  try { trackShare('review_prompt', { _category: 'retention', choice: 'shown', ask: st.shown }); } catch (e) {}
+}
+// market:// hands off to the Play Store app on Android; if nothing picks it
+// up (rare), fall back to the web listing.
+function openPlayListing() {
+  var fellBack = false;
+  setTimeout(function () {
+    if (!document.hidden && !fellBack) { fellBack = true; window.open(PLAY_LISTING_URL, '_blank', 'noopener'); }
+  }, 1500);
+  try { window.location.href = 'market://details?id=com.mydebtdashboard.app'; } catch (e) {
+    fellBack = true; window.open(PLAY_LISTING_URL, '_blank', 'noopener');
+  }
 }
 
 // v1.17.0 — undo toast. Cheap insurance against fat-finger entries in the
@@ -17979,6 +18084,7 @@ stampGumroadLinks();
   } catch (e) {}
 })();
 
+recordOpenDay();
 render();
 try { updateDriveUI(); } catch(e) {}
 

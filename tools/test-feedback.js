@@ -41,7 +41,7 @@ const R = []; const ck = (l, ok, d) => { R.push(ok); console.log(`${ok ? 'PASS' 
 
   let r = await run('?source=twa', android);
   ck('Play build: button visible in Settings', r.visible, JSON.stringify(r));
-  ck('Play build: mailto to debtfreedashboard@gmail.com with version', /^mailto:debtfreedashboard@gmail\.com\?subject=DebtFree feedback \(v1\.54\.9\)/.test(r.mailto), r.mailto);
+  ck('Play build: mailto to debtfreedashboard@gmail.com with version', /^mailto:debtfreedashboard@gmail\.com\?subject=DebtFree feedback \(v\d+\.\d+\.\d+\)/.test(r.mailto), r.mailto);
   ck('Play build: platform + device filled', /Platform: Google Play app/.test(r.mailto) && /Device: Android/.test(r.mailto), r.mailto);
   ck('no debt data in email (name, balance)', !/SecretCard|5555|4321|6000/.test(r.mailto), r.mailto);
   ck('fallback address shown after tap', r.fallback.shown);

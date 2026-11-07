@@ -1,8 +1,9 @@
 {
-  "version": "1.54.9",
-  "releaseDate": "2026-10-20",
-  "releaseName": "Send feedback",
+  "version": "1.55.0",
+  "releaseDate": "2026-11-07",
+  "releaseName": "Rate on Google Play",
   "notes": [
-    "New Send feedback button in Settings. One tap opens an email with your app version already filled in, so it is easy to report anything confusing or wrong. Your debts and numbers are never included."
+    "In the Google Play app, you can now rate DebtFree from Settings. After you have been using the app for a week or so, it may also ask once whether you have a minute to leave a review. You can say not now, and it never asks more than a few times.",
+    "The installed app can now turn sideways, which makes it easier to use on tablets and foldable phones."
   ]
 }
