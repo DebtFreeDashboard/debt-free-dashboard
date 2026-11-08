@@ -134,7 +134,12 @@
   var IS_PLAY_BUILD = false;
   try {
     if (/[?&]source=twa(&|$)/.test(location.search)) sessionStorage.setItem('debtfree_play', '1');
-    IS_PLAY_BUILD = sessionStorage.getItem('debtfree_play') === '1' || /^android-app:\/\//.test(document.referrer || '');
+    // v1.55.1: the referrer must be OUR Play app. Any Android app that opens a
+    // link in Chrome (Gmail, the Google app, Messages) sends android-app://<its
+    // package>, which used to flag an ordinary browser visit as the Play build:
+    // Gumroad links hidden, no Play billing either, so no way to buy at all.
+    IS_PLAY_BUILD = sessionStorage.getItem('debtfree_play') === '1' || /^android-app:\/\/com\.mydebtdashboard\.app(\/|$)/.test(document.referrer || '');
+    if (IS_PLAY_BUILD) sessionStorage.setItem('debtfree_play', '1');
   } catch (e) {}
   if (IS_PLAY_BUILD) document.documentElement.classList.add('play-build');
 </script>
@@ -4229,7 +4234,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.55.0';
+const APP_VERSION = '1.55.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4237,6 +4242,16 @@ const APP_VERSION = '1.55.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.55.1',
+    date: 'November 8, 2026',
+    name: 'More reliable Premium button',
+    whatsNew: [],
+    fixes: [
+      'In the Google Play app, the Unlock Premium button sometimes did not appear when Google Play was slow to respond, often right after opening the app or on a weak connection. The app now tries again on its own, and again when you reconnect or come back to the app.',
+      'Opening a DebtFree link from another app, like Gmail or the Google app, could make the website act as if it were the Google Play app and hide the website upgrade option. That no longer happens.'
+    ]
+  },
   {
     version: '1.55.0',
     date: 'November 7, 2026',
@@ -10564,28 +10579,73 @@ function _playPriceText(p) {
   catch (e) { return '$' + p.value; }
 }
 function _playFail(code, err) {
+  // Records why billing isn't ready. Reported to GA once per launch, only after
+  // the retries are used up (see initPlayBilling), so the count means "a launch
+  // that ended without a buy button", not every attempt.
   _playReason = code + (err && err.name ? ' / ' + String(err.name).slice(0, 30) : '') +
     (err && err.message ? ' / ' + String(err.message).replace(/\s+/g, ' ').slice(0, 80) : '');
-  trackShare('play_billing_unavailable', { _category: 'revenue', reason: code });
+  _playFailCode = code;
+  _playLastFail = code;   // survives a later successful attempt (for play_billing_recovered)
+  _playFailDetail = ((err && err.name ? String(err.name) : '') + (err && err.message ? ': ' + String(err.message) : ''))
+    .replace(/\s+/g, ' ').slice(0, 95);
 }
-async function initPlayBilling() {
-  if (!IS_PLAY_BUILD || !PLAY_VERIFY_URL) { renderPlayBuy(); return; }
-  if (typeof window.getDigitalGoodsService !== 'function') { _playFail('no_api'); renderPlayBuy(); return; }
-  try { _playSvc = await window.getDigitalGoodsService('https://play.google.com/billing'); }
-  catch (e) { _playSvc = null; _playFail('no_service', e); }
-  if (!_playSvc) { if (!_playReason) _playFail('no_service'); renderPlayBuy(); return; }
+var _playFailCode = '', _playFailDetail = '', _playLastFail = '', _playAttempts = 0, _playIniting = false;
+// v1.55.1: Play's billing service can be slow to connect right after a cold
+// start, on older phones, or on a weak connection, and one failed try used to
+// leave the buy button hidden for the whole session. Now it tries three times
+// (now, ~2s, ~6s), and again when the phone reconnects or the app returns to
+// the foreground.
+var PLAY_RETRY_MS = [2000, 6000];
+async function _playTryOnce() {
+  _playReason = ''; _playFailCode = ''; _playFailDetail = '';
+  _playAttempts++;
+  if (typeof window.getDigitalGoodsService !== 'function') { _playFail('no_api'); return false; }
+  if (!_playSvc) {
+    try { _playSvc = await window.getDigitalGoodsService('https://play.google.com/billing'); }
+    catch (e) { _playSvc = null; _playFail('no_service', e); return false; }
+    if (!_playSvc) { _playFail('no_service'); return false; }
+  }
   try {
     var d = await _playSvc.getDetails([PLAY_SKU]);
     var item = (d || []).find(function (x) { return x.itemId === PLAY_SKU; });
     _playPrice = item ? _playPriceText(item.price) : null;
-    if (!item) _playFail('no_product');
-    else if (!_playPrice) _playFail('no_price');
-  } catch (e) { _playPrice = null; _playFail('details_error', e); }
-  await syncPlayEntitlement();
-  if (playBillingReady()) _playReason = '';
-  renderPlayBuy();
-  if (playBillingReady()) trackOnce('play_billing_ready', 'play_billing_ready', { _category: 'revenue' });
+    if (!item) { _playFail('no_product'); return false; }
+    if (!_playPrice) { _playFail('no_price'); return false; }
+  } catch (e) { _playPrice = null; _playFail('details_error', e); return false; }
+  return true;
 }
+async function initPlayBilling(isRetryPass) {
+  if (!IS_PLAY_BUILD || !PLAY_VERIFY_URL) { renderPlayBuy(); return; }
+  if (_playIniting || playBillingReady()) return;
+  _playIniting = true;
+  try {
+    var ok = await _playTryOnce();
+    // no_api means this WebView/browser has no billing at all; retrying can't help.
+    for (var i = 0; !ok && _playFailCode !== 'no_api' && i < PLAY_RETRY_MS.length; i++) {
+      renderPlayBuy();
+      await new Promise(function (r) { setTimeout(r, PLAY_RETRY_MS[i]); });
+      ok = await _playTryOnce();
+    }
+    await syncPlayEntitlement();
+    renderPlayBuy();
+    if (playBillingReady()) {
+      _playReason = '';
+      trackOnce('play_billing_ready', 'play_billing_ready', { _category: 'revenue', attempts: _playAttempts });
+      // How often the retries rescued a launch that would have had no buy button.
+      if (_playAttempts > 1) trackOnce('play_billing_recovered', 'play_billing_recovered', { _category: 'revenue', attempts: _playAttempts, reason: _playLastFail || 'unknown' });
+    } else {
+      trackOnce('play_billing_unavailable:' + _playFailCode, 'play_billing_unavailable', {
+        _category: 'revenue', reason: _playFailCode, detail: _playFailDetail || '(none)',
+        attempts: _playAttempts, retry_pass: isRetryPass ? 1 : 0,
+        online: (typeof navigator !== 'undefined' && navigator.onLine === false) ? 0 : 1
+      });
+    }
+  } finally { _playIniting = false; }
+}
+// Try again when the phone comes back online.
+window.addEventListener('online', function () {
+  if (IS_PLAY_BUILD && !playBillingReady()) initPlayBilling(true);
+});
 async function syncPlayEntitlement() {
   if (!_playSvc) return;
   var list;
@@ -10663,9 +10723,15 @@ function renderPlayBuy() {
 }
 // Re-check when the app comes back to the foreground (a refund, or a purchase
 // finished on another device), at most every 10 minutes.
-var _playLastSync = 0;
+var _playLastSync = 0, _playLastRetry = 0;
 document.addEventListener('visibilitychange', function () {
-  if (document.visibilityState !== 'visible' || !_playSvc) return;
+  if (document.visibilityState !== 'visible') return;
+  // v1.55.1: no buy button yet? Try billing again (at most once a minute).
+  if (IS_PLAY_BUILD && !playBillingReady()) {
+    if (Date.now() - _playLastRetry > 60 * 1000) { _playLastRetry = Date.now(); initPlayBilling(true); }
+    return;
+  }
+  if (!_playSvc) return;
   if (Date.now() - _playLastSync < 10 * 60 * 1000) return;
   _playLastSync = Date.now();
   syncPlayEntitlement();

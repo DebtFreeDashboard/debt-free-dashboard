@@ -1,9 +1,9 @@
 {
-  "version": "1.55.0",
-  "releaseDate": "2026-11-07",
-  "releaseName": "Rate on Google Play",
+  "version": "1.55.1",
+  "releaseDate": "2026-11-08",
+  "releaseName": "More reliable Premium button",
   "notes": [
-    "In the Google Play app, you can now rate DebtFree from Settings. After you have been using the app for a week or so, it may also ask once whether you have a minute to leave a review. You can say not now, and it never asks more than a few times.",
-    "The installed app can now turn sideways, which makes it easier to use on tablets and foldable phones."
+    "In the Google Play app, the Unlock Premium button sometimes did not appear when Google Play was slow to respond, often right after opening the app or on a weak connection. The app now tries again on its own, and again when you reconnect or come back to the app.",
+    "Opening a DebtFree link from another app, like Gmail or the Google app, could make the website act as if it were the Google Play app and hide the website upgrade option. That no longer happens."
   ]
 }
