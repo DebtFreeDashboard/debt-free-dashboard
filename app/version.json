@@ -1,9 +1,9 @@
 {
-  "version": "1.55.1",
-  "releaseDate": "2026-11-08",
-  "releaseName": "More reliable Premium button",
+  "version": "1.55.3",
+  "releaseDate": "2026-11-10",
+  "releaseName": "Clearer Premium note in the Google Play app",
   "notes": [
-    "In the Google Play app, the Unlock Premium button sometimes did not appear when Google Play was slow to respond, often right after opening the app or on a weak connection. The app now tries again on its own, and again when you reconnect or come back to the app.",
-    "Opening a DebtFree link from another app, like Gmail or the Google app, could make the website act as if it were the Google Play app and hide the website upgrade option. That no longer happens."
+    "In the Google Play app, buying Premium only works when the app runs in Chrome. If your phone opens DebtFree in another browser, like Edge or Samsung Internet, the app now says so and explains how to switch, instead of showing no way to buy.",
+    "The Google Play app no longer says Premium \"isn’t sold in the Google Play version yet\" when the buy button is slow to load. It now says what is happening."
   ]
 }
