@@ -2771,7 +2771,7 @@
 </script>
 
 <!-- Microsoft Clarity (session recording — diagnostic; consider removing after test window) -->
-<!-- v1.55.2 — not loaded in the Google Play build. Session recording of a
+<!-- v1.55.4 — not loaded in the Google Play build. Session recording of a
      finance app is the heaviest item on the Play Data safety form, and the Play
      listing promises the user's data stays on their device. GA4 still runs. -->
 <script type="text/javascript">
@@ -3852,7 +3852,7 @@
         <div id="unlock-pending">
           <div class="deadline-inline" data-deadline hidden style="margin-bottom:10px;"><span data-deadline-text></span></div>
           <p class="play-only" id="play-premium-note" style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">
-            DebtFree Dashboard is free to use for your whole payoff journey. Premium isn&rsquo;t sold in the Google Play version yet. If you already own it, enter your license key below.
+            <span id="play-note-text">DebtFree Dashboard is free to use for your whole payoff journey. Checking Google Play for Premium&hellip; If you already own Premium, enter your license key below.</span>
             <span id="play-diag" style="display:block;opacity:0.6;margin-top:4px;"></span>
           </p>
           <div class="play-only" id="play-buy-wrap" style="display:none;margin-bottom:10px;">
@@ -4114,7 +4114,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.55.2';
+const APP_VERSION = '1.55.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4123,12 +4123,22 @@ const APP_VERSION = '1.55.2';
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
   {
-    version: '1.55.2',
-    date: 'November 9, 2026',
+    version: '1.55.4',
+    date: 'November 10, 2026',
     name: 'Less usage data in the Google Play app',
     whatsNew: [],
     fixes: [
       'The Google Play app no longer uses Microsoft Clarity, a tool that recorded how people move around the app so bugs could be found and fixed. The Play app now sends less information about how you use it. The website is unchanged.'
+    ]
+  },
+  {
+    version: '1.55.3',
+    date: 'November 10, 2026',
+    name: 'Clearer Premium note in the Google Play app',
+    whatsNew: [],
+    fixes: [
+      'In the Google Play app, buying Premium only works when the app runs in Chrome. If your phone opens DebtFree in another browser, like Edge or Samsung Internet, the app now says so and explains how to switch, instead of showing no way to buy.',
+      'The Google Play app no longer says Premium "isn\u2019t sold in the Google Play version yet" when the buy button is slow to load. It now says what is happening.'
     ]
   },
   {
@@ -10516,6 +10526,7 @@ async function initPlayBilling(isRetryPass) {
       ok = await _playTryOnce();
     }
     await syncPlayEntitlement();
+    _playIniting = false;   // v1.55.3: the note below shows the result, not "Checking"
     renderPlayBuy();
     if (playBillingReady()) {
       _playReason = '';
@@ -10599,8 +10610,28 @@ async function buyOnPlay() {
     trackShare('play_purchase_error', { _category: 'revenue', stage: 'request' });
   } finally { _playBusy = false; }
 }
+// v1.55.3: what the Premium note says while there's no buy button. Play
+// billing (the Digital Goods API) only exists when the Play app runs in Chrome.
+// Android opens the app in the phone's default browser when that browser can
+// host it, so with Edge, Samsung Internet or Firefox as the default there is
+// no billing at all (seen in GA4: an Edge user on Nov 9 got no buy button).
+// The note used to say Premium "isn't sold in the Google Play version yet",
+// which stopped being true when Play billing went live.
+var PLAY_OTHER_BROWSER_RE = /EdgA\/|SamsungBrowser\/|Firefox\/|OPR\/|YaBrowser\/|UCBrowser\/|MiuiBrowser\/|HeyTapBrowser\/|VivoBrowser\//;
+function _playInOtherBrowser(ua) { return PLAY_OTHER_BROWSER_RE.test(ua || ''); }
+function _playNoteText(reason, checking, ua) {
+  var start = 'DebtFree Dashboard is free to use for your whole payoff journey. ';
+  var owned = ' If you already own Premium, enter your license key below.';
+  if (!PLAY_VERIFY_URL) return start + 'Premium isn\u2019t sold in the Google Play version yet.' + owned;
+  if (checking || !reason) return start + 'Checking Google Play for Premium\u2026' + owned;
+  if (_playInOtherBrowser(ua)) return start + 'Buying Premium in the app needs Chrome, and your phone opened DebtFree in a different browser. To buy, make Chrome your default browser app, then close DebtFree and open it again.' + owned;
+  if (reason === 'no_api') return start + 'Buying Premium in the app needs an up-to-date Chrome. Update Chrome from Google Play, then close DebtFree and open it again.' + owned;
+  return start + 'Google Play isn\u2019t responding right now, so the buy button couldn\u2019t load. Check your connection, then close DebtFree and open it again.' + owned;
+}
 function renderPlayBuy() {
   var ready = playBillingReady();
+  var noteText = document.getElementById('play-note-text');
+  if (noteText && !ready) noteText.textContent = _playNoteText(_playFailCode, _playIniting, (typeof navigator !== 'undefined' && navigator.userAgent) || '');
   var note = document.getElementById('play-premium-note');
   var wrap = document.getElementById('play-buy-wrap');
   if (note) note.style.display = ready ? 'none' : '';

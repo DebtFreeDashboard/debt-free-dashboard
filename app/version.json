@@ -1,6 +1,6 @@
 {
-  "version": "1.55.2",
-  "releaseDate": "2026-11-09",
+  "version": "1.55.4",
+  "releaseDate": "2026-11-10",
   "releaseName": "Less usage data in the Google Play app",
   "notes": [
     "The Google Play app no longer uses Microsoft Clarity, a tool that recorded how people move around the app so bugs could be found and fixed. The Play app now sends less information about how you use it. The website is unchanged."
