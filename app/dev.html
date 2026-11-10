@@ -2894,8 +2894,11 @@
 </script>
 
 <!-- Microsoft Clarity (session recording — diagnostic; consider removing after test window) -->
+<!-- v1.55.4 — not loaded in the Google Play build. Session recording of a
+     finance app is the heaviest item on the Play Data safety form, and the Play
+     listing promises the user's data stays on their device. GA4 still runs. -->
 <script type="text/javascript">
-  (function(c,l,a,r,i,t,y){
+  if (!IS_PLAY_BUILD) (function(c,l,a,r,i,t,y){
     c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
     t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
     y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
@@ -4234,7 +4237,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.55.3';
+const APP_VERSION = '1.55.4';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4242,6 +4245,15 @@ const APP_VERSION = '1.55.3';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.55.4',
+    date: 'November 10, 2026',
+    name: 'Less usage data in the Google Play app',
+    whatsNew: [],
+    fixes: [
+      'The Google Play app no longer uses Microsoft Clarity, a tool that recorded how people move around the app so bugs could be found and fixed. The Play app now sends less information about how you use it. The website is unchanged.'
+    ]
+  },
   {
     version: '1.55.3',
     date: 'November 10, 2026',
