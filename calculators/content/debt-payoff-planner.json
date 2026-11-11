@@ -1,0 +1,54 @@
+{
+  "slug": "debt-payoff-planner",
+  "title": "Debt Payoff Planner: Free Plan and Tracker App",
+  "metaDescription": "Free debt payoff planner: see your debt-free date and what to pay each debt this month. Then keep it current in the DebtFree app on Android, iPhone or the web.",
+  "h1": "Debt Payoff Planner: This Month's Payments and Your Debt-Free Date",
+  "lede": "Add your debts and choose an order. The planner shows your estimated debt-free month, exactly what to pay each debt this month, and when each one will be paid off.",
+  "dateModified": "2026-11-11",
+  "sections": [
+    {
+      "h2": "What a debt payoff plan needs",
+      "html": "<p>A workable plan comes down to five things, and the planner above asks for each of them:</p><ul><li><strong>Every debt:</strong> balance, interest rate and minimum payment, including any 0% promo and when it ends.</li><li><strong>A monthly amount:</strong> the minimums plus whatever extra you can put toward debt.</li><li><strong>An order:</strong> which debt gets the extra first. Snowball, avalanche or your own.</li><li><strong>A date:</strong> the month the last balance reaches zero at that pace.</li><li><strong>This month's payments:</strong> the plan turned into amounts you can actually pay.</li></ul>"
+    },
+    {
+      "h2": "A planner and a tracker are different jobs",
+      "html": "<p>A planner does the math once: given today's balances, here is the order and the date. A tracker keeps that answer true as real months happen. Payments land a little higher or lower than planned, new charges appear, and promo rates end. Without tracking, a plan quietly drifts until the date it shows no longer means much.</p><p>That is why this page hands your numbers to the free dashboard. It runs the same math, then moves your debt-free date every time you log a payment.</p>"
+    },
+    {
+      "h2": "What to look for in a debt payoff app",
+      "html": "<ul><li><strong>Does it need your bank login?</strong> Some apps link to your accounts. Others, like DebtFree, work from numbers you enter and keep them on your device.</li><li><strong>Does it handle promo rates?</strong> A 0% balance that switches to 27% changes the best order. Check that the app models the switch.</li><li><strong>Can you see the order and the dates?</strong> A good planner shows which debt is the focus and when each one is paid off, not just a total.</li><li><strong>Does it update when you pay?</strong> Logging a payment should move the plan, not just record a number.</li><li><strong>What does it cost over time?</strong> Compare a monthly subscription with a one-time price across the years your plan runs.</li></ul>"
+    },
+    {
+      "h2": "How DebtFree Dashboard works",
+      "html": "<p>DebtFree Dashboard is the planner on this page, kept on your device. It is free with unlimited debts and every payoff strategy, including Optimized, which tests payoff orders to find the cheapest one for your numbers. There is no account and no bank login.</p><p>On Android, it is on Google Play. On iPhone, iPad and computers, it runs in the browser and can be added to your home screen. Premium is a one-time $24 and adds What-If modeling, the payoff roadmap, bills and sinking funds, and amortization export.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Is this debt payoff planner free?",
+      "a": "Yes. The planner on this page is free with no sign-up, and so is the dashboard it hands your numbers to, with unlimited debts. Premium features are a one-time $24 purchase, with no subscription."
+    },
+    {
+      "q": "Do I have to link my bank account?",
+      "a": "No. You enter your balances, rates and minimums yourself. They are stored on your device, not on a server."
+    },
+    {
+      "q": "Is there a DebtFree app for iPhone?",
+      "a": "There is no App Store download. On iPhone and iPad, DebtFree runs in Safari: open the dashboard, tap Share, then Add to Home Screen, and it opens like an app. Android users can install it from Google Play."
+    },
+    {
+      "q": "How is the payment for each debt this month worked out?",
+      "a": "Every debt gets its minimum. The focus debt, chosen by the strategy you pick, also gets your extra amount. If a debt would be paid off this month, its final payment is just what is left, and the rest moves to the next debt."
+    },
+    {
+      "q": "What happens to the numbers I enter here?",
+      "a": "They stay in your browser. If you choose to open them in the free dashboard, they are copied into the dashboard's storage on the same device, so you do not have to type them again."
+    }
+  ],
+  "related": [
+    "debt-free-date-calculator",
+    "debt-payoff-calculator",
+    "debt-snowball-spreadsheet",
+    "which-debt-to-pay-off-first"
+  ]
+}

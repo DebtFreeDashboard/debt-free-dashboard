@@ -55,6 +55,9 @@ const PAGES = [
   { slug: 'debt-avalanche-calculator', group: 'plan', short: 'Highest rate first, including 0% promos that end.', widget: 'multi', mode: 'avalanche', strategy: 'avalanche', debts: MIX_PROMO, allowPromo: true, extra: 250 },
   { slug: 'snowball-vs-avalanche-calculator', group: 'plan', short: 'Both methods side by side on your numbers.', widget: 'multi', mode: 'versus', debts: MIX, allowPromo: true, extra: 250 },
   { slug: 'which-debt-to-pay-off-first', group: 'plan', short: 'Ranks the payoff orders by what they cost you.', widget: 'multi', mode: 'order', strategy: 'avalanche', debts: MIX_PROMO, allowPromo: true, extra: 250 },
+  { slug: 'debt-snowball-spreadsheet', group: 'sheets', short: 'Your snowball as a month-by-month sheet. Download for Excel or Google Sheets, or print it.', widget: 'multi', mode: 'sheet', strategy: 'snowball', debts: MIX, allowPromo: true, extra: 250, strategySelect: true },
+  { slug: 'debt-payoff-spreadsheet', group: 'sheets', short: 'Any payoff order as a spreadsheet, avalanche by default, with 0% promos handled.', widget: 'multi', mode: 'sheet', strategy: 'avalanche', debts: MIX_PROMO, allowPromo: true, extra: 250, strategySelect: true },
+  { slug: 'debt-payoff-planner', group: 'sheets', short: 'Your debt-free date and exactly what to pay each debt this month.', widget: 'multi', mode: 'planner', debts: MIX, allowPromo: true, extra: 200, strategySelect: true, appStrip: true },
   { slug: 'debt-free-date-calculator', group: 'date', short: 'The month and year your last debt is gone.', widget: 'multi', mode: 'date', debts: MIX, allowPromo: true, extra: 200, strategySelect: true },
   { slug: 'pay-off-debt-by-date-calculator', group: 'date', short: 'Pick a date. See the monthly amount it takes.', widget: 'multi', mode: 'target', debts: MIX, allowPromo: true, extra: 0, strategySelect: true, targetMonths: 36 },
   { slug: 'extra-payment-calculator', group: 'date', short: 'What $50, $100 or $500 more a month changes.', widget: 'multi', mode: 'extra', debts: MIX, allowPromo: true, extra: 150, strategySelect: true },
@@ -83,6 +86,7 @@ const PAGES = [
 const GROUPS = [
   { id: 'plan', title: 'Pick a payoff plan' },
   { id: 'date', title: 'When will I be debt-free?' },
+  { id: 'sheets', title: 'Spreadsheets and planners' },
   { id: 'cards', title: 'Credit cards' },
   { id: 'promo', title: '0% offers and promos' },
   { id: 'loans', title: 'Loans' },
@@ -209,8 +213,21 @@ function PLAY_BADGE(loc) {
   const ref = encodeURIComponent('utm_source=mydebtdashboard&utm_medium=badge&utm_campaign=' + loc);
   return `<a class="play-badge" href="${PLAY_URL}&amp;referrer=${ref}" target="_blank" rel="noopener" data-play-badge="${loc}" style="display:inline-block;margin-top:14px;line-height:0"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="162" height="63" loading="lazy" style="display:block;height:auto"></a>`;
 }
-const PLAY_SCRIPT = `<style>.is-ios .play-badge,.in-play-app .play-badge{display:none!important}</style>
-<script>(function(){var h=document.documentElement,u=navigator.userAgent||'';if(/iPhone|iPad|iPod/.test(u)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))h.className+=' is-ios';try{if(sessionStorage.getItem('debtfree_play')==='1')h.className+=' in-play-app'}catch(e){}document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-play-badge]');if(a&&typeof gtag==='function')gtag('event','play_badge_click',{event_category:'acquisition',location:a.getAttribute('data-play-badge'),page_path:location.pathname})});})();</script>`;
+const PLAY_SCRIPT = `<style>.is-ios .play-badge,.in-play-app .play-badge,.is-ios .play-only,.in-play-app .play-only,.in-play-app .web-only{display:none!important}</style>
+<script>(function(){var h=document.documentElement,u=navigator.userAgent||'';if(/iPhone|iPad|iPod/.test(u)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))h.className+=' is-ios';try{if(sessionStorage.getItem('debtfree_play')==='1')h.className+=' in-play-app'}catch(e){}document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-play-badge]');if(a&&typeof gtag==='function')gtag('event','play_badge_click',{event_category:'acquisition',location:a.getAttribute('data-play-badge'),page_path:location.pathname});var g=e.target.closest&&e.target.closest('[data-gumroad]');if(g&&typeof gtag==='function')gtag('event','gumroad_click',{event_category:'acquisition',location:g.getAttribute('data-gumroad'),page_path:location.pathname})});})();</script>`;
+// 2026-11-11 — "Keep this plan going" strip for app-intent pages
+// (debt payoff planner). Android sees the Play badge; iPhone, iPad and computers
+// see the web app and the one-time Premium on Gumroad. Inside the Play app
+// (sessionStorage debtfree_play) the Gumroad tile is hidden: Play billing rules
+// do not allow pointing Play users to another way to pay.
+const GUMROAD_URL = 'https://debtfreedashboard.gumroad.com/l/prfzv';
+function APP_STRIP(loc) {
+  return `<section class="app-strip" aria-labelledby="get-app"><h2 id="get-app">Keep this plan going on your phone</h2><p class="sub">A plan only works if it stays current. DebtFree Dashboard is the same planner, saved on your device, with your debt-free date updating every time you log a payment.</p><div class="app-tiles">
+<div class="app-tile play-only"><h3>Android</h3><p>Install DebtFree from Google Play. Free to use, with Premium as a one-time in-app purchase.</p>${PLAY_BADGE(loc)}</div>
+<div class="app-tile"><h3>iPhone, iPad and computer</h3><p>Runs in your browser with no download and no account. On iPhone, tap Share, then Add to Home Screen, to keep it like an app.</p><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a></div>
+<div class="app-tile web-only"><h3>Premium, one time</h3><p>Unlocks What-If modeling, the payoff roadmap, bills and sinking funds, and amortization export. $24 once, no subscription.</p><a href="${GUMROAD_URL}" class="btn-ghost" target="_blank" rel="noopener" data-gumroad="${loc}">Get Premium for $24 &rarr;</a></div>
+</div></section>`;
+}
 const FOOTER = `<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
 ${PLAY_SCRIPT}`;
 const DISCLAIMER = `<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>`;
@@ -231,7 +248,7 @@ function page(p, c, all) {
   const jsonld = {
     '@context': 'https://schema.org',
     '@graph': [
-      { '@type': 'WebPage', '@id': url, url, name: c.title, description: c.metaDescription, dateModified: TODAY, isPartOf: { '@type': 'WebSite', name: 'DebtFree Dashboard', url: SITE + '/' } },
+      { '@type': 'WebPage', '@id': url, url, name: c.title, description: c.metaDescription, dateModified: c.dateModified || TODAY, isPartOf: { '@type': 'WebSite', name: 'DebtFree Dashboard', url: SITE + '/' } },
       { '@type': 'WebApplication', name: c.title, url, applicationCategory: 'FinanceApplication', operatingSystem: 'Any web browser', isAccessibleForFree: true, offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, publisher: { '@type': 'Organization', name: 'DebtFree Dashboard', url: SITE + '/' } },
       { '@type': 'BreadcrumbList', itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: SITE + '/' },
@@ -253,6 +270,7 @@ ${calcInputs(p)}
 <div class="handoff"><a href="/app/dashboard.html" class="btn-primary" data-handoff>Open the free dashboard &rarr;</a><span class="sub">Loads these numbers. No account needed.</span></div>
 </section>
 <script type="application/json" id="calc-config">${config(p)}</script>
+${p.appStrip ? APP_STRIP(p.slug) : ''}
 <article class="content">
 ${c.sections.map(s => `<h2>${esc(s.h2)}</h2>\n${s.html}`).join('\n')}
 </article>
@@ -272,12 +290,15 @@ ${FOOTER}
 `;
 }
 
+// The hub changes whenever any calculator does; it is never older than its newest page.
+function pageDate(all, p) { return (all[p.slug] && all[p.slug].c.dateModified) || TODAY; }
+function hubDate(all) { return PAGES.filter(p => all[p.slug]).map(p => pageDate(all, p)).concat(TODAY).sort().pop(); }
 function hub(all) {
   const url = `${SITE}/calculators/`;
   const title = 'Free Debt Payoff Calculators | DebtFree Dashboard';
   const desc = 'Free debt calculators: snowball, avalanche, credit card payoff, balance transfer, debt-free date and more. Private, no sign-up, same math as the app.';
   const jsonld = { '@context': 'https://schema.org', '@graph': [
-    { '@type': 'CollectionPage', '@id': url, url, name: 'Free debt payoff calculators', description: desc, dateModified: TODAY },
+    { '@type': 'CollectionPage', '@id': url, url, name: 'Free debt payoff calculators', description: desc, dateModified: hubDate(all) },
     { '@type': 'ItemList', itemListElement: PAGES.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE}/calculators/${p.slug}/`, name: all[p.slug].c.title })) },
     { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: SITE + '/' }, { '@type': 'ListItem', position: 2, name: 'Calculators', item: url }] }] };
   return `${head({ title, desc, url, jsonld })}
@@ -320,10 +341,10 @@ function build() {
   const urls = [
     { loc: SITE + '/', pri: '1.0', freq: 'monthly' },
     { loc: SITE + '/app/dashboard.html', pri: '0.9', freq: 'weekly' },
-    { loc: SITE + '/calculators/', pri: '0.9', freq: 'monthly' }
-  ].concat(PAGES.map(p => ({ loc: `${SITE}/calculators/${p.slug}/`, pri: '0.8', freq: 'monthly' })));
+    { loc: SITE + '/calculators/', pri: '0.9', freq: 'monthly', mod: hubDate(all) }
+  ].concat(PAGES.filter(p => all[p.slug]).map(p => ({ loc: `${SITE}/calculators/${p.slug}/`, pri: '0.8', freq: 'monthly', mod: pageDate(all, p) })));
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${TODAY}</lastmod>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.pri}</priority>\n  </url>`).join('\n') + '\n</urlset>\n');
+    urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.mod || TODAY}</lastmod>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.pri}</priority>\n  </url>`).join('\n') + '\n</urlset>\n');
   return { pages: PAGES.length, version: APP_VERSION };
 }
 

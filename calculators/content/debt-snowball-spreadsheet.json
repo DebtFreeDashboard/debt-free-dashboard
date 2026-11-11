@@ -1,0 +1,62 @@
+{
+  "slug": "debt-snowball-spreadsheet",
+  "title": "Debt Snowball Spreadsheet (Free, Printable)",
+  "metaDescription": "Free debt snowball spreadsheet: enter your debts and get a month-by-month payment schedule. Download it for Excel or Google Sheets, or print it as a worksheet.",
+  "h1": "Free Debt Snowball Spreadsheet You Can Download or Print",
+  "lede": "Enter your debts once. This page builds the whole snowball schedule, showing what to pay each debt every month until the last one is gone, and lets you download it as a spreadsheet or print it as a worksheet.",
+  "dateModified": "2026-11-11",
+  "sections": [
+    {
+      "h2": "What the spreadsheet shows",
+      "html": "<p>Each row is one month, starting with this one. Each debt gets its own column showing the payment it receives that month. The last columns show the total paid across all debts and how much is still owed after that month's payments.</p><p>The downloaded file adds a balance column for every debt and the interest charged each month, so you can chart it, add notes, or track your actual payments next to the planned ones. The month a debt reaches zero is marked <em>paid off</em> in the table above.</p>"
+    },
+    {
+      "h2": "How the snowball schedule is built",
+      "html": "<ul><li><strong>Order:</strong> debts are lined up from smallest balance to largest. Interest rates do not change the order.</li><li><strong>Minimums:</strong> every debt gets its minimum payment every month, so every account stays current.</li><li><strong>Extra:</strong> any money beyond the minimums goes to the smallest balance.</li><li><strong>Rollover:</strong> when a debt is paid off, its payment joins the extra and moves to the next smallest balance. That growing payment is the snowball.</li></ul><p>Interest is added each month at the APR divided by 12, before that month's payment. A 0% promo rate stays at 0% until the month it ends, then switches to the rate you enter for after the promo.</p>"
+    },
+    {
+      "h2": "Opening it in Excel, Google Sheets or Numbers",
+      "html": "<p>The download is a CSV file, the plain format every spreadsheet program opens.</p><ul><li><strong>Excel:</strong> open the file directly, then save it as a workbook if you want to add formatting.</li><li><strong>Google Sheets:</strong> choose File, then Import, then Upload, and pick the file.</li><li><strong>Numbers:</strong> open the file directly.</li></ul><p>The numbers in the file are values, not formulas. If a balance or payment changes, come back, update the debts here and download a fresh copy.</p>"
+    },
+    {
+      "h2": "Using the printable worksheet",
+      "html": "<p>Print worksheet produces the full schedule on plain paper, every month included, with a Paid box at the end of each row. Some people tape it to the fridge and tick a box each month. Others write the actual amount paid beside the planned one, which makes it easy to see when real life has moved away from the plan.</p>"
+    },
+    {
+      "h2": "Why a spreadsheet drifts, and what to do about it",
+      "html": "<p>A spreadsheet is a snapshot of one moment. Real months rarely match it exactly: a payment comes in a little higher or lower, a new charge appears, a promo ends early, or a lender's interest calculation differs from the APR divided by 12. After a few months, the schedule and your statements no longer line up.</p><p>Re-running the numbers every few months keeps a spreadsheet honest. If you would rather not rebuild it by hand, the free DebtFree Dashboard starts from the same numbers and moves your debt-free date every time you log a payment.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Is this debt snowball spreadsheet free?",
+      "a": "Yes. The schedule, the download and the printable worksheet are free, with no sign-up and no email address. The numbers are calculated in your browser."
+    },
+    {
+      "q": "Do I need Excel to use it?",
+      "a": "No. The schedule appears on this page, and you can print it without any spreadsheet program. The downloaded CSV opens in Excel, Google Sheets, Numbers and most other spreadsheet apps."
+    },
+    {
+      "q": "Are my debts sent anywhere?",
+      "a": "No. The calculation runs on your device, and the file is created by your browser. Nothing you type into the debt list is sent to a server."
+    },
+    {
+      "q": "Why doesn't the schedule match my statement exactly?",
+      "a": "Lenders charge interest in different ways, often daily, and the number of days in a month varies. This schedule uses the APR divided by 12 each month, which is a close estimate but not your lender's exact figure. Your statement is the number to pay."
+    },
+    {
+      "q": "Can I make an avalanche spreadsheet instead?",
+      "a": "Yes. Change the Strategy setting to Avalanche to order the debts from highest rate to lowest, or choose Your order to pay them from the top of your list down. The table and the download update to match."
+    },
+    {
+      "q": "What happens when a debt is paid off?",
+      "a": "Its column shows a smaller final payment in the month it reaches zero, then a dash. The money it was receiving moves to the next debt in the order, which is why the next column's payment jumps that month."
+    }
+  ],
+  "related": [
+    "debt-snowball-calculator",
+    "debt-payoff-spreadsheet",
+    "snowball-vs-avalanche-calculator",
+    "debt-payoff-planner"
+  ]
+}
