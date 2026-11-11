@@ -1,8 +1,8 @@
 {
-  "version": "1.55.4",
-  "releaseDate": "2026-11-10",
-  "releaseName": "Less usage data in the Google Play app",
+  "version": "1.56.0",
+  "releaseDate": "2026-11-11",
+  "releaseName": "Pay twice a month",
   "notes": [
-    "The Google Play app no longer uses Microsoft Clarity, a tool that recorded how people move around the app so bugs could be found and fixed. The Play app now sends less information about how you use it. The website is unchanged."
+    "If you pay a debt twice a month, for example on the 1st and the 15th, you can now add a second payment day when you add or edit the debt. Coming Up then shows half the minimum on each day, and tells you how much is still left before the second one. Your payoff plan and dates are unchanged."
   ]
 }
