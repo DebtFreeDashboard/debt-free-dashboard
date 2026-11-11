@@ -187,3 +187,56 @@ footer.site a { color: var(--text-mid); margin: 0 8px; }
 /* hub */
 .hub-group { margin: 26px 0; }
 .hub-group h2 { font-size: 1.15rem; margin-bottom: 10px; }
+
+/* spreadsheet pages (debt-snowball-spreadsheet, debt-payoff-spreadsheet) */
+.btn-ghost { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--ink); font: inherit; font-weight: 700; font-size: 0.95rem; text-decoration: none; padding: 12px 18px; border-radius: 11px; border: 1px solid var(--border2); cursor: pointer; min-height: 48px; }
+.btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+.btn-link { background: none; border: 0; font: inherit; font-size: 0.85rem; font-weight: 600; color: var(--teal); cursor: pointer; padding: 8px 0; min-height: 40px; }
+.sheet-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 6px 0 4px; }
+.sheet-actions .sub { font-size: 0.76rem; color: var(--text-muted); }
+.sheet-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--border); border-radius: 11px; }
+table.sheet { border-collapse: collapse; font-size: 0.8rem; min-width: 100%; white-space: nowrap; font-variant-numeric: tabular-nums; }
+table.sheet th { position: sticky; top: 0; background: var(--surface2); text-align: right; font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-mid); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--border2); }
+table.sheet th:first-child, table.sheet td.mo { text-align: left; position: sticky; left: 0; background: var(--surface); z-index: 1; }
+table.sheet th:first-child { background: var(--surface2); z-index: 2; }
+table.sheet td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+table.sheet td.mo { font-weight: 600; }
+table.sheet td.tot { font-weight: 700; }
+table.sheet td.gone { color: var(--text-muted); }
+table.sheet td.done { background: var(--teal-soft); font-weight: 700; color: #00805f; }
+table.sheet .po-flag { display: block; font-size: 0.6rem; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+table.sheet .tick { text-align: center; }
+table.sheet .box { display: inline-block; width: 13px; height: 13px; border: 1.5px solid var(--border2); border-radius: 3px; vertical-align: middle; }
+.sheet-wrap tr.more { display: none; }
+.sheet-wrap.all tr.more { display: table-row; }
+
+/* "Keep this plan going" strip (debt-payoff-planner) */
+.app-strip { margin: 26px 0 8px; }
+.app-strip h2 { font-size: 1.3rem; line-height: 1.3; color: var(--ink); margin-bottom: 6px; }
+.app-strip .sub { font-size: 0.92rem; color: var(--text-mid); margin-bottom: 12px; }
+.app-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.app-tile { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; align-items: flex-start; }
+.app-tile h3 { font-size: 1rem; color: var(--ink); margin-bottom: 4px; }
+.app-tile p { font-size: 0.86rem; color: var(--text-mid); margin-bottom: 10px; flex: 1; }
+.app-tile .play-badge { margin-top: 0 !important; }
+
+/* printing a spreadsheet page gives a one-page-wide worksheet */
+@media print {
+  @page { margin: 12mm; }
+  body { background: #fff; font-size: 11px; }
+  .nav, .crumbs, .trust, .lede, #calc .debt-head, #debt-rows, #add-debt, #calc .opts, .handoff, .sheet-actions, .btn-link, .teaser, .chart,
+  .app-strip, article.content, .cta, .faq, .founder, .related, footer.site, .calc-note:not(.warn) { display: none !important; }
+  .wrap, .calc { padding: 0 !important; margin: 0 !important; border: 0 !important; box-shadow: none !important; background: #fff !important; max-width: none !important; }
+  .hero h1 { font-size: 16px; margin: 0 0 6px; }
+  .results { border: 0; margin: 0; padding: 0; }
+  .stats { grid-template-columns: repeat(3, 1fr); }
+  .stat { padding: 6px 8px; border: 1px solid #ccc; background: #fff !important; }
+  .stat-value { font-size: 13px; }
+  .sheet-wrap { overflow: visible; border: 0; }
+  .sheet-wrap tr.more { display: table-row; }
+  table.sheet { font-size: 9px; white-space: normal; width: 100%; }
+  table.sheet th, table.sheet td { padding: 3px 5px; position: static; border: 1px solid #bbb; background: #fff; color: #000; }
+  table.sheet thead { display: table-header-group; }
+  table.sheet tr { break-inside: avoid; }
+  .disclaimer { border: 0; padding: 6px 0 0; font-size: 8px; }
+}

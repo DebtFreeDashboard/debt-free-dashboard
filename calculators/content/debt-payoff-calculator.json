@@ -52,6 +52,6 @@
     "debt-snowball-calculator",
     "debt-avalanche-calculator",
     "extra-payment-calculator",
-    "which-debt-to-pay-off-first"
+    "debt-payoff-planner"
   ]
 }

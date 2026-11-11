@@ -308,6 +308,8 @@
         note('Lowest interest of these three: <strong>' + STRAT_NAME[rows[0].k] + '</strong>, which starts with ' + esc(first ? first.name : '') + '. "Your order" pays debts from the top of your list down, so you can test any order by listing debts the way you would tackle them.') +
         optimizedTeaser(debts, extra, best);
     }
+    if (mode === 'sheet') return s + sheetMode(main, debts, extra, chosen, start, mins);
+    if (mode === 'planner') return s + plannerMode(main, debts, extra, chosen, start);
     if (mode === 'date') {
       var r2 = main;
       var none = runStrat(debts, 0, chosen);
@@ -336,6 +338,112 @@
       '</tbody></table><h3 class="rh">Payoff order &middot; ' + STRAT_NAME[chosen] + '</h3>' + orderList(main, debts) +
       chart([{ name: STRAT_NAME[chosen], data: remainingSeries(main) }], start) + diverged(main) + optimizedTeaser(debts, extra, res[bestK]);
   };
+
+  // ── spreadsheet pages: the plan as a month-by-month table ────
+  // Rows come straight from the engine's trace (amort[id].paid / .close), so
+  // the sheet, the CSV and the dashboard agree to the cent.
+  var sheetData = null;
+  function sheetRows(r, debts) {
+    return r.monthlyData.map(function (m) {
+      var row = { month: m.month, date: monthShort(m.month), interest: m.interest, remaining: m.remaining, cells: [], total: 0 };
+      debts.forEach(function (d) {
+        var a = m.amort && m.amort[d.id];
+        var paid = a ? a.paid : 0, close = a ? a.close : 0, open = a ? a.open : 0;
+        row.cells.push({ paid: paid, close: close, done: open > 0.005 && close <= 0.005, gone: open <= 0.005 });
+        row.total += paid;
+      });
+      return row;
+    });
+  }
+  function sheetMode(r, debts, extra, chosen, start, mins) {
+    var rows = sheetRows(r, debts);
+    sheetData = { rows: rows, debts: debts, strategy: chosen };
+    var SHOW = 12;
+    var head = '<tr><th>Month</th>' + debts.map(function (d) { return '<th>' + esc(d.name) + '</th>'; }).join('') + '<th>Total paid</th><th>Still owed</th><th class="tick">Paid</th></tr>';
+    var body = rows.map(function (x, i) {
+      return '<tr' + (i >= SHOW ? ' class="more"' : '') + '><td class="mo">' + x.date + '</td>' + x.cells.map(function (c) {
+        if (c.gone) return '<td class="gone">&mdash;</td>';
+        return '<td' + (c.done ? ' class="done" title="Paid off this month"' : '') + '>' + money(c.paid) + (c.done ? ' <span class="po-flag">paid off</span>' : '') + '</td>';
+      }).join('') + '<td class="tot">' + money(x.total) + '</td><td>' + money(x.remaining) + '</td><td class="tick"><span class="box" aria-hidden="true"></span></td></tr>';
+    }).join('');
+    var more = rows.length > SHOW ? '<button type="button" class="btn-link" data-sheet-act="all" aria-expanded="false">Show all ' + rows.length + ' months</button>' : '';
+    return '<div class="stats">' +
+      stat('Debt-free', monthLong(r.months), plural(r.months, 'monthly payment'), 'big') +
+      stat('Total interest', money(r.totalInterest), STRAT_NAME[chosen]) +
+      stat('Monthly payment', money(mins + extra), money(mins) + ' minimums + ' + money(extra) + ' extra') + '</div>' +
+      '<div class="sheet-actions"><button type="button" class="btn-primary" data-sheet-act="csv">Download spreadsheet (CSV)</button><button type="button" class="btn-ghost" data-sheet-act="print">Print worksheet</button><span class="sub">Opens in Excel, Google Sheets or Numbers.</span></div>' +
+      '<h3 class="rh">Your ' + STRAT_NAME[chosen].toLowerCase() + ' schedule, month by month</h3>' +
+      '<div class="sheet-wrap" id="sheet-wrap"><table class="sheet"><thead>' + head + '</thead><tbody>' + body + '</tbody></table></div>' + more +
+      note('Each column is what to pay that debt that month. When a debt is paid off, its payment moves to the next debt in the order, so the monthly total holds steady until the last few months.') +
+      diverged(r) + optimizedTeaser(debts, extra, r);
+  }
+  function csvCell(v) {
+    var t = String(v == null ? '' : v);
+    if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; // stop a spreadsheet reading a debt name as a formula
+    return '"' + t.replace(/"/g, '""') + '"';
+  }
+  function sheetCSV() {
+    var d = sheetData; if (!d) return '';
+    var n2 = function (v) { return (Math.round(v * 100) / 100).toFixed(2); };
+    var lines = [];
+    lines.push(['Month #', 'Month'].concat(d.debts.map(function (x) { return x.name + ' payment'; }), d.debts.map(function (x) { return x.name + ' balance'; }), ['Total paid', 'Interest this month', 'Total still owed']).map(csvCell).join(','));
+    d.rows.forEach(function (x) {
+      lines.push([x.month, x.date].concat(x.cells.map(function (c) { return n2(c.paid); }), x.cells.map(function (c) { return n2(c.close); }), [n2(x.total), n2(x.interest), n2(x.remaining)]).map(csvCell).join(','));
+    });
+    lines.push('');
+    lines.push(csvCell('Strategy: ' + STRAT_NAME[d.strategy] + '. Estimates from mydebtdashboard.com, assuming on-time payments, no new charges and interest at APR / 12. Not financial advice.'));
+    return '﻿' + lines.join('\r\n') + '\r\n';
+  }
+  out.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-sheet-act]'); if (!b) return;
+    var act = b.getAttribute('data-sheet-act');
+    if (act === 'all') {
+      var w = document.getElementById('sheet-wrap'); if (!w) return;
+      var open = w.classList.toggle('all');
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
+      b.textContent = open ? 'Show the first 12 months' : 'Show all ' + (sheetData ? sheetData.rows.length : '') + ' months';
+    } else if (act === 'csv') {
+      var blob = new Blob([sheetCSV()], { type: 'text/csv;charset=utf-8' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = CFG.slug.replace(/-spreadsheet$/, '') + '-plan.csv';
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      markUsed(); track('calc_sheet_download', { rows: sheetData ? sheetData.rows.length : 0 });
+    } else if (act === 'print') {
+      markUsed(); track('calc_sheet_print', {});
+      window.print();
+    }
+  });
+
+  // ── planner page: the date, plus what to pay this month ──────
+  function plannerMode(r, debts, extra, chosen, start) {
+    var first = r.monthlyData[0], second = r.monthlyData[1];
+    var payRow = function (m) {
+      return debts.map(function (d) {
+        var a = m && m.amort && m.amort[d.id];
+        return { d: d, paid: a ? a.paid : 0 };
+      }).filter(function (x) { return x.paid > 0.005; }).sort(function (a, b) { return b.paid - a.paid; });
+    };
+    var focus = E.firstTarget(debts, chosen);
+    var payLabel = function (x, isF) {
+      var floor = Math.max(x.d.minPayment, E.minPaymentFloors(x.d).now);
+      if (x.paid < floor - 0.5) return 'final payment';
+      if (isF) return extra > 0 ? 'focus debt: minimum + ' + money(extra) + ' extra' : 'focus debt';
+      return x.paid > floor + 0.5 ? 'minimum + rollover' : 'minimum';
+    };
+    var now = payRow(first);
+    var total = now.reduce(function (a, x) { return a + x.paid; }, 0);
+    var next = r.perDebt.filter(function (p) { return p.paidOffMonth; }).sort(function (a, b) { return a.paidOffMonth - b.paidOffMonth; })[0];
+    var by = {}; debts.forEach(function (d) { by[d.id] = d; });
+    return '<div class="date-hero"><div class="dh-label">Your estimated debt-free month</div><div class="dh-date">' + monthLong(r.months) + '</div><div class="dh-sub">' + plural(r.months, 'monthly payment') + ' from now &middot; ' + money(r.totalInterest) + ' total interest &middot; ' + STRAT_NAME[chosen] + '</div></div>' +
+      '<h3 class="rh">What to pay in ' + monthLong(1) + '</h3>' +
+      '<table class="rank"><thead><tr><th>Debt</th><th>Pay</th><th></th></tr></thead><tbody>' +
+      now.map(function (x) { var isF = focus && x.d.id === focus.id; return '<tr' + (isF ? ' class="win"' : '') + '><td>' + esc(x.d.name) + '</td><td>' + money(x.paid) + '</td><td class="muted sm">' + payLabel(x, isF) + '</td></tr>'; }).join('') +
+      '<tr><td><strong>Total</strong></td><td><strong>' + money(total) + '</strong></td><td></td></tr></tbody></table>' +
+      (next ? note('First milestone: <strong>' + esc(by[next.id] ? by[next.id].name : '') + '</strong> is paid off in ' + monthLong(next.paidOffMonth) + '. Its payment then rolls into the next debt.') : '') +
+      '<h3 class="rh">Every payoff, in order</h3>' + orderList(r, debts) +
+      chart([{ name: STRAT_NAME[chosen], data: remainingSeries(r) }], start) + diverged(r) + optimizedTeaser(debts, extra, r);
+  }
+
   function vsCard(title, sub, r, debts, strat) {
     var first = E.firstTarget(debts, strat);
     return '<div class="vs-card"><div class="vs-title">' + title + '</div><div class="vs-sub">' + sub + '</div>' +

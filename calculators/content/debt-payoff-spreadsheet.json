@@ -1,0 +1,58 @@
+{
+  "slug": "debt-payoff-spreadsheet",
+  "title": "Debt Payoff Spreadsheet: Avalanche or Snowball",
+  "metaDescription": "Free debt payoff spreadsheet. Pick avalanche, snowball or your own order, include 0% promos, and download a month-by-month schedule for Excel or Google Sheets.",
+  "h1": "Debt Payoff Spreadsheet With Avalanche, Snowball or Your Own Order",
+  "lede": "Add your debts, pick a payoff order and see the month-by-month schedule: what to pay each debt, what is still owed and when each one is gone. Download it for Excel or Google Sheets, or print it.",
+  "dateModified": "2026-11-11",
+  "sections": [
+    {
+      "h2": "Choose the order, get the schedule",
+      "html": "<p>The Strategy setting decides which debt gets your extra money first. The schedule below it rebuilds instantly.</p><ul><li><strong>Avalanche:</strong> the highest interest rate first. It is designed to keep total interest as low as the simple methods allow.</li><li><strong>Snowball:</strong> the smallest balance first, so the first payoff tends to come sooner.</li><li><strong>Your order:</strong> debts are paid from the top of your list down, so you can test any sequence by reordering the list.</li></ul><p>Whatever the order, every debt receives its minimum each month, and a paid-off debt's payment rolls into the next one.</p>"
+    },
+    {
+      "h2": "0% promo rates, handled",
+      "html": "<p>Hand-built spreadsheets often treat a 0% balance transfer as free forever. Tick <em>0% / promo rate</em> on a debt and enter how many months are left and the rate afterward. The schedule keeps that balance at the promo rate until the promo ends, then charges the new rate. In avalanche order, the debt moves up the list when its rate jumps, which is how the dashboard handles it too.</p>"
+    },
+    {
+      "h2": "Building one yourself: the formulas involved",
+      "html": "<p>If you want to build your own sheet, each debt needs the same three steps every month:</p><ul><li><strong>Interest:</strong> balance &times; (APR &divide; 12).</li><li><strong>Payment:</strong> the smaller of the scheduled payment and the balance plus that interest.</li><li><strong>New balance:</strong> balance + interest &minus; payment.</li></ul><p>The hard part is the extra money. Each month a formula has to find the current target debt, send it the extra plus every freed-up minimum, and spill any leftover onto the next debt when a balance is cleared mid-month. With four or five debts and a promo rate, that logic gets long. The download here gives you the finished numbers to check your own sheet against.</p>"
+    },
+    {
+      "h2": "What the download contains",
+      "html": "<p>One row per month. For every debt there is a payment column and a balance column, followed by the total paid that month, the interest charged across all debts and the total still owed. The file is a CSV, so Excel, Google Sheets and Numbers all open it. Values are numbers, not formulas, so you can add your own columns for actual payments without breaking anything.</p>"
+    },
+    {
+      "h2": "Keeping the plan current",
+      "html": "<p>Any payoff spreadsheet is only as accurate as its last update. Real payments, new charges and promo changes pull it off course a little each month. Updating the debts here and downloading again every few months keeps it close. The free DebtFree Dashboard does the same update automatically each time you log a payment, starting from the numbers on this page.</p>"
+    }
+  ],
+  "faq": [
+    {
+      "q": "Which is better in a spreadsheet, avalanche or snowball?",
+      "a": "They answer different priorities. Avalanche is built to minimize interest, and snowball is built to clear individual debts sooner. Switch the Strategy setting and compare the total interest and debt-free month for your own numbers. The gap is sometimes large and sometimes zero."
+    },
+    {
+      "q": "Can I use this for credit card debt only?",
+      "a": "Yes. Add only your cards. Leave the minimum blank on any card and the page estimates it, or enter the minimum from your statement for a closer match."
+    },
+    {
+      "q": "Does the spreadsheet include interest?",
+      "a": "Yes. Each month's interest is calculated on every balance at the APR divided by 12 and added before that month's payment. The download has a column for total interest charged each month."
+    },
+    {
+      "q": "Is any of my information saved or sent?",
+      "a": "No. The schedule is calculated in your browser and the file is created on your device. Closing the page clears it, unless you choose to open these debts in the free dashboard, which saves them on this device only."
+    },
+    {
+      "q": "Can I print it?",
+      "a": "Yes. Print worksheet prints every month of the schedule on plain paper, with a box to tick as each month's payments are made."
+    }
+  ],
+  "related": [
+    "debt-snowball-spreadsheet",
+    "debt-avalanche-calculator",
+    "debt-payoff-calculator",
+    "debt-payoff-planner"
+  ]
+}
