@@ -228,8 +228,28 @@ function APP_STRIP(loc) {
 <div class="app-tile web-only"><h3>Premium, one time</h3><p>Unlocks What-If modeling, the payoff roadmap, bills and sinking funds, and amortization export. $24 once, no subscription.</p><a href="${GUMROAD_URL}" class="btn-ghost" target="_blank" rel="noopener" data-gumroad="${loc}">Get Premium for $24 &rarr;</a></div>
 </div></section>`;
 }
+// 2026-11-11 — count arrivals from search engines and AI assistants.
+// GA4 files AI answers (ChatGPT, Perplexity...) under "Referral", mixed with
+// every other site, so each page sends one extra event on the first page of a
+// visit that came from outside: arrive_from_search or arrive_from_ai, with
+// landed_on (page slug) and source (referring site or utm_source). Both show in
+// GA4 > Reports > Engagement > Events with no setup. Google's AI Overviews and
+// AI Mode arrive as google.com and count as search: Google does not separate them.
+const ARRIVAL_SCRIPT = `<script>(function(){try{
+if(sessionStorage.getItem('debtfree_arrival_seen'))return;sessionStorage.setItem('debtfree_arrival_seen','1');
+var q=new URLSearchParams(location.search),utm=(q.get('utm_source')||'').toLowerCase(),ref='';
+try{ref=document.referrer?new URL(document.referrer).hostname.toLowerCase():''}catch(e){}
+if(ref===location.hostname)return;
+var AI=/(^|\\.)(chatgpt\\.com|openai\\.com|perplexity\\.ai|gemini\\.google\\.com|bard\\.google\\.com|copilot\\.microsoft\\.com|claude\\.ai|you\\.com|phind\\.com|meta\\.ai|poe\\.com|grok\\.com|deepseek\\.com|chat\\.mistral\\.ai)$/;
+var AIUTM=/^(chatgpt(\\.com)?|openai|perplexity(\\.ai)?|gemini|copilot|claude(\\.ai)?|grok|deepseek|meta\\.ai)$/;
+var SE=/(^|\\.)(google\\.[a-z.]+|bing\\.com|duckduckgo\\.com|search\\.yahoo\\.com|yahoo\\.com|ecosia\\.org|search\\.brave\\.com|startpage\\.com|yandex\\.[a-z.]+|baidu\\.com)$/;
+var kind=AI.test(ref)||AIUTM.test(utm)?'ai':(SE.test(ref)?'search':'');
+if(!kind||typeof gtag!=='function')return;
+gtag('event','arrive_from_'+kind,{event_category:'acquisition',landed_on:location.pathname.split('/').filter(Boolean).pop()||'calculators',source:ref||utm});
+}catch(e){}})();</script>`;
 const FOOTER = `<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
-${PLAY_SCRIPT}`;
+${PLAY_SCRIPT}
+${ARRIVAL_SCRIPT}`;
 const DISCLAIMER = `<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>`;
 const FOUNDER = `<aside class="founder"><div class="av" aria-hidden="true">K</div><div><h2>Why I built this</h2><p>I’m Kevin. About a year ago I sat down with my own credit card balances and couldn’t get a straight answer to one question: when does this actually end? Most tools I found wanted an account or a bank login. So I built the one I wanted &mdash; the same math running on this page &mdash; and I use it on my own debt every month.</p><p class="sig">&mdash; Kevin, founder of DebtFree Dashboard</p></div></aside>`;
 function CTA(loc = 'calculator') {
