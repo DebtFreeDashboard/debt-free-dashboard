@@ -3067,6 +3067,12 @@
           <div class="field-hint">Day of the month it&rsquo;s due</div>
         </div>
         <div class="form-field">
+          <label for="debt-due-day2">2nd Payment Day <span class="field-optional">optional</span></label>
+          <input type="text" inputmode="numeric" id="debt-due-day2" placeholder="--" min="1" max="31"
+            oninput="clearFieldError(this)" />
+          <div class="field-hint">If you pay twice a month</div>
+        </div>
+        <div class="form-field field-full">
           <label for="debt-min">Min Payment ($) <span class="field-optional">optional</span></label>
           <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
             oninput="clearFieldError(this)"  data-affix="$"/>
@@ -4114,7 +4120,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.55.4';
+const APP_VERSION = '1.56.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4122,6 +4128,15 @@ const APP_VERSION = '1.55.4';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.56.0',
+    date: 'November 11, 2026',
+    name: 'Pay twice a month',
+    whatsNew: [
+      'If you pay a debt twice a month, for example on the 1st and the 15th, you can now add a second payment day when you add or edit the debt. Coming Up then shows half the minimum on each day, and tells you how much is still left before the second one. Your payoff plan and dates are unchanged.'
+    ],
+    fixes: []
+  },
   {
     version: '1.55.4',
     date: 'November 10, 2026',
@@ -8176,7 +8191,10 @@ function addDebt() {
     originationDate: originationDate,
     // v1.42.0 — stored unclamped; clamped per month at read time so a
     // card due on the 31st keeps saying 31 rather than being rewritten to 28.
-    dueDay: sanitizeDueDay((document.getElementById('debt-due-day') || {}).value)
+    dueDay: sanitizeDueDay((document.getElementById('debt-due-day') || {}).value),
+    // v1.56.0 — optional second payment day for people who pay twice a month.
+    dueDay2: sanitizeSecondDueDay((document.getElementById('debt-due-day') || {}).value,
+                                  (document.getElementById('debt-due-day2') || {}).value)
   });
 
   // v1.21.1 — activation event. The single most important funnel step: a
@@ -8230,6 +8248,9 @@ function addDebt() {
   var _op = document.getElementById('debt-orig-principal'); if (_op) _op.value = '';
   var _tm = document.getElementById('debt-term-months');    if (_tm) _tm.value = '';
   var _od = document.getElementById('debt-orig-date');      if (_od) _od.value = '';
+  // v1.56.0 — the due day was never cleared, so the next debt added inherited it.
+  var _dd = document.getElementById('debt-due-day');        if (_dd) _dd.value = '';
+  var _dd2 = document.getElementById('debt-due-day2');      if (_dd2) _dd2.value = '';
 
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save();
@@ -8464,6 +8485,8 @@ function openEditModal(id) {
   document.getElementById('edit-min').value     = d.minPayment;
   var _eddIn = document.getElementById('edit-due-day');
   if (_eddIn) _eddIn.value = d.dueDay || '';
+  var _edd2In = document.getElementById('edit-due-day2');
+  if (_edd2In) _edd2In.value = sanitizeSecondDueDay(d.dueDay, d.dueDay2) || '';
 
   // Promo fields
   const hasPromo = !!d.promoEnd;
@@ -8676,6 +8699,8 @@ function saveEditDebt() {
   d.originationDate = (_eod && _eod.value) ? _eod.value : null;
   var _edd = document.getElementById('edit-due-day');
   d.dueDay = _edd ? sanitizeDueDay(_edd.value) : (d.dueDay || null);
+  var _edd2 = document.getElementById('edit-due-day2');
+  d.dueDay2 = sanitizeSecondDueDay(d.dueDay, _edd2 ? _edd2.value : d.dueDay2);
 
   // v1.11.0 — Reconciliation: if the saved balance doesn't match what the
   // ledger (originalBalance + accruals + adjustments − payments) would
@@ -11613,6 +11638,86 @@ function sanitizeDueDay(v) {
   return n;
 }
 
+// v1.56.0 — PAY TWICE A MONTH
+// A debt may carry a second payment day (dueDay2) for people who split the
+// minimum across two paychecks, e.g. the 1st and the 15th. It only means
+// anything alongside a due day, and never equals it. Only the Coming Up card
+// and the due tag read it: the payoff plan stays monthly, so the plan, its
+// dates and its interest are exactly what they were. The earlier day asks
+// for half the minimum, the later day for the whole minimum by then.
+function sanitizeSecondDueDay(dueDay, v) {
+  var a = sanitizeDueDay(dueDay), b = sanitizeDueDay(v);
+  if (!a || !b || a === b) return null;
+  return b;
+}
+
+// [earlier day, later day] for a split debt, or null.
+function splitDueDays(d) {
+  var a = sanitizeDueDay(d && d.dueDay);
+  var b = sanitizeSecondDueDay(a, d && d.dueDay2);
+  if (!b) return null;
+  return a < b ? [a, b] : [b, a];
+}
+
+function ordinalDay(day) {
+  return day + (day % 10 === 1 && day !== 11 ? 'st' : day % 10 === 2 && day !== 12 ? 'nd'
+         : day % 10 === 3 && day !== 13 ? 'rd' : 'th');
+}
+
+// The Coming Up row for a debt paid twice a month. Same statuses and fields
+// as a single-day row, plus `part` (1 or 2) and `nextOwed`. Payments are
+// counted for the calendar month, as everywhere else: by the earlier day the
+// row asks for half the minimum, by the later day for all of it.
+function splitDueRow(d, days, due) {
+  var now = new Date();
+  var y = now.getFullYear(), m = now.getMonth();
+  var A = dueDateIn(y, m, days[0]), B = dueDateIn(y, m, days[1]);
+  // Days 30 and 31 both land on Feb 28: one date, the whole minimum.
+  var same = A.getTime() === B.getTime();
+  var half = same ? due : Math.round(due * 50) / 100;
+  var hit = function (paid, target) { return paid > 0 && (target <= 0 || paid + 0.005 >= target); };
+
+  var covA = dueCoverageFor(d.id, A), covB = dueCoverageFor(d.id, B);
+  var nextA = dueDateIn(y, m + 1, days[0]), nextB = dueDateIn(y, m + 1, days[1]);
+  var row = { id: d.id, name: d.name, split: true, forNext: false, scheduledOnly: false };
+
+  function put(status, when, part, target, paid) {
+    row.status = status; row.date = when; row.dueDay = when.getDate(); row.days = daysUntil(when);
+    row.part = same ? 0 : part; row.due = target; row.paid = paid;
+    row.partial = paid > 0 && !hit(paid, target) && status !== 'logged';
+    row.amount = status === 'logged' ? target : (paid > 0 ? Math.max(0, target - paid) : target);
+    return row;
+  }
+  function upcoming(when) { var n = daysUntil(when); return n === 0 ? 'today' : (n <= DUE_SOON_DAYS ? 'soon' : 'later'); }
+
+  if (hit(covB.amount, due)) {
+    // This month is handled. Next month's first day may already be close.
+    if (daysUntil(nextA) <= DUE_SOON_DAYS) {
+      var ws = new Date(nextA.getFullYear(), nextA.getMonth(), nextA.getDate() - DUE_SOON_DAYS);
+      var nh = (dueDateIn(nextA.getFullYear(), nextA.getMonth(), days[0]).getTime()
+                === dueDateIn(nextA.getFullYear(), nextA.getMonth(), days[1]).getTime()) ? due : half;
+      var cn = dueCoverageFor(d.id, nextA, ws);
+      row.forNext = true;
+      if (hit(cn.amount, nh)) {
+        row.scheduledOnly = !cn.applied; row.nextOwed = nextB;
+        return put('logged', nextA, 1, nh, cn.amount);
+      }
+      row.nextOwed = nextA;
+      return put(upcoming(nextA), nextA, 1, nh, cn.amount);
+    }
+    row.scheduledOnly = !covB.applied;
+    row.nextOwed = nextA;
+    return put('logged', daysUntil(B) >= 0 ? B : nextA, 2, due, covB.amount);
+  }
+  if (daysUntil(B) < 0) { row.nextOwed = B; return put('passed', B, 2, due, covB.amount); }
+  if (!hit(covA.amount, half)) {
+    row.nextOwed = A;
+    return put(daysUntil(A) < 0 ? 'passed' : upcoming(A), A, 1, half, covA.amount);
+  }
+  row.nextOwed = B;
+  return put(upcoming(B), B, 2, due, covB.amount);
+}
+
 // Rows for the Upcoming card. One per active debt that has a dueDay.
 //   status: 'logged'   payment already logged this month
 //           'today'    due today, nothing logged
@@ -11665,6 +11770,10 @@ function upcomingDues() {
     // positive minPayment on every debt, so this is always a real figure.
     var floors = minPaymentFloors(d);
     var due = Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment));
+
+    // v1.56.0 — paid twice a month: its own row logic, single-day path untouched.
+    var _split = splitDueDays(d);
+    if (_split) { rows.push(splitDueRow(d, _split, due)); return; }
 
     var cov = dueCoverageFor(d.id, thisMonth);
     var paid = cov.amount;
@@ -11784,12 +11893,15 @@ function dueRowLabel(r) {
   // v1.48.2 — what's been logged so far, stated rather than judged. The user
   // may have meant to pay less; the card reports the two figures and stops.
   var part = r.partial ? ' \u00b7 ' + fmt(r.paid) + ' of ' + fmt(r.due) + ' logged' : '';
+  // v1.56.0 — which of the month's two payments this row is about.
+  if (r.split && r.part) part += r.part === 1 ? ' \u00b7 1st of 2 payments' : ' \u00b7 2nd of 2 payments';
   if (r.status === 'today')  return 'due today' + part;
   if (r.status === 'passed') {
     // Deliberately not "missed" or "late" — the app cannot know that.
     return 'was due ' + dueDayLabel(r.date) + ' \u00b7 '
          + (r.partial ? fmt(r.paid) + ' of ' + fmt(r.due) + ' logged'
-            : isBill ? 'not marked paid yet' : 'no payment logged yet');
+            : isBill ? 'not marked paid yet' : 'no payment logged yet')
+         + (r.split && r.part ? (r.part === 1 ? ' \u00b7 1st of 2 payments' : ' \u00b7 2nd of 2 payments') : '');
   }
   if (r.days === 1) return 'due tomorrow' + part;
   return 'due ' + dueDayLabel(r.date) + ' · in ' + r.days + ' days' + part;
@@ -11890,6 +12002,7 @@ function saveDueSetter() {
     var d = (debts || []).find(function (x) { return x.id === row.id; });
     if (!d) return;
     d.dueDay = row.day;
+    d.dueDay2 = sanitizeSecondDueDay(row.day, d.dueDay2);   // v1.56.0
     if (row.day) set++;
   });
 
@@ -11910,9 +12023,9 @@ function dueTagFor(d) {
   var cls = 'due-tag';
   if (r && (r.status === 'today' || r.status === 'soon')) cls += ' due-tag-soon';
   else if (r && r.status === 'passed') cls += ' due-tag-passed';
-  var ord = day + (day % 10 === 1 && day !== 11 ? 'st' : day % 10 === 2 && day !== 12 ? 'nd'
-            : day % 10 === 3 && day !== 13 ? 'rd' : 'th');
-  return '<span class="' + cls + '">due ' + ord + '</span>';
+  var sp = splitDueDays(d);
+  if (sp) return '<span class="' + cls + '">due ' + ordinalDay(sp[0]) + ' &amp; ' + ordinalDay(sp[1]) + '</span>';
+  return '<span class="' + cls + '">due ' + ordinalDay(day) + '</span>';
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -12570,7 +12683,7 @@ function renderUpcoming() {
     // following month's occurrence.
     var _now = new Date();
     var owed = rows.map(function (r) {
-      var d = (r.status === 'logged' && r.dueDay)
+      var d = r.nextOwed ? r.nextOwed : (r.status === 'logged' && r.dueDay)
         ? dueDateIn(_now.getFullYear(), _now.getMonth() + (r.forNext ? 2 : 1), r.dueDay) : r.date;
       return { name: r.name, date: d };
     });
@@ -12620,6 +12733,11 @@ function logFromDue(debtId) {
   if (sel) sel.value = String(debtId);
   var d = (debts || []).find(function (x) { return x.id === debtId; });
   var amt = document.getElementById('qlog-amount');
+  if (amt && d && !amt.value && splitDueDays(d)) {
+    // v1.56.0 — paid twice a month: prefill what Coming Up says is left.
+    var _r = upcomingDues().filter(function (x) { return x.id === debtId && !x.kind; })[0];
+    if (_r) amt.value = Math.round(_r.amount * 100) / 100;
+  }
   if (amt && d && !amt.value) {
     var floors = minPaymentFloors(d);
     amt.value = Math.round(Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment)));
@@ -17115,7 +17233,8 @@ function sanitizeDebts(parsed) {
       origPrincipal: origPrincipal,
       termMonths: termMonths,
       originationDate: originationDate,
-      dueDay: sanitizeDueDay(debt.dueDay)
+      dueDay: sanitizeDueDay(debt.dueDay),
+      dueDay2: sanitizeSecondDueDay(debt.dueDay, debt.dueDay2)
     });
   });
 }
@@ -17264,7 +17383,7 @@ function _readCalcImport() {
       promoApr: promo ? pApr : null, promoEnd: promo ? String(d.promoEnd).slice(0, 10) : null,
       postPromoApr: promo ? post : null, transferFee: 0, hasPromo: promo,
       loanType: inferLoanType(type), includeInStrategy: shouldIncludeInStrategy(type),
-      origPrincipal: null, termMonths: null, originationDate: null, dueDay: null
+      origPrincipal: null, termMonths: null, originationDate: null, dueDay: null, dueDay2: null
     });
   });
   if (!out.length) return null;
@@ -18245,6 +18364,11 @@ if (isInStandaloneMode() ||
       <div class="form-field" style="grid-column:1/-1">
         <label for="edit-due-day">Due Day <span class="field-optional">optional</span></label>
         <input type="text" inputmode="numeric" id="edit-due-day" min="1" max="31" placeholder="15" />
+      </div>
+      <div class="form-field" style="grid-column:1/-1">
+        <label for="edit-due-day2">2nd Payment Day <span class="field-optional">optional</span></label>
+        <input type="text" inputmode="numeric" id="edit-due-day2" min="1" max="31" placeholder="--" />
+        <div class="field-hint">If you pay twice a month, Coming Up splits the minimum across both days</div>
       </div>
 
     </div>
