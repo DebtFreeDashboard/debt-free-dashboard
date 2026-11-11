@@ -56,7 +56,17 @@ instead: `C:\Users\kevin\Documents\GitHub\debt-free-dashboard` (pull first).
 
 DebtFree Dashboard — a single-file PWA debt payoff tool. `dashboard.html` is the
 entire app (HTML/CSS/JS, localStorage, Chart.js, no backend). Freemium: generous
-free tier, $24 one-time premium via Gumroad, verified by license key.
+free tier, $24 one-time Premium.
+
+It ships two ways from the same files:
+
+- **Website / PWA** at `mydebtdashboard.com`. Premium is sold on Gumroad ($24)
+  and unlocked with a license key.
+- **Google Play app** "DebtFree: Debt Payoff Tracker" (`com.mydebtdashboard.app`),
+  live since **November 7, 2026**. It is a Trusted Web Activity: a thin Android
+  wrapper that loads this website, so **merging to `main` updates the website
+  and the Play app together**. Premium is a Play in-app purchase
+  (`premium_unlock`, $24, same price as Gumroad). See "Google Play app" below.
 
 Kevin is a non-coder founder and product owner. He decides direction; Claude
 handles technical execution end to end.
@@ -74,9 +84,90 @@ handles technical execution end to end.
 | `app/dev.html` | **Generated** dev build — never edit by hand (see below) |
 | `tools/make-dev.js` | Generates `app/dev.html` from `app/dashboard.html` |
 | `tools/verify-dev.js` | Proves the dev build is isolated from real data |
+| `calculators/` | Free calculator and spreadsheet pages (search traffic). **Generated** — see "Calculator pages" |
+| `calculators/content/<slug>.json` | Copy for each calculator page (edit this, then rebuild) |
+| `tools/build-calculators.js` | Builds `/calculators/` (hub + every page) from `content/` and its `PAGES` list |
+| `tools/make-calc-engine.js` | Generates `calculators/assets/engine.js` from `dashboard.html` so the math never drifts |
+| `sitemap.xml` | Every public page, calculators included. Add new pages here |
+| `.well-known/assetlinks.json` | Links the Play app to the site (upload + Play App Signing keys). Don't touch unless the signing key changes |
+| `tools/play-billing/` | Cloudflare Worker that verifies and acknowledges Play purchases (the only server; never sees debt data) |
 
-Live: `mydebtdashboard.com` (homepage) and `/app/dashboard.html` (the app).
-Dev build: `/app/dev.html` — same origin, deliberately inert (see below).
+Live: `mydebtdashboard.com` (homepage), `/app/dashboard.html` (the app),
+`/calculators/` (calculator hub). Dev build: `/app/dev.html` — same origin,
+deliberately inert (see below).
+
+## Google Play app
+
+- **One codebase.** The Play app is the website inside a Trusted Web Activity,
+  so there is no separate Android build to ship. A merge to `main` deploys the
+  site (GitHub Pages) and the Play app picks it up on next load. A new Play
+  *release* (new bundle in Play Console) is only needed to change the wrapper
+  itself or to show a "What's new" note on the Play listing.
+- **Detecting the Play app.** `IS_PLAY_BUILD` near the top of
+  `app/dashboard.html` is true when the page was opened by
+  `android-app://com.mydebtdashboard.app` (and remembered in
+  `sessionStorage.debtfree_play`). The homepage and calculator pages add the
+  class `in-play-app` to `<html>` from the same flag.
+- **The Play app must never show the Gumroad link or price.** Google Play's
+  payments policy forbids steering to outside payment. On the site, anything
+  Gumroad carries `web-only` (hidden by `.in-play-app .web-only`), and the
+  Play badge is hidden inside the Play app and on iPhone/iPad. Any new upgrade
+  button or Gumroad mention needs the same treatment.
+- **Premium in the Play app** uses Google Play Billing (Digital Goods API, Chrome
+  only; the app explains how to switch if another browser opened it).
+  `tools/play-billing/worker.mjs` verifies and acknowledges each purchase
+  (Google refunds anything not acknowledged within 3 days).
+- **Review prompt** (v1.55.0): Play build only, after a logged payment and 3+ days
+  of use, opens the Play listing. Follows Google's rules (no pre-question, no
+  reward).
+- **Analytics differ by build.** GA4 runs on the website and the Play app.
+  Microsoft Clarity (session recording) runs on the website only; it is not
+  loaded when `IS_PLAY_BUILD` (v1.55.4). The Play Data safety form must match
+  whatever the Play app actually collects, so tell Kevin before adding any new
+  tracking to the Play build.
+- **Store listing** (Play Console, Kevin edits it himself). Nov 10, 2026: new short
+  description ("Debt payoff planner & calculator. Snowball or avalanche. No bank
+  login.") and six new captioned phone screenshots were sent for Google review.
+- **Compliance.** Trader status is declared in Play Console. Keep listing copy in
+  the same neutral-tool framing as the app (see Compliance below).
+
+## Calculator pages
+
+`/calculators/` holds free calculators and spreadsheet pages that bring in
+search traffic and point to the app. They are generated; never hand-edit the
+HTML in `calculators/<slug>/`.
+
+- Copy lives in `calculators/content/<slug>.json`; behaviour and starting
+  numbers live in `PAGES` in `tools/build-calculators.js`.
+- Rebuild with `BUILD_DATE=YYYY-MM-DD node tools/build-calculators.js`
+  (`BUILD_DATE` keeps unchanged pages' dates stable). If the dashboard's math
+  changed, run `node tools/make-calc-engine.js` first.
+- A new page also needs a `<url>` entry in `sitemap.xml`.
+- Modes: `sheet` (month-by-month table with a free CSV download and print) and
+  `planner` (debt-free date plus what to pay each debt this month). Pages with
+  `appStrip: true` end with "Keep this plan going on your phone" (Play badge on
+  Android, web app, Gumroad on the web only).
+- Tests: `node tools/test-calculators.js`.
+- After new pages go live, Kevin resubmits `sitemap.xml` and requests indexing
+  in Google Search Console (site verified for `https://mydebtdashboard.com/`).
+
+## Analytics events (GA4)
+
+Besides page views, the site sends:
+
+| Event | Where | Meaning |
+|---|---|---|
+| `play_badge_click` | Homepage, calculator pages | Someone tapped the Google Play badge (`location` says which one) |
+| `gumroad_click` | Calculator pages | Someone tapped a Gumroad link |
+| `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
+| `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
+
+`arrive_from_*` is checked once per browser session, on the first page viewed,
+and fires only for an outside search or AI referrer (or a matching
+`utm_source`). Google's AI Overviews and AI Mode arrive as google.com and count
+as search; Google doesn't separate them.
+To break them down by page in GA4 reports, `landed_on` and `source` have to be
+registered as custom dimensions (a Kevin step in GA4 admin).
 
 ## Shipping rules
 
@@ -106,6 +197,11 @@ Other rules:
   23,000-line diff. Claude writes files; Kevin commits in GitHub Desktop.
   To see what GitHub Desktop will see:
   `git -c core.autocrlf=true --no-optional-locks status --short`
+- **Cloud sessions (Claude on the web) work through pull requests.** Branch,
+  commit, push and open a PR; never push to `main` and never merge. Kevin merges
+  in GitHub in the browser (that merge deploys the site and the Play app), then
+  pulls with GitHub Desktop. The repo stores LF in git, so a Linux commit is
+  fine there; the CRLF warning above is about the Cowork VM's working copy.
 
 ## The dev build (`app/dev.html`)
 
@@ -234,3 +330,30 @@ shows; never tell someone what to do with their money.
 - Concise responses. Skip nitpicky code commentary.
 - When a calculation looks wrong, reproduce it computationally before
   explaining. Several real bugs surfaced exactly this way.
+
+## Change log
+
+The app's own version history, written for users, is `RELEASE_NOTES` in
+`app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
+notes don't cover: site pages, tracking, the Play listing and project setup.
+Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-10** — Calculator pages `debt-snowball-spreadsheet`,
+  `debt-payoff-spreadsheet` and `debt-payoff-planner` added (PR #4), with a
+  free CSV download of the payoff schedule and print, and added to
+  `sitemap.xml`. GA4 `arrive_from_search` / `arrive_from_ai` added to every
+  calculator page and the hub (PR #5). Kevin resubmitted the sitemap and
+  requested indexing for the three pages in Search Console.
+- **2026-11-10** — v1.56.0 "Pay twice a month" (PR #3): optional second payment
+  day per debt (`dueDay2`); Coming Up shows half the minimum by the earlier day
+  and the rest by the later one; payoff math unchanged. Confirmed live on
+  Kevin's iPhone.
+- **2026-11-10** — v1.55.3 and v1.55.4: the Play app explains that buying
+  Premium needs Chrome; Microsoft Clarity no longer loads in the Play app
+  (website unchanged). New Play short description and six captioned
+  screenshots sent for Google review. Trader status declared in Play Console.
+- **2026-11-08** — v1.55.1: Play billing retries; Play-build detection limited
+  to our own app.
+- **2026-11-07** — Android app live on Google Play ($24 Premium, same as
+  Gumroad). v1.55.0: Play review prompt, any orientation. Google Play badge on
+  the homepage and calculator pages.
