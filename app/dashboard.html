@@ -625,7 +625,10 @@
   .pf-num { text-align:right; }
   .pf-td { padding:12px; border-bottom:1px solid var(--border); font-family:var(--font-mono); }
   .pf-td:first-child { font-family:var(--font-body); }
-  .pf-table tbody tr:hover { background:var(--surface2); }
+  /* v1.62.1 — hover tint only, on devices that really hover. The old
+     'background' shorthand also wiped the row's lender glow, and on a phone
+     a tap leaves :hover stuck, so the tapped card lost its colour. */
+  @media (hover: hover) { .pf-table tbody tr:hover { background-color:var(--surface2); } }
 
   /* ══════════════════════════════════════════════════════════════════════
      v1.28.2 — RESPONSIVE TABLES
@@ -4396,7 +4399,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.62.0';
+const APP_VERSION = '1.62.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4404,6 +4407,15 @@ const APP_VERSION = '1.62.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.62.1',
+    date: 'November 12, 2026',
+    name: 'Card colors stay put',
+    whatsNew: [],
+    fixes: [
+      "Fixed a debt losing its lender color after you tapped it in the Premium list."
+    ]
+  },
   {
     version: '1.62.0',
     date: 'November 12, 2026',
