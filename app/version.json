@@ -1,8 +1,8 @@
 {
-  "version": "1.58.1",
+  "version": "1.59.0",
   "releaseDate": "2026-11-12",
-  "releaseName": "Logos for your existing debts",
+  "releaseName": "More lender logos",
   "notes": [
-    "Debts you added before the logo update now pick up their lender automatically from their name (for example “Discover” or “Citi Promo”). If it guessed wrong, change it or choose “Not listed” in Edit."
+    "43 of the 52 issuers and lenders now show their real logo, up from 15, including Capital One, Citi, Discover, Synchrony, U.S. Bank, Amazon, Walmart, Navient, SoFi and Ally. The logos are built into the app, so nothing about your debts is sent anywhere to show them. The rest still show a letter tile in the lender’s colors."
   ]
 }
