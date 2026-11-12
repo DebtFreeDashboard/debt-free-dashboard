@@ -31,6 +31,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="DebtFree">
 <meta name="theme-color" content="#0a0a0f">
+<script>
+  // v1.57.0 — apply the saved theme before the first paint. applyTheme() runs
+  // at the end of the page, so light-theme users saw a dark flash on every
+  // load. Same rule as the loader: no stored theme = new user = light.
+  try {
+    if (localStorage.getItem('debtfree_theme') !== 'dark') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      var _tc = document.querySelector('meta[name="theme-color"]');
+      if (_tc) _tc.setAttribute('content', '#f4f4f7');
+    }
+  } catch (e) {}
+</script>
 <meta name="description" content="Your interactive debt payoff command center. Know your freedom date.">
 <!-- v1.31.2 — manifest lives at the site root, not under /app/. The old
      /app/manifest.json path 404s, so installed PWAs were getting no manifest
@@ -1360,6 +1372,86 @@
     background: var(--accent);
     transition: width 0.6s cubic-bezier(.23,1,.32,1);
   }
+
+  /* v1.57.0 — payoff progress: fixed red→amber→green scale, revealed up to
+     the share paid, with a marker at the current position. */
+  .payoff-bar { margin-top: 10px; width: 100%; }
+  .payoff-track {
+    position: relative; height: 8px; border-radius: 99px;
+    background: var(--surface3);
+  }
+  .payoff-fill {
+    height: 100%; border-radius: 99px;
+    background-image: linear-gradient(90deg, #e04848 0%, #e8792f 30%, #e9b23a 55%, #8fc94a 78%, #1fb57e 100%);
+    background-repeat: no-repeat;
+    transition: width 0.6s cubic-bezier(.23,1,.32,1);
+  }
+  .payoff-marker {
+    position: absolute; top: 50%; width: 14px; height: 14px; margin-left: -7px; margin-top: -7px;
+    border-radius: 50%; background: #fff;
+    box-shadow: 0 0 0 2px rgba(10,10,30,0.25), 0 1px 4px rgba(0,0,0,0.35);
+    transition: left 0.6s cubic-bezier(.23,1,.32,1);
+  }
+  .payoff-meta {
+    display: flex; justify-content: space-between; gap: 8px; margin-top: 6px;
+    font-family: var(--font-mono); font-size: 0.62rem; color: var(--text-dim);
+  }
+  .payoff-meta strong { color: var(--text-muted); font-weight: 700; }
+
+  /* v1.57.0 — debt-type colour band. Same colours as the type badges, so a
+     long list scans by type without reading. Free cards get a top band and a
+     faint wash; premium rows get a left band on the name cell. */
+  .debt-item { position: relative; overflow: hidden; }
+  .debt-item::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 3px;
+    background: var(--band, var(--border2));
+  }
+  .debt-item::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: 44px;
+    background: linear-gradient(180deg, var(--band-wash, transparent), transparent);
+    pointer-events: none;
+  }
+  .debt-item > * { position: relative; z-index: 1; }
+  .debt-type-cc       { --band: var(--accent3); --band-wash: rgba(224,72,72,0.10); }
+  .debt-type-student  { --band: var(--accent2); --band-wash: rgba(123,94,167,0.12); }
+  .debt-type-auto     { --band: var(--accent5); --band-wash: rgba(43,179,170,0.10); }
+  .debt-type-personal { --band: var(--accent4); --band-wash: rgba(217,154,31,0.10); }
+  .debt-type-mortgage { --band: var(--accent);  --band-wash: rgba(0,168,132,0.10); }
+  .debt-type-other    { --band: var(--text-dim); --band-wash: transparent; }
+  .pf-table td.pf-name { box-shadow: inset 3px 0 0 var(--band, transparent); padding-left: 14px; }
+
+  /* v1.57.0 — add-debt field guide */
+  .field-help {
+    position: relative; margin-bottom: 16px;
+    background: rgba(43,179,170,0.08); border: 1px solid rgba(43,179,170,0.30);
+    border-radius: var(--radius-sm);
+  }
+  .field-help-toggle {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    background: none; border: 0; padding: 12px 44px 12px 14px; text-align: left;
+    color: var(--text); font: inherit; font-size: 0.85rem; line-height: 1.4; cursor: pointer;
+  }
+  .field-help-icon {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(43,179,170,0.18); color: var(--accent5);
+    font-family: var(--font-mono); font-weight: 700; font-size: 0.85rem;
+  }
+  .field-help-cta { color: var(--accent5); font-weight: 600; }
+  .field-help-close {
+    position: absolute; top: 8px; right: 8px; width: 30px; height: 30px;
+    background: none; border: 0; border-radius: 8px; cursor: pointer;
+    color: var(--text-dim); font-size: 1.15rem; line-height: 1;
+  }
+  .field-help-close:hover { color: var(--text); background: var(--surface3); }
+  .field-help-body { padding: 0 14px 12px 54px; }
+  .field-help-body dl { display: grid; gap: 8px; }
+  .field-help-body dt {
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--accent5); font-weight: 700;
+  }
+  .field-help-body dd { font-size: 0.8rem; line-height: 1.45; color: var(--text-muted); margin: -4px 0 0; }
+  @media (max-width: 560px) { .field-help-body { padding-left: 14px; } }
 
   /* ─── STRATEGY SELECTOR ─── */
   .strategy-grid {
@@ -3032,6 +3124,24 @@
       <div id="welcome-hint" style="display:none;background:rgba(0,168,132,0.08);border:1px solid rgba(0,168,132,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.5;">
         &#128075; <strong>Welcome!</strong> Add your first debt below &mdash; your freedom date appears the moment you do. Your balances stay on your device &mdash; never on our servers.
       </div>
+      <!-- v1.57.0 — field help. Collapsed by default; dismiss hides it for good. -->
+      <div id="field-help" class="field-help">
+        <button type="button" class="field-help-toggle" onclick="toggleFieldHelp()" aria-expanded="false" aria-controls="field-help-body">
+          <span class="field-help-icon" aria-hidden="true">?</span>
+          <span class="field-help-text">Not sure what goes where? <span class="field-help-cta">Tap for a quick guide to each field</span></span>
+        </button>
+        <button type="button" class="field-help-close" onclick="dismissFieldHelp()" aria-label="Hide this guide">&times;</button>
+        <div id="field-help-body" class="field-help-body" hidden>
+          <dl>
+            <dt>Debt Name</dt><dd>Anything you&rsquo;ll recognize, like &ldquo;Chase Freedom&rdquo; or &ldquo;Car loan.&rdquo; Leave it blank and we&rsquo;ll name it for you.</dd>
+            <dt>Balance</dt><dd>What you owe today. Your lender&rsquo;s app or website shows it as the <em>current balance</em>; that&rsquo;s usually more up to date than your last statement.</dd>
+            <dt>APR</dt><dd>The yearly interest rate. On a credit card statement it&rsquo;s listed as the <em>purchase APR</em>. If you have more than one rate, use the one on most of your balance.</dd>
+            <dt>Due Day</dt><dd>The day of the month your payment is due. It powers the Coming Up list and the &ldquo;due soon&rdquo; alerts on your dashboard. It doesn&rsquo;t change your payoff math.</dd>
+            <dt>Min Payment</dt><dd>The smallest payment your lender requires each month, shown on your statement. Leave it blank and we&rsquo;ll estimate it from the balance.</dd>
+            <dt>0% / promo APR</dt><dd>If some or all of this balance is on an intro rate, tick the box and add the date it ends. The plan switches to the regular rate on that date.</dd>
+          </dl>
+        </div>
+      </div>
       <div class="form-grid">
         <div class="form-field">
           <label for="debt-name">Debt Name <span class="field-optional">optional</span></label>
@@ -4120,7 +4230,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.56.0';
+const APP_VERSION = '1.57.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4128,6 +4238,20 @@ const APP_VERSION = '1.56.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.57.0',
+    date: 'November 12, 2026',
+    name: 'See your progress at a glance',
+    whatsNew: [
+      "Every debt now has a progress bar that runs from red to green as you pay it down, with a marker showing exactly where you are, plus how much you've paid and how much is left.",
+      "Each debt now carries a colored stripe for its type (credit cards, student loans, auto loans and so on), so a long list is easier to scan.",
+      "The Add a Debt form has a short guide explaining each field: where to find your balance and APR, what the due day is for, and what to do with a 0% promo. Close it with the \u00d7 once you don't need it.",
+      "New to the app? It now starts in the light theme. If you already use it, nothing changes, and you can switch themes any time in Settings."
+    ],
+    fixes: [
+      "If you use the light theme, the app no longer flashes dark for a moment each time it opens."
+    ]
+  },
   {
     version: '1.56.0',
     date: 'November 11, 2026',
@@ -5661,7 +5785,7 @@ let interestAccrualEnabled = false; // default OFF for existing users; load() tu
 const GUMROAD_PRODUCT_ID = 'Os6-f-tDTnsdHhfSksLIVw==';
 let isPremium = false;          // unlocked via Gumroad license verification
 let licenseKey = '';            // stored after successful verify, for display
-let theme = 'dark';             // 'dark' (default) | 'light'
+let theme = 'light';            // v1.57.0 — 'light' (default for new users) | 'dark'
 
 // ══════════════════════════════════════════════════════════════════════
 //  v1.40.0 — THE BADGE ENGINE
@@ -7454,6 +7578,37 @@ function monthlyInterest() {
 function badgeClass(type) {
   const m = {cc:'badge-cc', student:'badge-student', auto:'badge-auto', personal:'badge-personal', mortgage:'badge-mortgage', other:'badge-other'};
   return m[type] || 'badge-other';
+}
+
+// v1.57.0 — payoff progress bar, shared by the free cards and the premium
+// table so the two tiers can't drift apart again. The track is a fixed
+// red→amber→green scale; the fill reveals it up to the share of the ORIGINAL
+// balance that's gone, so the colour at the marker tells you how far along
+// you are at a glance. Balance above the original (interest added) = 0%.
+function payoffProgressOf(d) {
+  const orig = Number(d.originalBalance) || 0;
+  const bal = Math.max(0, Number(d.balance) || 0);
+  if (orig <= 0) return null;
+  const paid = Math.max(0, orig - bal);
+  const pct = Math.max(0, Math.min(100, (paid / orig) * 100));
+  return { orig: orig, paid: paid, pct: pct, left: bal };
+}
+function payoffBarHtml(d) {
+  const p = payoffProgressOf(d);
+  if (!p) return '';
+  const pctTxt = p.pct > 0 && p.pct < 1 ? '<1' : String(Math.round(p.pct));
+  // Fill width is p.pct of the track; stretch its gradient back to full track
+  // width so each position keeps the colour it has on the scale.
+  const fillW = p.pct.toFixed(2);
+  const bgSize = p.pct > 0 ? (10000 / p.pct).toFixed(2) : '100';
+  return '<div class="payoff-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(p.pct) + '" aria-label="' + pctTxt + '% of the original balance paid">' +
+      '<div class="payoff-track">' +
+        '<div class="payoff-fill" style="width:' + fillW + '%;background-size:' + bgSize + '% 100%"></div>' +
+        '<div class="payoff-marker" style="left:' + fillW + '%"></div>' +
+      '</div>' +
+      '<div class="payoff-meta"><span><strong>' + pctTxt + '% paid</strong> of ' + fmtDec(p.orig) + '</span>' +
+      '<span>' + fmtDec(p.left) + ' to go</span></div>' +
+    '</div>';
 }
 
 function badgeLabel(type) {
@@ -10691,6 +10846,31 @@ function deactivateLicenseLocally() {
   render();
 }
 
+// v1.57.0 — add-debt field guide
+function toggleFieldHelp() {
+  var body = document.getElementById('field-help-body');
+  var btn = document.querySelector('#field-help .field-help-toggle');
+  if (!body) return;
+  var open = body.hasAttribute('hidden');
+  if (open) body.removeAttribute('hidden'); else body.setAttribute('hidden', '');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  var el = document.getElementById('field-help');
+  if (el) el.classList.toggle('open', open);
+}
+function dismissFieldHelp() {
+  var el = document.getElementById('field-help');
+  if (el) el.style.display = 'none';
+  try { localStorage.setItem('debtfree_fieldhelp_hidden', '1'); } catch (e) {}
+}
+(function() {
+  try {
+    if (localStorage.getItem('debtfree_fieldhelp_hidden') === '1') {
+      var el = document.getElementById('field-help');
+      if (el) el.style.display = 'none';
+    }
+  } catch (e) {}
+})();
+
 // v1.13.0 — theme (free feature)
 function applyTheme() {
   if (theme === 'light') {
@@ -13165,7 +13345,6 @@ function renderDebtList() {
     }
   }
   list.innerHTML = activeList.map((d, _i) => {
-    const pct = d.originalBalance > 0 ? Math.max(0, Math.min(100, ((d.originalBalance-d.balance)/d.originalBalance)*100)) : 0;
     const isZero = d.balance <= 0;
 
     // Promo status
@@ -13244,7 +13423,7 @@ function renderDebtList() {
     }
 
     return `
-    <div class="debt-item" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
+    <div class="debt-item debt-type-${badgeClass(d.type).replace('badge-','')}" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
       ${reorderControls(d.id, _i, activeList.length)}
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
@@ -13275,9 +13454,7 @@ function renderDebtList() {
       <button class="btn btn-ghost" style="font-size:0.72rem;padding:6px 12px;" onclick="openEditModal(${d.id})">Edit</button>
       <button class="btn btn-danger" onclick="removeDebt(${d.id})">✕</button>
       ${trueCostStrip}
-      <div class="progress-wrap" style="min-width:100%">
-        <div class="progress-bar" style="width:${pct}%; background:${isZero ? 'var(--accent)' : 'var(--accent2)'}"></div>
-      </div>
+      <div style="min-width:100%">${payoffBarHtml(d)}</div>
     </div>`;
   }).join('');
 
@@ -13436,18 +13613,10 @@ function renderPortfolioTable(list) {
       promoTag = '<div class="pf-promo promo-risk">0% end date missing \u2014 the plan treats this card as 0% with no end. Add the date with Edit.</div>';
     }
 
-    // Progress: how much of this debt is already gone.
-    let progTag = '';
-    if (d.originalBalance > 0 && d.balance > 0) {
-      const _paidOff = Math.max(0, d.originalBalance - d.balance);
-      const _pctPaid = Math.max(0, Math.min(100, (_paidOff / d.originalBalance) * 100));
-      if (_paidOff > 0.5) {
-        progTag = '<div class="pf-progress">' +
-          '<div class="pf-progress-track"><div class="pf-progress-fill" style="width:' + _pctPaid.toFixed(1) + '%"></div></div>' +
-          '<div class="pf-progress-meta"><span><strong>' + Math.round(_pctPaid) + '% paid</strong> of ' + fmtDec(d.originalBalance) + '</span>' +
-          '<span>' + fmtDec(_paidOff) + ' paid down</span></div></div>';
-      }
-    }
+    // Progress: how much of this debt is already gone. v1.57.0 — shared
+    // red→green bar, shown from day one (it used to appear only after the
+    // first payment, so a new debt had no bar on premium but one on free).
+    const progTag = payoffBarHtml(d);
 
     let tcTag = '';
     const tc = (typeof trueCostOf === 'function') ? trueCostOf(d) : null;
@@ -13481,7 +13650,7 @@ function renderPortfolioTable(list) {
           '</td>'
         : '') +
       // v1.28.2 — data-label drives the stacked card layout below 560px.
-      '<td class="pf-td pf-name"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + dueTagFor(d) + exclTag + promoTag + tcTag + progTag + '</td>' +
+      '<td class="pf-td pf-name debt-type-' + badgeClass(d.type).replace('badge-','') + '"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + dueTagFor(d) + exclTag + promoTag + tcTag + progTag + '</td>' +
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
@@ -17547,7 +17716,7 @@ try { if (DRIVE_ENABLED) driveHandleRedirect(); } catch(e) {} }, 0);
     // v1.13.0 — freemium + theme
     localStorage.setItem('debtfree_premium', isPremium ? '1' : '0');
     localStorage.setItem('debtfree_license', licenseKey || '');
-    localStorage.setItem('debtfree_theme', theme || 'dark');
+    localStorage.setItem('debtfree_theme', theme || 'light');
     // v1.49.0 — with a live token, changes back themselves up on their own.
     // Without one this is a no-op: no token is ever requested in the
     // background, so the app never bounces the user to Google unasked.
@@ -17605,7 +17774,7 @@ function load() {
         licenseKey = (typeof data.licenseKey === 'string')
           ? data.licenseKey
           : (localStorage.getItem('debtfree_license') || '');
-        theme = data.theme || localStorage.getItem('debtfree_theme') || 'dark';
+        theme = data.theme || localStorage.getItem('debtfree_theme') || 'light';
         document.getElementById('extra-payment').value = extraMonthly || '';
         document.getElementById('strategy-select').value = strategy;
         // Show success message after render
@@ -17643,7 +17812,10 @@ function load() {
     // v1.13.0 — freemium + theme
     isPremium = localStorage.getItem('debtfree_premium') === '1';
     licenseKey = localStorage.getItem('debtfree_license') || '';
-    theme = localStorage.getItem('debtfree_theme') || 'dark';
+    // v1.57.0 — new users default to light. Everyone who has ever saved already
+    // has a stored theme (save() always writes it), so existing users keep
+    // exactly what they had, including the old dark default.
+    theme = localStorage.getItem('debtfree_theme') || 'light';
     if (d) {
       // v1.6.0 — use shared sanitizeDebts() helper (now also backfills
       // postPromoApr/promoApr/promoEnd/hasPromo/transferFee/type).
