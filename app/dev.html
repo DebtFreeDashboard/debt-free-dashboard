@@ -2722,12 +2722,20 @@
     background: rgba(0,0,0,0.7);
     z-index: 1000;
     display: flex;
-    align-items: center;
+    /* v1.59.1 — a modal taller than the screen was centred with its top and
+       bottom both off-screen and the overlay couldn't scroll, so Save on a
+       long Edit Debt form (promo fields open) was unreachable on a phone.
+       The overlay scrolls now; auto margins still centre short modals. */
+    align-items: flex-start;
     justify-content: center;
-    padding: 20px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 20px 20px calc(20px + env(safe-area-inset-bottom, 0px));
     backdrop-filter: blur(4px);
     animation: fadeIn 0.2s ease;
   }
+  .modal-overlay > .modal { margin-top: auto; margin-bottom: auto; flex-shrink: 0; }
 
   .modal-overlay.hidden { display: none; }
 
@@ -4402,7 +4410,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.59.0';
+const APP_VERSION = '1.59.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4410,6 +4418,15 @@ const APP_VERSION = '1.59.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.59.1',
+    date: 'November 12, 2026',
+    name: 'Edit Debt scrolls again',
+    whatsNew: [],
+    fixes: [
+      "Fixed not being able to scroll to the bottom of Edit Debt on a phone when a debt has a 0% promo, so the Save button was out of reach. Any pop-up that\u2019s taller than your screen now scrolls."
+    ]
+  },
   {
     version: '1.59.0',
     date: 'November 12, 2026',

@@ -1,8 +1,8 @@
 {
-  "version": "1.59.0",
+  "version": "1.59.1",
   "releaseDate": "2026-11-12",
-  "releaseName": "More lender logos",
+  "releaseName": "Edit Debt scrolls again",
   "notes": [
-    "43 of the 52 issuers and lenders now show their real logo, up from 15, including Capital One, Citi, Discover, Synchrony, U.S. Bank, Amazon, Walmart, Navient, SoFi and Ally. The logos are built into the app, so nothing about your debts is sent anywhere to show them. The rest still show a letter tile in the lender’s colors."
+    "Fixed not being able to scroll to the bottom of Edit Debt on a phone when a debt has a 0% promo, so the Save button was out of reach. Any pop-up that’s taller than your screen now scrolls."
   ]
 }
