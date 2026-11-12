@@ -19,10 +19,15 @@
     if (IS_PLAY_BUILD) sessionStorage.setItem('debtfree_play', '1');
   } catch (e) {}
   if (IS_PLAY_BUILD) document.documentElement.classList.add('play-build');
+  // v1.57.0: Android phones in an ordinary browser get the Google Play badge.
+  try { if (/Android/i.test(navigator.userAgent || '')) document.documentElement.classList.add('is-android'); } catch (e) {}
 </script>
 <style>
   .play-build a[href*="gumroad.com"], .play-build .price-copy, .play-build [data-deadline] { display: none !important; }
   html:not(.play-build) .play-only { display: none !important; }
+  /* v1.57.0: the Play badge is for Android browsers only; never inside the Play app or on iPhone. */
+  .android-web-only { display: none !important; }
+  html.is-android:not(.play-build) .android-web-only { display: inline-flex !important; }
 </style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
@@ -1001,6 +1006,16 @@
   @media (max-width: 560px) {
     .demo-banner-btn { width: 100%; }
   }
+  /* v1.57.0: Android browsers only (see .android-web-only). */
+  .demo-banner-play {
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 100%;
+    text-decoration: none;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .demo-banner-play img { display: block; height: 40px; width: auto; }
 
   /* v1.28.0 — inline form validation. Replaces native alert(), which on
      mobile is a modal interrupt that names no field: the user had to dismiss
@@ -2857,6 +2872,9 @@
         <span class="demo-banner-tag">Example</span>Sample numbers so you can see how this works. Nothing here is saved.
       </div>
       <button class="demo-banner-btn" onclick="startMyNumbers()">Start with my numbers</button>
+      <!-- v1.57.0: Android browsers only. Most web-app visitors land here
+           straight from a bio or shared link and never see the homepage badge. -->
+      <a class="demo-banner-play android-web-only" data-play-badge="app_demo" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dapp_demo" target="_blank" rel="noopener"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="104" height="40"><span>On Android? Get the app.</span></a>
     </div>
 
     <!-- v1.48.0 — the hero. Total Owed alone at the top, with Debt-Free
@@ -4120,7 +4138,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.56.0';
+const APP_VERSION = '1.57.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4128,6 +4146,15 @@ const APP_VERSION = '1.56.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.57.0',
+    date: 'November 12, 2026',
+    name: 'Google Play link on Android',
+    whatsNew: [
+      'On an Android phone, the example screen and the install page now show a Get it on Google Play button, so you can install DebtFree from the Play Store instead of adding it from the browser.'
+    ],
+    fixes: []
+  },
   {
     version: '1.56.0',
     date: 'November 11, 2026',
@@ -9015,6 +9042,28 @@ function trackBuyClick(placement) {
     debt_count: debts.length,
     is_premium: isPremium ? 'yes' : 'no',
     utm_source: (_at && _at.source) || '(none)'
+  });
+  // v1.57.0: the same event name the homepage and calculator pages send, so
+  // one gumroad_click count covers every Gumroad button on the site. The
+  // traction report only read the site's, and most visitors are in the app.
+  trackShare('gumroad_click', {
+    _category: 'acquisition',
+    location: 'app_' + placement,
+    page_path: window.location.pathname
+  });
+}
+
+// v1.57.0: Google Play badges inside the app (Android browsers only) report
+// the same play_badge_click the homepage and calculator pages send.
+function trackPlayBadges() {
+  document.addEventListener('click', function (e) {
+    const a = (e.target && e.target.closest) ? e.target.closest('[data-play-badge]') : null;
+    if (!a) return;
+    trackShare('play_badge_click', {
+      _category: 'acquisition',
+      location: a.getAttribute('data-play-badge'),
+      page_path: window.location.pathname
+    });
   });
 }
 
@@ -18167,6 +18216,7 @@ initInAppBanner();
 // living only in GA4's own attribution.
 rememberAttribution();
 stampGumroadLinks();
+trackPlayBadges();
 
 (function captureArrival() {
   try {

@@ -1,8 +1,8 @@
 {
-  "version": "1.56.0",
-  "releaseDate": "2026-11-11",
-  "releaseName": "Pay twice a month",
+  "version": "1.57.0",
+  "releaseDate": "2026-11-12",
+  "releaseName": "Google Play link on Android",
   "notes": [
-    "If you pay a debt twice a month, for example on the 1st and the 15th, you can now add a second payment day when you add or edit the debt. Coming Up then shows half the minimum on each day, and tells you how much is still left before the second one. Your payoff plan and dates are unchanged."
+    "On an Android phone, the example screen and the install page now show a Get it on Google Play button, so you can install DebtFree from the Play Store instead of adding it from the browser."
   ]
 }

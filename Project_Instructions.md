@@ -157,8 +157,9 @@ Besides page views, the site sends:
 
 | Event | Where | Meaning |
 |---|---|---|
-| `play_badge_click` | Homepage, calculator pages | Someone tapped the Google Play badge (`location` says which one) |
-| `gumroad_click` | Calculator pages | Someone tapped a Gumroad link |
+| `play_badge_click` | Homepage, calculator pages, the app's example screen and install page (Android browsers only) | Someone tapped the Google Play badge (`location` says which one: `home_hero`, `home_final`, calculator slots, `app_demo`, `install_page`) |
+| `gumroad_click` | Homepage, calculator pages, the app (web only) | Someone tapped a Gumroad link. In the app `location` is `app_` plus the button (`app_settings`, `app_whatif-transfer`, `app_whatif-dialdate`); the app also still sends its older `buy_clicked` |
+| `home_to_app` | Homepage | Someone went from the homepage to the dashboard |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
 
@@ -337,6 +338,15 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-12** — v1.57.0: Google Play badge for Android browsers on the
+  app's example screen and the install page (never in the Play app or on
+  iPhone). The app's Gumroad buttons now also send `gumroad_click`, and Play
+  badges in the app send `play_badge_click`, so the traction report's click
+  counts cover the app. Why: GA4 for Nov 5–11 showed only 2 of 23 US visitors
+  reached the homepage, where the buy buttons were; most opened the app
+  straight from a bio or shared link, and none of the web-app visitors left
+  the example screen to enter a debt.
 
 - **2026-11-10** — Calculator pages `debt-snowball-spreadsheet`,
   `debt-payoff-spreadsheet` and `debt-payoff-planner` added (PR #4), with a
