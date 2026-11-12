@@ -197,11 +197,25 @@ Other rules:
   23,000-line diff. Claude writes files; Kevin commits in GitHub Desktop.
   To see what GitHub Desktop will see:
   `git -c core.autocrlf=true --no-optional-locks status --short`
-- **Cloud sessions (Claude on the web) work through pull requests.** Branch,
-  commit, push and open a PR; never push to `main` and never merge. Kevin merges
-  in GitHub in the browser (that merge deploys the site and the Play app), then
-  pulls with GitHub Desktop. The repo stores LF in git, so a Linux commit is
-  fine there; the CRLF warning above is about the Cowork VM's working copy.
+- **Claude pushes to `main` itself (Kevin, 2026-11-12).** Cloud sessions
+  commit and push directly to `main` once the tests pass; no pull request and
+  no separate go-ahead. This reverses the PR-only rule of 2026-11-10. `main` is
+  production: a push deploys the website and the Play app within minutes.
+  Rules for every push:
+  - Gate is the test run. Any new failure (compared with `main` before the
+    change) means do not push; report it instead.
+  - Read all user-facing copy for compliance before pushing; tests can't.
+  - `git fetch origin main` and rebase immediately before pushing (Kevin may
+    have committed from GitHub Desktop).
+  - One commit per release, with `APP_VERSION`, `CACHE_NAME` and
+    `version.json` matching. Several commits may go up in one push; never
+    push twice in quick succession (Pages builds cancel each other).
+  - Never force-push `main`.
+  - After pushing, confirm with `git ls-remote origin main` and report the
+    commit hash, version and what changed.
+  - Kevin pulls in GitHub Desktop before any local edit.
+  The repo stores LF in git, so a Linux commit is fine; the CRLF warning above
+  is about the Cowork VM's working copy.
 
 ## The dev build (`app/dev.html`)
 
@@ -338,6 +352,16 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-12** — Process: Claude pushes straight to `main` again (see
+  Shipping rules). v1.57.0 "See your progress at a glance": red-to-green
+  payoff bar on every debt (cards and premium table share one helper),
+  debt-type colour bands, add-debt field guide, light theme for new users
+  only, theme applied before first paint. v1.58.0 "Logos and credit
+  limits": new debt fields `issuer` (52-entry bundled catalog, 15 Simple
+  Icons logos, brand-colour monograms for the rest; bundled so no lender
+  name leaves the device) and `creditLimit` (credit cards only) with a
+  credit-used bar. Next planned (Release 3): strategy cards showing the
+  user's own months/interest per method, and a preview before saving a debt.
 - **2026-11-10** — Calculator pages `debt-snowball-spreadsheet`,
   `debt-payoff-spreadsheet` and `debt-payoff-planner` added (PR #4), with a
   free CSV download of the payoff schedule and print, and added to
