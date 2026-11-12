@@ -259,15 +259,20 @@
   }
 
   /* v1.13.0 — Next Debt to Eliminate (free hook) */
-  .next-debt-card {
+  /* v1.62.0 — styled like the debt cards: lender glow, logo, neutral balance */
+  .card.next-debt-card {
     position:relative; overflow:hidden;
-    border:1px solid var(--accent); 
-    background:linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    background-color: var(--surface);
+    background-image: radial-gradient(120% 90% at 0% 0%, var(--g1, transparent) 0%, var(--g2, transparent) 45%, transparent 75%);
   }
-  .next-debt-card::before {
-    content:''; position:absolute; top:0; left:0; width:4px; height:100%;
-    background:var(--accent); box-shadow:0 0 16px var(--glow);
-  }
+  .next-debt-card .next-debt-main { align-items:center; flex-wrap:nowrap; gap:12px; }
+  .nd-tile:empty { display:none; }
+  .nd-tile .iss-tile { width:44px; height:44px; border-radius:12px; }
+  .next-debt-card .next-debt-figure { margin:12px 0 0; text-align:left; display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; }
+  .next-debt-card .next-debt-amt { font-family:var(--font-display); font-weight:800; font-size:1.75rem; letter-spacing:-0.02em; color:var(--text); }
+  .next-debt-card .next-debt-amt-label { text-transform:none; letter-spacing:0; font-size:0.78rem; }
+  .nd-payoff .payoff-bar { margin-top:14px; }
+  .next-debt-card .next-debt-eta { margin-top:8px; }
   .next-debt-flag {
     font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.12em;
     color:var(--accent); font-weight:700; margin-bottom:12px;
@@ -318,6 +323,27 @@
   /* No emoji on this one: the hero line beside it is the longest string on
      the tab, and the phone glyph cost the ~30px that pushed it to wrap. */
   .hero-card .pc-share { flex-shrink:0; padding:0 14px; }
+  /* v1.62.0 — hero: ring + total, split by lender, red-to-green bar */
+  .card.hero-card { background-image: radial-gradient(120% 90% at 0% 0%, var(--g1, transparent) 0%, var(--g2, transparent) 45%, transparent 75%); }
+  .hero-head { display:flex; justify-content:space-between; align-items:center; min-height:30px; }
+  .hero-head .pc-share { padding:4px 14px; border-radius:99px; font-size:0.74rem; }
+  .hero-main { display:flex; align-items:center; gap:16px; margin-top:10px; }
+  .hero-main-txt { min-width:0; }
+  .hero-main .hero-total { margin-top:0; }
+  .hero-ring { flex-shrink:0; width:84px; height:84px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .hero-ring-in { width:66px; height:66px; border-radius:50%; background:var(--surface); display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; }
+  .hero-ring-in b { font-family:var(--font-display); font-weight:800; font-size:0.98rem; color:var(--text); }
+  .hero-ring-in span { font-size:0.62rem; color:var(--text-muted); }
+  .hero-split { margin-top:16px; }
+  .hero-split-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); font-weight:700; }
+  .hero-segbar { display:flex; gap:3px; height:12px; border-radius:99px; overflow:hidden; margin:8px 0; }
+  .hero-segbar > div { min-width:4px; }
+  .hero-legend { display:flex; flex-wrap:wrap; gap:6px 12px; font-family:var(--font-mono); font-size:0.68rem; color:var(--text-muted); }
+  .hero-legend > span { display:inline-flex; align-items:center; gap:5px; }
+  .iss-tile.iss-xs { width:20px; height:20px; border-radius:6px; font-size:0.6rem; }
+  .iss-xs .iss-mark-3, .iss-xs .iss-mark-long { font-size:0.42rem; }
+  .hero-card .hero-track { margin-top:16px; height:10px; }
+  .hero-prog-gone { font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); white-space:nowrap; }
 
   /* The three supporting figures. Deliberately small — they are context for
      the hero and the target card above them, not headlines of their own. */
@@ -3201,18 +3227,34 @@
       <div class="guide-bar"><div class="guide-bar-fill" id="guide-bar-fill"></div></div>
     </div>
 
+    <!-- v1.62.0 — hero redesign: paid-off ring beside the total, what's left
+         split by lender, and the red-to-green progress bar. Same ids as before. -->
     <div class="card hero-card" id="hero-card">
-      <div class="hero-label">Total Owed</div>
-      <div class="hero-total" id="stat-total">$0</div>
-      <div class="hero-sub" id="hero-accounts">across all accounts</div>
+      <div class="hero-head">
+        <div class="hero-label">Total Owed</div>
+        <button id="share-progress-btn" class="btn btn-ghost pc-share" onclick="shareProgress()" style="display:none">Share</button>
+      </div>
+      <div class="hero-main">
+        <div class="hero-ring" id="hero-ring" style="display:none"><div class="hero-ring-in"><b id="hero-ring-pct">0%</b><span>paid</span></div></div>
+        <div class="hero-main-txt">
+          <div class="hero-total" id="stat-total">$0</div>
+          <div class="hero-sub" id="hero-accounts">across all accounts</div>
+        </div>
+      </div>
+      <div class="hero-split" id="hero-split" style="display:none">
+        <div class="hero-split-label">What&rsquo;s left, by account</div>
+        <div class="hero-segbar" id="hero-segbar"></div>
+        <div class="hero-legend" id="hero-legend"></div>
+      </div>
 
       <div id="overall-progress-card" style="display:none">
-        <div class="hero-progress-track">
-          <div class="hero-progress-fill" id="overall-progress" style="width:0%"></div>
+        <div class="payoff-track hero-track">
+          <div class="payoff-fill" id="overall-progress" style="width:0%"></div>
+          <div class="payoff-marker" id="overall-progress-marker" style="left:0%"></div>
         </div>
         <div class="hero-prog-row">
-          <div class="hero-prog-line"><b id="progress-pct">0%</b> paid down &middot; <span id="progress-label-paid">$0 gone</span></div>
-          <button id="share-progress-btn" class="btn btn-ghost pc-share" onclick="shareProgress()">Share</button>
+          <div class="hero-prog-line"><b id="progress-pct">0%</b> paid down</div>
+          <div class="hero-prog-gone" id="progress-label-paid">$0 gone</div>
         </div>
       </div>
       <!-- v1.45.0 — #progress-label-left is kept so renderers that write to it
@@ -3230,14 +3272,15 @@
     <div class="card next-debt-card" id="next-debt-card" style="display:none">
       <div class="next-debt-flag" id="next-debt-flag">&#9656; WHERE YOUR EXTRA GOES</div>
       <div class="next-debt-main">
+        <span class="nd-tile" id="next-debt-tile"></span>
         <div class="next-debt-info">
           <div class="next-debt-name" id="next-debt-name">&mdash;</div>
           <div class="next-debt-sub" id="next-debt-sub">&mdash;</div>
         </div>
-        <div class="next-debt-figure">
-          <div class="next-debt-amt" id="next-debt-amt">$0</div>
-          <div class="next-debt-amt-label">remaining</div>
-        </div>
+      </div>
+      <div class="next-debt-figure">
+        <div class="next-debt-amt" id="next-debt-amt">$0</div>
+        <div class="next-debt-amt-label">remaining</div>
       </div>
       <div class="nd-plan" id="nd-plan" style="display:none">
         <div class="nd-plan-label" id="nd-plan-label">Your plan sends</div>
@@ -3245,7 +3288,8 @@
         <div class="nd-plan-break" id="nd-plan-break"></div>
         <div class="nd-plan-month" id="nd-plan-month" style="display:none"></div>
       </div>
-      <div class="next-debt-bar"><div class="next-debt-bar-fill" id="next-debt-bar-fill" style="width:0%"></div></div>
+      <div class="next-debt-bar" hidden><div class="next-debt-bar-fill" id="next-debt-bar-fill" style="width:0%"></div></div>
+      <div class="nd-payoff" id="next-debt-payoff"></div>
       <div class="next-debt-eta" id="next-debt-eta">&mdash;</div>
       <div class="next-debt-attacking" id="next-debt-attacking" style="display:none;"></div>
     </div>
@@ -4475,7 +4519,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.61.0';
+const APP_VERSION = '1.62.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4483,6 +4527,16 @@ const APP_VERSION = '1.61.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.62.0',
+    date: 'November 12, 2026',
+    name: 'New dashboard header',
+    whatsNew: [
+      "The Total Owed box at the top of your dashboard has a new look: a ring showing how much you've paid off, a bar splitting what's left by lender (with each lender's logo and amount), and the red-to-green progress bar used on your debts.",
+      "The \u201cWhere your extra goes\u201d box now shows the lender\u2019s logo and glows in its color, like your debt cards, with the same red-to-green progress bar."
+    ],
+    fixes: []
+  },
   {
     version: '1.61.0',
     date: 'November 12, 2026',
@@ -7944,7 +7998,7 @@ function issuerOptionsHtml() {
 // Tile shown beside a debt's name. No issuer = the debt's initial on a
 // neutral tile tinted by type, so a list stays visually even.
 function issuerTileHtml(d, size) {
-  var cls = 'iss-tile' + (size === 'sm' ? ' iss-sm' : '');
+  var cls = 'iss-tile' + (size === 'sm' ? ' iss-sm' : (size === 'xs' ? ' iss-xs' : ''));
   var i = ISSUER_BY_ID[d && d.issuer];
   if (!i) {
     var ch = String((d && d.name) || '?').trim().charAt(0).toUpperCase() || '?';
@@ -7990,6 +8044,62 @@ function utilizationHtml(d) {
       '</div>' +
       '<div class="payoff-meta"><span><strong>' + pctTxt + '% used</strong> of ' + fmtDec(u.limit) + ' limit</span><span>' + right + '</span></div>' +
     '</div>';
+}
+
+// v1.62.0 — colour at a point on the red-to-green progress scale (same stops
+// as the payoff bars), as [r,g,b].
+function progressScaleRgb(p) {
+  var st = [[0, [224,72,72]], [30, [232,121,47]], [55, [233,178,58]], [78, [143,201,74]], [100, [31,181,126]]];
+  p = Math.max(0, Math.min(100, Number(p) || 0));
+  for (var i = 1; i < st.length; i++) {
+    if (p <= st[i][0]) {
+      var a = st[i - 1], b = st[i], t = (p - a[0]) / (b[0] - a[0]);
+      return [0, 1, 2].map(function(k) { return Math.round(a[1][k] + (b[1][k] - a[1][k]) * t); });
+    }
+  }
+  return st[st.length - 1][1];
+}
+function renderHeroExtras(pct) {
+  var card = document.getElementById('hero-card');
+  var live = debts.filter(function(d) { return d.balance > 0; }).sort(function(a, b) { return b.balance - a.balance; });
+  var hasOrig = totalOriginal() > 0;
+  var c = progressScaleRgb(pct), rgb = c.join(',');
+  if (card) {
+    card.style.setProperty('--g1', live.length ? 'rgba(' + rgb + ',0.30)' : 'transparent');
+    card.style.setProperty('--g2', live.length ? 'rgba(' + rgb + ',0.10)' : 'transparent');
+  }
+  var ring = document.getElementById('hero-ring');
+  if (ring) {
+    ring.style.display = (hasOrig && live.length) ? '' : 'none';
+    ring.style.background = 'conic-gradient(rgb(' + rgb + ') 0 ' + (Math.max(0, Math.min(100, pct)) * 3.6).toFixed(1) + 'deg, var(--surface3) 0)';
+    var rp = document.getElementById('hero-ring-pct');
+    if (rp) rp.textContent = pct.toFixed(1) + '%';   // same figure as the line under the bar
+  }
+  var share = document.getElementById('share-progress-btn');
+  if (share) share.style.display = hasOrig ? '' : 'none';
+  var fill = document.getElementById('overall-progress');
+  if (fill) fill.style.backgroundSize = (pct > 0 ? (10000 / pct).toFixed(2) : '100') + '% 100%';
+  var mk = document.getElementById('overall-progress-marker');
+  if (mk) mk.style.left = Math.max(0, Math.min(100, pct)).toFixed(2) + '%';
+  // What's left, split by lender: only worth showing with 2+ accounts.
+  var split = document.getElementById('hero-split');
+  if (!split) return;
+  if (live.length < 2) { split.style.display = 'none'; return; }
+  split.style.display = '';
+  var hexOf = function(d) {
+    var i = ISSUER_BY_ID[d.issuer];
+    return (i && i.brand) || TYPE_GLOW[d.type] || TYPE_GLOW.other;
+  };
+  var short = function(v) { return v >= 1000 ? '$' + (v / 1000).toFixed(v >= 100000 ? 0 : 1) + 'k' : fmt(v); };
+  document.getElementById('hero-segbar').innerHTML = live.map(function(d) {
+    return '<div style="flex:' + d.balance.toFixed(2) + ';background:' + hexOf(d) + '" title="' + escapeHtml(d.name) + ': ' + fmt(d.balance) + '"></div>';
+  }).join('');
+  var MAX = 8, shown = live.slice(0, live.length > MAX ? MAX - 1 : MAX), rest = live.slice(shown.length);
+  var leg = shown.map(function(d) {
+    return '<span title="' + escapeHtml(d.name) + '">' + issuerTileHtml(d, 'xs') + short(d.balance) + '</span>';
+  }).join('');
+  if (rest.length) leg += '<span>+' + rest.length + ' more &middot; ' + short(rest.reduce(function(a, d) { return a + d.balance; }, 0)) + '</span>';
+  document.getElementById('hero-legend').innerHTML = leg;
 }
 
 // v1.61.0 — card glow colour: the lender's brand colour, or the debt type's
@@ -13568,6 +13678,11 @@ function renderNextDebt() {
   const orig = target.originalBalance || target.balance;
   const paidPct = orig > 0 ? Math.min(100, Math.max(0, (1 - target.balance / orig) * 100)) : 0;
   document.getElementById('next-debt-bar-fill').style.width = paidPct.toFixed(0) + '%';
+  // v1.62.0 — lender logo, brand glow and the shared red-to-green bar
+  { const _t = document.getElementById('next-debt-tile'); if (_t) _t.innerHTML = issuerTileHtml(target); }
+  { const _g = debtGlowStyle(target).split(';');
+    _g.forEach(function(kv) { const i = kv.indexOf(':'); if (i > 0) card.style.setProperty(kv.slice(0, i), kv.slice(i + 1)); }); }
+  { const _pb = document.getElementById('next-debt-payoff'); if (_pb) _pb.innerHTML = payoffBarHtml(target); }
 
   // v1.48.0 — what the plan sends here this month. Under every strategy the
   // extra lands on the attack debt, so this is its minimum plus planExtra()
@@ -13833,6 +13948,7 @@ function renderStats() {
   // v1.48.0 — the hero line now reads "30.1% paid down \u00b7 $26,693 gone", so
   // this span carries the figure only; the words live in the markup.
   document.getElementById('progress-label-paid').textContent = fmt(paidDown) + ' gone';
+  try { renderHeroExtras(pct); } catch (e) {}
   document.getElementById('progress-label-left').textContent = fmt(total) + ' remaining';
 
   // Milestone counts. v1.33.3 — "Debts Eliminated" counted every zero-balance

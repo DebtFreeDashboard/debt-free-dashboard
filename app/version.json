@@ -1,8 +1,9 @@
 {
-  "version": "1.61.0",
+  "version": "1.62.0",
   "releaseDate": "2026-11-12",
-  "releaseName": "New debt cards",
+  "releaseName": "New dashboard header",
   "notes": [
-    "Your debts have a new look. Each one glows in its lender’s color from the logo corner, with the balance shown large and the rate and minimum underneath, then the credit-used and progress bars. Debts without a lender use the color of their type. Premium’s table gets the same treatment."
+    "The Total Owed box at the top of your dashboard has a new look: a ring showing how much you've paid off, a bar splitting what's left by lender (with each lender's logo and amount), and the red-to-green progress bar used on your debts.",
+    "The “Where your extra goes” box now shows the lender’s logo and glows in its color, like your debt cards, with the same red-to-green progress bar."
   ]
 }
