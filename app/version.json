@@ -1,12 +1,10 @@
 {
-  "version": "1.57.0",
+  "version": "1.58.0",
   "releaseDate": "2026-11-12",
-  "releaseName": "See your progress at a glance",
+  "releaseName": "Logos and credit limits",
   "notes": [
-    "Every debt now has a progress bar that runs from red to green as you pay it down, with a marker showing exactly where you are, plus how much you've paid and how much is left.",
-    "Each debt now carries a colored stripe for its type (credit cards, student loans, auto loans and so on), so a long list is easier to scan.",
-    "The Add a Debt form has a short guide explaining each field: where to find your balance and APR, what the due day is for, and what to do with a 0% promo. Close it with the × once you don't need it.",
-    "New to the app? It now starts in the light theme. If you already use it, nothing changes, and you can switch themes any time in Settings.",
-    "If you use the light theme, the app no longer flashes dark for a moment each time it opens."
+    "Pick the issuer or lender for each debt and its logo appears next to it. There are 52 to choose from, covering the major credit cards, store cards, buy now pay later, personal and student loans, auto lenders and mortgages. When you type a name like “Chase Freedom,” the issuer is filled in for you. The logos are built into the app, so nothing about your debts is sent anywhere to show them.",
+    "Credit cards can now have a credit limit. Add one and the card shows how much of your limit is in use on a green-to-red bar, with how much is still available.",
+    "Both work in the Add a Debt form and in Edit, on the free card view and the Premium table, and they're included in backups and the debts CSV export."
   ]
 }

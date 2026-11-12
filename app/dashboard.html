@@ -1420,6 +1420,44 @@
   .debt-type-other    { --band: var(--text-dim); --band-wash: transparent; }
   .pf-table td.pf-name { box-shadow: inset 3px 0 0 var(--band, transparent); padding-left: 14px; }
 
+  /* v1.58.0 — issuer tiles */
+  .iss-tile {
+    flex-shrink: 0; width: 36px; height: 36px; border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-weight: 800; font-size: 0.95rem; letter-spacing: -0.02em;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18); overflow: hidden; line-height: 1;
+  }
+  .iss-tile svg { width: 62%; height: 62%; display: block; }
+  .iss-tile.iss-full svg { width: 100%; height: 100%; }
+  .iss-tile.iss-light { box-shadow: 0 0 0 1px rgba(10,10,30,0.12), 0 1px 3px rgba(0,0,0,0.12); }
+  .iss-mark-3 { font-size: 0.78rem; }
+  .iss-mark-long { font-size: 0.66rem; letter-spacing: -0.01em; }
+  .iss-tile.iss-none {
+    background: var(--surface3); color: var(--band, var(--text-muted));
+    box-shadow: inset 0 0 0 1px var(--border2);
+  }
+  .iss-sm { width: 28px; height: 28px; border-radius: 8px; font-size: 0.8rem; }
+  .iss-sm .iss-mark-3 { font-size: 0.64rem; }
+  .iss-sm .iss-mark-long { font-size: 0.54rem; }
+  .pf-name-line { display: inline-flex; align-items: center; gap: 10px; vertical-align: middle; }
+
+  /* v1.58.0 — credit utilization: same track as payoff, reversed scale
+     (low use = green, near the limit = red). */
+  .util-bar { margin-top: 10px; width: 100%; }
+  .util-head {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim);
+  }
+  .util-fill { background-image: linear-gradient(90deg, #1fb57e 0%, #8fc94a 25%, #e9b23a 45%, #e8792f 70%, #e04848 100%); }
+  .util-tag {
+    font-size: 0.58rem; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 99px;
+    border: 1px solid var(--border2); color: var(--text-muted); text-transform: uppercase;
+  }
+  .util-tag.util-low   { color: #1fb57e; border-color: rgba(31,181,126,0.45); }
+  .util-tag.util-mod   { color: #c99a1c; border-color: rgba(217,154,31,0.45); }
+  .util-tag.util-high  { color: #e8792f; border-color: rgba(232,121,47,0.45); }
+  .util-tag.util-vhigh, .util-tag.util-over { color: var(--accent3); border-color: rgba(224,72,72,0.45); }
+
   /* v1.57.0 — add-debt field guide */
   .field-help {
     position: relative; margin-bottom: 16px;
@@ -3145,7 +3183,7 @@
       <div class="form-grid">
         <div class="form-field">
           <label for="debt-name">Debt Name <span class="field-optional">optional</span></label>
-          <input type="text" id="debt-name" placeholder="Rewards Visa" />
+          <input type="text" id="debt-name" placeholder="Rewards Visa" oninput="onDebtNameInput()" />
         </div>
         <div class="form-field">
           <label for="debt-type">Type</label>
@@ -3157,6 +3195,11 @@
             <option value="mortgage">Mortgage</option>
             <option value="other">Other</option>
           </select>
+        </div>
+        <div class="form-field field-full">
+          <label for="debt-issuer">Issuer / Lender <span class="field-optional">optional</span></label>
+          <select id="debt-issuer" onchange="onIssuerPicked()"></select>
+          <div class="field-hint">Shows the lender&rsquo;s logo on this debt</div>
         </div>
         <div class="form-field">
           <label for="debt-balance">Balance ($)</label>
@@ -3187,6 +3230,11 @@
           <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
             oninput="clearFieldError(this)"  data-affix="$"/>
           <div class="field-hint" id="min-hint">Blank = we'll estimate it</div>
+        </div>
+        <div class="form-field field-full" id="credit-limit-field">
+          <label for="debt-credit-limit">Credit Limit ($) <span class="field-optional">optional</span></label>
+          <input type="text" inputmode="decimal" id="debt-credit-limit" placeholder="5000" min="0" step="1" data-affix="$" />
+          <div class="field-hint">Shows how much of your limit is in use</div>
         </div>
       </div>
       <div class="form-error" id="add-debt-error" style="display:none;"></div>
@@ -4230,7 +4278,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.57.0';
+const APP_VERSION = '1.58.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4238,6 +4286,17 @@ const APP_VERSION = '1.57.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.58.0',
+    date: 'November 12, 2026',
+    name: 'Logos and credit limits',
+    whatsNew: [
+      "Pick the issuer or lender for each debt and its logo appears next to it. There are 52 to choose from, covering the major credit cards, store cards, buy now pay later, personal and student loans, auto lenders and mortgages. When you type a name like \u201cChase Freedom,\u201d the issuer is filled in for you. The logos are built into the app, so nothing about your debts is sent anywhere to show them.",
+      "Credit cards can now have a credit limit. Add one and the card shows how much of your limit is in use on a green-to-red bar, with how much is still available.",
+      "Both work in the Add a Debt form and in Edit, on the free card view and the Premium table, and they're included in backups and the debts CSV export."
+    ],
+    fixes: []
+  },
   {
     version: '1.57.0',
     date: 'November 12, 2026',
@@ -7381,12 +7440,14 @@ function exportDebtsCsv() {
   if (!list.length) return;
   var lines = [];
   lines.push(['Debt', 'Type', 'Balance', 'Original balance', 'APR %',
-              'Minimum payment', 'Excluded from plan'].map(csvCell).join(','));
+              'Minimum payment', 'Excluded from plan', 'Issuer', 'Credit limit'].map(csvCell).join(','));
   list.forEach(function(d) {
+    var _iss = ISSUER_BY_ID[d.issuer], _lim = sanitizeCreditLimit(d.creditLimit);
     lines.push([
       d.name, d.type || '', csvMoney(d.balance), csvMoney(d.originalBalance),
       (Number(d.apr) || 0).toFixed(2), csvMoney(d.minPayment),
-      d.excluded ? 'yes' : 'no'
+      d.excluded ? 'yes' : 'no',
+      _iss ? _iss.name : '', (d.type === 'cc' && _lim) ? csvMoney(_lim) : ''
     ].map(csvCell).join(','));
   });
   downloadCsv('debtfree-debts-' + localDateStr() + '.csv', lines.join('\r\n'));
@@ -7578,6 +7639,127 @@ function monthlyInterest() {
 function badgeClass(type) {
   const m = {cc:'badge-cc', student:'badge-student', auto:'badge-auto', personal:'badge-personal', mortgage:'badge-mortgage', other:'badge-other'};
   return m[type] || 'badge-other';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.58.0 — ISSUERS, LOGOS AND CREDIT UTILIZATION
+//
+// The catalog is bundled in the app on purpose. A logo service would be one
+// line of code, but it would send the names of a user's lenders to a third
+// party on every render — exactly what "your data never leaves your device"
+// promises won't happen — and it would break offline. Logos come from
+// Simple Icons (CC0 artwork; the marks remain their owners' trademarks and
+// identify the user's own account, nothing more). Issuers without an open
+// logo get a monogram tile in the brand's colour.
+// ══════════════════════════════════════════════════════════════════════
+const ISSUERS = [{"id":"chase","name":"Chase","group":"card","bg":"#117ACA","fg":"#fff","path":"M0 15.415c0 .468.38.85.848.85h5.937V.575L0 7.72v7.695m15.416 8.582c.467 0 .846-.38.846-.849v-5.937H.573l7.146 6.785h7.697M24 8.587a.844.844 0 0 0-.847-.846h-5.938V23.43l6.782-7.148L24 8.586M8.585.003a.847.847 0 0 0-.847.847v5.94h15.688L16.282.003H8.585Z","kw":["chase","sapphire","freedom","slate","ink business"]},{"id":"capitalone","name":"Capital One","group":"card","bg":"#004977","fg":"#fff","mark":"C1","kw":["capital one","capitalone","quicksilver","venture","savor"]},{"id":"amex","name":"American Express","group":"card","bg":"#FFFFFF","fg":"#2E77BC","path":"M16.015 14.378c0-.32-.135-.496-.344-.622-.21-.12-.464-.135-.81-.135h-1.543v2.82h.675v-1.027h.72c.24 0 .39.024.478.125.12.13.104.38.104.55v.35h.66v-.555c-.002-.25-.017-.376-.108-.516-.06-.08-.18-.18-.33-.234l.02-.008c.18-.072.48-.297.48-.747zm-.87.407l-.028-.002c-.09.053-.195.058-.33.058h-.81v-.63h.824c.12 0 .24 0 .33.05.098.048.156.147.15.255 0 .12-.045.215-.134.27zM20.297 15.837H19v.6h1.304c.676 0 1.05-.278 1.05-.884 0-.28-.066-.448-.187-.582-.153-.133-.392-.193-.73-.207l-.376-.015c-.104 0-.18 0-.255-.03-.09-.03-.15-.105-.15-.21 0-.09.017-.166.09-.21.083-.046.177-.066.272-.06h1.23v-.602h-1.35c-.704 0-.958.437-.958.84 0 .9.776.855 1.407.87.104 0 .18.015.225.06.046.03.082.106.082.18 0 .077-.035.15-.08.18-.06.053-.15.07-.277.07zM0 0v10.096L.81 8.22h1.75l.225.464V8.22h2.043l.45 1.02.437-1.013h6.502c.295 0 .56.057.756.236v-.23h1.787v.23c.307-.17.686-.23 1.12-.23h2.606l.24.466v-.466h1.918l.254.465v-.466h1.858v3.948H20.87l-.36-.6v.585h-2.353l-.256-.63h-.583l-.27.614h-1.213c-.48 0-.84-.104-1.08-.24v.24h-2.89v-.884c0-.12-.03-.12-.105-.135h-.105v1.036H6.067v-.48l-.21.48H4.69l-.202-.48v.465H2.235l-.256-.624H1.4l-.256.624H0V24h23.786v-7.108c-.27.135-.613.18-.973.18H21.09v-.255c-.21.165-.57.255-.914.255H14.71v-.9c0-.12-.018-.12-.12-.12h-.075v1.022h-1.8v-1.066c-.298.136-.643.15-.928.136h-.214v.915h-2.18l-.54-.617-.57.6H4.742v-3.93h3.61l.518.602.554-.6h2.412c.28 0 .74.03.942.225v-.24h2.177c.202 0 .644.045.903.225v-.24h3.265v.24c.163-.164.508-.24.803-.24h1.89v.24c.194-.15.464-.24.84-.24h1.176V0H0zM21.156 14.955c.004.005.006.012.01.016.01.01.024.01.032.02l-.042-.035zM23.828 13.082h.065v.555h-.065zM23.865 15.03v-.005c-.03-.025-.046-.048-.075-.07-.15-.153-.39-.215-.764-.225l-.36-.012c-.12 0-.194-.007-.27-.03-.09-.03-.15-.105-.15-.21 0-.09.03-.16.09-.204.076-.045.15-.05.27-.05h1.223v-.588h-1.283c-.69 0-.96.437-.96.84 0 .9.78.855 1.41.87.104 0 .18.015.224.06.046.03.076.106.076.18 0 .07-.034.138-.09.18-.045.056-.136.07-.27.07h-1.288v.605h1.287c.42 0 .734-.118.9-.36h.03c.09-.134.135-.3.135-.523 0-.24-.045-.39-.135-.526zM18.597 14.208v-.583h-2.235V16.458h2.235v-.585h-1.57v-.57h1.533v-.584h-1.532v-.51M13.51 8.787h.685V11.6h-.684zM13.126 9.543l-.007.006c0-.314-.13-.5-.34-.624-.217-.125-.47-.135-.81-.135H10.43v2.82h.674v-1.034h.72c.24 0 .39.03.487.12.122.136.107.378.107.548v.354h.677v-.553c0-.25-.016-.375-.11-.516-.09-.107-.202-.19-.33-.237.172-.07.472-.3.472-.75zm-.855.396h-.015c-.09.054-.195.056-.33.056H11.1v-.623h.825c.12 0 .24.004.33.05.09.04.15.128.15.25s-.047.22-.134.266zM15.92 9.373h.632v-.6h-.644c-.464 0-.804.105-1.02.33-.286.3-.362.69-.362 1.11 0 .512.123.833.36 1.074.232.238.645.31.97.31h.78l.255-.627h1.39l.262.627h1.36v-2.11l1.272 2.11h.95l.002.002V8.786h-.684v1.963l-1.18-1.96h-1.02V11.4L18.11 8.744h-1.004l-.943 2.22h-.3c-.177 0-.362-.03-.468-.134-.125-.15-.186-.36-.186-.662 0-.285.08-.51.194-.63.133-.135.272-.165.516-.165zm1.668-.108l.464 1.118v.002h-.93l.466-1.12zM2.38 10.97l.254.628H4V9.393l.972 2.205h.584l.973-2.202.015 2.202h.69v-2.81H6.118l-.807 1.904-.876-1.905H3.343v2.663L2.205 8.787h-.997L.01 11.597h.72l.26-.626h1.39zm-.688-1.705l.46 1.118-.003.002h-.915l.457-1.12zM11.856 13.62H9.714l-.85.923-.825-.922H5.346v2.82H8l.855-.932.824.93h1.302v-.94h.838c.6 0 1.17-.164 1.17-.945l-.006-.003c0-.78-.598-.93-1.128-.93zM7.67 15.853l-.014-.002H6.02v-.557h1.47v-.574H6.02v-.51H7.7l.733.82-.764.824zm2.642.33l-1.03-1.147 1.03-1.108v2.253zm1.553-1.258h-.885v-.717h.885c.24 0 .42.098.42.344 0 .243-.15.372-.42.372zM9.967 9.373v-.586H7.73V11.6h2.237v-.58H8.4v-.564h1.527V9.88H8.4v-.507","full":1,"kw":["amex","american express","blue cash","delta skymiles","hilton honors"]},{"id":"citi","name":"Citi","group":"card","bg":"#003B70","fg":"#fff","mark":"citi","kw":["citi","double cash","custom cash","simplicity","diamond preferred","costco"]},{"id":"discover","name":"Discover","group":"card","bg":"#FF6000","fg":"#fff","mark":"D","kw":["discover"]},{"id":"bankofamerica","name":"Bank of America","group":"card","bg":"#012169","fg":"#fff","path":"M15.194 7.57c.487-.163 1.047-.307 1.534-.451-1.408-.596-3.176-1.227-4.764-1.625-.253.073-1.01.271-1.534.434.541.162 2.328.577 4.764 1.642zm-8.896 6.785c.577.343 1.19.812 1.786 1.209 3.952-3.068 7.85-5.432 12.127-6.767-.596-.307-1.119-.578-1.787-.902-2.562.65-6.947 2.4-12.126 6.46zm-.758-6.46c-2.112.974-4.331 2.31-5.54 3.085.433.199.866.361 1.461.65 2.671-1.805 4.764-2.905 5.594-3.266-.595-.217-1.154-.361-1.515-.47zm8.066.234c-.686-.379-3.068-1.263-4.71-1.642-.487.18-1.173.451-1.642.65.595.162 2.815.758 4.71 1.714.487-.235 1.173-.523 1.642-.722zm-3.374 1.552c-.56-.27-1.173-.523-1.643-.74-1.425.704-3.284 1.769-5.63 3.447.505.27 1.047.595 1.624.92 1.805-1.335 3.627-2.598 5.649-3.627zm1.732 8.825c3.79-3.249 9.113-6.407 12.036-7.544a48.018 48.018 0 00-1.949-1.155c-3.771 1.246-8.174 4.007-12.108 7.129.667.505 1.371 1.028 2.02 1.57zm2.851-.235h-.108l-.18-.27h-.109v.27h-.072v-.596h.27c.055 0 .109 0 .145.036.054.019.072.073.072.127 0 .108-.09.162-.198.162zm-.289-.343c.09 0 .199.018.199-.09 0-.072-.072-.09-.144-.09h-.163v.18zm-.523.036c0-.289.235-.523.541-.523.307 0 .542.234.542.523a.543.543 0 01-.542.542.532.532 0 01-.54-.542m.107 0c0 .235.199.433.451.433a.424.424 0 100-.848c-.27 0-.45.199-.45.415","kw":["bank of america","bofa","boa ","customized cash","unlimited cash rewards"]},{"id":"wellsfargo","name":"Wells Fargo","group":"card","bg":"#FFFFFF","fg":"#D71E28","path":"M12.136 13.949c0 .392-.245.616-.719.616h-.628v-1.226h.628c.48 0 .72.212.72.61zM6.922 15.06h1.044l-.523-1.443-.521 1.443zm12.46-1.82c-.72 0-1.109.562-1.109 1.526 0 .97.384 1.526 1.108 1.526.725 0 1.108-.556 1.108-1.526 0-.964-.389-1.526-1.108-1.526zM23.73 0v24H.269V0h23.462zm-5.548 10.652c.484.245.948.354 1.571.354.895 0 1.481-.458 1.481-1.171 0-.6-.357-1.014-1.028-1.172l-.677-.158c-.394-.092-.559-.25-.559-.517 0-.322.25-.523.74-.523s.778.18.89.604l.048.186h.383v-.943a2.927 2.927 0 0 0-1.352-.338c-.911 0-1.497.447-1.497 1.166 0 .556.34.965.996 1.112l.676.152c.432.099.592.273.592.562 0 .354-.261.55-.784.55-.59 0-.894-.24-1.027-.697l-.07-.235h-.383v1.068zm-3.378.245h3.02V9.595h-.383l-.043.19c-.106.486-.255.638-.607.638h-.74V7.557h.506v-.474h-1.753v.474h.453v2.866h-.453v.474zm-3.355 0h3.02V9.595h-.384l-.042.19c-.107.486-.256.638-.608.638h-.74V7.557h.506v-.474H11.45v.474h.452v2.866h-.452v.474zm-8.758-3.34.938 3.34h.74l.778-2.768.756 2.768h.74l.932-3.34h.736v2.866h-.453v.474h3.201V9.595h-.383l-.043.19c-.106.486-.26.638-.607.638h-.922V9.241h1.071a.58.58 0 0 0 .059-.273.55.55 0 0 0-.059-.26h-1.07v-1.15h.884c.357 0 .48.157.596.615l.038.147h.383V7.083H6.49v.474h.522l-.613 2.305-.762-2.779h-.766l-.746 2.774-.624-2.3h.501v-.474H2.266v.474h.426zm1.412 7.002v-1.22h.947c.358 0 .48.158.597.615l.038.147h.383v-1.236H2.857v.474h.453v2.866h-.453v.474h1.78v-.474h-.533v-1.112H5.2a.58.58 0 0 0 .058-.272.551.551 0 0 0-.058-.262H4.104zm9.114 1.913a.461.461 0 0 0-.048-.224.663.663 0 0 1-.112.011c-.245 0-.309-.142-.34-.458l-.022-.201c-.048-.43-.245-.708-.73-.746v-.017c.48-.022.975-.349.975-.964 0-.621-.496-1.008-1.257-1.008H9.542v.474h.453v2.866H9.26l-1.332-3.34H7.22l-1.305 3.34h-.373v.474h1.412v-.474h-.448l.245-.682h1.385l.245.682h-.437v.474h3.35v-.474h-.505v-1.16h.293c.586 0 .761.212.826.762l.02.19c.06.507.31.725.826.725.15 0 .299-.01.416-.027a.46.46 0 0 0 .048-.223zm3.633-1.788h-1.417a.52.52 0 0 0-.059.256c0 .11.016.18.059.268h.634v.964a1.598 1.598 0 0 1-.629.125c-.767 0-1.166-.56-1.166-1.53s.4-1.532 1.124-1.532c.485 0 .767.245.932.67l.058.153h.384v-.976a3.063 3.063 0 0 0-1.412-.337c-1.172 0-1.96.8-1.96 2.027 0 1.231.767 2.016 1.96 2.016.474 0 .964-.136 1.492-.404v-1.7zm4.512.082c0-1.182-.831-2.021-1.982-2.021-1.145 0-1.981.839-1.981 2.021 0 1.188.83 2.022 1.981 2.022 1.156 0 1.982-.834 1.982-2.022z","full":1,"kw":["wells fargo","wells","active cash","autograph","reflect"]},{"id":"usbank","name":"U.S. Bank","group":"card","bg":"#0C2074","fg":"#fff","mark":"US","kw":["u.s. bank","us bank","usbank","altitude","cash+"]},{"id":"barclays","name":"Barclays","group":"card","bg":"#00AEEF","fg":"#fff","path":"M21.043 3.629a3.235 3.235 0 0 0-1.048-.54 3.076 3.076 0 0 0-.937-.144h-.046c-.413.006-1.184.105-1.701.71a1.138 1.138 0 0 0-.226 1.023.9.9 0 0 0 .555.63s.088.032.228.058c-.04.078-.136.214-.136.214-.179.265-.576.612-1.668.612h-.063c-.578-.038-1.056-.189-1.616-.915-.347-.45-.523-1.207-.549-2.452-.022-.624-.107-1.165-.256-1.6-.1-.29-.333-.596-.557-.742a2.55 2.55 0 0 0-.694-.336c-.373-.12-.848-.14-1.204-.146-.462-.01-.717.096-.878.292-.027.033-.032.05-.068.046-.084-.006-.272-.006-.328-.006-.264 0-.498.043-.721.09-.47.1-.761.295-1.019.503-.12.095-.347.365-.399.653a.76.76 0 0 0 .097.578c.14-.148.374-.264.816-.266.493-.002 1.169.224 1.406.608.336.547.27.99.199 1.517-.183 1.347-.68 2.048-1.783 2.203-.191.026-.38.04-.56.04-.776 0-1.34-.248-1.63-.716a.71.71 0 0 1-.088-.168s.087-.021.163-.056c.294-.14.514-.344.594-.661.09-.353.004-.728-.23-1.007-.415-.47-.991-.708-1.713-.708-.4 0-.755.076-.982.14-.908.256-1.633.947-2.214 2.112-.412.824-.7 1.912-.81 3.067-.11 1.13-.056 2.085.019 2.949.124 1.437.363 2.298.708 3.22a15.68 15.68 0 0 0 1.609 3.19c.09-.094.15-.161.308-.318.188-.19.724-.893.876-1.11.19-.27.51-.779.664-1.147l.15.119c.16.127.252.348.249.592-.003.215-.053.464-.184.922a8.703 8.703 0 0 1-.784 1.818c-.189.341-.27.508-.199.584.015.015.038.03.06.026.116 0 .34-.117.585-.304.222-.17.813-.672 1.527-1.675a15.449 15.449 0 0 0 1.452-2.521c.12.046.255.101.317.226a.92.92 0 0 1 .08.563c-.065.539-.379 1.353-.63 1.94-.425.998-1.208 2.115-1.788 2.877-.022.03-.163.197-.186.227.9.792 1.944 1.555 3.007 2.136.725.408 2.203 1.162 3.183 1.424.98-.262 2.458-1.016 3.184-1.424a17.063 17.063 0 0 0 3.003-2.134c-.05-.076-.13-.158-.183-.23-.582-.763-1.365-1.881-1.79-2.875-.25-.59-.563-1.405-.628-1.94-.028-.221-.002-.417.08-.565.033-.098.274-.218.317-.226.405.884.887 1.73 1.452 2.522.715 1.003 1.306 1.506 1.527 1.674.248.191.467.304.586.304a.07.07 0 0 0 .044-.012c.094-.069.017-.234-.183-.594a9.003 9.003 0 0 1-.786-1.822c-.13-.456-.18-.706-.182-.92-.004-.246.088-.466.248-.594l.15-.118c.155.373.5.919.665 1.147.15.216.685.919.876 1.11.156.158.22.222.308.32a15.672 15.672 0 0 0 1.609-3.19c.343-.923.583-1.784.707-3.222.075-.86.128-1.81.02-2.948-.101-1.116-.404-2.264-.81-3.068-.249-.49-.605-1.112-1.171-1.566z","kw":["barclays","barclaycard","jetblue","aadvantage aviator","wyndham"]},{"id":"synchrony","name":"Synchrony","group":"card","bg":"#F7C600","fg":"#1a1a1a","mark":"Syf","kw":["synchrony","care credit","carecredit","paypal credit","sam’s club","sams club","verizon visa"]},{"id":"applecard","name":"Apple Card","group":"card","bg":"#FFFFFF","fg":"#000","path":"M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701","kw":["apple card","apple"]},{"id":"navyfederal","name":"Navy Federal","group":"card","bg":"#003A70","fg":"#fff","mark":"NF","kw":["navy federal","nfcu"]},{"id":"usaa","name":"USAA","group":"card","bg":"#12385F","fg":"#fff","mark":"USAA","kw":["usaa"]},{"id":"pnc","name":"PNC","group":"card","bg":"#EF7622","fg":"#fff","mark":"PNC","kw":["pnc"]},{"id":"td","name":"TD Bank","group":"card","bg":"#008A00","fg":"#fff","mark":"TD","kw":["td bank","td cash","td double up"]},{"id":"truist","name":"Truist","group":"card","bg":"#2E1A47","fg":"#fff","mark":"T","kw":["truist","suntrust","bb&t"]},{"id":"creditone","name":"Credit One","group":"card","bg":"#0D3B66","fg":"#fff","mark":"CR","kw":["credit one"]},{"id":"breadfinancial","name":"Bread / Comenity","group":"card","bg":"#4B2A84","fg":"#fff","mark":"Br","kw":["comenity","bread","ulta","victoria","wayfair","pottery barn","williams sonoma"]},{"id":"missionlane","name":"Mission Lane","group":"card","bg":"#0E7C4A","fg":"#fff","mark":"ML","kw":["mission lane"]},{"id":"fifththird","name":"Fifth Third","group":"card","bg":"#00805A","fg":"#fff","mark":"53","kw":["fifth third","5/3","53 bank"]},{"id":"citizens","name":"Citizens","group":"card","bg":"#008555","fg":"#fff","mark":"Ci","kw":["citizens"]},{"id":"regions","name":"Regions","group":"card","bg":"#1F6A35","fg":"#fff","mark":"R","kw":["regions"]},{"id":"huntington","name":"Huntington","group":"card","bg":"#4C9F38","fg":"#fff","mark":"H","kw":["huntington"]},{"id":"paypal","name":"PayPal","group":"retail","bg":"#FFFFFF","fg":"#002991","path":"M15.607 4.653H8.941L6.645 19.251H1.82L4.862 0h7.995c3.754 0 6.375 2.294 6.473 5.513-.648-.478-2.105-.86-3.722-.86m6.57 5.546c0 3.41-3.01 6.853-6.958 6.853h-2.493L11.595 24H6.74l1.845-11.538h3.592c4.208 0 7.346-3.634 7.153-6.949a5.24 5.24 0 0 1 2.848 4.686M9.653 5.546h6.408c.907 0 1.942.222 2.363.541-.195 2.741-2.655 5.483-6.441 5.483H8.714Z","kw":["paypal","pay in 4"]},{"id":"amazon","name":"Amazon","group":"retail","bg":"#FF9900","fg":"#1a1a1a","mark":"a","kw":["amazon","prime visa","prime store"]},{"id":"target","name":"Target","group":"retail","bg":"#FFFFFF","fg":"#CC0000","path":"M12.0005 0C18.627 0 24 5.373 24 12.0005 24 18.627 18.627 24 11.9995 24 5.373 24 0 18.627 0 11.9995 0 5.373 5.373 0 12.0005 0zm0 19.826a7.8265 7.8265 0 10-.001-15.652C7.7133 4.2246 4.2653 7.7136 4.2653 12c0 4.2864 3.448 7.7754 7.7342 7.826h.001zm0-3.9853a3.8402 3.8402 0 110-7.6803c2.1204.0006 3.839 1.7197 3.839 3.8401s-1.7186 3.8396-3.839 3.8402z","kw":["target","redcard"]},{"id":"macys","name":"Macy’s","group":"retail","bg":"#FFFFFF","fg":"#E21A2C","path":"M12.015.624L9.19 9.293H0l7.445 5.384-2.819 8.673L12 17.986l7.422 5.393-2.835-8.713L24 9.292h-9.162L12.015.622v.002z","kw":["macy"]},{"id":"kohls","name":"Kohl’s","group":"retail","bg":"#1F1F1F","fg":"#fff","mark":"K","kw":["kohl"]},{"id":"bestbuy","name":"Best Buy","group":"retail","bg":"#0046BE","fg":"#FFE000","mark":"BB","kw":["best buy","bestbuy"]},{"id":"homedepot","name":"The Home Depot","group":"retail","bg":"#F96302","fg":"#fff","mark":"HD","kw":["home depot","homedepot"]},{"id":"lowes","name":"Lowe’s","group":"retail","bg":"#004990","fg":"#fff","mark":"L","kw":["lowe"]},{"id":"walmart","name":"Walmart","group":"retail","bg":"#0071DC","fg":"#fff","mark":"W","kw":["walmart","onepay"]},{"id":"affirm","name":"Affirm","group":"bnpl","bg":"#4A4AF4","fg":"#fff","mark":"a","kw":["affirm"]},{"id":"klarna","name":"Klarna","group":"bnpl","bg":"#FFB3C7","fg":"#0a0a0a","path":"M4.592 2v20H0V2h4.592zm11.46 0c0 4.194-1.583 8.105-4.415 11.068l-.278.283L17.702 22h-5.668l-6.893-9.4 1.779-1.332c2.858-2.14 4.535-5.378 4.637-8.924L11.562 2h4.49zM21.5 17a2.5 2.5 0 110 5 2.5 2.5 0 010-5z","kw":["klarna"]},{"id":"afterpay","name":"Afterpay","group":"bnpl","bg":"#B2FCE4","fg":"#0a0a0a","path":"M12 0C5.373 0 0 5.373 0 12c0 6.628 5.373 12 12 12 6.628 0 12-5.372 12-12 0-6.627-5.372-12-12-12Zm1.236 4.924a2.21 2.21 0 0 1 1.15.299l4.457 2.557c1.495.857 1.495 3.013 0 3.87l-4.457 2.558c-1.488.854-3.342-.22-3.342-1.935v-.34a.441.441 0 0 0-.66-.383L6.287 13.9a.441.441 0 0 0 0 .765l4.096 2.35a.44.44 0 0 0 .661-.382v-.685c0-.333.36-.542.649-.376l1.041.597a.441.441 0 0 1 .222.383v.29c0 1.715-1.854 2.789-3.342 1.935L5.157 16.22c-1.495-.857-1.495-3.013 0-3.87l4.457-2.558c1.488-.854 3.342.22 3.342 1.935v.34c0 .34.366.551.66.383l4.097-2.35a.441.441 0 0 0 0-.765l-4.096-2.351a.441.441 0 0 0-.661.382v.685c0 .333-.36.541-.649.375l-1.041-.597a.442.442 0 0 1-.222-.383v-.29c0-1.285 1.043-2.21 2.192-2.233z","kw":["afterpay","cash app afterpay"]},{"id":"sofi","name":"SoFi","group":"loan","bg":"#00A2C7","fg":"#fff","mark":"SoFi","kw":["sofi"]},{"id":"lendingclub","name":"LendingClub","group":"loan","bg":"#1F2A44","fg":"#fff","mark":"LC","kw":["lendingclub","lending club"]},{"id":"upstart","name":"Upstart","group":"loan","bg":"#0E7C86","fg":"#fff","mark":"U","kw":["upstart"]},{"id":"bestegg","name":"Best Egg","group":"loan","bg":"#1E4F9C","fg":"#fff","mark":"BE","kw":["best egg","bestegg"]},{"id":"navient","name":"Navient","group":"student","bg":"#003865","fg":"#fff","mark":"N","kw":["navient"]},{"id":"nelnet","name":"Nelnet","group":"student","bg":"#00539B","fg":"#fff","mark":"Ne","kw":["nelnet"]},{"id":"mohela","name":"MOHELA","group":"student","bg":"#00427A","fg":"#fff","mark":"M","kw":["mohela"]},{"id":"aidvantage","name":"Aidvantage","group":"student","bg":"#6A2C91","fg":"#fff","mark":"Ai","kw":["aidvantage"]},{"id":"salliemae","name":"Sallie Mae","group":"student","bg":"#005DAA","fg":"#fff","mark":"SM","kw":["sallie mae","salliemae"]},{"id":"ally","name":"Ally","group":"auto","bg":"#7A2280","fg":"#fff","mark":"ally","kw":["ally"]},{"id":"toyotafinancial","name":"Toyota Financial","group":"auto","bg":"#FFFFFF","fg":"#EB0A1E","path":"M12 3.848C5.223 3.848 0 7.298 0 12c0 4.702 5.224 8.152 12 8.152S24 16.702 24 12c0-4.702-5.223-8.152-12-8.152zm7.334 3.839c0 1.08-1.725 1.913-4.488 2.246-.26-2.58-1.005-4.279-1.963-4.913 2.948.184 6.45 1.227 6.45 2.667zM12 16.401c-.96 0-1.746-1.5-1.808-4.389.577.047 1.18.072 1.808.072.628 0 1.23-.025 1.807-.072-.061 2.89-.847 4.389-1.807 4.389zm0-6.308c-.59 0-1.155-.019-1.69-.054.261-1.728.92-3.15 1.69-3.15.77 0 1.428 1.422 1.689 3.15-.535.034-1.099.054-1.689.054zm-.882-5.075c-.956.633-1.706 2.333-1.964 4.915C6.391 9.6 4.665 8.767 4.665 7.687c0-1.44 3.504-2.49 6.453-2.669zM2.037 11.68a5.265 5.265 0 011.048-3.164c.27 1.547 2.522 2.881 5.972 3.37V12c0 3.772.879 6.203 2.087 6.97-5.107-.321-9.107-3.48-9.107-7.29zm10.823 7.29c1.207-.767 2.087-3.198 2.087-6.97v-.115c3.447-.488 5.704-1.826 5.972-3.37a5.26 5.26 0 011.049 3.165c-.004 3.81-4.008 6.969-9.109 7.29z","kw":["toyota","lexus"]},{"id":"hondafinancial","name":"Honda Financial","group":"auto","bg":"#FFFFFF","fg":"#E40521","path":"M23.902 6.87c-.33-3.218-2.47-3.895-4.354-4.204-.946-.16-2.63-.3-3.716-.34-.946-.06-3.168-.09-3.835-.09-.657 0-2.89.03-3.835.09-1.076.04-2.77.18-3.716.34C2.563 2.985.42 3.66.092 6.87c-.08.877-.1 2.023-.09 3.248.03 2.031.2 3.406.3 4.363.07.657.338 2.62.687 3.636.478 1.395.916 1.803 1.424 2.222.937.757 2.471.996 2.79 1.056 1.733.31 5.24.368 6.784.368 1.544 0 5.05-.05 6.784-.368.329-.06 1.863-.29 2.79-1.056.508-.419.946-.827 1.424-2.222.35-1.016.628-2.979.698-3.636.1-.957.279-2.332.299-4.363.04-1.225.01-2.371-.08-3.248m-1.176 5.4c-.19 2.57-.418 4.104-.747 5.22-.29.976-.637 1.623-1.165 2.092-.867.787-2.063.956-2.76 1.056-1.514.23-4.055.3-6.057.3-2.002 0-4.543-.08-6.057-.3-.697-.1-1.893-.269-2.76-1.056-.518-.469-.876-1.126-1.155-2.093-.329-1.105-.558-2.65-.747-5.22-.11-1.543-.09-4.054.08-5.4.258-2.011 1.255-3.018 3.387-3.396.996-.18 2.34-.31 3.606-.37 1.016-.07 2.7-.1 3.636-.09.936-.01 2.62.03 3.636.09 1.275.06 2.61.19 3.606.37 2.142.378 3.139 1.395 3.388 3.397.199 1.345.229 3.856.11 5.4m-5.202-8.39c-.548 2.462-.767 3.588-1.216 5.37-.428 1.715-.767 3.298-1.335 4.065-.587.777-1.365.947-1.893 1.006-.279.03-.478.04-1.066.05-.596 0-.796-.02-1.075-.05-.528-.06-1.315-.229-1.892-1.006-.578-.767-.907-2.35-1.335-4.064-.47-1.773-.678-2.91-1.236-5.37 0 0-.548.02-.797.04-.329.02-.588.05-.867.09.343 5.372.692 11.079 1.126 16.13a21.983 21.983 0 002.39.169c.33-1.266.748-3.02 1.207-3.767.378-.608.966-.677 1.295-.717.518-.07.956-.08 1.165-.08.2-.01.637 0 1.165.08.33.05.917.11 1.295.717.47.747.877 2.5 1.206 3.766 0 0 .358-.01 1.165-.05.41-.018.82-.058 1.226-.12.458-5.39.785-10.728 1.126-16.128-.28-.04-.538-.07-.867-.09-.23-.02-.787-.04-.787-.04z","kw":["honda","acura"]},{"id":"fordcredit","name":"Ford Credit","group":"auto","bg":"#FFFFFF","fg":"#00274E","path":"M12 8.236C5.872 8.236.905 9.93.905 12.002S5.872 15.767 12 15.767c6.127 0 11.094-1.693 11.094-3.765 0-2.073-4.967-3.766-11.094-3.766zm-5.698 6.24c-.656.005-1.233-.4-1.3-1.101a1.415 1.415 0 0 1 .294-1.02c.195-.254.525-.465.804-.517.09-.017.213-.006.264.054.079.093.056.194-.023.234-.213.109-.47.295-.597.55a.675.675 0 0 0 .034.696c.263.397.997.408 1.679-.225.169-.156.32-.304.473-.48.3-.344.4-.47.8-1.024.005-.006.006-.014.004-.018-.003-.007-.009-.01-.02-.01-.267.007-.5.087-.725.255-.065.048-.159.041-.2-.021-.046-.07-.013-.163.062-.215.363-.253.76-.298 1.166-.367 0 0 .028.002.051-.03.167-.213.292-.405.47-.621.178-.22.41-.42.586-.572.246-.212.404-.283.564-.37.043-.022-.005-.049-.018-.049-.896-.168-1.827-.386-2.717-.056-.616.23-.887.718-.757 1.045.093.231.397.27.683.13a1.55 1.55 0 0 0 .611-.544c.087-.134.27-.038.171.195-.26.611-.757 1.097-1.363 1.118-.516.016-.849-.363-.848-.831.002-.924 1.03-1.532 2.11-1.622 1.301-.108 2.533.239 3.825.395.989.12 1.938.123 2.932-.106.118-.025.2.05.193.168-.01.172-.143.337-.47.516-.373.204-.763.266-1.17.27-.984.008-1.901-.376-2.85-.582.002.041.012.091-.023.117-.525.388-1 .782-1.318 1.334-.011.013-.005.025.013.024.277-.015.525-.022.783-.042.045-.004.047-.015.043-.048a.64.64 0 0 1 .2-.558c.172-.153.387-.17.53-.06.16.126.147.353.058.523a.63.63 0 0 1-.382.31s-.03.006-.026.034c.006.043.2.151.217.18.017.027.008.07-.021.102a.123.123 0 0 1-.095.045c-.033 0-.053-.012-.096-.035a.92.92 0 0 1-.27-.217c-.024-.031-.037-.032-.099-.029-.279.017-.714.059-1.009.096-.071.008-.082.022-.096.047-.47.775-.972 1.61-1.523 2.17-.592.6-1.083.758-1.604.762zM19.05 10.71c-.091.158-1.849 2.834-1.96 3.11-.035.088-.04.155-.004.204.092.124.297.051.425-.038.381-.262.645-.58.937-.858.017-.013.046-.018.065 0 .043.04.106.091.15.137a.04.04 0 0 1 .002.057 5.873 5.873 0 0 1-.904.911c-.47.364-.939.457-1.172.224a.508.508 0 0 1-.14-.316c-.002-.057-.031-.06-.058-.034-.278.275-.76.579-1.198.362-.366-.18-.451-.618-.383-.986.001-.008-.006-.06-.051-.03a1.28 1.28 0 0 1-.3.162.853.853 0 0 1-.366.077.518.518 0 0 1-.451-.253.759.759 0 0 1-.095-.347c-.001-.011-.017-.032-.033-.005-.3.457-.579.899-.875 1.363-.016.022-.03.036-.06.037l-.587.001c-.036 0-.053-.028-.034-.063.104-.2.674-1.03 1.06-1.736.107-.194.085-.294.019-.337-.083-.054-.248.027-.387.133-.379.287-.697.735-.859.935-.095.117-.185.291-.433.56-.391.425-.91.669-1.408.5a.848.848 0 0 1-.546-.58c-.015-.052-.044-.066-.073-.032-.08.1-.245.249-.383.342-.015.011-.052.033-.084.017a.851.851 0 0 1-.152-.199.07.07 0 0 1 .016-.08c.197-.173.305-.271.391-.38.064-.08.113-.17.17-.315.12-.302.393-.866.938-1.158a1.81 1.81 0 0 1 .652-.219c.1-.01.183.002.213.08.011.033.039.105.056.158.011.032.003.057-.035.071-.32.122-.643.311-.865.61-.253.338-.321.746-.152.98.123.17.322.2.514.139.29-.092.538-.363.666-.663.138-.329.16-.717.058-1.059-.016-.059-.001-.104.037-.136.077-.063.184-.112.215-.128a.14.14 0 0 1 .182.045c.106.157.163.378.17.607.006.049.026.05.05.025.19-.202.366-.418.568-.58.185-.147.422-.267.643-.262.286.006.428.2.419.546-.001.044.03.04.051.011a1.19 1.19 0 0 1 .24-.264c.198-.163.4-.236.611-.222.26.02.468.257.425.527a.53.53 0 0 1-.281.406.362.362 0 0 1-.405-.044.336.336 0 0 1-.096-.322c.005-.025-.027-.048-.054-.02-.254.264-.273.606-.107.76.183.17.458.056.658-.075.366-.239.65-.563.979-.813.218-.166.467-.314.746-.351a.87.87 0 0 1 .454.052c.2.081.326.25.342.396.004.043.036.048.063.01.158-.246 1.005-1.517 1.075-1.65.02-.041.044-.047.089-.047h.606c.035 0 .051.02.036.047zm-2.32 2.204a.053.053 0 0 0-.003.04c.003.02.03.04.056.05.01.003.015.01.004.032-.075.16-.143.252-.237.391a1.472 1.472 0 0 1-.3.325c-.178.147-.424.307-.628.2-.09-.047-.13-.174-.127-.276.004-.288.132-.584.369-.875.288-.355.607-.539.816-.438.216.103.148.354.05.55zm-5.949-1.881a.398.398 0 0 1 .132-.345c.057-.05.133-.062.18-.022.052.045.027.157-.026.234a.43.43 0 0 1-.245.177c-.018.004-.034-.004-.041-.044zM12 7.5C5.34 7.5 0 9.497 0 12c0 2.488 5.383 4.5 12 4.5s12-2.02 12-4.5-5.383-4.5-12-4.5zm0 8.608C5.649 16.108.5 14.27.5 12.002.5 9.733 5.65 7.895 12 7.895s11.498 1.838 11.498 4.107c0 2.268-5.148 4.106-11.498 4.106z","kw":["ford","lincoln"]},{"id":"gmfinancial","name":"GM Financial","group":"auto","bg":"#FFFFFF","fg":"#0170CE","path":"M3.34 0A3.345 3.345 0 0 0 0 3.34v17.32A3.345 3.345 0 0 0 3.34 24h17.32A3.345 3.345 0 0 0 24 20.66V3.34C23.982 1.5 22.501 0 20.66 0zm0 1.535h17.32c.992 0 1.805.813 1.805 1.806v17.3c0 .993-.813 1.806-1.806 1.806H3.341a1.811 1.811 0 0 1-1.806-1.806v-17.3c0-.993.813-1.806 1.806-1.806zm2.98 4.677A1.877 1.877 0 0 0 4.442 8.09v4.569c0 1.03.85 1.86 1.879 1.878h1.552v.343c-.018.85-.505 1.337-1.679 1.355h-.74v1.535h.74c2.167 0 3.395-1.03 3.431-2.908v-8.65zm4.623 0v8.307h1.752V7.73h1.68v6.79h1.752V7.73h1.01c.362 0 .669.289.669.668v6.14h1.752V8.09c-.018-1.029-.85-1.878-1.879-1.878zM6.863 7.73h1.01v5.273h-1.01a.666.666 0 0 1-.669-.668V8.397c0-.36.29-.668.668-.668zm4.08 8.506v1.535h8.596v-1.535z","kw":["gm financial","chevrolet","chevy","gmc","buick","cadillac"]},{"id":"westlake","name":"Westlake Financial","group":"auto","bg":"#8B1E2D","fg":"#fff","mark":"W","kw":["westlake"]},{"id":"rocketmortgage","name":"Rocket Mortgage","group":"home","bg":"#C8102E","fg":"#fff","mark":"R","kw":["rocket mortgage","quicken loans"]},{"id":"mrcooper","name":"Mr. Cooper","group":"home","bg":"#1E3A5F","fg":"#fff","mark":"MC","kw":["mr. cooper","mr cooper"]}];
+const ISSUER_GROUPS = [
+  ['card', 'Credit cards & banks'], ['retail', 'Store cards'], ['bnpl', 'Buy now, pay later'],
+  ['loan', 'Personal loans'], ['student', 'Student loans'], ['auto', 'Auto lenders'], ['home', 'Mortgage']
+];
+const ISSUER_BY_ID = {};
+ISSUERS.forEach(function (i) { ISSUER_BY_ID[i.id] = i; });
+
+function sanitizeIssuer(v) {
+  return (typeof v === 'string' && ISSUER_BY_ID[v]) ? v : null;
+}
+function sanitizeCreditLimit(v) {
+  var n = Number(v);
+  return (isFinite(n) && n > 0 && n < 1e8) ? Math.round(n * 100) / 100 : null;
+}
+
+// Best guess from what the user typed as the name. Longest keyword wins, so
+// "PayPal Credit" (Synchrony) beats plain "PayPal". Whole words only.
+function guessIssuer(name) {
+  var s = ' ' + String(name || '').toLowerCase().replace(/[‘’]/g, "'") + ' ';
+  var best = null, bestLen = 0;
+  ISSUERS.forEach(function (i) {
+    (i.kw || []).forEach(function (k) {
+      var kk = k.replace(/[‘’]/g, "'").trim();
+      var re = new RegExp('(^|[^a-z0-9])' + kk.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '($|[^a-z0-9])');
+      if (kk.length > bestLen && re.test(s)) { best = i.id; bestLen = kk.length; }
+    });
+  });
+  return best;
+}
+
+function issuerOptionsHtml() {
+  var h = '<option value="">Not listed / skip</option>';
+  ISSUER_GROUPS.forEach(function (g) {
+    var items = ISSUERS.filter(function (i) { return i.group === g[0]; })
+      .sort(function (a, b) { return a.name.localeCompare(b.name); });
+    if (!items.length) return;
+    h += '<optgroup label="' + g[1] + '">' + items.map(function (i) {
+      return '<option value="' + i.id + '">' + escapeHtml(i.name) + '</option>';
+    }).join('') + '</optgroup>';
+  });
+  return h;
+}
+
+// Tile shown beside a debt's name. No issuer = the debt's initial on a
+// neutral tile tinted by type, so a list stays visually even.
+function issuerTileHtml(d, size) {
+  var cls = 'iss-tile' + (size === 'sm' ? ' iss-sm' : '');
+  var i = ISSUER_BY_ID[d && d.issuer];
+  if (!i) {
+    var ch = String((d && d.name) || '?').trim().charAt(0).toUpperCase() || '?';
+    return '<span class="' + cls + ' iss-none debt-type-' + badgeClass(d && d.type).replace('badge-', '') + '" aria-hidden="true">' + escapeHtml(ch) + '</span>';
+  }
+  var light = /^#f{6}$/i.test(i.bg) && !i.full;
+  var style = 'background:' + i.bg + ';color:' + i.fg;
+  var inner = i.path
+    ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="' + i.path + '"/></svg>'
+    : '<span class="iss-mark' + (i.mark.length >= 4 ? ' iss-mark-long' : (i.mark.length === 3 ? ' iss-mark-3' : '')) + '">' + escapeHtml(i.mark) + '</span>';
+  return '<span class="' + cls + (light ? ' iss-light' : '') + (i.full ? ' iss-full' : '') + '" style="' + style + '" title="' + escapeHtml(i.name) + '" role="img" aria-label="' + escapeHtml(i.name) + '">' + inner + '</span>';
+}
+
+// Credit cards with a limit only. Bands describe the number; they are not
+// advice. Over 100% is shown as over the limit rather than clamped away.
+function utilizationOf(d) {
+  if (!d || d.type !== 'cc') return null;
+  var lim = sanitizeCreditLimit(d.creditLimit);
+  if (!lim) return null;
+  var bal = Math.max(0, Number(d.balance) || 0);
+  var pct = (bal / lim) * 100;
+  var band = pct > 100 ? ['over', 'Over limit']
+           : pct >= 90 ? ['vhigh', 'Very high']
+           : pct >= 50 ? ['high', 'High']
+           : pct >= 30 ? ['mod', 'Moderate']
+           : ['low', 'Low'];
+  return { limit: lim, used: bal, pct: pct, available: Math.max(0, lim - bal), over: Math.max(0, bal - lim), band: band[0], label: band[1] };
+}
+function utilizationHtml(d) {
+  var u = utilizationOf(d);
+  if (!u) return '';
+  var shown = Math.min(100, u.pct);
+  var pctTxt = u.pct > 0 && u.pct < 1 ? '<1' : String(Math.round(u.pct));
+  var bgSize = shown > 0 ? (10000 / shown).toFixed(2) : '100';
+  var right = u.over > 0 ? fmtDec(u.over) + ' over limit' : fmtDec(u.available) + ' available';
+  return '<div class="util-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + Math.round(shown) + '" aria-label="' + pctTxt + '% of credit limit used">' +
+      '<div class="util-head"><span>Credit used</span><span class="util-tag util-' + u.band + '">' + u.label + '</span></div>' +
+      '<div class="payoff-track">' +
+        '<div class="payoff-fill util-fill" style="width:' + shown.toFixed(2) + '%;background-size:' + bgSize + '% 100%"></div>' +
+        '<div class="payoff-marker" style="left:' + shown.toFixed(2) + '%"></div>' +
+      '</div>' +
+      '<div class="payoff-meta"><span><strong>' + pctTxt + '% used</strong> of ' + fmtDec(u.limit) + ' limit</span><span>' + right + '</span></div>' +
+    '</div>';
+}
+
+// Add-form wiring: fill the issuer from the name until the user picks one.
+var _issuerTouched = false;
+function onIssuerPicked() { _issuerTouched = true; }
+function onDebtNameInput() {
+  if (_issuerTouched) return;
+  var sel = document.getElementById('debt-issuer');
+  var nm = document.getElementById('debt-name');
+  if (!sel || !nm) return;
+  sel.value = guessIssuer(nm.value) || '';
+}
+function populateIssuerSelects() {
+  ['debt-issuer', 'edit-issuer'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el && !el.options.length) el.innerHTML = issuerOptionsHtml();
+  });
 }
 
 // v1.57.0 — payoff progress bar, shared by the free cards and the premium
@@ -8349,7 +8531,12 @@ function addDebt() {
     dueDay: sanitizeDueDay((document.getElementById('debt-due-day') || {}).value),
     // v1.56.0 — optional second payment day for people who pay twice a month.
     dueDay2: sanitizeSecondDueDay((document.getElementById('debt-due-day') || {}).value,
-                                  (document.getElementById('debt-due-day2') || {}).value)
+                                  (document.getElementById('debt-due-day2') || {}).value),
+    // v1.58.0 — lender (logo) and, for credit cards, the limit
+    issuer: sanitizeIssuer((document.getElementById('debt-issuer') || {}).value),
+    creditLimit: type === 'cc'
+      ? sanitizeCreditLimit(parseAmount((document.getElementById('debt-credit-limit') || {}).value || ''))
+      : null
   });
 
   // v1.21.1 — activation event. The single most important funnel step: a
@@ -8389,6 +8576,8 @@ function addDebt() {
 
   // Reset form
   document.getElementById('debt-name').value = '';
+  { const _is = document.getElementById('debt-issuer'); if (_is) _is.value = ''; _issuerTouched = false; }
+  { const _cl = document.getElementById('debt-credit-limit'); if (_cl) _cl.value = ''; }
   document.getElementById('debt-balance').value = '';
   document.getElementById('debt-apr').value = '';
   document.getElementById('debt-min').value = '';
@@ -8642,6 +8831,11 @@ function openEditModal(id) {
   if (_eddIn) _eddIn.value = d.dueDay || '';
   var _edd2In = document.getElementById('edit-due-day2');
   if (_edd2In) _edd2In.value = sanitizeSecondDueDay(d.dueDay, d.dueDay2) || '';
+  populateIssuerSelects();
+  var _eisIn = document.getElementById('edit-issuer');
+  if (_eisIn) _eisIn.value = sanitizeIssuer(d.issuer) || '';
+  var _eclIn = document.getElementById('edit-credit-limit');
+  if (_eclIn) _eclIn.value = sanitizeCreditLimit(d.creditLimit) || '';
 
   // Promo fields
   const hasPromo = !!d.promoEnd;
@@ -8856,6 +9050,13 @@ function saveEditDebt() {
   d.dueDay = _edd ? sanitizeDueDay(_edd.value) : (d.dueDay || null);
   var _edd2 = document.getElementById('edit-due-day2');
   d.dueDay2 = sanitizeSecondDueDay(d.dueDay, _edd2 ? _edd2.value : d.dueDay2);
+  // v1.58.0 — issuer + credit limit (limit kept only while it's a credit card)
+  var _eis = document.getElementById('edit-issuer');
+  d.issuer = _eis ? sanitizeIssuer(_eis.value) : sanitizeIssuer(d.issuer);
+  var _ecl = document.getElementById('edit-credit-limit');
+  d.creditLimit = (type === 'cc')
+    ? (_ecl ? sanitizeCreditLimit(parseAmount(_ecl.value || '')) : sanitizeCreditLimit(d.creditLimit))
+    : null;
 
   // v1.11.0 — Reconciliation: if the saved balance doesn't match what the
   // ledger (originalBalance + accruals + adjustments − payments) would
@@ -13426,6 +13627,7 @@ function renderDebtList() {
     <div class="debt-item debt-type-${badgeClass(d.type).replace('badge-','')}" data-id="${d.id}" style="${isZero ? 'opacity:0.5' : ''}" draggable="true">
       <div class="drag-handle" title="Drag to reorder"><span></span><span></span><span></span></div>
       ${reorderControls(d.id, _i, activeList.length)}
+      ${issuerTileHtml(d)}
       <span class="debt-type-badge ${badgeClass(d.type)}">${badgeLabel(d.type)}</span>
       <div class="debt-name">${escapeHtml(d.name)} ${isZero ? '✅' : ''}${promoBadge}${excludedBadge}</div>
       <div class="debt-stats">
@@ -13454,7 +13656,7 @@ function renderDebtList() {
       <button class="btn btn-ghost" style="font-size:0.72rem;padding:6px 12px;" onclick="openEditModal(${d.id})">Edit</button>
       <button class="btn btn-danger" onclick="removeDebt(${d.id})">✕</button>
       ${trueCostStrip}
-      <div style="min-width:100%">${payoffBarHtml(d)}</div>
+      <div style="min-width:100%">${utilizationHtml(d)}${payoffBarHtml(d)}</div>
     </div>`;
   }).join('');
 
@@ -13650,7 +13852,7 @@ function renderPortfolioTable(list) {
           '</td>'
         : '') +
       // v1.28.2 — data-label drives the stacked card layout below 560px.
-      '<td class="pf-td pf-name debt-type-' + badgeClass(d.type).replace('badge-','') + '"><span style="font-weight:600;">' + escapeHtml(d.name) + '</span>' + dueTagFor(d) + exclTag + promoTag + tcTag + progTag + '</td>' +
+      '<td class="pf-td pf-name debt-type-' + badgeClass(d.type).replace('badge-','') + '"><span class="pf-name-line">' + issuerTileHtml(d, 'sm') + '<span style="font-weight:600;">' + escapeHtml(d.name) + '</span></span>' + dueTagFor(d) + exclTag + promoTag + tcTag + utilizationHtml(d) + progTag + '</td>' +
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
@@ -17324,6 +17526,9 @@ function onDebtTypeChange(mode) {
   var fieldsId = (mode === 'edit') ? 'edit-installment-fields' : 'installment-fields';
   var fields = document.getElementById(fieldsId);
   if (fields) fields.style.display = isInstallment ? 'block' : 'none';
+  // v1.58.0 — credit limit applies to credit cards only
+  var limField = document.getElementById(mode === 'edit' ? 'edit-credit-limit-field' : 'credit-limit-field');
+  if (limField) limField.style.display = (type === 'cc') ? '' : 'none';
   // Auto-configure include-in-strategy checkbox based on type
   var includeId = (mode === 'edit') ? 'edit-include-strategy' : 'debt-include-strategy';
   var includeEl = document.getElementById(includeId);
@@ -17403,7 +17608,9 @@ function sanitizeDebts(parsed) {
       termMonths: termMonths,
       originationDate: originationDate,
       dueDay: sanitizeDueDay(debt.dueDay),
-      dueDay2: sanitizeSecondDueDay(debt.dueDay, debt.dueDay2)
+      dueDay2: sanitizeSecondDueDay(debt.dueDay, debt.dueDay2),
+      issuer: sanitizeIssuer(debt.issuer),                       // v1.58.0
+      creditLimit: type === 'cc' ? sanitizeCreditLimit(debt.creditLimit) : null
     });
   });
 }
@@ -17460,12 +17667,12 @@ var DEMO_DEBTS = [
     apr: 24.99, realApr: 24.99, regularApr: 24.99, minPayment: 170,
     promoApr: null, promoEnd: null, postPromoApr: null, transferFee: 0, hasPromo: false,
     loanType: 'revolving', includeInStrategy: true,
-    origPrincipal: null, termMonths: null, originationDate: null },
+    origPrincipal: null, termMonths: null, originationDate: null, creditLimit: 10000 },
   { id: -102, name: 'Store Card', type: 'cc', balance: 1900, originalBalance: 2400,
     apr: 29.99, realApr: 29.99, regularApr: 29.99, minPayment: 55,
     promoApr: null, promoEnd: null, postPromoApr: null, transferFee: 0, hasPromo: false,
     loanType: 'revolving', includeInStrategy: true,
-    origPrincipal: null, termMonths: null, originationDate: null },
+    origPrincipal: null, termMonths: null, originationDate: null, creditLimit: 2500 },
   { id: -103, name: 'Car Loan', type: 'loan', balance: 7200, originalBalance: 14000,
     apr: 6.49, realApr: 6.49, regularApr: 6.49, minPayment: 285,
     promoApr: null, promoEnd: null, postPromoApr: null, transferFee: 0, hasPromo: false,
@@ -17552,7 +17759,8 @@ function _readCalcImport() {
       promoApr: promo ? pApr : null, promoEnd: promo ? String(d.promoEnd).slice(0, 10) : null,
       postPromoApr: promo ? post : null, transferFee: 0, hasPromo: promo,
       loanType: inferLoanType(type), includeInStrategy: shouldIncludeInStrategy(type),
-      origPrincipal: null, termMonths: null, originationDate: null, dueDay: null, dueDay2: null
+      origPrincipal: null, termMonths: null, originationDate: null, dueDay: null, dueDay2: null,
+      issuer: null, creditLimit: null
     });
   });
   if (!out.length) return null;
@@ -18151,6 +18359,10 @@ load();
   if (t) t.checked = interestAccrualEnabled;
 })();
 
+// v1.58.0 — issuer pickers + credit-limit field visibility for the default type
+populateIssuerSelects();
+try { onDebtTypeChange('add'); } catch (e) {}
+
 // v1.13.0 — apply theme + premium state at boot
 applyTheme();
 applyPremiumState();
@@ -18517,6 +18729,10 @@ if (isInStandaloneMode() ||
           <option value="other">Other</option>
         </select>
       </div>
+      <div class="form-field" style="grid-column:1/-1">
+        <label for="edit-issuer">Issuer / Lender <span class="field-optional">optional</span></label>
+        <select id="edit-issuer"></select>
+      </div>
       <div class="form-field">
         <label for="edit-balance">Balance ($)</label>
         <input type="text" inputmode="decimal" id="edit-balance" min="0" step="1" oninput="updateEditFeePreview()" />
@@ -18532,6 +18748,11 @@ if (isInStandaloneMode() ||
       <div class="form-field" style="grid-column:1/-1">
         <label for="edit-min">Min Payment ($)</label>
         <input type="text" inputmode="decimal" id="edit-min" min="0" step="1" />
+      </div>
+      <div class="form-field" style="grid-column:1/-1" id="edit-credit-limit-field">
+        <label for="edit-credit-limit">Credit Limit ($) <span class="field-optional">optional</span></label>
+        <input type="text" inputmode="decimal" id="edit-credit-limit" min="0" step="1" placeholder="5000" />
+        <div class="field-hint">Shows how much of your limit is in use</div>
       </div>
       <div class="form-field" style="grid-column:1/-1">
         <label for="edit-due-day">Due Day <span class="field-optional">optional</span></label>
