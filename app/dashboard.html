@@ -1531,6 +1531,20 @@
     color: var(--text-muted);
     line-height: 1.4;
   }
+  /* v1.60.0 — the user's own numbers on each strategy card */
+  .strategy-stats:empty { display: none; }
+  .strategy-stats {
+    margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border2);
+    font-family: var(--font-mono); line-height: 1.45;
+  }
+  .ss-date { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+  .ss-int  { font-size: 0.72rem; color: var(--text-muted); }
+  .ss-diff { font-size: 0.64rem; color: var(--text-dim); margin-top: 2px; }
+  .ss-chip {
+    display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 99px;
+    font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid var(--accent); background: var(--glow);
+  }
 
   /* ─── TIMELINE TABLE ─── */
   .timeline-table {
@@ -2674,6 +2688,11 @@
     gap: 10px;
     justify-content: flex-end;
   }
+  /* v1.60.0 — add-debt preview */
+  .add-preview-sub { font-size: 0.82rem; color: var(--text-muted); margin: -10px 0 14px; }
+  .add-preview-note { font-size: 0.76rem; color: var(--text-muted); line-height: 1.45; margin-top: 12px; }
+  .add-preview-actions { margin-top: 18px; }
+  .add-preview-actions .btn { flex: 1; }
 
   /* ── DRAG HANDLE (Hybrid mode) ── */
   .drag-handle {
@@ -3349,21 +3368,25 @@
         <div class="strategy-icon">&#129504;</div>
         <div class="strategy-name">Optimized</div>
         <div class="strategy-desc">Works out the order that costs you the least, including when 0% rates end.</div>
+        <div class="strategy-stats" id="sstat-optimized" aria-live="polite"></div>
       </div>
       <div class="strategy-card selected" id="card-avalanche" onclick="selectStrategy('avalanche')">
         <div class="strategy-icon">🏔️</div>
         <div class="strategy-name">Avalanche</div>
         <div class="strategy-desc">Highest APR first. Usually the least interest of the classic methods.</div>
+        <div class="strategy-stats" id="sstat-avalanche" aria-live="polite"></div>
       </div>
       <div class="strategy-card" id="card-snowball" onclick="selectStrategy('snowball')">
         <div class="strategy-icon">⛄</div>
         <div class="strategy-name">Snowball</div>
         <div class="strategy-desc">Smallest balance first. Accounts close sooner.</div>
+        <div class="strategy-stats" id="sstat-snowball" aria-live="polite"></div>
       </div>
       <div class="strategy-card" id="card-hybrid" onclick="selectStrategy('hybrid')">
         <div class="strategy-icon">🎯</div>
         <div class="strategy-name">Hybrid</div>
         <div class="strategy-desc">You set the order. Maximum control over your plan.</div>
+        <div class="strategy-stats" id="sstat-hybrid" aria-live="polite"></div>
       </div>
     </div>
     </div>
@@ -4287,7 +4310,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.59.1';
+const APP_VERSION = '1.60.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4295,6 +4318,16 @@ const APP_VERSION = '1.59.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.60.0',
+    date: 'November 12, 2026',
+    name: 'Compare methods with your numbers',
+    whatsNew: [
+      "Each payoff method on the Strategy tab now shows what it does with your own debts: the month you'd be debt-free and the total interest you'd pay. The one with the least interest is marked, and the others show how much more they cost, so you can compare at a glance before you switch.",
+      "Adding a debt now shows you a preview of it first: the lender's logo, balance, rate, minimum, and the credit-used and progress bars. Confirm to save it, or go back and fix anything that looks off."
+    ],
+    fixes: []
+  },
   {
     version: '1.59.1',
     date: 'November 12, 2026',
@@ -7785,6 +7818,55 @@ function utilizationHtml(d) {
     '</div>';
 }
 
+// v1.60.0 — preview before saving a new debt. Same pieces the list uses
+// (issuer tile, utilization and payoff bars), so what you confirm is what
+// you get.
+function previewCardHtml(d) {
+  var promo = (d.hasPromo && d.promoEnd)
+    ? '<span class="tag tag-accent" style="margin-left:6px;font-size:0.58rem;">0% until ' +
+      new Date(d.promoEnd + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) + '</span>'
+    : '';
+  var stat = function(l, v) { return '<div class="debt-stat"><span class="debt-stat-label">' + l + '</span><span class="debt-stat-val">' + v + '</span></div>'; };
+  var aprTxt = (d.hasPromo && d.promoEnd) ? (d.promoApr || 0) + '% → ' + d.postPromoApr + '%' : (d.realApr || d.apr || 0) + '%';
+  var due = sanitizeDueDay(d.dueDay);
+  var fee = d.transferFee > 0 ? stat('Transfer fee', fmtDec(d.transferFee)) : '';
+  var lim = (d.type === 'cc' && sanitizeCreditLimit(d.creditLimit)) ? stat('Limit', fmt(d.creditLimit)) : '';
+  var excl = d.includeInStrategy === false ? '<span class="tag tag-muted" style="margin-left:6px;font-size:0.58rem;">not in payoff plan</span>' : '';
+  return '<div class="debt-item debt-type-' + badgeClass(d.type).replace('badge-', '') + '">' +
+      issuerTileHtml(d) +
+      '<span class="debt-type-badge ' + badgeClass(d.type) + '">' + badgeLabel(d.type) + '</span>' +
+      '<div class="debt-name">' + escapeHtml(d.name) + promo + excl + '</div>' +
+      '<div class="debt-stats">' + stat('Balance', fmtDec(d.balance)) + stat('APR', aprTxt) + stat('Min Pmt', fmt(d.minPayment)) +
+        (due ? stat('Due', 'day ' + due) : '') + lim + fee + '</div>' +
+      '<div style="min-width:100%">' + utilizationHtml(d) + payoffBarHtml(d) + '</div>' +
+    '</div>';
+}
+function showAddPreview(d) {
+  var m = document.getElementById('add-preview-modal');
+  var body = document.getElementById('add-preview-body');
+  if (!m || !body) { addDebt(true); return; }
+  body.innerHTML = previewCardHtml(d);
+  var note = document.getElementById('add-preview-note');
+  if (note) {
+    var bits = [];
+    if (d.transferFee > 0) bits.push('The ' + fmtDec(d.transferFee) + ' transfer fee is included in the balance.');
+    if (!String((document.getElementById('debt-min') || {}).value || '').trim()) bits.push('Minimum payment estimated as ' + fmt(d.minPayment) + '. You can change it later in Edit.');
+    if (d.issuer) bits.push('Lender set to ' + escapeHtml(ISSUER_BY_ID[d.issuer].name) + '.');
+    note.innerHTML = bits.join(' ');
+    note.style.display = bits.length ? '' : 'none';
+  }
+  m.classList.remove('hidden');
+  var c = document.getElementById('add-preview-confirm'); if (c) c.focus();
+}
+function closeAddPreview(e) {
+  if (e && e.target && e.target.id !== 'add-preview-modal') return;
+  var m = document.getElementById('add-preview-modal');
+  if (m) m.classList.add('hidden');
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { var m = document.getElementById('add-preview-modal'); if (m && !m.classList.contains('hidden')) closeAddPreview(); }
+});
+
 // Add-form wiring: fill the issuer from the name until the user picks one.
 var _issuerTouched = false;
 function onIssuerPicked() { _issuerTouched = true; }
@@ -8448,13 +8530,18 @@ function showFormError(message, focusId, errField) {
   }
 }
 
-function addDebt() {
+// v1.60.0 — Add Debt runs twice: first to validate and show a preview of the
+// new debt, then (confirmed) to save it. The form is untouched in between, so
+// the second pass rebuilds the same debt. Demo exit and the attempt counter
+// only happen on the pass that should own them.
+function addDebt(confirmed) {
+  confirmed = (confirmed === true);
   // v1.27.0 — the user's first real debt must never land in a list that
   // still holds example rows. Clearing here (rather than only on the
   // dismiss button) means every path out of demo mode is covered.
   // Deliberately BEFORE the debt is pushed, so debt_added still reports
   // debt_count: 1 / is_first: true for a genuine first activation.
-  if (_demoMode) exitDemo(true);
+  if (_demoMode && confirmed) exitDemo(true);
   const typeEl = document.getElementById('debt-type');
   const type = typeEl.value;
   const balance = parseAmount(document.getElementById('debt-balance').value);
@@ -8471,7 +8558,7 @@ function addDebt() {
     name = (opt && opt.textContent) ? opt.textContent.trim() : 'Debt';
   }
 
-  _addAttempts++;
+  if (!confirmed) _addAttempts++;
 
   // v1.39.3 — an untouched form is exploration, not a usability failure.
   const _blankForm = !nameRaw
@@ -8548,7 +8635,7 @@ function addDebt() {
   if (origPrincipal !== null && (isNaN(origPrincipal) || origPrincipal <= 0)) origPrincipal = null;
   if (termMonths !== null && (isNaN(termMonths) || termMonths <= 0 || termMonths > 600)) termMonths = null;
 
-  debts.push({
+  const _newDebt = {
     id: mintId(), name, type,
     balance: finalBalance,
     originalBalance: finalBalance,
@@ -8577,7 +8664,10 @@ function addDebt() {
     creditLimit: type === 'cc'
       ? sanitizeCreditLimit(parseAmount((document.getElementById('debt-credit-limit') || {}).value || ''))
       : null
-  });
+  };
+  if (!confirmed) { showAddPreview(_newDebt); return; }
+  closeAddPreview();
+  debts.push(_newDebt);
 
   // v1.21.1 — activation event. The single most important funnel step: a
   // visitor becomes a real user the moment they enter their first debt. Every
@@ -15306,8 +15396,68 @@ function explainStrategyRank(d, strategy, plannedLumps, simStartDate, rank, tota
   return '0% until ' + promoEndStr + ', then ' + postApr + '% \u2014 moves up the line when that rate starts';
 }
 
+// v1.60.0 — each picker card shows what THAT method does with the user's own
+// debts: debt-free month and total interest. Same basis as "Your plan today"
+// (current extra, real lump-sum placement), so the selected card always
+// matches the bar. Optimized uses the cached optimizer result; Hybrid is the
+// list's current order. The cheapest card gets a neutral "Lowest interest"
+// chip — it describes the math, it doesn't tell anyone what to pick.
+function strategyCardResults() {
+  const targets = _activePlanDebts();
+  if (!targets.length) return null;
+  const extra = planExtra(), disb = plannedDisbursements();
+  function run(st) {
+    const r = simulate(targets.map(function(d) { return {...d}; }), extra, 0, st, disb);
+    return { months: r.months, interest: r.totalInterest, diverged: !!r.diverged || !(r.months < 600) };
+  }
+  const out = { avalanche: run('avalanche'), snowball: run('snowball'), hybrid: run('hybrid') };
+  if (strategy === 'optimized' || targets.length < 2) {
+    out.optimized = (strategy === 'optimized') ? run('optimized') : out.avalanche;
+  } else {
+    // Own memo: selectStrategy() wipes the optimizer's cache on every switch,
+    // and re-running the search for a preview cost ~150ms per render. Keyed
+    // on the same inputs (order-independent), so it can't go stale.
+    const key = JSON.stringify([extra, _ledgerKey(),
+      targets.map(function(d) { return [d.id, d.balance, d.minPayment, d.apr, d.realApr, d.hasPromo, d.promoEnd, d.postPromoApr]; })
+        .sort(function(x, y) { return x[0] - y[0]; }),
+      disb.map(function(x) { return [x.debtId, x.amount, x.date]; })]);
+    if (_cardOptMemo.key !== key) {
+      const oo = getOptimizedOrder();
+      _cardOptMemo = { key: key, res: oo ? { months: oo.months, interest: oo.interest, diverged: !(oo.months < 600) } : null };
+    }
+    out.optimized = _cardOptMemo.res || out.avalanche;
+  }
+  return out;
+}
+var _cardOptMemo = { key: null, res: null };
+function renderStrategyCardStats() {
+  const keys = ['optimized', 'avalanche', 'snowball', 'hybrid'];
+  let res = null;
+  try { res = strategyCardResults(); } catch (e) { res = null; }
+  const ok = res ? keys.filter(function(k) { return res[k] && !res[k].diverged; }) : [];
+  const lows = ok.map(function(k) { return res[k].interest; });
+  const lo = lows.length ? Math.min.apply(null, lows) : null;
+  const hi = lows.length ? Math.max.apply(null, lows) : null;
+  const spread = (lo !== null) ? hi - lo : 0;
+  keys.forEach(function(k) {
+    const el = document.getElementById('sstat-' + k);
+    if (!el) return;
+    if (!res || !res[k]) { el.innerHTML = ''; return; }
+    const r = res[k];
+    if (r.diverged) {
+      el.innerHTML = '<div class="ss-date">Not paid off</div><div class="ss-int">at the current payments</div>';
+      return;
+    }
+    const chip = (spread >= 1 && r.interest - lo < 1) ? '<span class="ss-chip">Lowest interest</span>' : '';
+    const diff = (spread >= 1 && r.interest - lo >= 1) ? '<div class="ss-diff">+' + fmt(r.interest - lo) + ' vs lowest</div>' : '';
+    el.innerHTML = '<div class="ss-date">Debt-free ' + monthLabel(planMonthDate(r.months)) + '</div>' +
+      '<div class="ss-int">' + fmt(r.interest) + ' interest</div>' + diff + chip;
+  });
+}
+
 function renderStrategy() {
   renderHybridOrderList(); // v1.23.2 — keep the Strategy-tab order list in sync
+  renderStrategyCardStats();
   // v1.7.0 — strategy tab only considers debts in the payoff plan
   const activeDebts = debts.filter(function(d){ return d.balance > 0 && d.includeInStrategy !== false; });
   const extra = planExtra();   // v1.38.0 — user's extra + rolled minimums
@@ -18745,6 +18895,22 @@ if (isInStandaloneMode() ||
       <button class="modal-close" onclick="closeClosedDebtModal()">&times;</button>
     </div>
     <div id="cdm-body"></div>
+  </div>
+</div>
+<!-- v1.60.0 — preview of a new debt before it's saved -->
+<div class="modal-overlay hidden" id="add-preview-modal" onclick="closeAddPreview(event)">
+  <div class="modal add-preview" role="dialog" aria-modal="true" aria-labelledby="add-preview-title" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="add-preview-title">Check it before you save</div>
+      <button class="modal-close" onclick="closeAddPreview()" aria-label="Keep editing">&#10005;</button>
+    </div>
+    <div class="add-preview-sub">This is your new debt as it&rsquo;ll appear in the app.</div>
+    <div id="add-preview-body" class="debt-list"></div>
+    <div id="add-preview-note" class="add-preview-note" style="display:none;"></div>
+    <div class="modal-actions add-preview-actions">
+      <button class="btn btn-ghost" onclick="closeAddPreview()">Keep editing</button>
+      <button class="btn btn-primary" id="add-preview-confirm" onclick="addDebt(true)">Confirm and save</button>
+    </div>
   </div>
 </div>
 <div class="modal-overlay hidden" id="edit-modal" onclick="closeEditModal(event)">

@@ -1,8 +1,9 @@
 {
-  "version": "1.59.1",
+  "version": "1.60.0",
   "releaseDate": "2026-11-12",
-  "releaseName": "Edit Debt scrolls again",
+  "releaseName": "Compare methods with your numbers",
   "notes": [
-    "Fixed not being able to scroll to the bottom of Edit Debt on a phone when a debt has a 0% promo, so the Save button was out of reach. Any pop-up that’s taller than your screen now scrolls."
+    "Each payoff method on the Strategy tab now shows what it does with your own debts: the month you'd be debt-free and the total interest you'd pay. The one with the least interest is marked, and the others show how much more they cost, so you can compare at a glance before you switch.",
+    "Adding a debt now shows you a preview of it first: the lender's logo, balance, rate, minimum, and the credit-used and progress bars. Confirm to save it, or go back and fix anything that looks off."
   ]
 }

@@ -352,6 +352,18 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-12 (later)** — v1.58.1: debts saved before issuers existed get
+  one guessed from the name once (`issuer === undefined` only; an explicit
+  null "Not listed" is kept). v1.59.0: 28 more logos (43 of 52) rasterised at
+  build time from Wikimedia Commons to 72px WebP and embedded in `ISSUERS`
+  (`img` field); monograms remain for USAA, Credit One, Bread/Comenity,
+  Mission Lane, Upstart, Best Egg, MOHELA, Aidvantage, Westlake. v1.59.1:
+  `.modal-overlay` scrolls when a modal is taller than the screen (Edit Debt
+  Save was unreachable on phones). v1.60.0: strategy picker cards show each
+  method's debt-free month and interest on the "Your plan today" basis, with
+  a neutral "Lowest interest" chip (`strategyCardResults`, own optimizer memo
+  so switching strategies stays fast); Add Debt now shows a preview and only
+  saves on "Confirm and save" (`addDebt(true)`).
 - **2026-11-12** — Process: Claude pushes straight to `main` again (see
   Shipping rules). v1.57.0 "See your progress at a glance": red-to-green
   payoff bar on every debt (cards and premium table share one helper),
