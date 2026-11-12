@@ -1,9 +1,8 @@
 {
-  "version": "1.60.0",
+  "version": "1.61.0",
   "releaseDate": "2026-11-12",
-  "releaseName": "Compare methods with your numbers",
+  "releaseName": "New debt cards",
   "notes": [
-    "Each payoff method on the Strategy tab now shows what it does with your own debts: the month you'd be debt-free and the total interest you'd pay. The one with the least interest is marked, and the others show how much more they cost, so you can compare at a glance before you switch.",
-    "Adding a debt now shows you a preview of it first: the lender's logo, balance, rate, minimum, and the credit-used and progress bars. Confirm to save it, or go back and fix anything that looks off."
+    "Your debts have a new look. Each one glows in its lender’s color from the logo corner, with the balance shown large and the rate and minimum underneath, then the credit-used and progress bars. Debts without a lender use the color of their type. Premium’s table gets the same treatment."
   ]
 }
