@@ -4278,7 +4278,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.58.0';
+const APP_VERSION = '1.58.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4286,6 +4286,15 @@ const APP_VERSION = '1.58.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.58.1',
+    date: 'November 12, 2026',
+    name: 'Logos for your existing debts',
+    whatsNew: [],
+    fixes: [
+      "Debts you added before the logo update now pick up their lender automatically from their name (for example \u201cDiscover\u201d or \u201cCiti Promo\u201d). If it guessed wrong, change it or choose \u201cNot listed\u201d in Edit."
+    ]
+  },
   {
     version: '1.58.0',
     date: 'November 12, 2026',
@@ -17609,7 +17618,10 @@ function sanitizeDebts(parsed) {
       originationDate: originationDate,
       dueDay: sanitizeDueDay(debt.dueDay),
       dueDay2: sanitizeSecondDueDay(debt.dueDay, debt.dueDay2),
-      issuer: sanitizeIssuer(debt.issuer),                       // v1.58.0
+      // v1.58.1 — debts saved before issuers existed have no issuer field at
+      // all: guess one from the name, once. After the next save the field is
+      // a string or null, so a deliberate "Not listed" is never overridden.
+      issuer: (debt.issuer === undefined) ? guessIssuer(debt.name) : sanitizeIssuer(debt.issuer),
       creditLimit: type === 'cc' ? sanitizeCreditLimit(debt.creditLimit) : null
     });
   });
@@ -17760,7 +17772,7 @@ function _readCalcImport() {
       postPromoApr: promo ? post : null, transferFee: 0, hasPromo: promo,
       loanType: inferLoanType(type), includeInStrategy: shouldIncludeInStrategy(type),
       origPrincipal: null, termMonths: null, originationDate: null, dueDay: null, dueDay2: null,
-      issuer: null, creditLimit: null
+      issuer: guessIssuer(name), creditLimit: null
     });
   });
   if (!out.length) return null;

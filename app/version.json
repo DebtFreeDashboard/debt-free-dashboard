@@ -1,10 +1,8 @@
 {
-  "version": "1.58.0",
+  "version": "1.58.1",
   "releaseDate": "2026-11-12",
-  "releaseName": "Logos and credit limits",
+  "releaseName": "Logos for your existing debts",
   "notes": [
-    "Pick the issuer or lender for each debt and its logo appears next to it. There are 52 to choose from, covering the major credit cards, store cards, buy now pay later, personal and student loans, auto lenders and mortgages. When you type a name like “Chase Freedom,” the issuer is filled in for you. The logos are built into the app, so nothing about your debts is sent anywhere to show them.",
-    "Credit cards can now have a credit limit. Add one and the card shows how much of your limit is in use on a green-to-red bar, with how much is still available.",
-    "Both work in the Add a Debt form and in Edit, on the free card view and the Premium table, and they're included in backups and the debts CSV export."
+    "Debts you added before the logo update now pick up their lender automatically from their name (for example “Discover” or “Citi Promo”). If it guessed wrong, change it or choose “Not listed” in Edit."
   ]
 }
