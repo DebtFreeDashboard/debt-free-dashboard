@@ -1,0 +1,50 @@
+# DebtFree Dashboard
+
+> A free, private debt payoff planner and tracker. Enter your debts and see your debt-free date, total interest and payoff order under the Snowball, Avalanche or a custom order. Runs in the browser and as an Android app; no bank login and no account, and debt data stays on the user's device.
+
+DebtFree Dashboard is an independent tool, not a lender, credit counselor or financial adviser. Its results are estimates based on the numbers the user enters, and nothing on the site is financial advice.
+
+## The app
+
+- [DebtFree Dashboard web app](https://mydebtdashboard.com/app/dashboard.html): the full planner. Free tier plus a one-time $24 Premium upgrade (no subscription).
+- [Google Play app](https://play.google.com/store/apps/details?id=com.mydebtdashboard.app): "DebtFree: Debt Payoff Tracker", the same app for Android.
+- [Homepage](https://mydebtdashboard.com/): features, FAQ and pricing.
+- [User guide](https://mydebtdashboard.com/user-guide.html): how to add debts, choose a strategy, log payments and back up data.
+
+Main features: Snowball, Avalanche, an interest-minimizing order and a custom order; 0% promo and balance-transfer tracking; payment logging with a running ledger; What If scenarios for extra monthly payments and lump sums; credit-card utilization; lender logos; light and dark themes; export, backup and optional Google Drive sync.
+
+## Free calculators
+
+Each calculator runs in the browser with no sign-up, and uses the same payoff math as the app.
+
+- [Balance Transfer Calculator](https://mydebtdashboard.com/calculators/balance-transfer-calculator/): see the fee in dollars, what is left when the promo ends, the payment to clear it in time and total cost vs your current card.
+- [Car Loan Payoff Calculator](https://mydebtdashboard.com/calculators/car-loan-payoff-calculator/): see how an extra monthly amount or a one-time payment changes your payoff date, months saved and interest saved.
+- [Credit Card Interest Calculator](https://mydebtdashboard.com/calculators/credit-card-interest-calculator/): turn a balance and APR into interest per day and per month, and see the total interest at a given monthly payment.
+- [Credit Card Payoff Calculator](https://mydebtdashboard.com/calculators/credit-card-payoff-calculator/): see how many months a payment takes and its total interest, or the payment needed to clear it by a set month.
+- [Debt Avalanche Calculator](https://mydebtdashboard.com/calculators/debt-avalanche-calculator/): see your debts ordered by interest cost, the month each is paid off, total interest, and how 0% promo end dates change the order.
+- [Debt Consolidation Calculator](https://mydebtdashboard.com/calculators/debt-consolidation-calculator/): compare your current debts with one new loan side by side, including monthly payment, total interest and payoff date.
+- [Debt Free Date Calculator](https://mydebtdashboard.com/calculators/debt-free-date-calculator/): find out how long it will take to pay off your debt, with the estimated month and year, months to go and each debt's payoff date.
+- [Debt Payoff Calculator](https://mydebtdashboard.com/calculators/debt-payoff-calculator/): Free debt payoff calculator for multiple debts. See your debt-free date, total interest and payoff order under Snowball, Avalanche and your own order.
+- [Debt Payoff Planner: Free Plan and Tracker App](https://mydebtdashboard.com/calculators/debt-payoff-planner/): see your debt-free date and what to pay each debt this month. Then keep it current in the DebtFree app on Android, iPhone or the web.
+- [Debt Payoff Spreadsheet: Avalanche or Snowball](https://mydebtdashboard.com/calculators/debt-payoff-spreadsheet/): Free debt payoff spreadsheet. Pick avalanche, snowball or your own order, include 0% promos, and download a month-by-month schedule for Excel or Google Sheets.
+- [Debt Snowball Calculator](https://mydebtdashboard.com/calculators/debt-snowball-calculator/): see the smallest-to-largest payoff order, the month each debt is gone, and how every freed-up minimum rolls into the next debt.
+- [Debt Snowball Spreadsheet (Free, Printable)](https://mydebtdashboard.com/calculators/debt-snowball-spreadsheet/): enter your debts and get a month-by-month payment schedule. Download it for Excel or Google Sheets, or print it as a worksheet.
+- [Debt-to-Income Ratio Calculator](https://mydebtdashboard.com/calculators/debt-to-income-ratio-calculator/): enter gross monthly income and monthly debt payments to see your DTI percentage, with housing-only and total-debt ratios.
+- [Deferred Interest Calculator](https://mydebtdashboard.com/calculators/deferred-interest-calculator/): Deferred interest calculator for “no interest if paid in full” deals: the payment that clears the balance in time, and the interest charged if it doesn’t.
+- [Debt Payoff Calculator With Extra Payments](https://mydebtdashboard.com/calculators/extra-payment-calculator/): compare your current plan with adding $50, $100, $250 or $500 a month and see the months and interest saved.
+- [Holiday Debt Payoff Calculator](https://mydebtdashboard.com/calculators/holiday-debt-payoff-calculator/): enter what went on the card, the APR and a target month to see the monthly payment to clear it and the interest it adds.
+- [Lump Sum Debt Payment Calculator](https://mydebtdashboard.com/calculators/lump-sum-debt-calculator/): test applying it to each debt and see them ranked by interest saved and months saved.
+- [Minimum Payment Calculator](https://mydebtdashboard.com/calculators/minimum-payment-calculator/): See how long it takes to pay off a credit card with minimum payments. Compare a shrinking minimum with a fixed payment, in years and total interest.
+- [Multiple Credit Card Payoff Calculator](https://mydebtdashboard.com/calculators/multiple-credit-card-payoff-calculator/): list every card, add an extra amount, and see the order they clear, each card's payoff month and the total interest.
+- [Pay Off Debt by a Date Calculator](https://mydebtdashboard.com/calculators/pay-off-debt-by-date-calculator/): pick a target month to be debt free and see the monthly extra and total monthly payment it takes to get there.
+- [Personal Loan Payoff Calculator](https://mydebtdashboard.com/calculators/personal-loan-payoff-calculator/): see how extra monthly payments or a one-time amount shorten a fixed-rate loan’s term, with months and interest saved.
+- [Snowball vs Avalanche Calculator](https://mydebtdashboard.com/calculators/snowball-vs-avalanche-calculator/): run both methods on your own debts and see the difference in total interest, months to payoff and debt-free date.
+- [Student Loan Payoff Calculator](https://mydebtdashboard.com/calculators/student-loan-payoff-calculator/): Student loan payoff calculator for multiple loans at different rates: see when each loan is paid off, total interest, and how extra payments move the date.
+- [Which Debt to Pay Off First](https://mydebtdashboard.com/calculators/which-debt-to-pay-off-first/): Which debt to pay off first? Compare Snowball, Avalanche, your own order and the lowest-interest order found, ranked by total interest and months to payoff.
+- [All calculators](https://mydebtdashboard.com/calculators/): the full list.
+
+## Policies
+
+- [Privacy policy](https://mydebtdashboard.com/privacy.html): debt data is stored on the user's device and never sent to a server.
+- [Terms of service](https://mydebtdashboard.com/terms.html)
+- Contact: support@mydebtdashboard.com
