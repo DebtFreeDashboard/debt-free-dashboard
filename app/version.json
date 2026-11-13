@@ -1,8 +1,8 @@
 {
-  "version": "1.62.1",
-  "releaseDate": "2026-11-12",
-  "releaseName": "Card colors stay put",
+  "version": "1.63.0",
+  "releaseDate": "2026-11-13",
+  "releaseName": "Google Play link on Android",
   "notes": [
-    "Fixed a debt losing its lender color after you tapped it in the Premium list."
+    "On an Android phone, the example screen and the install page now show a Get it on Google Play button, so you can install DebtFree from the Play Store instead of adding it from the browser."
   ]
 }
