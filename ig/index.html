@@ -32,12 +32,18 @@
     text-decoration: none; font-weight: 700; padding: 13px 22px;
     border-radius: 10px; font-size: 0.98rem;
   }
+  a.btn.secondary {
+    background: transparent; color: #00e5b0; border: 1px solid #00e5b0;
+  }
+  a.play { display: block; margin: 0 auto 16px; width: 200px; line-height: 0; }
+  a.play img { display: block; width: 200px; height: auto; }
 </style>
 </head>
 <body>
   <main>
     <h1>DebtFree Dashboard</h1>
     <p id="msg">Taking you to the dashboard&hellip;</p>
+    <a class="play" id="play" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app" hidden><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="200" height="78"></a>
     <a class="btn" id="go" href="/app/dashboard.html">Open the dashboard</a>
   </main>
 <script>
@@ -52,6 +58,26 @@
   var target = '/app/dashboard.html?' + params.toString() + location.hash;
   var go = document.getElementById('go');
   if (go) go.href = target;
+
+  // Android: offer the Google Play app as well as the web app, and wait for a
+  // tap. No auto-redirect here — Chrome won't hand an automatic jump to the
+  // Play Store app, and the web app has to stay one tap away. The Play link
+  // carries the same tags in its referrer so Play Console can credit Instagram
+  // (Grow users > Store performance > Conversion analysis, by UTM source).
+  if (/Android/i.test(navigator.userAgent || '')) {
+    var ref = new URLSearchParams(params.toString());
+    if (!ref.has('utm_campaign')) ref.set('utm_campaign', 'ig_page');
+    var play = document.getElementById('play');
+    if (play) {
+      play.href = 'https://play.google.com/store/apps/details?id=com.mydebtdashboard.app'
+        + '&referrer=' + encodeURIComponent(ref.toString());
+      play.hidden = false;
+    }
+    var msg = document.getElementById('msg');
+    if (msg) msg.textContent = 'Get the Android app, or use it in your browser.';
+    if (go) { go.textContent = 'Use it in your browser'; go.className = 'btn secondary'; }
+    return;
+  }
 
   // Offline: show the link, never auto-redirect. A cached copy of this page
   // could otherwise bounce against the app's offline fallback forever.
