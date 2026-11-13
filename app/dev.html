@@ -526,6 +526,7 @@
 .cal-g-link:hover { border-color:var(--accent); }
 .cal-g-link.is-done { border-color:var(--accent); color:var(--accent); }
 .cal-g-link.is-done::after { content:'\2713'; }
+.cal-g-sub { display:block; font-size:0.7rem; color:var(--text-muted); margin-top:2px; }
 .cal-g-day { color:var(--text-muted); font-family:var(--font-mono); font-size:0.72rem; }
 @media (prefers-reduced-motion: reduce) { .tm-swipe .due-row, .tm-ring-fill { transition:none; } }
 
@@ -4565,8 +4566,8 @@
     <label class="cal-opt"><input type="checkbox" id="cal-checkin" checked onchange="renderCalGoogleLinks()"> A check-in on the 1st to log last month</label>
     <div id="cal-update-note" class="alert warning" style="display:none;margin:8px 0 0;font-size:0.76rem;">Adding again can leave the old reminders in your calendar as well. Delete the old &ldquo;payment due&rdquo; events first if you see doubles.</div>
     <div id="cal-google-wrap" style="display:none;margin-top:12px;">
-      <div style="font-size:0.8rem;font-weight:600;">Add each one to Google Calendar</div>
-      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Google Calendar uses its own alert time for these.</div>
+      <div id="cal-google-head" style="font-size:0.8rem;font-weight:600;">Add each one to Google Calendar</div>
+      <div id="cal-google-note" style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Google Calendar uses its own alert time for these.</div>
       <div id="cal-google-list"></div>
     </div>
     <div class="modal-actions" style="margin-top:16px;">
@@ -4673,7 +4674,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.65.0';
+const APP_VERSION = '1.65.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4681,6 +4682,15 @@ const APP_VERSION = '1.65.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.65.1',
+    date: 'November 13, 2026',
+    name: 'Calendar reminders on iPhone',
+    whatsNew: [],
+    fixes: [
+      'Fixed: on iPhone, Add to my calendar did nothing. It now lists each reminder; tap one and Calendar opens to add it. If the card said your reminders were added when they weren\'t, it now asks again.'
+    ]
+  },
   {
     version: '1.65.0',
     date: 'November 13, 2026',
@@ -13772,7 +13782,8 @@ function logFromDue(debtId) {
 // logPaymentCore() for the ledger, so nothing here does its own payoff math.
 // ══════════════════════════════════════════════════════════════════════
 var LS_DUE_SKIPS = 'debtfree_due_skips';
-var LS_CAL_EXPORT = 'debtfree_cal_export';
+// v1.65.1 — new key: v1.65.0 marked iPhone reminders as added when nothing was.
+var LS_CAL_EXPORT = 'debtfree_cal_export2';
 var LS_SWIPE_TIP = 'debtfree_swipe_tip';
 
 // Skips are a note to the reminders, nothing more: balances, the plan and
@@ -14323,26 +14334,64 @@ function _isIOSLike() {
   var ua = navigator.userAgent || '';
   return /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
 }
+function _calKind(d) { return d.type === 'cc' ? 'card' : d.type === 'mortgage' ? 'mortgage' : 'loan'; }
+// v1.65.1 — iPhone: one link per reminder to a real calendar file on the
+// site (reminders/, built by tools/make-reminders.js). Safari opens those in
+// Calendar's Add sheet; a file built in the browser does nothing there.
+function calReminderFileLinks(lead, checkin) {
+  var l = [1, 3, 7].indexOf(parseInt(lead, 10)) !== -1 ? parseInt(lead, 10) : 3;
+  var base = (location.origin && /^https?:/.test(location.origin) ? location.origin : 'https://mydebtdashboard.com') + '/reminders/';
+  var out = [];
+  (debts || []).forEach(function (d) {
+    if (!d || d.balance <= 0) return;
+    var day = sanitizeDueDay(d.dueDay);
+    if (!day) return;
+    (splitDueDays(d) || [day]).forEach(function (dd) {
+      out.push({ title: _calTitle(d, false), day: dd, sub: d.name, href: base + _calKind(d) + '-' + dd + '-' + l + '.ics' });
+    });
+  });
+  if (checkin !== false && out.length) out.push({ title: 'DebtFree check-in', day: 1, checkin: true, href: base + 'checkin.ics' });
+  return out;
+}
+function _calPlatform() {
+  if (_isIOSLike()) return 'ios';
+  if (/Android/i.test(navigator.userAgent || '')) return 'android';
+  return 'desktop';
+}
 function openCalReminders() {
   var modal = document.getElementById('cal-modal');
   if (!modal) return;
   var st = _calExportState();
+  var plat = _calPlatform();
   document.getElementById('cal-update-note').style.display = st ? '' : 'none';
-  var android = /Android/i.test(navigator.userAgent || '');
-  document.getElementById('cal-google-wrap').style.display = android ? '' : 'none';
-  document.getElementById('cal-ics-btn').textContent = android ? 'Download calendar file instead' : 'Add to my calendar';
-  document.getElementById('cal-ics-btn').className = android ? 'btn btn-ghost' : 'btn btn-primary';
+  document.getElementById('cal-google-wrap').style.display = plat === 'desktop' ? 'none' : '';
+  document.getElementById('cal-google-head').textContent = plat === 'ios' ? 'Tap each one, then Add in Calendar' : 'Add each one to Google Calendar';
+  document.getElementById('cal-google-note').textContent = plat === 'ios'
+    ? 'Titles stay general, like \u201cCard payment due\u201d. The account name under each one is only shown here.'
+    : 'Google Calendar uses its own alert time for these.';
+  // Static files can't carry names, so on iPhone the titles stay general.
+  var nm = document.getElementById('cal-names');
+  if (nm && nm.parentNode) nm.parentNode.style.display = plat === 'ios' ? 'none' : '';
+  var btn = document.getElementById('cal-ics-btn');
+  btn.style.display = plat === 'ios' ? 'none' : '';
+  btn.textContent = plat === 'android' ? 'Download calendar file instead' : 'Add to my calendar';
+  btn.className = plat === 'android' ? 'btn btn-ghost' : 'btn btn-primary';
   renderCalGoogleLinks();
   modal.classList.remove('hidden');
-  trackShare('cal_open', { _category: 'engagement' });
+  trackShare('cal_open', { _category: 'engagement', platform: plat });
 }
 function renderCalGoogleLinks() {
   var wrap = document.getElementById('cal-google-list');
   if (!wrap) return;
-  var ev = calReminderEvents(_calOpts());
-  wrap.innerHTML = ev.map(function (e, i) {
-    return '<a class="cal-g-link" href="' + googleCalLink(e) + '" target="_blank" rel="noopener" onclick="this.classList.add(\'is-done\');_calMarkDone(\'google\')">'
-      + '<span>' + escapeHtml(e.title) + '</span><span class="cal-g-day">' + (e.checkin ? 'the 1st' : 'the ' + ordinalDay(e.day)) + '</span></a>';
+  var o = _calOpts(), ios = _calPlatform() === 'ios';
+  var items = ios
+    ? calReminderFileLinks(o.daysBefore, o.checkin)
+    : calReminderEvents(o).map(function (e) { return { title: e.title, day: e.day, checkin: e.checkin, href: googleCalLink(e) }; });
+  var via = ios ? 'ios_file' : 'google';
+  wrap.innerHTML = items.map(function (e) {
+    return '<a class="cal-g-link" href="' + e.href + '" target="_blank" rel="noopener" onclick="this.classList.add(\'is-done\');_calMarkDone(\'' + via + '\')">'
+      + '<span>' + escapeHtml(e.title) + (e.sub ? '<span class="cal-g-sub">' + escapeHtml(e.sub) + '</span>' : '') + '</span>'
+      + '<span class="cal-g-day">' + (e.checkin ? 'the 1st' : 'the ' + ordinalDay(e.day)) + '</span></a>';
   }).join('');
 }
 function closeCalReminders(e) {

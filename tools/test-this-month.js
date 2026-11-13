@@ -223,7 +223,37 @@ const ledgerOk = page => page.evaluate(() => {
   check('no page errors', errs.length === 0, errs.join(' | '));
   await ctx.close();
 
-  // ── Example screen: card hidden ──────────────────────────────────────
+  // ── iPhone: links to the static calendar files ───────────────────────
+  console.log('\n--- iPhone calendar links ---');
+  const ictx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 19_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/19.1 Mobile/15E148 Safari/604.1' });
+  await ictx.route('**/chart.umd.min.js', r => r.fulfill({ status: 200, contentType: 'application/javascript', body: CHART }));
+  await ictx.addInitScript(() => { localStorage.setItem('debtfree_last_seen_version', '99.0.0'); localStorage.setItem('debtfree_demo_dismissed', '1'); });
+  const ip = await ictx.newPage();
+  await ip.clock.install({ time: new Date('2026-11-13T09:00:00') });
+  await ip.goto('file://' + path.join(__dirname, 'site/app/dashboard.html'));
+  await ip.waitForTimeout(800);
+  const io = await ip.evaluate(f => {
+    applyBackupPayload(f); processDuePayments();
+    debts.forEach(d => { d.dueDay = null; d.dueDay2 = null; });
+    const live = debts.filter(d => d.balance > 0);
+    live[0].dueDay = 31; live[1].dueDay = 5; live[1].dueDay2 = 20; live[2].dueDay = 12;
+    render(); openCalReminders();
+    const links = Array.from(document.querySelectorAll('#cal-google-list a')).map(a => a.getAttribute('href'));
+    const btnHidden = getComputedStyle(document.getElementById('cal-ics-btn')).display === 'none';
+    const namesHidden = getComputedStyle(document.getElementById('cal-names').parentNode).display === 'none';
+    const before = localStorage.getItem('debtfree_cal_export2');
+    document.getElementById('cal-lead').value = '7'; renderCalGoogleLinks();
+    const links7 = Array.from(document.querySelectorAll('#cal-google-list a')).map(a => a.getAttribute('href'));
+    return { links, links7, btnHidden, namesHidden, before, types: live.slice(0, 3).map(d => d.type) };
+  }, FIXTURE);
+  const files = io.links.map(h => h.replace(/^.*\/reminders\//, ''));
+  check('iPhone: one link per due day plus the check-in, each to a file that exists',
+    io.links.length === 5 && files.every(f => fs.existsSync(path.join(__dirname, '..', 'reminders', f))), files.join(', '));
+  check('iPhone: links follow the alert choice', io.links7.filter(h => /-7\.ics$/.test(h)).length === 4, io.links7.join(' '));
+  check('iPhone: no download button, no names option, nothing marked added before a tap', io.btnHidden && io.namesHidden && io.before === null);
+  await ictx.close();
+
   await b.close();
   const pass = results.filter(Boolean).length;
   console.log(`\n${pass === results.length ? 'ALL PASS' : 'FAILURES PRESENT'}  (${pass}/${results.length})`);

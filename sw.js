@@ -4,7 +4,7 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.65.0';
+const CACHE_NAME = 'debtfree-1.65.1';
 // v1.40.6 — './dashboard.html' resolved to /dashboard.html (this file sits at
 // the repo root), which did not exist: every cache.addAll() rejected, the
 // fallback cache.add() rejected too, and the app precached NOTHING. Runtime
@@ -71,6 +71,9 @@ self.addEventListener('fetch', function(event) {
   // has to unregister this worker to protect itself, which used to leave the
   // real PWA without offline support until the app was next opened online.
   if (url.pathname.endsWith('/dev.html')) return;
+
+  // v1.65.1 — calendar files go to Safari / Calendar untouched, never cached.
+  if (url.pathname.indexOf('/reminders/') !== -1) return;
 
   const isHTML = req.mode === 'navigate' ||
                  (req.headers.get('accept') || '').includes('text/html') ||
