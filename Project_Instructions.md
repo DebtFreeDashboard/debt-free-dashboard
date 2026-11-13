@@ -160,6 +160,9 @@ Besides page views, the site sends:
 | `play_badge_click` | Homepage, calculator pages, the app's example screen and install page (Android browsers only) | Someone tapped the Google Play badge (`location` says which one: `home_hero`, `home_final`, calculator slots, `app_demo`, `install_page`) |
 | `gumroad_click` | Homepage, calculator pages, the app (web only) | Someone tapped a Gumroad link. In the app `location` is `app_` plus the button (`app_settings`, `app_whatif-transfer`, `app_whatif-dialdate`); the app also still sends its older `buy_clicked` |
 | `home_to_app` | Homepage | Someone went from the homepage to the dashboard |
+| `demo_scrolled_half`, `demo_scrolled_end` | The app's example screen | A first-time visitor scrolled half way, or to the end, of the example (once each per visit) |
+| `demo_tab_view` | The app's example screen | A first-time visitor opened another tab while the example was showing (`tab` says which) |
+| `demo_dismissed` | The app's example screen | A first-time visitor left the example for their own numbers (`via` is `start_my_numbers` for the banner button, `fab` for the floating button) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
 
@@ -352,6 +355,16 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-13 (later)** — v1.64.0: example screen. The floating button
+  says "Start with my numbers" while the example shows (it used to log a
+  payment on the sample debts); the "Add due dates" invite is hidden on the
+  example; inside Instagram, Facebook and TikTok the "open in your browser"
+  warning waits until the visitor starts with their own numbers instead of
+  greeting them on arrival. New events `demo_scrolled_half`,
+  `demo_scrolled_end` and `demo_tab_view` show how far people get into the
+  example. Why: none of the ~7 US web-app visitors in Nov 6–12 left the
+  example, and the example offered no way out below the first screen.
 
 - **2026-11-13** — v1.63.0 (PR #7): Google Play badge for Android browsers
   on the app's example screen and the install page (never in the Play app or

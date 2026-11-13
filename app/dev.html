@@ -4540,7 +4540,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.63.0';
+const APP_VERSION = '1.64.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4548,6 +4548,18 @@ const APP_VERSION = '1.63.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.64.0',
+    date: 'November 13, 2026',
+    name: 'An easier start',
+    whatsNew: [
+      'The example screen\'s floating button now says Start with my numbers, so the way to your own plan follows you down the page instead of offering to log a payment on the sample debts.',
+      'Opened DebtFree from a link inside Instagram, Facebook or TikTok? You can now look around the example first. The tip about opening it in your browser appears when you start with your own numbers, which is when it matters.'
+    ],
+    fixes: [
+      'The example screen no longer asks you to set due dates on the sample accounts.'
+    ]
+  },
   {
     version: '1.63.0',
     date: 'November 13, 2026',
@@ -6705,6 +6717,9 @@ function showSection(id) {
   // v1.50.0 — which tabs get used. GA could not answer a single placement
   // question before this. Tab name only; nothing from the user's data.
   if (typeof trackShare === 'function') trackShare('tab_view', { _category: 'navigation', tab: id });
+  // v1.64.0 — the same, while the example is on screen, as its own event so
+  // the report can count it without a custom dimension.
+  if (_demoMode && typeof trackShare === 'function') trackShare('demo_tab_view', { _category: 'activation', tab: id });
 }
 
 // ═══════════════════════════════════════════
@@ -10575,6 +10590,20 @@ function detectInAppBrowser() {
   return null;
 }
 
+var _inAppDeferred = null;
+var _inAppThenForm = false;
+// Shows the deferred warning once. Returns true when it is now on screen.
+function showDeferredInAppBanner() {
+  if (!_inAppDeferred) return false;
+  _inAppDeferred = null;
+  initInAppBanner();
+  var banner = document.getElementById('inapp-banner');
+  if (!banner || banner.style.display !== 'block') return false;
+  _inAppThenForm = true;
+  try { banner.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+  return true;
+}
+
 function initInAppBanner() {
   const app = detectInAppBrowser();
   // v1.40.5 — two different problems share this banner. An in-app browser keeps
@@ -10585,6 +10614,14 @@ function initInAppBanner() {
   // Respect a dismissal for this session only — the risk is real enough that
   // it's worth re-raising on a fresh visit.
   try { if (sessionStorage.getItem('debtfree_inapp_dismissed') === '1') return; } catch (e) {}
+
+  // v1.64.0 — a first-time visitor from a social app used to meet a warning
+  // telling them to leave before they had seen anything; it sat above the
+  // example and most of them left. While the example is on screen there is
+  // nothing to lose, so the warning now waits until they start with their own
+  // numbers (startMyNumbers or a first real debt via exitDemo). Storage-blocked
+  // browsers still see their notice straight away.
+  if (app && _storageOK && _demoMode) { _inAppDeferred = app; return; }
 
   const banner = document.getElementById('inapp-banner');
   const textEl = document.getElementById('inapp-banner-text');
@@ -10630,6 +10667,8 @@ function dismissInAppBanner() {
   if (typeof trackShare === 'function') {
     trackShare('inapp_banner_dismissed', { _category: 'acquisition' });
   }
+  // v1.64.0 — they were on their way to the form when the warning appeared.
+  if (_inAppThenForm) { _inAppThenForm = false; focusFirstDebtField(); }
 }
 
 function copyAppLink() {
@@ -13564,6 +13603,10 @@ function renderUpcoming() {
   // the moment every active debt has a day.
   var missing = debtsMissingDueDay();
   if (!rows.length) {
+    // v1.64.0 — the sample accounts have no due days, so the example screen
+    // asked a first-time visitor to set due dates on debts that aren't theirs,
+    // and a "Not now" there silenced the invite for their real debts later.
+    if (_demoMode) { card.style.display = 'none'; return; }
     if (missing.length && !dueInviteDismissed()) {
       card.style.display = '';
       quiet.style.display = 'none';
@@ -16528,7 +16571,13 @@ function populateDebtSelects() {
     // user's next meaningful action. Zero debts → "+ Add Debt" (activation);
     // otherwise → "+ Log Payment" (the daily habit).
     fab.style.display = 'inline-flex';
-    if (activeDebts.length) {
+    // v1.64.0 — on the example screen the one button that follows the visitor
+    // down the page used to say "+ Log Payment" and log a payment against the
+    // sample debts, which goes nowhere. It now offers the way out of the example.
+    if (_demoMode) {
+      fab.textContent = 'Start with my numbers';
+      fab.onclick = function () { startMyNumbers('fab'); };
+    } else if (activeDebts.length) {
       fab.textContent = '+ Log Payment';
       fab.onclick = openQuickLog;
     } else {
@@ -18364,6 +18413,9 @@ function exitDemo(persistDismissal) {
   var banner = document.getElementById('demo-banner');
   if (banner) banner.style.display = 'none';
   document.body.classList.remove('demo-mode');
+  // v1.64.0 — a first real debt typed straight into the form also ends the
+  // example, so the deferred in-app warning appears then (no scroll).
+  if (_inAppDeferred) { _inAppDeferred = null; try { initInAppBanner(); } catch (e) {} }
   if (persistDismissal !== false) {
     try { localStorage.setItem('debtfree_demo_dismissed', '1'); } catch (e) {}
   }
@@ -18372,7 +18424,11 @@ function exitDemo(persistDismissal) {
 // "Start with my numbers" — clear the example, drop the user straight into
 // the form with the balance field focused (the first figure that actually
 // moves the math; the name field is optional to the engine).
-function startMyNumbers() {
+function startMyNumbers(via) {
+  via = (via === 'fab') ? 'fab' : 'start_my_numbers';
+  // Held aside so exitDemo() doesn't show the warning without the scroll to it.
+  var pendingInApp = _inAppDeferred;
+  _inAppDeferred = null;
   exitDemo(true);
   // v1.31.0 — a genuinely new user starts on Optimized. The demo runs on
   // Snowball because it's a curated illustration with no promo balances, where
@@ -18384,15 +18440,24 @@ function startMyNumbers() {
   render();
   showSection('dashboard');
   expandCollapse('adddebt', false);
+  if (typeof trackShare === 'function') {
+    trackShare('demo_dismissed', { _category: 'activation', via: via });
+  }
+  // v1.64.0 — inside Instagram, Facebook or TikTok the "open in your browser"
+  // warning now waits for this moment (see initInAppBanner). Show it here,
+  // before they type anything; "Continue anyway" carries on to the form.
+  _inAppDeferred = pendingInApp;
+  if (showDeferredInAppBanner()) return;
+  focusFirstDebtField();
+}
+
+function focusFirstDebtField() {
   var card = document.getElementById('add-debt-card');
   if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   setTimeout(function() {
     var b = document.getElementById('debt-balance');
     if (b && b.focus) b.focus();
   }, 350);
-  if (typeof trackShare === 'function') {
-    trackShare('demo_dismissed', { _category: 'activation', via: 'start_my_numbers' });
-  }
 }
 
 function save() {
@@ -18983,6 +19048,26 @@ initCollapsibles();
 // v1.54.0 — a calculator handoff replaces the example for a fresh visitor.
 var _calcImported = consumeCalcImport();
 if (!_calcImported && _shouldSeedDemo()) seedDemo();
+
+// v1.64.0 — how far down the example a visitor reads before leaving. Until now
+// GA showed only that nobody left the example, not whether anyone looked at it.
+// Two events, each once per page load, only while the example is on screen.
+(function trackDemoScroll() {
+  if (!_demoMode) return;
+  var sent = {};
+  function check() {
+    if (!_demoMode) { window.removeEventListener('scroll', onScroll); return; }
+    var y = window.scrollY || window.pageYOffset || 0;
+    var docH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+    var seen = (y + window.innerHeight) / Math.max(docH, 1);
+    if (seen >= 0.5 && !sent.half) { sent.half = 1; trackShare('demo_scrolled_half', { _category: 'activation' }); }
+    if (seen >= 0.95 && !sent.end) { sent.end = 1; trackShare('demo_scrolled_end', { _category: 'activation' }); }
+    if (sent.half && sent.end) window.removeEventListener('scroll', onScroll);
+  }
+  var t = null;
+  function onScroll() { if (t) return; t = setTimeout(function () { t = null; check(); }, 250); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+})();
 
 // v1.28.1 — FAB retract-on-scroll. See .fab-hidden in the stylesheet for why.
 // Reads scroll position inside rAF so the listener itself stays cheap, and uses
