@@ -23,7 +23,7 @@ const SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 19_1 like Mac OS X) AppleWebK
 function world(ua, demo) {
   const els = {}, log = [], ev = [];
   const el = id => els[id] || (els[id] = { id, style: {}, textContent: '', innerHTML: '', onclick: null,
-    classList: { add() {}, remove() {} }, scrollIntoView() { log.push('scroll:' + id); }, focus() { log.push('focus:' + id); } });
+    classList: { add() {}, remove() {}, toggle() {} }, setAttribute() {}, scrollIntoView() { log.push('scroll:' + id); }, focus() { log.push('focus:' + id); } });
   const ss = {};
   const ctx = {
     navigator: { userAgent: ua }, _storageOK: true, _demoMode: demo,
@@ -48,7 +48,7 @@ function world(ua, demo) {
     grab('exitDemo'), grab('startMyNumbers'), grab('focusFirstDebtField'), grab('renderUpcoming'), grab('populateDebtSelects'),
     'var LS_DUE_SKIPS = "s", LS_CAL_EXPORT = "c", LS_SWIPE_TIP = "t", _tmTipCounted = false;',
     grab('thisMonthModel'), grab('_tmRing'), grab('_tmFootHtml'), grab('_tmQuietLine'), grab('_tmBindSwipes'),
-    grab('_calExportState'), grab('calReminderHash'), grab('_planCheckHtml'), grab('planCheckItems'), grab('_dueSkips'), grab('isDueSkipped'), grab('_pendingAheadFor')].join('\n'), ctx);
+    grab('_calExportState'), grab('calReminderHash'), grab('_planCheckHtml'), grab('planCheckItems'), grab('tmView'), 'var LS_TM_VIEW = "v";', grab('_dueSkips'), grab('isDueSkipped'), grab('_pendingAheadFor')].join('\n'), ctx);
   return { ctx, el, log, ev, els };
 }
 

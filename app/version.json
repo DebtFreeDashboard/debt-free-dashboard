@@ -1,10 +1,10 @@
 {
-  "version": "1.66.0",
+  "version": "1.67.0",
   "releaseDate": "2026-11-13",
-  "releaseName": "Plan check and statements",
+  "releaseName": "Easier on a phone",
   "notes": [
-    "Interest/mo, Freedom Date and Interest Saved now sit right under Total Owed, where they're easy to find.",
-    "Plan check: This Month now lists up to three things worth a look, such as a 0% rate ending in the next 60 days, a debt getting less this month than its interest, or a card close to its limit.",
-    "Update from a statement: swipe a payment left (or tap the three dots) and type the balance from your statement. DebtFree records the difference as interest and fees, counting any payments you logged after the statement date, so your balance matches without a bank login. Undo is there if you mistype."
+    "On phones, the tabs now sit along the bottom within thumb reach. The + in the middle logs a payment, logs everything Paid as planned, or adds a debt. Settings is the gear at the top.",
+    "This Month has a Calendar view: the month at a glance with a dot on each due date. Tap a day to see what's due and log it.",
+    "App lock: ask for a PIN, or Face ID / fingerprint, before your numbers show. Turn it on in Settings. It's a screen lock, so your data stays on your device as before. If you forget your PIN, the lock comes off after a one-minute wait; your numbers are never at risk."
   ]
 }

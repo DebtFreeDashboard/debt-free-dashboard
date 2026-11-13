@@ -165,6 +165,8 @@ Besides page views, the site sends:
 | `demo_dismissed` | The app's example screen | A first-time visitor left the example for their own numbers (`via` is `start_my_numbers` for the banner button, `fab` for the floating button) |
 | `tm_log`, `tm_batch_open`, `tm_batch_logged`, `tm_later_open`, `tm_later_scheduled`, `tm_skip` | The app's This Month card | A payment logged from a row (`via` is `button` or `swipe`), the Paid as planned sheet opened or used (`rows`), the Later sheet opened, a payment scheduled from it, a month skipped |
 | `tm_statement` | The app's This Month card | A balance updated from a statement (`direction` is `up`, `down` or `same`) |
+| `tm_view`, `plus_open`, `plus_pick` | The app | This Month list/calendar switch (`view`); the phone bar's + opened, and what was picked (`pick`: `log`, `batch`, `add`) |
+| `applock_on`, `applock_off`, `applock_pin_changed`, `applock_removed_forgot` | The app's Settings | App lock turned on (`bio` true when Face ID / fingerprint was added), off, PIN changed, removed after the forgot-PIN wait |
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -359,6 +361,21 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (late night)** — v1.67.0. Phones (≤700px) get a bottom tab
+  bar (`.bnav`): Home, Strategy, +, What If, Wins. Settings becomes a header
+  gear (`.hdr-gear`). The top tab row and the floating button are hidden there,
+  except the floating button stays during the example (`body.is-demo`). The
+  centre + (`bnavPlus()`) follows the floating button's rules on the example or
+  with no debts; otherwise it opens a sheet (log / paid as planned / add). The
+  brand suffix "Dashboard" hides at ≤440px to make room. This Month gets a
+  Calendar view (`tmCalendarItems()`, `debtfree_tm_view`). App lock
+  (`debtfree_applock`): a salted SHA-256 PIN plus an optional WebAuthn platform
+  passkey checked locally (no server). An early inline script adds
+  `html.app-locked` before first paint. It locks again after the chosen time
+  away (0/1/5 min). Forgot PIN removes the lock after a 60 s wait, so no one is
+  ever locked out of their data. Copy says it's a screen lock, not
+  encryption. Tests: `tools/test-applock.js` (runs on the 8911 server and uses
+  a CDP virtual authenticator).
 - **2026-11-13 (night)** — v1.65.1: iPhone calendar reminders. A data-URL
   .ics does nothing in an installed iPhone web app, so iPhone now links to
   static files in `reminders/` (`tools/make-reminders.js`: card/loan/mortgage

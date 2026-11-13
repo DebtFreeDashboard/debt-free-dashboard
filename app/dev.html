@@ -170,6 +170,11 @@
       if (_tc) _tc.setAttribute('content', '#f4f4f7');
     }
   } catch (e) {}
+  // v1.67.0 — app lock: hide the numbers before the first paint.
+  try {
+    var _al = JSON.parse(localStorage.getItem('debtfree_applock') || 'null');
+    if (_al && _al.on && _al.pinHash) document.documentElement.classList.add('app-locked');
+  } catch (e) {}
 </script>
 <meta name="description" content="Your interactive debt payoff command center. Know your freedom date.">
 <!-- v1.31.2 — manifest lives at the site root, not under /app/. The old
@@ -510,6 +515,72 @@
 .tm-check-row { font-size:0.76rem; line-height:1.45; color:var(--text); padding:3px 0 3px 14px; position:relative; }
 .tm-check-row::before { content:''; position:absolute; left:0; top:0.62em; width:6px; height:6px; border-radius:50%; background:var(--accent4); }
 .tm-check-limit::before { background:var(--text-muted); }
+/* v1.67.0 — calendar view */
+.tm-viewtog { display:inline-flex; gap:2px; padding:2px; border:1px solid var(--border); border-radius:8px; margin-left:auto; }
+.tm-viewtog button { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.05em; text-transform:uppercase;
+  background:none; border:none; border-radius:6px; padding:4px 8px; color:var(--text-muted); cursor:pointer; }
+.tm-viewtog button.on { background:var(--surface2); color:var(--text); font-weight:700; }
+.tmc { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:3px; margin-top:4px; }
+.tmc-wd { font-family:var(--font-mono); font-size:0.6rem; color:var(--text-muted); text-align:center; padding:2px 0 4px; }
+.tmc-cell { aspect-ratio:1/1; min-height:36px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  border:1px solid transparent; border-radius:8px; background:none; color:var(--text-muted); font-size:0.78rem; cursor:pointer; padding:0; font-family:inherit; }
+.tmc-cell.tmc-has { color:var(--text); font-weight:600; background:var(--surface2); }
+.tmc-cell.tmc-today { border-color:var(--accent); }
+.tmc-cell.tmc-sel { background:var(--accent); color:#fff; }
+.tmc-empty { cursor:default; }
+.tmc-dots { display:flex; gap:2px; height:6px; }
+.tmc-dot { width:6px; height:6px; border-radius:50%; display:block; background:var(--text-muted); }
+.tmc-dot.tmc-due { background:var(--accent); }
+.tmc-dot.tmc-passed { background:var(--accent4); }
+.tmc-dot.tmc-done { background:var(--text-muted); opacity:0.5; }
+.tmc-dot.tmc-scheduled { background:#6b7cff; }
+.tmc-dot.tmc-skipped { background:transparent; border:1px solid var(--text-muted); }
+.tmc-sel .tmc-dot { box-shadow:0 0 0 1px #fff; }
+.tmc-day { margin-top:12px; }
+.tmc-day-title { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); font-weight:700; }
+.tmc-none { font-size:0.8rem; color:var(--text-muted); padding:8px 0; }
+
+/* v1.67.0 — bottom tab bar on phones */
+.bnav, .hdr-gear { display:none; }
+.bnav { position:fixed; left:0; right:0; bottom:0; z-index:920; align-items:stretch; justify-content:space-around;
+  background:var(--surface); border-top:1px solid var(--border); padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  box-shadow:0 -4px 18px rgba(0,0,0,0.06); }
+.bnav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; cursor:pointer;
+  color:var(--text-muted); font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.04em; text-transform:uppercase; padding:4px 0; }
+.bnav-item svg { width:22px; height:22px; }
+.bnav-item.active { color:var(--accent); font-weight:700; }
+.bnav-plus { flex:0 0 auto; width:54px; height:54px; margin:-18px 6px 0; border-radius:50%; background:var(--accent); color:#fff;
+  border:4px solid var(--surface); display:flex; align-items:center; justify-content:center; cursor:pointer;
+  box-shadow:0 6px 18px var(--glow); font-size:1.7rem; line-height:1; padding:0; }
+.hdr-gear { background:none; border:1px solid var(--border); border-radius:10px; width:36px; height:36px; color:var(--text-muted);
+  cursor:pointer; align-items:center; justify-content:center; padding:0; }
+.hdr-gear svg { width:18px; height:18px; }
+.plus-btn { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:14px 12px; margin-top:8px;
+  border:1px solid var(--border); border-radius:10px; background:var(--surface2); color:var(--text); cursor:pointer; font-family:inherit; font-size:0.9rem; font-weight:600; }
+.plus-btn span { display:block; font-weight:400; font-size:0.74rem; color:var(--text-muted); margin-top:2px; }
+@media (max-width: 440px) {
+  /* v1.67.0 — the gear needs the room; the brand still reads as DebtFree. */
+  .logo-suffix { display:none; }
+}
+@media (max-width: 700px) {
+  .tab-nav { display:none; }
+  .bnav { display:flex; }
+  .hdr-gear { display:inline-flex; }
+  .fab-log { bottom:calc(86px + env(safe-area-inset-bottom)); }
+  body:not(.is-demo) .fab-log { display:none !important; }
+  .toast { bottom:calc(88px + env(safe-area-inset-bottom)); }
+}
+
+/* v1.67.0 — app lock */
+#applock-screen { display:none; }
+html.app-locked body > *:not(#applock-screen) { visibility:hidden !important; }
+html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index:5000; background:var(--bg); align-items:center; justify-content:center; padding:24px; }
+.applock-box { width:100%; max-width:320px; text-align:center; }
+.applock-title { font-family:var(--font-display); font-weight:900; font-size:1.3rem; margin:14px 0 4px; color:var(--text); }
+.applock-sub { font-size:0.82rem; color:var(--text-muted); margin-bottom:18px; }
+#applock-pin { text-align:center; font-family:var(--font-mono); font-size:1.4rem; letter-spacing:0.4em; width:100%; }
+#applock-msg { min-height:1.2em; font-size:0.78rem; color:var(--accent4); margin:8px 0; }
+.applock-link { background:none; border:none; color:var(--text-muted); font-size:0.78rem; cursor:pointer; margin-top:14px; text-decoration:underline; font-family:inherit; }
 .tm-tip { font-size:0.72rem; color:var(--text-muted); margin-top:8px; }
 .tm-foot { display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
 .tm-link { background:none; border:none; padding:0; text-align:left; cursor:pointer; font-size:0.78rem;
@@ -3226,6 +3297,8 @@
   <!-- v1.35.0 - reachable from every tab. The dot is the point: a
        timestamp alone doesn't tell you whether it matters, but "there are
        changes not in your backup" does. -->
+  <!-- v1.67.0 — on phones Settings lives here; the bottom bar holds the rest. -->
+  <button class="hdr-gear" type="button" aria-label="Settings" onclick="showSection('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   <!-- v1.51.0 — "What's next?" guide, reachable from every tab. -->
   <button class="guide-hdr-btn" id="guide-btn" type="button" aria-label="What's next?" onclick="openGuide('header')">
     <span class="guide-hdr-icon" aria-hidden="true">&#10003;</span><span class="guide-hdr-text">Next</span><span class="guide-badge" id="guide-badge" hidden></span>
@@ -3373,7 +3446,8 @@
          rather than Strategy because this is a daily action, not a planning
          tool (the same split v1.30.0 applied when the budget card moved). -->
     <div class="card" id="upcoming-card" style="display:none">
-      <div class="card-title"><div class="dot"></div> This Month</div>
+      <div class="card-title" style="display:flex;align-items:center;"><div class="dot"></div> This Month
+        <span class="tm-viewtog" role="group" aria-label="View"><button type="button" id="tmv-list" onclick="setTmView('list')">List</button><button type="button" id="tmv-cal" onclick="setTmView('cal')">Calendar</button></span></div>
       <div id="tm-head"></div>
       <div id="upcoming-body"></div>
       <div id="upcoming-quiet" style="display:none;font-size:0.8rem;color:var(--text-muted);line-height:1.5;"></div>
@@ -4302,6 +4376,12 @@
        the Dashboard as permanent clutter despite being touched about once. Moving
        them here keeps the Dashboard to the daily loop. -->
   <div class="section" id="section-settings">
+<!-- v1.67.0 — app lock -->
+<div class="card" id="applock-card">
+      <div class="card-title"><div class="dot"></div> App lock</div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px;line-height:1.5;">Ask for a PIN, or Face ID / fingerprint, before showing your numbers. It&rsquo;s a screen lock: your data stays on this device as it always has, and the lock doesn&rsquo;t encrypt it.</p>
+      <div id="applock-settings"></div>
+</div>
 <div class="card" id="backup-card" data-collapse="backup" data-collapse-default="open">
       <div class="card-title"><div class="dot"></div> Backup &amp; Restore</div>
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Keep your app up to date and your data safe. Updates back up and restore your data automatically.</p>
@@ -4599,6 +4679,46 @@
     </div>
   </div>
 </div>
+<!-- v1.67.0 — centre "+" sheet -->
+<div id="plus-sheet" class="modal-overlay hidden" onclick="closePlusSheet(event)" role="dialog" aria-modal="true" aria-label="Add">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header"><div class="modal-title">What would you like to do?</div>
+      <button class="modal-close" aria-label="Close" onclick="closePlusSheet()">&times;</button></div>
+    <button type="button" class="plus-btn" onclick="plusDo('log')"><b aria-hidden="true">&#10003;</b><div>Log a payment<span>One payment to one debt</span></div></button>
+    <button type="button" class="plus-btn" id="plus-batch" onclick="plusDo('batch')"><b aria-hidden="true">&#9776;</b><div>Paid as planned<span>Everything your plan has left this month</span></div></button>
+    <button type="button" class="plus-btn" onclick="plusDo('add')"><b aria-hidden="true">+</b><div>Add a debt<span>A card, loan or anything else you owe</span></div></button>
+  </div>
+</div>
+<!-- v1.67.0 — app lock -->
+<div id="applock-screen" role="dialog" aria-modal="true" aria-labelledby="applock-title">
+  <div class="applock-box">
+    <div style="font-size:2rem;" aria-hidden="true">&#128274;</div>
+    <div class="applock-title" id="applock-title">DebtFree is locked</div>
+    <div class="applock-sub">Enter your PIN to see your numbers.</div>
+    <button type="button" class="btn btn-primary" id="applock-bio" style="width:100%;margin-bottom:12px;" onclick="lockTryBio()">Unlock with Face ID / fingerprint</button>
+    <input type="password" inputmode="numeric" autocomplete="off" id="applock-pin" maxlength="8" aria-label="PIN" onkeydown="if(event.key==='Enter')lockTryPin()" />
+    <div id="applock-msg" role="status" aria-live="polite"></div>
+    <button type="button" class="btn btn-ghost" style="width:100%;" onclick="lockTryPin()">Unlock</button>
+    <button type="button" class="applock-link" onclick="lockForgot()">Forgot your PIN?</button>
+    <div id="applock-forgot-wrap" style="display:none;font-size:0.76rem;color:var(--text-muted);margin-top:10px;line-height:1.5;">The lock comes off in <b id="applock-forgot-count">60</b> seconds. Your numbers aren&rsquo;t touched. <button type="button" class="applock-link" style="margin:0;" onclick="_lockForgotCancel()">Cancel</button></div>
+  </div>
+</div>
+<div id="applock-setup" class="modal-overlay hidden" onclick="closeLockSetup(event)" role="dialog" aria-modal="true" aria-labelledby="applock-setup-title">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header"><div class="modal-title" id="applock-setup-title">Turn on app lock</div>
+      <button class="modal-close" aria-label="Close" onclick="closeLockSetup()">&times;</button></div>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="form-field"><label for="applock-new">PIN (4&ndash;8 digits)</label><input type="password" inputmode="numeric" autocomplete="new-password" id="applock-new" maxlength="8" /></div>
+      <div class="form-field"><label for="applock-new2">Same PIN again</label><input type="password" inputmode="numeric" autocomplete="new-password" id="applock-new2" maxlength="8" /></div>
+    </div>
+    <label class="cal-opt" id="applock-bio-opt" style="display:none;"><input type="checkbox" id="applock-bio-on" checked> Also unlock with Face ID / fingerprint</label>
+    <div id="applock-setup-msg" style="font-size:0.78rem;color:var(--accent4);min-height:1.2em;margin-top:6px;"></div>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button class="btn btn-ghost" onclick="closeLockSetup()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLockSetup()">Save</button>
+    </div>
+  </div>
+</div>
 <div id="toast-root"></div>
 
 <!-- v1.45.0 — Google Drive sheet. Opened by the header cloud button, so backup
@@ -4624,6 +4744,15 @@
 
 <!-- v1.16.0 — Floating quick-log payment (button + modal) -->
 <button class="fab-log" id="fab-log">+ Log Payment</button>
+<!-- v1.67.0 — bottom tab bar on phones (CSS shows it under 700px) -->
+<nav class="bnav" aria-label="Sections">
+  <button type="button" class="bnav-item active" data-sec="dashboard" onclick="showSection('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>Home</button>
+  <button type="button" class="bnav-item" data-sec="strategy" onclick="showSection('strategy')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Strategy</button>
+  <button type="button" class="bnav-plus" onclick="bnavPlus()" aria-label="Log a payment or add a debt">+</button>
+  <button type="button" class="bnav-item" data-sec="whatif" onclick="showSection('whatif')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10"/><circle cx="16" cy="6" r="2"/><path d="M4 12h4"/><path d="M12 12h8"/><circle cx="10" cy="12" r="2"/><path d="M4 18h12"/><circle cx="18" cy="18" r="2"/></svg>What If</button>
+  <button type="button" class="bnav-item" data-sec="milestones" onclick="showSection('milestones')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3"/><path d="M7 5H4v2a3 3 0 0 0 3 3"/></svg>Wins</button>
+</nav>
+
 <!-- v1.51.0 — What's next? -->
 <div id="guide-modal" class="modal-overlay hidden" onclick="closeGuide(event)">
   <div class="modal" style="max-width:460px;">
@@ -4698,7 +4827,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.66.0';
+const APP_VERSION = '1.67.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4706,6 +4835,17 @@ const APP_VERSION = '1.66.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.67.0',
+    date: 'November 13, 2026',
+    name: 'Easier on a phone',
+    whatsNew: [
+      'On phones, the tabs now sit along the bottom within thumb reach. The + in the middle logs a payment, logs everything Paid as planned, or adds a debt. Settings is the gear at the top.',
+      'This Month has a Calendar view: the month at a glance with a dot on each due date. Tap a day to see what\'s due and log it.',
+      'App lock: ask for a PIN, or Face ID / fingerprint, before your numbers show. Turn it on in Settings. It\'s a screen lock, so your data stays on your device as before. If you forget your PIN, the lock comes off after a one-minute wait; your numbers are never at risk.'
+    ],
+    fixes: []
+  },
   {
     version: '1.66.0',
     date: 'November 13, 2026',
@@ -6895,6 +7035,8 @@ function showSection(id) {
       t.classList.add('active');
     }
   });
+  if (typeof bnavSync === 'function') bnavSync(id);
+  if (id === 'settings' && typeof renderLockSettings === 'function') renderLockSettings();
   if (id === 'whatif') {
     resetWiInputs();
     updateWhatIf();
@@ -14014,6 +14156,17 @@ function renderUpcoming() {
     html += '<button type="button" class="tm-more-rows" onclick="_tmShowAll=true;renderUpcoming()">'
       + folded.length + ' more planned later in ' + m.monthName + ' · ' + fmt(ft) + ' <span aria-hidden="true">▾</span></button>';
   }
+  // v1.67.0 — calendar view
+  var _cal = tmView() === 'cal';
+  var _tl = document.getElementById('tmv-list'), _tc = document.getElementById('tmv-cal');
+  if (_tl) { _tl.classList.toggle('on', !_cal); _tl.setAttribute('aria-pressed', String(!_cal)); }
+  if (_tc) { _tc.classList.toggle('on', _cal); _tc.setAttribute('aria-pressed', String(_cal)); }
+  if (_cal) {
+    body.innerHTML = _tmCalendarHtml();
+    quiet.style.display = 'none';
+    if (foot) foot.innerHTML = _tmFootHtml(missing);
+    return;
+  }
   body.innerHTML = html;
 
   if (!m.rows.length) {
@@ -14593,6 +14746,330 @@ function previewStatement() {
     ? 'Matches what DebtFree shows' + after + '.'
     : (r.delta > 0 ? fmtDec(r.delta) + ' more than DebtFree shows' : fmtDec(-r.delta) + ' less than DebtFree shows') + after
       + '. The difference is recorded as ' + (r.delta > 0 ? 'interest and fees' : 'a correction') + ' on ' + dueDayLabel(_isoToDate(date)) + '.';
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.67.0 — BOTTOM TAB BAR (phones) + CALENDAR VIEW
+// On a phone the tabs move to a bar along the bottom, within thumb reach,
+// with one centre "+" for the things people do most. Settings moves to a
+// gear in the header. The top tab row stays in the page for wider screens.
+// ══════════════════════════════════════════════════════════════════════
+function bnavSync(id) {
+  document.querySelectorAll('.bnav-item[data-sec]').forEach(function (b) {
+    var on = b.getAttribute('data-sec') === id;
+    b.classList.toggle('active', on);
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  });
+}
+function bnavPlus() {
+  // Same rules as the floating button: the example and an empty app have one
+  // obvious next step, so the "+" goes straight to it.
+  if (_demoMode) { startMyNumbers('fab'); return; }
+  if (!(debts || []).some(function (d) { return d && d.balance > 0; })) { goAddDebt(); return; }
+  var m = document.getElementById('plus-sheet');
+  if (!m) { openQuickLog(); return; }
+  var tm = null;
+  try { tm = thisMonthModel(); } catch (e) {}
+  document.getElementById('plus-batch').style.display = (tm && tm.batch.length) ? '' : 'none';
+  m.classList.remove('hidden');
+  trackShare('plus_open', { _category: 'navigation' });
+}
+function closePlusSheet(e) {
+  var m = document.getElementById('plus-sheet');
+  if (!m) return;
+  if (e && e.target !== m) return;
+  m.classList.add('hidden');
+}
+function plusDo(what) {
+  closePlusSheet();
+  trackShare('plus_pick', { _category: 'navigation', pick: what });
+  if (what === 'log') openQuickLog();
+  else if (what === 'batch') { showSection('dashboard'); openPaidAsPlanned(); }
+  else if (what === 'add') { showSection('dashboard'); goAddDebt(); }
+}
+
+// ── Calendar view of This Month ──────────────────────────────────────
+var LS_TM_VIEW = 'debtfree_tm_view';
+var _tmCalDay = null;
+function tmView() { try { return localStorage.getItem(LS_TM_VIEW) === 'cal' ? 'cal' : 'list'; } catch (e) { return 'list'; } }
+function setTmView(v) {
+  try { localStorage.setItem(LS_TM_VIEW, v === 'cal' ? 'cal' : 'list'); } catch (e) {}
+  _tmCalDay = null;
+  renderUpcoming();
+  trackShare('tm_view', { _category: 'engagement', view: v });
+}
+// Everything with a date this calendar month: each due day of each debt (and
+// bill, Premium), plus scheduled payments on their own dates.
+function tmCalendarItems() {
+  var now = new Date(), y = now.getFullYear(), mo = now.getMonth(), ym = currentMonthKey();
+  var today = new Date(y, mo, now.getDate());
+  var items = [];
+  (debts || []).forEach(function (d) {
+    if (!d || d.balance <= 0) return;
+    var day = sanitizeDueDay(d.dueDay);
+    if (!day) return;
+    var floors = minPaymentFloors(d);
+    var due = Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment));
+    var days = splitDueDays(d) || [day];
+    var paidMonth = dueCoverageFor(d.id, dueDateIn(y, mo, days[days.length - 1])).amount;
+    days.forEach(function (dd, i) {
+      var date = dueDateIn(y, mo, dd);
+      var need = days.length > 1 && i === 0 ? Math.round(due * 50) / 100 : due;
+      var paid = days.length > 1 && i === 0 ? dueCoverageFor(d.id, date).amount : paidMonth;
+      var status = (paid > 0 && paid + 0.005 >= need) ? 'done'
+        : isDueSkipped(d.id, ym) ? 'skipped'
+        : date < today ? 'passed' : 'due';
+      items.push({ kind: 'debt', id: d.id, name: d.name, date: date, amount: need, paid: paid, status: status });
+    });
+  });
+  (payments || []).forEach(function (p) {
+    if (!p || !p.pending || _monthKey(p.date) !== ym) return;
+    items.push({ kind: 'scheduled', id: p.debtId, name: p.debtName, date: _isoToDate(p.date), amount: parseFloat(p.amount) || 0, status: 'scheduled' });
+  });
+  if (isPremium) {
+    (bills || []).forEach(function (b) {
+      var bd = sanitizeDueDay(b.dueDay);
+      if (!bd) return;
+      items.push({ kind: 'bill', id: b.id, name: b.name, date: dueDateIn(y, mo, bd), amount: parseFloat(b.amount) || 0,
+                   status: billMarkedFor(b, ym) ? 'done' : 'bill' });
+    });
+  }
+  return items;
+}
+function _tmCalendarHtml() {
+  var now = new Date(), y = now.getFullYear(), mo = now.getMonth();
+  var items = tmCalendarItems();
+  var byDay = {};
+  items.forEach(function (it) { var k = it.date.getDate(); (byDay[k] = byDay[k] || []).push(it); });
+  var first = new Date(y, mo, 1).getDay(), n = daysInMonth(y, mo), todayN = now.getDate();
+  var h = '<div class="tmc" role="grid" aria-label="' + now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + '">'
+    + ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(function (w) { return '<div class="tmc-wd" aria-hidden="true">' + w + '</div>'; }).join('');
+  for (var i = 0; i < first; i++) h += '<div class="tmc-cell tmc-empty"></div>';
+  for (var day = 1; day <= n; day++) {
+    var list = byDay[day] || [];
+    var dots = list.slice(0, 4).map(function (it) { return '<i class="tmc-dot tmc-' + it.status + '"></i>'; }).join('');
+    var label = day + (list.length ? ': ' + list.map(function (it) { return it.name; }).join(', ') : '');
+    h += '<button type="button" class="tmc-cell' + (day === todayN ? ' tmc-today' : '') + (day === _tmCalDay ? ' tmc-sel' : '') + (list.length ? ' tmc-has' : '')
+      + '" onclick="tmCalPick(' + day + ')" aria-label="' + escapeHtml(label) + '"><span>' + day + '</span><span class="tmc-dots">' + dots + '</span></button>';
+  }
+  h += '</div>';
+  var pick = _tmCalDay || todayN;
+  var sel = (byDay[pick] || []);
+  var nm = new Date(y, mo, pick).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  h += '<div class="tmc-day"><div class="tmc-day-title">' + nm + '</div>';
+  if (!sel.length) h += '<div class="tmc-none">Nothing due this day.</div>';
+  sel.forEach(function (it) {
+    var sub = it.status === 'done' ? (it.kind === 'bill' ? 'marked paid' : 'payment logged')
+      : it.status === 'skipped' ? 'skipped this month'
+      : it.status === 'scheduled' ? 'scheduled payment'
+      : it.status === 'passed' ? (it.paid > 0 ? fmt(it.paid) + ' of ' + fmt(it.amount) + ' logged' : 'no payment logged yet')
+      : it.kind === 'bill' ? 'bill' : 'minimum due';
+    var act = (it.kind === 'debt' && (it.status === 'due' || it.status === 'passed'))
+      ? '<button type="button" class="due-row-log" onclick="logFromDue(' + it.id + ')">Log</button>' : '';
+    h += '<div class="due-row tmc-row"><div class="due-row-main"><div class="due-row-name">' + escapeHtml(it.name) + '</div>'
+      + '<div class="due-row-sub">' + sub + '</div></div><div class="due-row-right"><div class="due-row-amt">' + fmt(it.amount) + '</div>' + act + '</div></div>';
+  });
+  h += '</div>';
+  return h;
+}
+function tmCalPick(day) { _tmCalDay = day; renderUpcoming(); }
+// ══════════════════════════════════════════════════════════════════════
+// v1.67.0 — APP LOCK
+// A screen lock in front of the numbers: a PIN, plus Face ID / fingerprint
+// where the phone offers it (a passkey kept on this device, checked here; no
+// server). It is a curtain, not encryption: the data stays where it always
+// was, so it guards against someone picking up the phone, nothing more, and
+// the copy says so. A forgotten PIN can never lock anyone out of their own
+// numbers: removing the lock takes a one-minute wait.
+// ══════════════════════════════════════════════════════════════════════
+var LS_APPLOCK = 'debtfree_applock';
+var _lockAwayAt = 0, _lockFails = 0, _lockWaitUntil = 0, _lockForgotTimer = null;
+
+function lockState() {
+  try { var o = JSON.parse(localStorage.getItem(LS_APPLOCK) || 'null'); return (o && o.on && o.pinHash) ? o : null; } catch (e) { return null; }
+}
+function _saveLock(o) {
+  try { if (o) localStorage.setItem(LS_APPLOCK, JSON.stringify(o)); else localStorage.removeItem(LS_APPLOCK); } catch (e) {}
+}
+function _b64(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); }
+function _unb64(str) { var s = atob(str), b = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+function _rand(n) { var b = new Uint8Array(n); crypto.getRandomValues(b); return b; }
+async function _pinHash(pin, salt) {
+  var data = new TextEncoder().encode(salt + ':' + pin);
+  return _b64(await crypto.subtle.digest('SHA-256', data));
+}
+async function bioAvailable() {
+  try {
+    if (!window.PublicKeyCredential || !location.hostname || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch (e) { return false; }
+}
+async function _bioRegister() {
+  var cred = await navigator.credentials.create({ publicKey: {
+    rp: { name: 'DebtFree', id: location.hostname },
+    user: { id: _rand(16), name: 'DebtFree app lock', displayName: 'DebtFree app lock' },
+    challenge: _rand(32),
+    pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+    authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' },
+    timeout: 60000, attestation: 'none'
+  } });
+  return cred ? _b64(cred.rawId) : null;
+}
+async function _bioCheck(credId) {
+  var a = await navigator.credentials.get({ publicKey: {
+    challenge: _rand(32), timeout: 60000, userVerification: 'required',
+    allowCredentials: [{ type: 'public-key', id: _unb64(credId) }], rpId: location.hostname
+  } });
+  return !!a;
+}
+
+// ── The lock screen ───────────────────────────────────────────────────
+function showLockScreen() {
+  var st = lockState();
+  if (!st) { hideLockScreen(); return; }
+  document.documentElement.classList.add('app-locked');
+  var el = document.getElementById('applock-screen');
+  if (!el) return;
+  document.getElementById('applock-pin').value = '';
+  document.getElementById('applock-msg').textContent = '';
+  document.getElementById('applock-forgot-wrap').style.display = 'none';
+  document.getElementById('applock-bio').style.display = st.cred ? '' : 'none';
+  _lockForgotCancel();
+  setTimeout(function () { var p = document.getElementById('applock-pin'); if (p && !st.cred) p.focus(); }, 50);
+}
+function hideLockScreen() {
+  document.documentElement.classList.remove('app-locked');
+  _lockForgotCancel();
+}
+async function lockTryPin() {
+  var st = lockState(); if (!st) { hideLockScreen(); return; }
+  var msg = document.getElementById('applock-msg');
+  var now = Date.now();
+  if (now < _lockWaitUntil) { msg.textContent = 'Try again in ' + Math.ceil((_lockWaitUntil - now) / 1000) + ' seconds.'; return; }
+  var pin = document.getElementById('applock-pin').value.trim();
+  if (!pin) return;
+  if (await _pinHash(pin, st.salt) === st.pinHash) { _lockFails = 0; hideLockScreen(); return; }
+  _lockFails++;
+  document.getElementById('applock-pin').value = '';
+  if (_lockFails >= 5) { _lockWaitUntil = Date.now() + 30000; _lockFails = 0; msg.textContent = 'Too many tries. Wait 30 seconds.'; }
+  else msg.textContent = 'That PIN doesn’t match.';
+}
+async function lockTryBio() {
+  var st = lockState(); if (!st || !st.cred) return;
+  var msg = document.getElementById('applock-msg');
+  try { if (await _bioCheck(st.cred)) { hideLockScreen(); return; } }
+  catch (e) { msg.textContent = 'Face ID or fingerprint didn’t work. Use your PIN.'; }
+}
+// Forgot the PIN: a minute's wait, then the lock comes off. Nobody is ever
+// locked out of their own numbers.
+function lockForgot() {
+  _lockForgotCancel();
+  var wrap = document.getElementById('applock-forgot-wrap');
+  wrap.style.display = '';
+  var left = 60, out = document.getElementById('applock-forgot-count');
+  out.textContent = left;
+  _lockForgotTimer = setInterval(function () {
+    left--; out.textContent = left;
+    if (left <= 0) {
+      _lockForgotCancel();
+      _saveLock(null); hideLockScreen(); renderLockSettings();
+      _showActionToast('App lock removed. You can turn it on again in Settings.', function () {});
+      trackShare('applock_removed_forgot', { _category: 'security' });
+    }
+  }, 1000);
+}
+function _lockForgotCancel() { if (_lockForgotTimer) { clearInterval(_lockForgotTimer); _lockForgotTimer = null; } var w = document.getElementById('applock-forgot-wrap'); if (w) w.style.display = 'none'; }
+
+// Lock again after the chosen time away. 0 = whenever the app is left.
+document.addEventListener('visibilitychange', function () {
+  var st = lockState();
+  if (!st) return;
+  if (document.hidden) { _lockAwayAt = Date.now(); return; }
+  var away = _lockAwayAt ? Date.now() - _lockAwayAt : 0;
+  if (_lockAwayAt && away >= (st.after || 0) * 60000) showLockScreen();
+});
+
+// ── Settings ─────────────────────────────────────────────────────────
+async function renderLockSettings() {
+  var box = document.getElementById('applock-settings');
+  if (!box) return;
+  var st = lockState();
+  var bio = await bioAvailable();
+  if (!st) {
+    box.innerHTML = '<button class="btn btn-ghost" onclick="openLockSetup()">Turn on app lock</button>';
+    return;
+  }
+  var after = st.after || 0;
+  box.innerHTML = '<div style="font-size:0.8rem;margin-bottom:10px;">On: ' + (st.cred ? 'Face ID / fingerprint, or your PIN' : 'your PIN') + '</div>'
+    + '<label class="cal-opt">Lock again after leaving the app <select onchange="setLockAfter(this.value)">'
+    + [[0, 'right away'], [1, '1 minute'], [5, '5 minutes']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === after ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
+    + '</select></label>'
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'
+    + (bio && !st.cred ? '<button class="btn btn-ghost" onclick="addLockBio()">Add Face ID / fingerprint</button>' : '')
+    + '<button class="btn btn-ghost" onclick="openLockSetup(true)">Change PIN</button>'
+    + '<button class="btn btn-ghost" onclick="turnOffLock()">Turn off</button></div>';
+}
+function setLockAfter(v) { var st = lockState(); if (!st) return; st.after = parseInt(v, 10) || 0; _saveLock(st); }
+async function openLockSetup(changing) {
+  var m = document.getElementById('applock-setup');
+  if (!m) return;
+  document.getElementById('applock-new').value = '';
+  document.getElementById('applock-new2').value = '';
+  document.getElementById('applock-setup-msg').textContent = '';
+  document.getElementById('applock-setup-title').textContent = changing ? 'Change your PIN' : 'Turn on app lock';
+  var bio = !changing && await bioAvailable();
+  document.getElementById('applock-bio-opt').style.display = bio ? '' : 'none';
+  document.getElementById('applock-bio-on').checked = bio;
+  m.classList.remove('hidden');
+}
+function closeLockSetup(e) {
+  var m = document.getElementById('applock-setup');
+  if (!m) return;
+  if (e && e.target !== m) return;
+  m.classList.add('hidden');
+}
+async function saveLockSetup() {
+  var a = document.getElementById('applock-new').value.trim(), b = document.getElementById('applock-new2').value.trim();
+  var msg = document.getElementById('applock-setup-msg');
+  if (!/^\d{4,8}$/.test(a)) { msg.textContent = 'Use 4 to 8 digits.'; return; }
+  if (a !== b) { msg.textContent = 'The two PINs don’t match.'; return; }
+  var prev = lockState();
+  // Face ID first: Safari only allows it straight from the tap, before any
+  // other awaited work.
+  var cred = prev ? prev.cred : null;
+  var bioBox = document.getElementById('applock-bio-on');
+  if (!prev && bioBox && bioBox.checked && document.getElementById('applock-bio-opt').style.display !== 'none') {
+    try { cred = await _bioRegister(); } catch (e) { cred = null; }
+  }
+  var salt = _b64(_rand(12));
+  var st = { on: true, salt: salt, pinHash: await _pinHash(a, salt), cred: cred, after: prev ? (prev.after || 0) : 0, setAt: Date.now() };
+  _saveLock(st);
+  closeLockSetup();
+  renderLockSettings();
+  var _wantBio = !prev && bioBox && bioBox.checked && document.getElementById('applock-bio-opt').style.display !== 'none';
+  _showActionToast(prev ? 'PIN changed' : (_wantBio && !cred ? 'App lock is on with your PIN. Face ID / fingerprint wasn\u2019t set up; you can add it in Settings.' : 'App lock is on'),
+    function () { _saveLock(prev); renderLockSettings(); });
+  trackShare(prev ? 'applock_pin_changed' : 'applock_on', { _category: 'security', bio: !!st.cred });
+}
+async function addLockBio() {
+  var st = lockState(); if (!st) return;
+  try { st.cred = await _bioRegister(); _saveLock(st); renderLockSettings(); _showActionToast('Face ID / fingerprint added', function () {}); }
+  catch (e) { alert('Face ID / fingerprint wasn’t set up.'); }
+}
+async function turnOffLock() {
+  var st = lockState(); if (!st) return;
+  // Proof it's the owner: biometric if set, else the PIN.
+  var ok = false;
+  if (st.cred) { try { ok = await _bioCheck(st.cred); } catch (e) { ok = false; } }
+  if (!ok) {
+    var pin = prompt('Enter your PIN to turn off app lock');
+    if (pin === null) return;
+    ok = (await _pinHash(String(pin).trim(), st.salt)) === st.pinHash;
+  }
+  if (!ok) { alert('That PIN doesn’t match.'); return; }
+  _saveLock(null);
+  renderLockSettings();
+  trackShare('applock_off', { _category: 'security' });
 }
 
 function renderNextDebt() {
@@ -17449,6 +17926,7 @@ function populateDebtSelects() {
       : '<option value="">No active debts</option>';
   }
   const fab = document.getElementById('fab-log');
+  try { document.body.classList.toggle('is-demo', !!_demoMode); } catch (e) {}
   if (fab) {
     // v1.22.0 — contextual FAB: the one floating button always offers the
     // user's next meaningful action. Zero debts → "+ Add Debt" (activation);
@@ -19995,6 +20473,8 @@ if (!_calcImported && _shouldSeedDemo()) seedDemo();
 
 // v1.25.0 — warn if we're inside a social app's in-app browser
 initInAppBanner();
+// v1.67.0 — app lock on open
+try { if (lockState()) showLockScreen(); else hideLockScreen(); renderLockSettings(); } catch (e) {}
 
 // v1.39.3 — the missing denominator. We could count successful adds and
 // blocked adds, but not how many people STARTED, so no completion rate could
