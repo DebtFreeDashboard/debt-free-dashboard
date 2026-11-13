@@ -382,6 +382,11 @@
 .tm-more-rows { display:block; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border);
   padding:10px 0 2px; font-size:0.78rem; color:var(--text-muted); cursor:pointer; font-family:inherit; }
 .tm-more-rows:hover { color:var(--accent); }
+.tm-check { margin:0 0 10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface2); border:1px solid var(--border); }
+.tm-check-title { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; color:var(--text-muted); margin-bottom:4px; }
+.tm-check-row { font-size:0.76rem; line-height:1.45; color:var(--text); padding:3px 0 3px 14px; position:relative; }
+.tm-check-row::before { content:''; position:absolute; left:0; top:0.62em; width:6px; height:6px; border-radius:50%; background:var(--accent4); }
+.tm-check-limit::before { background:var(--text-muted); }
 .tm-tip { font-size:0.72rem; color:var(--text-muted); margin-top:8px; }
 .tm-foot { display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
 .tm-link { background:none; border:none; padding:0; text-align:left; cursor:pointer; font-size:0.78rem;
@@ -3219,6 +3224,28 @@
       <span id="progress-label-left" hidden></span>
     </div>
 
+    <!-- v1.48.0 — the supporting figures, demoted out of the hero. Same ids, so
+         renderStats() is unchanged apart from the labels it no longer owns.
+         v1.66.0 — moved up to sit directly under Total Owed: below This Month
+         and the Focus card they were getting lost. -->
+    <div class="stat-strip" id="stat-grid">
+      <div class="ministat warn">
+        <div class="ministat-label">Interest/mo</div>
+        <div class="ministat-value" id="stat-interest">$0</div>
+        <div class="ministat-sub">you're paying now</div>
+      </div>
+      <div class="ministat info">
+        <div class="ministat-label">Freedom Date</div>
+        <div class="ministat-value" id="stat-date">&mdash;</div>
+        <div class="ministat-sub" id="stat-months">add debts</div>
+      </div>
+      <div class="ministat">
+        <div class="ministat-label">Interest saved</div>
+        <div class="ministat-value" id="stat-saved">$0</div>
+        <div class="ministat-sub">vs. minimums only</div>
+      </div>
+    </div>
+
     <!-- v1.42.0 — what else is due, beside where the extra is going. Dashboard
          rather than Strategy because this is a daily action, not a planning
          tool (the same split v1.30.0 applied when the budget card moved). -->
@@ -3258,26 +3285,6 @@
       <div class="nd-payoff" id="next-debt-payoff"></div>
       <div class="next-debt-eta" id="next-debt-eta">&mdash;</div>
       <div class="next-debt-attacking" id="next-debt-attacking" style="display:none;"></div>
-    </div>
-
-    <!-- v1.48.0 — the supporting figures, demoted out of the hero. Same ids, so
-         renderStats() is unchanged apart from the labels it no longer owns. -->
-    <div class="stat-strip" id="stat-grid">
-      <div class="ministat warn">
-        <div class="ministat-label">Interest/mo</div>
-        <div class="ministat-value" id="stat-interest">$0</div>
-        <div class="ministat-sub">you're paying now</div>
-      </div>
-      <div class="ministat info">
-        <div class="ministat-label">Freedom Date</div>
-        <div class="ministat-value" id="stat-date">&mdash;</div>
-        <div class="ministat-sub" id="stat-months">add debts</div>
-      </div>
-      <div class="ministat">
-        <div class="ministat-label">Interest saved</div>
-        <div class="ministat-value" id="stat-saved">$0</div>
-        <div class="ministat-sub">vs. minimums only</div>
-      </div>
     </div>
 
     <!-- v1.13.0 — Debt-Free Progress hero (free) -->
@@ -4401,6 +4408,23 @@
       <button class="btn btn-primary" onclick="saveDueLater()">Schedule it</button>
     </div>
     <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px;">
+      <div style="font-size:0.84rem;font-weight:600;margin-bottom:8px;">Update from a statement</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="form-field">
+          <label for="tm-stmt-balance">Statement balance ($)</label>
+          <input type="text" inputmode="decimal" id="tm-stmt-balance" oninput="previewStatement()" />
+        </div>
+        <div class="form-field">
+          <label for="tm-stmt-date">Statement date</label>
+          <input type="date" id="tm-stmt-date" onchange="previewStatement()" />
+        </div>
+      </div>
+      <div id="tm-stmt-preview" style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;line-height:1.45;min-height:1em;"></div>
+      <div class="modal-actions" style="margin-top:10px;">
+        <button class="btn btn-ghost" onclick="saveStatementFromSheet()">Update balance</button>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px;">
       <button class="btn btn-ghost" style="width:100%;" onclick="skipDueThisMonth()">Skip this month</button>
       <div id="tm-later-skip-note" style="font-size:0.72rem;color:var(--text-muted);margin-top:8px;line-height:1.45;"></div>
     </div>
@@ -4551,7 +4575,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.65.1';
+const APP_VERSION = '1.66.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4559,6 +4583,17 @@ const APP_VERSION = '1.65.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.66.0',
+    date: 'November 13, 2026',
+    name: 'Plan check and statements',
+    whatsNew: [
+      'Interest/mo, Freedom Date and Interest Saved now sit right under Total Owed, where they\'re easy to find.',
+      'Plan check: This Month now lists up to three things worth a look, such as a 0% rate ending in the next 60 days, a debt getting less this month than its interest, or a card close to its limit.',
+      'Update from a statement: swipe a payment left (or tap the three dots) and type the balance from your statement. DebtFree records the difference as interest and fees, counting any payments you logged after the statement date, so your balance matches without a bank login. Undo is there if you mistype.'
+    ],
+    fixes: []
+  },
   {
     version: '1.65.1',
     date: 'November 13, 2026',
@@ -13817,8 +13852,8 @@ function renderUpcoming() {
         + '<div class="tm-head-txt"><div class="tm-head-big">' + fmt(m.logged) + ' <span>of ' + fmt(m.target) + '</span></div>'
         + '<div class="tm-head-sub">' + (done ? 'Everything planned for ' + m.monthName + ' is logged' : 'logged toward ' + m.monthName + '\u2019s plan') + '</div></div>'
         + (m.batch.length ? '<button type="button" class="btn btn-primary tm-batch-btn" onclick="openPaidAsPlanned()">Paid as planned</button>' : '')
-        + '</div>';
-    } else head.innerHTML = '';
+        + '</div>' + _planCheckHtml();
+    } else head.innerHTML = _planCheckHtml();
   }
 
   // Due-date rows earn the space. Plan amounts for later in the month fold
@@ -13848,7 +13883,7 @@ function renderUpcoming() {
       + '<div class="due-row-sub">' + escapeHtml(r.sub) + '</div></div>'
       + '<div class="due-row-right"><div class="due-row-amt">' + fmt(r.amount) + '</div>'
       + (swipe ? '<button type="button" class="due-row-log" onclick="tmLogNow(' + r.id + ')" aria-label="Log ' + fmt(r.amount) + ' to ' + escapeHtml(r.name) + '">Log</button>'
-               + '<button type="button" class="tm-more" onclick="openDueLater(' + r.id + ')" aria-label="Later or skip ' + escapeHtml(r.name) + '">\u22EF</button>' : '')
+               + '<button type="button" class="tm-more" onclick="openDueLater(' + r.id + ')" aria-label="More for ' + escapeHtml(r.name) + ': pay later, statement, skip">\u22EF</button>' : '')
       + '</div></div></div>';
   });
   if (folded.length) {
@@ -14005,6 +14040,10 @@ function openDueLater(debtId, via) {
   var t = new Date(); t.setDate(t.getDate() + 1);
   dt.min = localDateStr(t);
   dt.value = localDateStr(t);
+  var sb = document.getElementById('tm-stmt-balance'), sd = document.getElementById('tm-stmt-date');
+  if (sb) sb.value = '';
+  if (sd) { sd.max = localDateStr(); sd.value = localDateStr(); }
+  var sp = document.getElementById('tm-stmt-preview'); if (sp) sp.textContent = '';
   var due = r.due && r.due.date;
   document.getElementById('tm-later-skip-note').textContent =
     'Skipping only quiets this reminder for ' + (due ? due.toLocaleDateString('en-US', { month: 'long' }) : 'this month')
@@ -14296,6 +14335,141 @@ function downloadReminderIcs() {
   a.download = 'debtfree-reminders.ics';
   document.body.appendChild(a); a.click();
   setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+// ── v1.66.0 — Plan check ──────────────────────────────────────────────
+// Up to three facts worth seeing this month, each stated as what the numbers
+// show: a 0% rate about to end, a debt whose plan amount this month is under
+// its interest, and a card close to its limit. Nothing here tells anyone what
+// to do; the debt cards already carry the detail.
+function planCheckItems() {
+  var out = [], now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var sp = null;
+  try { sp = stillPlannedThisMonth(true); } catch (e) {}
+  var ym = currentMonthKey(), planned = {};
+  ((sp && sp.rows) || []).forEach(function (r) { planned[r.id] = (planned[r.id] || 0) + r.amount; });
+  (payments || []).forEach(function (p) {
+    if (p && _monthKey(p.date) === ym) planned[p.debtId] = (planned[p.debtId] || 0) + (parseFloat(p.amount) || 0);
+  });
+  (debts || []).forEach(function (d) {
+    if (!d || d.balance <= 0) return;
+    // 1. Promo rate ending within 60 days.
+    if (d.hasPromo && d.promoEnd) {
+      var end = new Date(String(d.promoEnd).length === 10 ? d.promoEnd + 'T00:00:00' : d.promoEnd);
+      var days = Math.round((end - today) / 864e5);
+      if (!isNaN(days) && days >= 0 && days <= 60) {
+        var after = accrualRateFor(d, new Date(end.getFullYear(), end.getMonth() + 1, 1));
+        out.push({ rank: days, id: d.id, kind: 'promo',
+          text: d.name + ': the ' + (Number(d.promoApr) || 0) + '% rate ends ' + dueDayLabel(end)
+            + (after > 0 ? ', then ' + (Math.round(after * 100) / 100) + '% applies to ' + fmt(d.balance) + ' if it’s still owed.' : '.') });
+      }
+    }
+    // 2. This month's plan amount is under this month's interest.
+    if (d.includeInStrategy !== false) {
+      var rate = accrualRateFor(d, new Date(now.getFullYear(), now.getMonth(), 1)) / 100 / 12;
+      var interest = d.balance * rate;
+      var amt = planned[d.id] || 0;
+      if (interest >= 1 && amt + 0.005 < interest) {
+        out.push({ rank: 100, id: d.id, kind: 'interest',
+          text: d.name + ': about ' + fmt(interest) + ' of interest this month and ' + fmt(amt) + ' planned to it, so its balance grows this month.' });
+      }
+    }
+    // 3. A card at 90% or more of its limit.
+    var u = utilizationOf(d);
+    if (u && u.pct >= 90) {
+      out.push({ rank: 200, id: d.id, kind: 'limit',
+        text: d.name + (u.pct > 100 ? ' is ' + fmt(u.over) + ' over its ' + fmt(u.limit) + ' limit.'
+                                    : ' is using ' + Math.round(u.pct) + '% of its ' + fmt(u.limit) + ' limit.') });
+    }
+  });
+  out.sort(function (a, b) { return a.rank - b.rank; });
+  return out.slice(0, 3);
+}
+function _planCheckHtml() {
+  var items = [];
+  try { items = planCheckItems(); } catch (e) { items = []; }
+  if (!items.length) return '';
+  return '<div class="tm-check"><div class="tm-check-title">Plan check</div>'
+    + items.map(function (it) { return '<div class="tm-check-row tm-check-' + it.kind + '">' + escapeHtml(it.text) + '</div>'; }).join('')
+    + '</div>';
+}
+
+// ── v1.66.0 — Statement check-in ──────────────────────────────────────
+// Type the balance on the statement; the app records the difference from
+// what it shows as one adjustment dated the statement day, so interest and
+// fees are counted without a bank link. Payments logged after the statement
+// date are not on that statement, so they are added back before comparing.
+var LS_STMT = 'debtfree_statement_checks';
+function _stmtChecks() {
+  try { var o = JSON.parse(localStorage.getItem(LS_STMT) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
+}
+function statementDelta(debtId, stmtBalance, stmtDate) {
+  var d = (debts || []).find(function (x) { return x.id === debtId; });
+  if (!d || !(stmtBalance >= 0) || !stmtDate) return null;
+  var sum = function (list, keep) { return (list || []).filter(keep).reduce(function (s, x) { return s + (parseFloat(x.amount) || 0); }, 0); };
+  var later = function (x) { return x && x.debtId === debtId && String(x.date || '') > stmtDate; };
+  var paidAfter = sum(payments, function (p) { return later(p) && !p.pending; });
+  var accAfter = sum(accruals, later);
+  var adjAfter = sum(adjustments, later);
+  var appAtStatement = round2(d.balance + paidAfter - accAfter - adjAfter);
+  return { debt: d, appAtStatement: appAtStatement, delta: round2(stmtBalance - appAtStatement), paidAfter: paidAfter };
+}
+function applyStatement(debtId, stmtBalance, stmtDate) {
+  var r = statementDelta(debtId, stmtBalance, stmtDate);
+  if (!r) return null;
+  var o = _stmtChecks(); o[debtId] = stmtDate;
+  try { localStorage.setItem(LS_STMT, JSON.stringify(o)); } catch (e) {}
+  if (Math.abs(r.delta) < 0.01) return { delta: 0, adjId: null, debt: r.debt };
+  var id = mintId();
+  adjustments.push({ id: id, debtId: debtId, amount: r.delta, date: stmtDate, note: 'Statement balance' });
+  recomputeBalance(debtId);
+  if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
+  save(); render();
+  return { delta: r.delta, adjId: id, debt: r.debt };
+}
+function undoStatement(adjId, debtId) {
+  var i = (adjustments || []).findIndex(function (a) { return a.id === adjId; });
+  if (i !== -1) adjustments.splice(i, 1);
+  recomputeBalance(debtId);
+  save(); render();
+}
+function saveStatementFromSheet() {
+  var id = _laterId;
+  if (id === null) return;
+  var bal = parseAmount(document.getElementById('tm-stmt-balance').value);
+  var date = document.getElementById('tm-stmt-date').value || localDateStr();
+  if (!(bal >= 0) || document.getElementById('tm-stmt-balance').value === '') { alert('Enter the balance from your statement.'); return; }
+  if (date > localDateStr()) { alert('The statement date can’t be in the future.'); return; }
+  var res = applyStatement(id, bal, date);
+  closeDueLater();
+  if (!res) return;
+  var name = escapeHtml(res.debt.name);
+  if (!res.adjId) {
+    render();
+    _showActionToast(name + ' already matches your statement', function () {});
+  } else {
+    var txt = res.delta > 0
+      ? name + ': ' + fmtDec(res.delta) + ' of interest and fees added from your statement'
+      : name + ': ' + fmtDec(-res.delta) + ' lower, to match your statement';
+    _showActionToast(txt, function () { undoStatement(res.adjId, id); });
+  }
+  trackShare('tm_statement', { _category: 'engagement', direction: res.delta > 0 ? 'up' : res.delta < 0 ? 'down' : 'same' });
+}
+function previewStatement() {
+  var id = _laterId, out = document.getElementById('tm-stmt-preview');
+  if (id === null || !out) return;
+  var raw = document.getElementById('tm-stmt-balance').value;
+  var bal = parseAmount(raw);
+  var date = document.getElementById('tm-stmt-date').value || localDateStr();
+  if (raw === '' || !(bal >= 0)) { out.textContent = ''; return; }
+  var r = statementDelta(id, bal, date);
+  if (!r) { out.textContent = ''; return; }
+  var after = r.paidAfter >= 0.01 ? ' (that counts ' + fmtDec(r.paidAfter) + ' you logged after the statement)' : '';
+  out.textContent = Math.abs(r.delta) < 0.01
+    ? 'Matches what DebtFree shows' + after + '.'
+    : (r.delta > 0 ? fmtDec(r.delta) + ' more than DebtFree shows' : fmtDec(-r.delta) + ' less than DebtFree shows') + after
+      + '. The difference is recorded as ' + (r.delta > 0 ? 'interest and fees' : 'a correction') + ' on ' + dueDayLabel(_isoToDate(date)) + '.';
 }
 
 function renderNextDebt() {

@@ -1,8 +1,10 @@
 {
-  "version": "1.65.1",
+  "version": "1.66.0",
   "releaseDate": "2026-11-13",
-  "releaseName": "Calendar reminders on iPhone",
+  "releaseName": "Plan check and statements",
   "notes": [
-    "Fixed: on iPhone, Add to my calendar did nothing. It now lists each reminder; tap one and Calendar opens to add it. If the card said your reminders were added when they weren't, it now asks again."
+    "Interest/mo, Freedom Date and Interest Saved now sit right under Total Owed, where they're easy to find.",
+    "Plan check: This Month now lists up to three things worth a look, such as a 0% rate ending in the next 60 days, a debt getting less this month than its interest, or a card close to its limit.",
+    "Update from a statement: swipe a payment left (or tap the three dots) and type the balance from your statement. DebtFree records the difference as interest and fees, counting any payments you logged after the statement date, so your balance matches without a bank login. Undo is there if you mistype."
   ]
 }

@@ -178,6 +178,53 @@ const ledgerOk = page => page.evaluate(() => {
     check(`${tier} tapping a row opens the log form with that amount`, tap.open && Math.abs(tap.amt - tap.want) < 0.011 && tap.debt === tap.id, JSON.stringify(tap));
     await page.evaluate(() => closeQuickLog());
 
+    // ── Plan check ─────────────────────────────────────────────────────
+    const pc = await page.evaluate(() => {
+      const items = planCheckItems();
+      const html = document.getElementById('tm-head').innerText;
+      // Make a card hit 95% of its limit and check it shows.
+      const cc = debts.find(d => d.type === 'cc' && d.balance > 0);
+      cc.creditLimit = Math.round(cc.balance / 0.95); render();
+      const lim = planCheckItems().some(i => i.kind === 'limit' && i.id === cc.id);
+      cc.creditLimit = null; render();
+      return { items, html, lim };
+    });
+    check(`${tier} plan check: at most 3 items, neutral wording`, pc.items.length <= 3
+      && !pc.items.some(i => /\b(should|must|recommend|need to)\b/i.test(i.text)), pc.items.map(i => i.text).join(' | '));
+    check(`${tier} plan check: a card at 95% of its limit is listed`, pc.lim);
+
+    // ── Statement check-in ─────────────────────────────────────────────
+    const stmt = await page.evaluate(() => {
+      const d = debts.find(x => x.name === 'Big Bank Visa');
+      const b0 = d.balance;
+      // A payment logged after the statement date isn't on the statement.
+      logPaymentCore(d.id, 100, '2026-11-12');
+      const b1 = d.balance;                    // b0 - 100
+      const prev = statementDelta(d.id, b0 + 40, '2026-11-10');
+      openDueLater(debts.find(x => x.id === thisMonthModel().rows.find(r => r.kind === 'debt').id).id);
+      _laterId = d.id;
+      document.getElementById('tm-stmt-balance').value = String(b0 + 40);
+      document.getElementById('tm-stmt-date').value = '2026-11-10';
+      saveStatementFromSheet();
+      const b2 = d.balance;
+      const adj = adjustments[adjustments.length - 1];
+      document.getElementById('toast-undo-any').click();
+      return { b0, b1, b2, b3: d.balance, delta: prev.delta, adj: adj && [adj.amount, adj.date, adj.note] };
+    });
+    check(`${tier} statement: difference counts payments logged after the statement`, Math.abs(stmt.delta - 40) < 0.011, JSON.stringify(stmt));
+    check(`${tier} statement: balance becomes statement minus later payments`, Math.abs(stmt.b2 - (stmt.b0 + 40 - 100)) < 0.011 && stmt.adj && stmt.adj[1] === '2026-11-10');
+    check(`${tier} statement: Undo restores the balance`, Math.abs(stmt.b3 - stmt.b1) < 0.011);
+    bad = await ledgerOk(page);
+    check(`${tier} ledger identity after statement and undo`, bad.length === 0, bad.join('; '));
+
+    // ── The three figures sit right under Total Owed ───────────────────
+    const order = await page.evaluate(() => {
+      const ids = ['hero-card', 'stat-grid', 'upcoming-card', 'next-debt-card'];
+      const els = ids.map(id => document.getElementById(id));
+      return els.every((e, i) => i === 0 || (els[i - 1].compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING));
+    });
+    check(`${tier} Total Owed, then the three figures, then This Month, then the Focus card`, order);
+
     check(`${tier} no page errors`, errs.length === 0, errs.join(' | '));
     await ctx.close();
   }

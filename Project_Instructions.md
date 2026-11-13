@@ -164,6 +164,7 @@ Besides page views, the site sends:
 | `demo_tab_view` | The app's example screen | A first-time visitor opened another tab while the example was showing (`tab` says which) |
 | `demo_dismissed` | The app's example screen | A first-time visitor left the example for their own numbers (`via` is `start_my_numbers` for the banner button, `fab` for the floating button) |
 | `tm_log`, `tm_batch_open`, `tm_batch_logged`, `tm_later_open`, `tm_later_scheduled`, `tm_skip` | The app's This Month card | A payment logged from a row (`via` is `button` or `swipe`), the Paid as planned sheet opened or used (`rows`), the Later sheet opened, a payment scheduled from it, a month skipped |
+| `tm_statement` | The app's This Month card | A balance updated from a statement (`direction` is `up`, `down` or `same`) |
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -358,6 +359,18 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (night)** — v1.65.1: iPhone calendar reminders. A data-URL
+  .ics does nothing in an installed iPhone web app, so iPhone now links to
+  static files in `reminders/` (`tools/make-reminders.js`: card/loan/mortgage
+  x day 1-31 x 1/3/7-day alert, plus `checkin.ics`; general titles, no personal
+  data). The service worker skips `/reminders/`. The "added" flag moved to
+  `debtfree_cal_export2` to reset false marks. v1.66.0: the three ministats
+  moved directly under Total Owed (Kevin). A plan check in This Month
+  (`planCheckItems()`: promo ending within 60 days, this month's plan amount
+  under this month's interest, card at 90%+ of its limit; max 3, neutral
+  wording). Statement check-in in the row sheet (`applyStatement()`) records
+  one adjustment dated the statement day, after adding back payments,
+  accruals and adjustments dated after it.
 - **2026-11-13 (evening)** — Homepage testimonials removed (they were placeholder
   copy written at launch, not customer quotes; never add invented reviews). v1.65.0
   "This Month": Coming Up became the monthly routine and moved above the

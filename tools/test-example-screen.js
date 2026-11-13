@@ -48,7 +48,7 @@ function world(ua, demo) {
     grab('exitDemo'), grab('startMyNumbers'), grab('focusFirstDebtField'), grab('renderUpcoming'), grab('populateDebtSelects'),
     'var LS_DUE_SKIPS = "s", LS_CAL_EXPORT = "c", LS_SWIPE_TIP = "t", _tmTipCounted = false;',
     grab('thisMonthModel'), grab('_tmRing'), grab('_tmFootHtml'), grab('_tmQuietLine'), grab('_tmBindSwipes'),
-    grab('_calExportState'), grab('calReminderHash'), grab('_dueSkips'), grab('isDueSkipped'), grab('_pendingAheadFor')].join('\n'), ctx);
+    grab('_calExportState'), grab('calReminderHash'), grab('_planCheckHtml'), grab('planCheckItems'), grab('_dueSkips'), grab('isDueSkipped'), grab('_pendingAheadFor')].join('\n'), ctx);
   return { ctx, el, log, ev, els };
 }
 
