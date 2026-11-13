@@ -259,7 +259,7 @@ const ledgerOk = page => page.evaluate(() => {
   check('names appear when asked for', cal.names.some(n => cal.named.includes(n.replace(/,/g, '\\,').replace(/;/g, '\\;'))));
   check('check-in can be left out', !/check-in/.test(cal.named) && /DebtFree check-in/.test(cal.priv));
   check('Google Calendar links carry the repeat rule', cal.g.every(u => /^https:\/\/calendar\.google\.com\/calendar\/render\?action=TEMPLATE/.test(u) && /recur=RRULE/.test(u)));
-  check('card offers to add reminders', /Add payment reminders to my calendar/.test(cal.foot), cal.foot);
+  check('card offers to add reminders', /Get payment reminders/.test(cal.foot), cal.foot);
   const upd = await page.evaluate(() => {
     _calMarkDone('ics'); render();
     const a = document.getElementById('tm-foot').innerText;

@@ -4,7 +4,7 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.67.0';
+const CACHE_NAME = 'debtfree-1.68.0';
 // v1.40.6 — './dashboard.html' resolved to /dashboard.html (this file sits at
 // the repo root), which did not exist: every cache.addAll() rejected, the
 // fallback cache.add() rejected too, and the app precached NOTHING. Runtime
@@ -31,7 +31,8 @@ self.addEventListener('activate', function(event) {
   event.waitUntil(
     caches.keys().then(function(names) {
       return Promise.all(names.map(function(name) {
-        if (name !== CACHE_NAME) return caches.delete(name);
+        // v1.68.0 — the reminder state is the app's, not a version cache.
+        if (name !== CACHE_NAME && name !== 'debtfree-reminder-state') return caches.delete(name);
       }));
     }).then(function() {
       return self.clients.claim();
@@ -107,3 +108,85 @@ self.addEventListener('fetch', function(event) {
     })
   );
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.68.0 — payment reminder notifications
+// The reminder server sends an EMPTY push at the right hour. What the
+// notification says is worked out here, from a small summary the app keeps on
+// this device (cache "debtfree-reminder-state"), so no debt name or amount is
+// ever sent anywhere. A push must always show something, so if the summary is
+// missing the notification falls back to a general check-in.
+// ══════════════════════════════════════════════════════════════════════
+function _rmDaysIn(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function _rmDue(y, m, day) { return new Date(y, m, Math.min(day, _rmDaysIn(y, m))); }
+function _rmWhen(date, today) {
+  var n = Math.round((date - today) / 864e5);
+  if (n === 0) return 'today';
+  if (n === 1) return 'tomorrow';
+  return date.toLocaleDateString('en-US', { weekday: 'long' });
+}
+function _rmLabel(d, names) {
+  if (names && d.n) return d.n;
+  return d.t === 'cc' ? 'A card payment' : d.t === 'mortgage' ? 'Your mortgage payment' : 'A loan payment';
+}
+function reminderText(state, now) {
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var url = '/app/dashboard.html';
+  var checkin = { title: 'New month in DebtFree', body: 'Log last month’s payments and see where your debt-free date landed.', url: url };
+  if (!state || !Array.isArray(state.debts)) return checkin;
+  var span = state.cadence === 'weekly' ? 7 : state.cadence === 'monthly' ? -1 : (state.lead || 3);
+  var due = [];
+  state.debts.forEach(function (d) {
+    (d.days || []).forEach(function (day) {
+      [0, 1].forEach(function (k) {
+        var when = _rmDue(today.getFullYear(), today.getMonth() + k, day);
+        var n = Math.round((when - today) / 864e5);
+        if (n >= 0 && n <= span) due.push({ d: d, when: when, n: n });
+      });
+    });
+  });
+  due.sort(function (a, b) { return a.n - b.n; });
+  if (!due.length) {
+    if (state.cadence === 'weekly') return { title: 'Nothing due this week', body: 'If you paid anything recently, log it to keep your plan current.', url: url };
+    return checkin;
+  }
+  var names = !!state.names;
+  if (due.length === 1) {
+    var x = due[0];
+    var who = _rmLabel(x.d, names);
+    var t = _rmWhen(x.when, today);
+    return { title: (names && x.d.n ? who + ' is due ' : who + ' is due ') + t,
+             body: (names && x.d.m ? 'Minimum ' + x.d.m + '. ' : '') + 'Tap to log it when it’s paid.', url: url };
+  }
+  var first = due[0];
+  return { title: due.length + ' payments due ' + (state.cadence === 'weekly' ? 'this week' : 'soon'),
+           body: 'First: ' + _rmLabel(first.d, names) + ', ' + _rmWhen(first.when, today) + '. Tap to see them.', url: url };
+}
+self.addEventListener('push', function (event) {
+  event.waitUntil(
+    caches.open('debtfree-reminder-state')
+      .then(function (c) { return c.match('/__reminders'); })
+      .then(function (r) { return r ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (state) {
+        var msg = reminderText(state, new Date());
+        return self.registration.showNotification(msg.title, {
+          body: msg.body, tag: 'debtfree-reminder', renotify: true,
+          icon: '/assets/icons/icon-192.png', badge: '/assets/icons/icon-192.png', data: { url: msg.url }
+        });
+      })
+  );
+});
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  var url = (event.notification.data && event.notification.data.url) || '/app/dashboard.html';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].url.indexOf('/app/dashboard.html') !== -1 && 'focus' in list[i]) return list[i].focus();
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});
+

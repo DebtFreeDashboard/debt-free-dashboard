@@ -30,11 +30,11 @@
 <a class="back" href="/">&larr; DebtFree Dashboard</a>
 
 <h1>Privacy Policy</h1>
-<div class="meta">Last updated: 15 October 2026</div>
+<div class="meta">Last updated: 13 November 2026</div>
 
 <p class="lead"><strong>The short version.</strong> Your debts, balances, payments and progress are stored
 on your own device, in your own browser. They are not sent to us, because there is no
-&ldquo;us&rdquo; to send them to &mdash; DebtFree Dashboard has no server and no user accounts. We cannot
+&ldquo;us&rdquo; to send them to &mdash; DebtFree Dashboard has no user accounts and no server that holds your numbers. We cannot
 see your numbers, and neither can anyone else unless you choose to share them.</p>
 
 <h2>Who we are</h2>
@@ -76,6 +76,19 @@ a licence key, which is stored locally on your device to unlock premium features
 Google processes the payment; we never see card details. To confirm a purchase with Google, the app sends
 the purchase receipt (a token from Google and the product name) to a small verification service we run on
 Cloudflare. It sends nothing else &mdash; no debt figures, no name, no email &mdash; and the service stores nothing.</p>
+
+<h2>Optional payment reminder notifications</h2>
+<p>If you turn on phone notifications for payment reminders, the app sends a small reminder service we run on
+Cloudflare only what it needs to know when to send them:</p>
+<ul>
+  <li>your phone's push address (made by your browser or phone, not linked to your name or email),</li>
+  <li>the days of the month your payments are due, as numbers only (for example 5 and 22),</li>
+  <li>how often you want reminders, how many days ahead, your time zone and the hour to send.</li>
+</ul>
+<p>It does not receive debt names, amounts, balances or anything else you entered. At the right time it sends
+your phone an empty notice; your phone then writes the reminder itself from what is already stored on it.
+Turning notifications off, in the app or in your phone's settings, deletes the record from the service.
+Calendar reminders, the other option, never involve our service at all.</p>
 
 <h2>Analytics</h2>
 <p>We use analytics to understand how the site and app are used in aggregate &mdash; which pages people

@@ -545,6 +545,10 @@
 .bnav { position:fixed; left:0; right:0; bottom:0; z-index:920; align-items:stretch; justify-content:space-around;
   background:var(--surface); border-top:1px solid var(--border); padding:6px 4px calc(6px + env(safe-area-inset-bottom));
   box-shadow:0 -4px 18px rgba(0,0,0,0.06); }
+/* v1.68.0 — iPhone Safari can lift fixed bars while its own toolbar slides
+   away, which left page content showing underneath. The bar now carries its
+   background well below itself, so a lift shows bar colour, not content. */
+.bnav::after { content:''; position:absolute; left:0; right:0; top:100%; height:160px; background:var(--surface); }
 .bnav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; cursor:pointer;
   color:var(--text-muted); font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.04em; text-transform:uppercase; padding:4px 0; }
 .bnav-item svg { width:22px; height:22px; }
@@ -581,6 +585,9 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 #applock-pin { text-align:center; font-family:var(--font-mono); font-size:1.4rem; letter-spacing:0.4em; width:100%; }
 #applock-msg { min-height:1.2em; font-size:0.78rem; color:var(--accent4); margin:8px 0; }
 .applock-link { background:none; border:none; color:var(--text-muted); font-size:0.78rem; cursor:pointer; margin-top:14px; text-decoration:underline; font-family:inherit; }
+.cal-sec-title { font-size:0.84rem; font-weight:700; margin-bottom:6px; }
+.push-note { font-size:0.72rem; color:var(--text-muted); line-height:1.45; margin-top:8px; }
+.push-on { font-size:0.8rem; color:var(--accent); font-weight:600; margin-top:4px; }
 .tm-tip { font-size:0.72rem; color:var(--text-muted); margin-top:8px; }
 .tm-foot { display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
 .tm-link { background:none; border:none; padding:0; text-align:left; cursor:pointer; font-size:0.78rem;
@@ -4659,6 +4666,10 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <div class="modal-title" id="cal-title">Payment reminders</div>
       <button class="modal-close" aria-label="Close" onclick="closeCalReminders()">&times;</button>
     </div>
+    <div class="cal-sec-title">Phone notifications</div>
+    <div id="push-box"></div>
+    <div id="push-msg" style="font-size:0.76rem;color:var(--accent4);min-height:1em;margin-top:4px;"></div>
+    <div class="cal-sec-title" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">Or add them to your calendar</div>
     <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">A repeating event for each due date goes into your phone&rsquo;s calendar, which does the reminding. Nothing is sent to us or anyone else.</div>
     <label class="cal-opt">Remind me
       <select id="cal-lead" onchange="renderCalGoogleLinks()">
@@ -4666,7 +4677,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         <option value="3" selected>3 days before</option>
         <option value="7">7 days before</option>
       </select>and on the day</label>
-    <label class="cal-opt"><input type="checkbox" id="cal-names" onchange="renderCalGoogleLinks()"> Show account names in my calendar</label>
+    <label class="cal-opt"><input type="checkbox" id="cal-names" onchange="renderCalGoogleLinks()"> Show account names in reminders</label>
     <label class="cal-opt"><input type="checkbox" id="cal-checkin" checked onchange="renderCalGoogleLinks()"> A check-in on the 1st to log last month</label>
     <div id="cal-update-note" class="alert warning" style="display:none;margin:8px 0 0;font-size:0.76rem;">Adding again can leave the old reminders in your calendar as well. Delete the old &ldquo;payment due&rdquo; events first if you see doubles.</div>
     <div id="cal-google-wrap" style="display:none;margin-top:12px;">
@@ -4827,7 +4838,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.67.0';
+const APP_VERSION = '1.68.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4835,6 +4846,19 @@ const APP_VERSION = '1.67.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.68.0',
+    date: 'November 13, 2026',
+    name: 'Payment notifications',
+    whatsNew: [
+      'Phone notifications for payments: in This Month, tap Get payment reminders and choose before each payment, every Monday, or on the 1st. They arrive at 9 AM your time.',
+      'Private by design: our reminder service only gets your due days as numbers and when to send. The notification text is written on your phone, and account names show only if you choose.',
+      'On iPhone, notifications work once DebtFree is added to your Home Screen. Calendar reminders still work everywhere.'
+    ],
+    fixes: [
+      'On iPhone, the bottom tab bar no longer lets the page show through underneath it when Safari\'s toolbar slides away.'
+    ]
+  },
   {
     version: '1.67.0',
     date: 'November 13, 2026',
@@ -12788,6 +12812,7 @@ function render() {
   renderStats();
   renderNextDebt();        // v1.13.0
   renderUpcoming();        // v1.42.0
+  try { syncPush(); } catch (e) {}   // v1.68.0
   renderBills();           // v1.42.0 (premium)
   renderFunds();           // v1.43.0 (premium)
   renderMoneyPlan();       // v1.42.0
@@ -14208,9 +14233,13 @@ function _tmQuietLine() {
 function _tmFootHtml(missing) {
   var withDay = (debts || []).filter(function (d) { return d && d.balance > 0 && sanitizeDueDay(d.dueDay); });
   var parts = [];
-  if (withDay.length) {
+  var _pp = pushPrefs();
+  if (withDay.length && _pp) {
+    parts.push('<button type="button" class="tm-link tm-link-quiet" onclick="openCalReminders()">&#128276; Notifications on \u00b7 '
+      + (_pp.cadence === 'weekly' ? 'every Monday' : _pp.cadence === 'monthly' ? 'on the 1st' : (_pp.lead || 3) + (_pp.lead === 1 ? ' day' : ' days') + ' before each payment') + '</button>');
+  } else if (withDay.length) {
     var st = _calExportState();
-    if (!st) parts.push('<button type="button" class="tm-link" onclick="openCalReminders()">&#128197; Add payment reminders to my calendar</button>');
+    if (!st) parts.push('<button type="button" class="tm-link" onclick="openCalReminders()">&#128276; Get payment reminders</button>');
     else if (st.hash !== calReminderHash()) parts.push('<button type="button" class="tm-link tm-link-warn" onclick="openCalReminders()">Due dates changed since your calendar reminders were added \u00b7 Update</button>');
     else parts.push('<button type="button" class="tm-link tm-link-quiet" onclick="openCalReminders()">Calendar reminders added ' + dueDayLabel(new Date(st.at)) + '</button>');
   }
@@ -14569,6 +14598,10 @@ function openCalReminders() {
   btn.textContent = plat === 'android' ? 'Download calendar file instead' : 'Add to my calendar';
   btn.className = plat === 'android' ? 'btn btn-ghost' : 'btn btn-primary';
   renderCalGoogleLinks();
+  try { var _pp = pushPrefs(); if (_pp && document.getElementById('cal-names')) document.getElementById('cal-names').checked = !!_pp.names;
+        if (_pp && document.getElementById('cal-lead')) document.getElementById('cal-lead').value = String(_pp.lead || 3); } catch (e) {}
+  renderPushControls();
+  var _pm = document.getElementById('push-msg'); if (_pm) _pm.textContent = '';
   modal.classList.remove('hidden');
   trackShare('cal_open', { _category: 'engagement', platform: plat });
 }
@@ -15070,6 +15103,177 @@ async function turnOffLock() {
   _saveLock(null);
   renderLockSettings();
   trackShare('applock_off', { _category: 'security' });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.68.0 — PHONE NOTIFICATIONS
+// The reminder server (tools/reminders-worker) only learns this phone's push
+// address, the due days as numbers, the cadence, lead time, time zone and
+// hour. It sends an empty nudge at the right hour; the service worker writes
+// the words from REMINDER_STATE below, which never leaves the device.
+// ══════════════════════════════════════════════════════════════════════
+var REMINDER_SERVER = 'https://debtfree-reminders.debtfreedashboard.workers.dev';
+var LS_PUSH = 'debtfree_push';
+var REMINDER_CACHE = 'debtfree-reminder-state';
+
+function pushPrefs() {
+  try { var o = JSON.parse(localStorage.getItem(LS_PUSH) || 'null'); return (o && o.on) ? o : null; } catch (e) { return null; }
+}
+function _savePush(o) { try { if (o) localStorage.setItem(LS_PUSH, JSON.stringify(o)); else localStorage.removeItem(LS_PUSH); } catch (e) {} }
+function pushSupport() {
+  var ios = _isIOSLike();
+  var standalone = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+    return { ok: false, why: ios && !standalone ? 'ios-tab' : 'unsupported' };
+  }
+  if (Notification.permission === 'denied') return { ok: false, why: 'denied' };
+  return { ok: true };
+}
+function _pushDays() {
+  var out = [];
+  (debts || []).forEach(function (d) {
+    if (!d || d.balance <= 0) return;
+    var day = sanitizeDueDay(d.dueDay);
+    if (!day) return;
+    (splitDueDays(d) || [day]).forEach(function (n) { if (out.indexOf(n) === -1) out.push(n); });
+  });
+  return out.sort(function (a, b) { return a - b; });
+}
+function _pushTz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'; } catch (e) { return 'America/New_York'; } }
+function _pushServerBody(p) {
+  return { days: _pushDays(), cadence: p.cadence || 'before', lead: p.lead || 3, tz: _pushTz(), hour: 9 };
+}
+// The on-device summary the service worker reads. Names only if chosen.
+function writeReminderState() {
+  var p = pushPrefs();
+  if (!p || !('caches' in window)) return;
+  var state = { v: 1, cadence: p.cadence || 'before', lead: p.lead || 3, names: !!p.names,
+    debts: (debts || []).filter(function (d) { return d && d.balance > 0 && sanitizeDueDay(d.dueDay); }).map(function (d) {
+      var floors = minPaymentFloors(d);
+      return { n: p.names ? d.name : null, t: d.type, days: splitDueDays(d) || [sanitizeDueDay(d.dueDay)],
+               m: p.names ? fmt(Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment))) : null };
+    }) };
+  var body = JSON.stringify(state);
+  if (body === _lastReminderState) return;
+  _lastReminderState = body;
+  caches.open(REMINDER_CACHE).then(function (c) {
+    return c.put('/__reminders', new Response(body, { headers: { 'Content-Type': 'application/json' } }));
+  }).catch(function () {});
+}
+var _lastReminderState = null;
+
+async function _pushPost(path, body) {
+  var r = await fetch(REMINDER_SERVER + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('server ' + r.status);
+  return r.json();
+}
+function _pushKeyBytes(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return _unb64(s); }
+
+async function enablePush(cadence, lead, names) {
+  // Permission first, straight from the tap (iPhone requires it).
+  var perm = await Notification.requestPermission();
+  if (perm !== 'granted') throw new Error('permission');
+  var reg = await navigator.serviceWorker.ready;
+  var key = (await (await fetch(REMINDER_SERVER + '/push/key')).json()).key;
+  var sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: _pushKeyBytes(key) });
+  var p = { on: true, cadence: cadence, lead: lead, names: !!names, endpoint: sub.endpoint };
+  var body = _pushServerBody(p); body.endpoint = sub.endpoint;
+  await _pushPost('/push/subscribe', body);
+  p.synced = JSON.stringify(_pushServerBody(p));
+  _savePush(p);
+  _lastReminderState = null;
+  writeReminderState();
+  trackShare('push_on', { _category: 'engagement', cadence: cadence, lead: lead });
+  return p;
+}
+async function disablePush() {
+  var p = pushPrefs();
+  _savePush(null);
+  try {
+    var reg = await navigator.serviceWorker.ready;
+    var sub = await reg.pushManager.getSubscription();
+    var ep = (sub && sub.endpoint) || (p && p.endpoint);
+    if (sub) await sub.unsubscribe();
+    if (ep) await _pushPost('/push/unsubscribe', { endpoint: ep });
+  } catch (e) {}
+  try { (await caches.open(REMINDER_CACHE)).delete('/__reminders'); } catch (e) {}
+  trackShare('push_off', { _category: 'engagement' });
+}
+// Called from render(): keep the server's due days and the on-device summary
+// current when debts or settings change. Quiet; retried on the next render.
+var _pushSyncing = false;
+var _pushServerOk = null;
+function syncPush() {
+  var p = pushPrefs();
+  if (!p) return;
+  writeReminderState();
+  var want = JSON.stringify(_pushServerBody(p));
+  if (p.synced === want || _pushSyncing || !navigator.onLine) return;
+  _pushSyncing = true;
+  navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) {
+    if (!sub) { _savePush(null); return; }        // permission revoked elsewhere
+    var body = _pushServerBody(p); body.endpoint = sub.endpoint;
+    return _pushPost('/push/subscribe', body).then(function () { p.synced = want; p.endpoint = sub.endpoint; _savePush(p); });
+  }).catch(function () {}).then(function () { _pushSyncing = false; });
+}
+
+// ── Reminders sheet: the notifications part ──────────────────────────
+function renderPushControls() {
+  var box = document.getElementById('push-box');
+  if (!box) return;
+  var s = pushSupport(), p = pushPrefs();
+  var hasDays = _pushDays().length > 0;
+  if (!s.ok) {
+    box.innerHTML = '<div class="push-note">' + (s.why === 'ios-tab'
+      ? 'On iPhone, notifications work once DebtFree is on your Home Screen: tap Share, then Add to Home Screen, and open it from there.'
+      : s.why === 'denied'
+        ? 'Notifications are blocked for DebtFree in your phone’s settings. Allow them there to turn these on.'
+        : 'This browser can’t show notifications. The calendar option below works everywhere.') + '</div>';
+    return;
+  }
+  // The reminder service has to answer before offering to turn anything on.
+  if (!p && _pushServerOk !== true) {
+    if (_pushServerOk === false) { box.innerHTML = '<div class="push-note">Phone notifications aren\u2019t available right now. Calendar reminders below work on every phone.</div>'; return; }
+    box.innerHTML = '<div class="push-note">Checking\u2026</div>';
+    var _ctl = ('AbortController' in window) ? new AbortController() : null;
+    if (_ctl) setTimeout(function () { _ctl.abort(); }, 6000);
+    fetch(REMINDER_SERVER + '/push/key', _ctl ? { signal: _ctl.signal } : {}).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { _pushServerOk = !!(j && j.key); }).catch(function () { _pushServerOk = false; })
+      .then(function () { renderPushControls(); });
+    return;
+  }
+  var cad = p ? p.cadence : 'before';
+  box.innerHTML = '<label class="cal-opt">Notify me <select id="push-cadence">'
+    + [['before', 'before each payment'], ['weekly', 'every Monday'], ['monthly', 'on the 1st of the month']].map(function (o) {
+        return '<option value="' + o[0] + '"' + (o[0] === cad ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('')
+    + '</select></label>'
+    + (p ? '<div class="push-on">&#10003; Notifications are on' + (p.cadence === 'before' ? ' (' + (p.lead || 3) + (p.lead === 1 ? ' day' : ' days') + ' before, and on the day)' : '') + '</div>' : '')
+    + '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'
+    + (p ? '<button type="button" class="btn btn-ghost" onclick="pushSaveFromSheet()">Save changes</button>'
+         + '<button type="button" class="btn btn-ghost" onclick="pushOffFromSheet()">Turn off</button>'
+         : '<button type="button" class="btn btn-primary" ' + (hasDays ? '' : 'disabled ') + 'onclick="pushSaveFromSheet()">Turn on notifications</button>')
+    + '</div>'
+    + (hasDays ? '' : '<div class="push-note">Add a due day to your accounts first.</div>')
+    + '<div class="push-note">At 9 AM your time. The notification text is written on your phone; our reminder service only gets your due days as numbers and when to send.</div>';
+}
+async function pushSaveFromSheet() {
+  var cad = (document.getElementById('push-cadence') || {}).value || 'before';
+  var o = _calOpts();
+  var msg = document.getElementById('push-msg');
+  if (msg) msg.textContent = '';
+  try {
+    await enablePush(cad, parseInt(o.daysBefore, 10) || 3, o.names);
+    renderPushControls(); render();
+    _showActionToast('Notifications are on', function () {});
+  } catch (e) {
+    if (msg) msg.textContent = /permission/.test(String(e && e.message)) ? 'Notifications weren’t allowed, so nothing changed.'
+      : 'Couldn’t reach the reminder service. Check your connection and try again.';
+  }
+}
+async function pushOffFromSheet() {
+  await disablePush();
+  renderPushControls(); render();
 }
 
 function renderNextDebt() {

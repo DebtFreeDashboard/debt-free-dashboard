@@ -1,10 +1,11 @@
 {
-  "version": "1.67.0",
+  "version": "1.68.0",
   "releaseDate": "2026-11-13",
-  "releaseName": "Easier on a phone",
+  "releaseName": "Payment notifications",
   "notes": [
-    "On phones, the tabs now sit along the bottom within thumb reach. The + in the middle logs a payment, logs everything Paid as planned, or adds a debt. Settings is the gear at the top.",
-    "This Month has a Calendar view: the month at a glance with a dot on each due date. Tap a day to see what's due and log it.",
-    "App lock: ask for a PIN, or Face ID / fingerprint, before your numbers show. Turn it on in Settings. It's a screen lock, so your data stays on your device as before. If you forget your PIN, the lock comes off after a one-minute wait; your numbers are never at risk."
+    "Phone notifications for payments: in This Month, tap Get payment reminders and choose before each payment, every Monday, or on the 1st. They arrive at 9 AM your time.",
+    "Private by design: our reminder service only gets your due days as numbers and when to send. The notification text is written on your phone, and account names show only if you choose.",
+    "On iPhone, notifications work once DebtFree is added to your Home Screen. Calendar reminders still work everywhere.",
+    "On iPhone, the bottom tab bar no longer lets the page show through underneath it when Safari's toolbar slides away."
   ]
 }

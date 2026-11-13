@@ -90,7 +90,8 @@ handles technical execution end to end.
 | `tools/make-calc-engine.js` | Generates `calculators/assets/engine.js` from `dashboard.html` so the math never drifts |
 | `sitemap.xml` | Every public page, calculators included. Add new pages here |
 | `.well-known/assetlinks.json` | Links the Play app to the site (upload + Play App Signing keys). Don't touch unless the signing key changes |
-| `tools/play-billing/` | Cloudflare Worker that verifies and acknowledges Play purchases (the only server; never sees debt data) |
+| `tools/play-billing/` | Cloudflare Worker that verifies and acknowledges Play purchases (never sees debt data) |
+| `tools/reminders-worker/` | Cloudflare Worker for payment notifications: stores a push address, due days (numbers), cadence, lead, time zone, hour; hourly cron sends an empty push. Tests: `node tools/reminders-worker/test-worker.mjs` |
 
 Live: `mydebtdashboard.com` (homepage), `/app/dashboard.html` (the app),
 `/calculators/` (calculator hub). Dev build: `/app/dev.html` — same origin,
@@ -167,6 +168,7 @@ Besides page views, the site sends:
 | `tm_statement` | The app's This Month card | A balance updated from a statement (`direction` is `up`, `down` or `same`) |
 | `tm_view`, `plus_open`, `plus_pick` | The app | This Month list/calendar switch (`view`); the phone bar's + opened, and what was picked (`pick`: `log`, `batch`, `add`) |
 | `applock_on`, `applock_off`, `applock_pin_changed`, `applock_removed_forgot` | The app's Settings | App lock turned on (`bio` true when Face ID / fingerprint was added), off, PIN changed, removed after the forgot-PIN wait |
+| `push_on`, `push_off` | The app's reminders sheet | Phone notifications turned on (`cadence`, `lead`) or off |
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -361,6 +363,21 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (late night)** — v1.68.0: phone notifications. New Worker
+  `tools/reminders-worker/worker.mjs` (debtfree-reminders.debtfreedashboard.workers.dev):
+  KV `SUBS`, an hourly cron, and a VAPID key it makes itself on first use and keeps in KV
+  (no secrets to paste). It sends an empty push. `sw.js` writes the text from
+  the `debtfree-reminder-state` cache that the app keeps on the device (names
+  and minimums only if the user ticks "show account names"). That cache is
+  exempt from the version cleanup. Cadence: before each payment (1/3/7 days and
+  on the day, plus the 1st), every Monday, or the 1st, all at 9 AM local time.
+  The app re-sends due days quietly when they change (`syncPush()` in
+  `render()`). The sheet only offers the button once the service answers
+  `/push/key`. iPhone needs the Home Screen app. Privacy policy updated. **Play
+  Data safety needs updating** (push token = device ID; due days = other
+  financial info, optional, not shared). Bottom bar: `.bnav::after` fills
+  below the bar so iPhone Safari's toolbar lift no longer shows content
+  underneath. Tests: `tools/test-push.js`.
 - **2026-11-13 (late night)** — v1.67.0. Phones (≤700px) get a bottom tab
   bar (`.bnav`): Home, Strategy, +, What If, Wins. Settings becomes a header
   gear (`.hdr-gear`). The top tab row and the floating button are hidden there,
