@@ -90,6 +90,7 @@ handles technical execution end to end.
 | `tools/make-calc-engine.js` | Generates `calculators/assets/engine.js` from `dashboard.html` so the math never drifts |
 | `sitemap.xml` | Every public page, calculators included. Add new pages here |
 | `.well-known/assetlinks.json` | Links the Play app to the site (upload + Play App Signing keys). Don't touch unless the signing key changes |
+| `tools/play-store/` | Play listing screenshots (8, light/dark) and the scripts that make them. See its README |
 | `tools/play-billing/` | Cloudflare Worker that verifies and acknowledges Play purchases (never sees debt data) |
 | `tools/reminders-worker/` | Cloudflare Worker for payment notifications: stores a push address, due days (numbers), cadence, lead, time zone, hour; hourly cron sends an empty push. Tests: `node tools/reminders-worker/test-worker.mjs` |
 
