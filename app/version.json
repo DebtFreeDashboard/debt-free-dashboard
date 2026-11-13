@@ -1,6 +1,6 @@
 {
-  "version": "1.57.0",
-  "releaseDate": "2026-11-12",
+  "version": "1.63.0",
+  "releaseDate": "2026-11-13",
   "releaseName": "Google Play link on Android",
   "notes": [
     "On an Android phone, the example screen and the install page now show a Get it on Google Play button, so you can install DebtFree from the Play Store instead of adding it from the browser."

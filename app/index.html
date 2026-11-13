@@ -271,7 +271,7 @@
 
   <!-- Android -->
   <div class="step-panel" id="panel-android">
-    <!-- v1.57.0: the Play app is the easiest install on Android, and buying
+    <!-- v1.63.0: the Play app is the easiest install on Android, and buying
          Premium there uses Google Play. Hidden inside the Play app itself. -->
     <a class="play-badge" id="install-play-badge" data-play-badge="install_page" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dinstall_page" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;text-decoration:none;margin-bottom:16px;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.85rem;line-height:1.4;opacity:0.8;">Easiest on Android: get DebtFree from Google Play. Or add it from Chrome:</span></a>
     <div class="step">
@@ -342,7 +342,7 @@ function detectDevice() {
 }
 detectDevice();
 
-// v1.57.0 — never show the Play badge inside the Play app itself.
+// v1.63.0 — never show the Play badge inside the Play app itself.
 try {
   if (sessionStorage.getItem('debtfree_play') === '1') {
     var _pb = document.getElementById('install-play-badge');
@@ -371,7 +371,7 @@ try {
       utm_source: params.get('utm_source') || '(none)'
     });
 
-    // v1.57.0 — same event the homepage and calculator pages send.
+    // v1.63.0 — same event the homepage and calculator pages send.
     var badge = document.getElementById('install-play-badge');
     if (badge) badge.addEventListener('click', function () {
       gtag('event', 'play_badge_click', {

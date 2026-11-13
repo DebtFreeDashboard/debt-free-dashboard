@@ -198,11 +198,25 @@ Other rules:
   23,000-line diff. Claude writes files; Kevin commits in GitHub Desktop.
   To see what GitHub Desktop will see:
   `git -c core.autocrlf=true --no-optional-locks status --short`
-- **Cloud sessions (Claude on the web) work through pull requests.** Branch,
-  commit, push and open a PR; never push to `main` and never merge. Kevin merges
-  in GitHub in the browser (that merge deploys the site and the Play app), then
-  pulls with GitHub Desktop. The repo stores LF in git, so a Linux commit is
-  fine there; the CRLF warning above is about the Cowork VM's working copy.
+- **Claude pushes to `main` itself (Kevin, 2026-11-12).** Cloud sessions
+  commit and push directly to `main` once the tests pass; no pull request and
+  no separate go-ahead. This reverses the PR-only rule of 2026-11-10. `main` is
+  production: a push deploys the website and the Play app within minutes.
+  Rules for every push:
+  - Gate is the test run. Any new failure (compared with `main` before the
+    change) means do not push; report it instead.
+  - Read all user-facing copy for compliance before pushing; tests can't.
+  - `git fetch origin main` and rebase immediately before pushing (Kevin may
+    have committed from GitHub Desktop).
+  - One commit per release, with `APP_VERSION`, `CACHE_NAME` and
+    `version.json` matching. Several commits may go up in one push; never
+    push twice in quick succession (Pages builds cancel each other).
+  - Never force-push `main`.
+  - After pushing, confirm with `git ls-remote origin main` and report the
+    commit hash, version and what changed.
+  - Kevin pulls in GitHub Desktop before any local edit.
+  The repo stores LF in git, so a Linux commit is fine; the CRLF warning above
+  is about the Cowork VM's working copy.
 
 ## The dev build (`app/dev.html`)
 
@@ -339,15 +353,37 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
-- **2026-11-12** — v1.57.0: Google Play badge for Android browsers on the
-  app's example screen and the install page (never in the Play app or on
-  iPhone). The app's Gumroad buttons now also send `gumroad_click`, and Play
-  badges in the app send `play_badge_click`, so the traction report's click
-  counts cover the app. Why: GA4 for Nov 5–11 showed only 2 of 23 US visitors
-  reached the homepage, where the buy buttons were; most opened the app
-  straight from a bio or shared link, and none of the web-app visitors left
-  the example screen to enter a debt.
+- **2026-11-13** — v1.63.0 (PR #7): Google Play badge for Android browsers
+  on the app's example screen and the install page (never in the Play app or
+  on iPhone). The app's Gumroad buttons now also send `gumroad_click`, and
+  Play badges in the app send `play_badge_click`, so the traction report's
+  click counts cover the app. Why: GA4 for Nov 5–11 showed only 2 of 23 US
+  visitors reached the homepage, where the buy buttons were; most opened the
+  app straight from a bio or shared link, and none of the web-app visitors
+  left the example screen to enter a debt.
 
+- **2026-11-12 (later)** — v1.58.1: debts saved before issuers existed get
+  one guessed from the name once (`issuer === undefined` only; an explicit
+  null "Not listed" is kept). v1.59.0: 28 more logos (43 of 52) rasterised at
+  build time from Wikimedia Commons to 72px WebP and embedded in `ISSUERS`
+  (`img` field); monograms remain for USAA, Credit One, Bread/Comenity,
+  Mission Lane, Upstart, Best Egg, MOHELA, Aidvantage, Westlake. v1.59.1:
+  `.modal-overlay` scrolls when a modal is taller than the screen (Edit Debt
+  Save was unreachable on phones). v1.60.0: strategy picker cards show each
+  method's debt-free month and interest on the "Your plan today" basis, with
+  a neutral "Lowest interest" chip (`strategyCardResults`, own optimizer memo
+  so switching strategies stays fast); Add Debt now shows a preview and only
+  saves on "Confirm and save" (`addDebt(true)`).
+- **2026-11-12** — Process: Claude pushes straight to `main` again (see
+  Shipping rules). v1.57.0 "See your progress at a glance": red-to-green
+  payoff bar on every debt (cards and premium table share one helper),
+  debt-type colour bands, add-debt field guide, light theme for new users
+  only, theme applied before first paint. v1.58.0 "Logos and credit
+  limits": new debt fields `issuer` (52-entry bundled catalog, 15 Simple
+  Icons logos, brand-colour monograms for the rest; bundled so no lender
+  name leaves the device) and `creditLimit` (credit cards only) with a
+  credit-used bar. Next planned (Release 3): strategy cards showing the
+  user's own months/interest per method, and a preview before saving a debt.
 - **2026-11-10** — Calculator pages `debt-snowball-spreadsheet`,
   `debt-payoff-spreadsheet` and `debt-payoff-planner` added (PR #4), with a
   free CSV download of the payoff schedule and print, and added to
