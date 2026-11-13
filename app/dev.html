@@ -473,6 +473,62 @@
 }
 .due-logged .due-row-sub { color:var(--text-muted); }
 
+/* v1.65.0 — This Month: ring, one-tap batch, swipe rows, calendar reminders */
+.tm-head { display:flex; align-items:center; gap:12px; margin:2px 0 10px; }
+.tm-ring { width:52px; height:52px; flex-shrink:0; }
+.tm-ring-track { fill:none; stroke:var(--border); stroke-width:5; }
+.tm-ring-fill { fill:none; stroke:var(--accent); stroke-width:5; stroke-linecap:round; transition:stroke-dasharray .4s ease; }
+.tm-ring-txt { font-family:var(--font-mono); font-size:11px; font-weight:700; fill:var(--text); }
+.tm-head-txt { flex:1; min-width:0; }
+.tm-head-big { font-family:var(--font-display); font-weight:800; font-size:1.05rem; color:var(--text); }
+.tm-head-big span { font-weight:600; color:var(--text-muted); font-size:0.9rem; }
+.tm-head-sub { font-size:0.74rem; color:var(--text-muted); margin-top:2px; }
+.tm-batch-btn { flex-shrink:0; padding:9px 12px; font-size:0.8rem; }
+.tm-swipe { position:relative; overflow:hidden; touch-action:pan-y; border-bottom:1px solid var(--border); }
+.tm-swipe:last-child { border-bottom:none; }
+.tm-swipe .due-row { border-bottom:none; background:var(--surface); position:relative; z-index:1;
+  transition:transform .2s ease; }
+.tm-swipe.is-dragging .due-row { transition:none; }
+.tm-act { position:absolute; top:0; bottom:0; display:flex; align-items:center; padding:0 16px;
+  font-family:var(--font-mono); font-size:0.72rem; font-weight:700; letter-spacing:0.04em; opacity:0; }
+.tm-act-log { left:0; right:0; background:rgba(0,168,132,0.16); color:var(--accent); justify-content:flex-start; }
+.tm-act-later { left:0; right:0; background:rgba(245,158,11,0.16); color:var(--accent4); justify-content:flex-end; }
+.tm-swipe.show-log .tm-act-log, .tm-swipe.show-later .tm-act-later { opacity:1; }
+.tm-swipe.past.show-log .tm-act-log { background:var(--accent); color:#fff; }
+.tm-swipe.past.show-later .tm-act-later { background:var(--accent4); color:#fff; }
+.tm-row .due-row-main { cursor:pointer; }
+.tm-more { width:30px; height:30px; border-radius:6px; border:1px solid var(--border); background:var(--card2);
+  color:var(--text-muted); cursor:pointer; font-size:1rem; line-height:1; padding:0; }
+.tm-more:hover { border-color:var(--accent); color:var(--accent); }
+.due-plan .due-row-sub { color:var(--text-muted); }
+.due-scheduled .due-row-name, .due-scheduled .due-row-amt { color:var(--text-muted); }
+.tm-more-rows { display:block; width:100%; text-align:left; background:none; border:none; border-top:1px solid var(--border);
+  padding:10px 0 2px; font-size:0.78rem; color:var(--text-muted); cursor:pointer; font-family:inherit; }
+.tm-more-rows:hover { color:var(--accent); }
+.tm-tip { font-size:0.72rem; color:var(--text-muted); margin-top:8px; }
+.tm-foot { display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+.tm-link { background:none; border:none; padding:0; text-align:left; cursor:pointer; font-size:0.78rem;
+  color:var(--accent); font-family:inherit; }
+.tm-link-quiet { color:var(--text-muted); }
+.tm-link-warn { color:var(--accent4); }
+.tm-b-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+.tm-b-row:last-child { border-bottom:none; }
+.tm-b-on { width:18px; height:18px; flex-shrink:0; accent-color:var(--accent); }
+.tm-b-name { flex:1; min-width:0; font-size:0.86rem; font-weight:600; }
+.tm-b-sub { display:block; font-weight:400; font-size:0.7rem; color:var(--text-muted); margin-top:2px; }
+.tm-b-amt { width:96px; flex-shrink:0; text-align:right; font-family:var(--font-mono); font-size:0.88rem;
+  padding:8px 10px; border-radius:8px; border:1px solid var(--border2); background:var(--surface2); color:var(--text); }
+#tm-batch-list { max-height:46vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.cal-opt { display:flex; align-items:center; gap:10px; font-size:0.85rem; padding:6px 0; }
+.cal-opt select { width:auto; }
+.cal-g-link { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; margin-top:6px;
+  border:1px solid var(--border); border-radius:8px; color:var(--text); text-decoration:none; font-size:0.84rem; }
+.cal-g-link:hover { border-color:var(--accent); }
+.cal-g-link.is-done { border-color:var(--accent); color:var(--accent); }
+.cal-g-link.is-done::after { content:'\2713'; }
+.cal-g-day { color:var(--text-muted); font-family:var(--font-mono); font-size:0.72rem; }
+@media (prefers-reduced-motion: reduce) { .tm-swipe .due-row, .tm-ring-fill { transition:none; } }
+
 /* v1.42.0 — Monthly Money Plan. Visually quieter than the extra-payment
    control above it, because it checks the plan rather than driving it. */
 .money-plan { grid-column:1/-1; margin-top:14px; padding-top:14px; border-top:1px solid var(--border); }
@@ -3285,6 +3341,17 @@
       <span id="progress-label-left" hidden></span>
     </div>
 
+    <!-- v1.42.0 — what else is due, beside where the extra is going. Dashboard
+         rather than Strategy because this is a daily action, not a planning
+         tool (the same split v1.30.0 applied when the budget card moved). -->
+    <div class="card" id="upcoming-card" style="display:none">
+      <div class="card-title"><div class="dot"></div> This Month</div>
+      <div id="tm-head"></div>
+      <div id="upcoming-body"></div>
+      <div id="upcoming-quiet" style="display:none;font-size:0.8rem;color:var(--text-muted);line-height:1.5;"></div>
+      <div id="tm-foot"></div>
+    </div>
+
     <!-- v1.13.0 — the target debt (free).
          v1.48.0 — moved to second, directly under the hero, and retitled. It
          used to read "NEXT TARGET", which people read as a queue: next after
@@ -3339,14 +3406,6 @@
     <!-- v1.35.0 — loud until there's a healthy backup, then it collapses
          to a single quiet line so it stops competing with the progress
          card it sits above. -->
-    <!-- v1.42.0 — what else is due, beside where the extra is going. Dashboard
-         rather than Strategy because this is a daily action, not a planning
-         tool (the same split v1.30.0 applied when the budget card moved). -->
-    <div class="card" id="upcoming-card" style="display:none">
-      <div class="card-title"><div class="dot"></div> Coming Up</div>
-      <div id="upcoming-body"></div>
-      <div id="upcoming-quiet" style="display:none;font-size:0.8rem;color:var(--text-muted);line-height:1.5;"></div>
-    </div>
         <!-- Chart -->
     <!-- v1.23.0 — collapse/expand all (applies to collapsible cards only) -->
     <div style="display:flex;justify-content:flex-end;margin:-8px 0 10px;">
@@ -4441,6 +4500,80 @@
 <canvas id="share-card-canvas" style="display:none;"></canvas>
 
 <!-- v1.17.0 — undo toast root -->
+<!-- v1.65.0 — This Month: later/skip, paid as planned, calendar reminders -->
+<div id="tm-later-modal" class="modal-overlay hidden" onclick="closeDueLater(event)" role="dialog" aria-modal="true" aria-labelledby="tm-later-name">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title" id="tm-later-name">Later</div>
+      <button class="modal-close" aria-label="Close" onclick="closeDueLater()">&times;</button>
+    </div>
+    <div style="font-size:0.84rem;font-weight:600;margin-bottom:8px;">Pay on a later date</div>
+    <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="form-field">
+        <label for="tm-later-amount">Amount ($)</label>
+        <input type="text" inputmode="decimal" id="tm-later-amount" />
+      </div>
+      <div class="form-field">
+        <label for="tm-later-date">Date</label>
+        <input type="date" id="tm-later-date" />
+      </div>
+    </div>
+    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;line-height:1.45;">Saved as a scheduled payment. It counts once its date arrives.</div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-primary" onclick="saveDueLater()">Schedule it</button>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px;">
+      <button class="btn btn-ghost" style="width:100%;" onclick="skipDueThisMonth()">Skip this month</button>
+      <div id="tm-later-skip-note" style="font-size:0.72rem;color:var(--text-muted);margin-top:8px;line-height:1.45;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="tm-batch-modal" class="modal-overlay hidden" onclick="closePaidAsPlanned(event)" role="dialog" aria-modal="true" aria-labelledby="tm-batch-title">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title" id="tm-batch-title">Paid as planned</div>
+      <button class="modal-close" aria-label="Close" onclick="closePaidAsPlanned()">&times;</button>
+    </div>
+    <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.5;margin-bottom:8px;">What your plan has left for <span id="tm-batch-month"></span>. Untick anything you didn&rsquo;t pay, or change an amount.</div>
+    <div id="tm-batch-list"></div>
+    <div class="form-field" style="margin-top:12px;max-width:200px;">
+      <label for="tm-batch-date">Date paid</label>
+      <input type="date" id="tm-batch-date" />
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closePaidAsPlanned()">Cancel</button>
+      <button class="btn btn-primary" id="tm-batch-go" onclick="savePaidAsPlanned()">Log payments</button>
+    </div>
+  </div>
+</div>
+
+<div id="cal-modal" class="modal-overlay hidden" onclick="closeCalReminders(event)" role="dialog" aria-modal="true" aria-labelledby="cal-title">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <div class="modal-title" id="cal-title">Payment reminders</div>
+      <button class="modal-close" aria-label="Close" onclick="closeCalReminders()">&times;</button>
+    </div>
+    <div style="font-size:0.82rem;color:var(--text-muted);line-height:1.5;margin-bottom:10px;">A repeating event for each due date goes into your phone&rsquo;s calendar, which does the reminding. Nothing is sent to us or anyone else.</div>
+    <label class="cal-opt">Remind me
+      <select id="cal-lead" onchange="renderCalGoogleLinks()">
+        <option value="1">1 day before</option>
+        <option value="3" selected>3 days before</option>
+        <option value="7">7 days before</option>
+      </select>and on the day</label>
+    <label class="cal-opt"><input type="checkbox" id="cal-names" onchange="renderCalGoogleLinks()"> Show account names in my calendar</label>
+    <label class="cal-opt"><input type="checkbox" id="cal-checkin" checked onchange="renderCalGoogleLinks()"> A check-in on the 1st to log last month</label>
+    <div id="cal-update-note" class="alert warning" style="display:none;margin:8px 0 0;font-size:0.76rem;">Adding again can leave the old reminders in your calendar as well. Delete the old &ldquo;payment due&rdquo; events first if you see doubles.</div>
+    <div id="cal-google-wrap" style="display:none;margin-top:12px;">
+      <div style="font-size:0.8rem;font-weight:600;">Add each one to Google Calendar</div>
+      <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">Google Calendar uses its own alert time for these.</div>
+      <div id="cal-google-list"></div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-primary" id="cal-ics-btn" onclick="downloadReminderIcs()">Add to my calendar</button>
+    </div>
+  </div>
+</div>
 <div id="toast-root"></div>
 
 <!-- v1.45.0 — Google Drive sheet. Opened by the header cloud button, so backup
@@ -4540,7 +4673,7 @@
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.64.0';
+const APP_VERSION = '1.65.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4548,6 +4681,19 @@ const APP_VERSION = '1.64.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.65.0',
+    date: 'November 13, 2026',
+    name: 'This Month',
+    whatsNew: [
+      'Coming Up is now This Month: a ring shows how much you\'ve logged against what your plan sends this month.',
+      'Paid as planned logs every payment your plan has left for the month in one tap. It shows the list first, you can untick or change any amount, and Undo takes it all back.',
+      'Swipe a payment right to log it. Swipe left to pay it on a later date or skip it this month. Tapping a payment opens the log form with the amount already filled in.',
+      'Each payment now shows what your plan sends to it, not just the minimum.',
+      'Payment reminders: add a repeating event for each due date to your phone\'s calendar, with an alert 1, 3 or 7 days before and on the day. Account names stay out of your calendar unless you choose to show them, and nothing is sent to us.'
+    ],
+    fixes: []
+  },
   {
     version: '1.64.0',
     date: 'November 13, 2026',
@@ -12832,6 +12978,8 @@ function upcomingDues() {
     });
   }
 
+  // v1.65.0 — a debt skipped for a month has nothing due that month.
+  rows = rows.filter(function (r) { return r.kind === 'bill' || typeof isDueSkipped !== 'function' || !isDueSkipped(r.id, monthKeyOf(r.date)); });
   // Anything needing attention first, then by date.
   var rank = { passed: 0, today: 1, soon: 2, later: 3, logged: 4 };
   rows.sort(function (a, b) {
@@ -13588,110 +13736,6 @@ function renderBills() {
   maskFinancialInputs(list);
 }
 
-function renderUpcoming() {
-  var card = document.getElementById('upcoming-card');
-  if (!card) return;
-  var body = document.getElementById('upcoming-body');
-  var quiet = document.getElementById('upcoming-quiet');
-  if (!body || !quiet) return;
-
-  var rows = upcomingDues();
-
-  // Existing users arrive with no due days at all. Rather than hiding (which
-  // reads as "this feature does nothing") or inventing dates (which is worse
-  // than useless), offer the setter once. Dismissible, and it stops appearing
-  // the moment every active debt has a day.
-  var missing = debtsMissingDueDay();
-  if (!rows.length) {
-    // v1.64.0 — the sample accounts have no due days, so the example screen
-    // asked a first-time visitor to set due dates on debts that aren't theirs,
-    // and a "Not now" there silenced the invite for their real debts later.
-    if (_demoMode) { card.style.display = 'none'; return; }
-    if (missing.length && !dueInviteDismissed()) {
-      card.style.display = '';
-      quiet.style.display = 'none';
-      body.innerHTML =
-        '<div class="due-invite">'
-      +   '<div class="due-invite-text">Add a due day to each account and this card will show '
-      +     'what&rsquo;s coming up, so nothing catches you out.</div>'
-      +   '<div class="due-invite-actions">'
-      +     '<button type="button" class="btn btn-primary due-invite-go" onclick="openDueSetter()">Add due dates</button>'
-      +     '<button type="button" class="btn btn-ghost" onclick="dismissDueInvite()">Not now</button>'
-      +   '</div>'
-      + '</div>';
-      return;
-    }
-    card.style.display = 'none';
-    return;
-  }
-  card.style.display = '';
-
-  // Only rows that need attention earn space. When nothing is close, the card
-  // collapses to one muted line so the Dashboard still opens on progress
-  // rather than on a list of obligations.
-  var active = rows.filter(function (r) { return r.status !== 'later' && r.status !== 'logged'; });
-
-  // A bill ticked this month drops out of the attention list, but it must stay
-  // reachable — otherwise ticking makes the row vanish with no way to undo a
-  // mis-tap. Marked bills whose day is still ahead ride along at the bottom.
-  var markedSoon = rows.filter(function (r) {
-    return r.kind === 'bill' && r.marked && r.days <= DUE_SOON_DAYS;
-  });
-  // v1.48.2 — was `if (active.length)`, so ticking your ONLY bill made the row
-  // vanish with no way back — the precise case this list exists to prevent.
-  active = active.concat(markedSoon);
-
-  if (!active.length) {
-    body.innerHTML = '';
-    // v1.48.1 — a 'logged' row's date is this month's occurrence while it is
-    // still ahead, which is the one its logged payment already covers. Read
-    // as "next up" it contradicted the line before it ("nothing due in 7
-    // days … next up: tomorrow"). What is next OWED for a logged row is the
-    // following month's occurrence.
-    var _now = new Date();
-    var owed = rows.map(function (r) {
-      var d = r.nextOwed ? r.nextOwed : (r.status === 'logged' && r.dueDay)
-        ? dueDateIn(_now.getFullYear(), _now.getMonth() + (r.forNext ? 2 : 1), r.dueDay) : r.date;
-      return { name: r.name, date: d };
-    });
-    owed.sort(function (a, b) { return a.date - b.date; });
-    var next = owed[0];
-    // v1.50.0 — everything due on that first date, not just one of it. With
-    // Discover and a bill both due Oct 7, it named whichever sorted first.
-    var sameDay = next ? owed.filter(function (o) { return o.date.getTime() === next.date.getTime(); })
-                              .map(function (o) { return o.name; }) : [];
-    var namesStr = sameDay.length <= 1 ? (sameDay[0] || '')
-      : sameDay.slice(0, -1).join(', ') + ' and ' + sameDay[sameDay.length - 1];
-    quiet.style.display = '';
-    quiet.textContent = 'Nothing due in the next ' + DUE_SOON_DAYS + ' days.'
-      + (next ? ' Next up: ' + namesStr + ' on ' + dueDayLabel(next.date) + '.' : '');
-    return;
-  }
-
-  quiet.style.display = 'none';
-  var html = '';
-  active.forEach(function (r) {
-    html += '<div class="due-row due-' + r.status + '">'
-         +    '<div class="due-row-main">'
-         +      '<div class="due-row-name">' + escapeHtml(r.name) + '</div>'
-         +      '<div class="due-row-sub">' + escapeHtml(dueRowLabel(r)) + '</div>'
-         +    '</div>'
-         +    '<div class="due-row-right">'
-         +      '<div class="due-row-amt">' + fmt(r.amount) + '</div>'
-         +      (r.kind === 'bill'
-                  ? '<button type="button" class="due-row-tick' + (r.marked ? ' is-marked' : '') + '" '
-                    + 'onclick="toggleBillPaid(' + r.id + (r.markYm ? ', \'' + r.markYm + '\'' : '') + ')" '
-                    + 'aria-pressed="' + (r.marked ? 'true' : 'false') + '" '
-                    + 'title="' + (r.marked ? 'Marked paid this month' : 'Mark as paid this month') + '" '
-                    + 'aria-label="' + (r.marked ? 'Unmark' : 'Mark') + ' ' + escapeHtml(r.name) + ' as paid this month">'
-                    + (r.marked ? '\u2713' : 'Mark') + '</button>'
-                  : '<button type="button" class="due-row-log" onclick="logFromDue(' + r.id + ')">Log</button>')
-         +    '</div>'
-         +  '</div>';
-  });
-  body.innerHTML = html;
-}
-
 // Straight from "this is due" to "I paid it", with the debt already chosen.
 // Without this the trip is Dashboard -> past four cards -> Payment Log.
 function logFromDue(debtId) {
@@ -13700,6 +13744,12 @@ function logFromDue(debtId) {
   if (sel) sel.value = String(debtId);
   var d = (debts || []).find(function (x) { return x.id === debtId; });
   var amt = document.getElementById('qlog-amount');
+  // v1.65.0 — what This Month shows for the row: the plan's amount when the
+  // plan sends more than the minimum.
+  if (amt && d && !amt.value) {
+    var _tm = _tmRowById(debtId);
+    if (_tm && _tm.amount >= 0.01) amt.value = Math.round(_tm.amount * 100) / 100;
+  }
   if (amt && d && !amt.value && splitDueDays(d)) {
     // v1.56.0 — paid twice a month: prefill what Coming Up says is left.
     var _r = upcomingDues().filter(function (x) { return x.id === debtId && !x.kind; })[0];
@@ -13710,6 +13760,616 @@ function logFromDue(debtId) {
     amt.value = Math.round(Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment)));
   }
   trackShare('due_quick_log', { _category: 'engagement' });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.65.0 — THIS MONTH
+// Coming Up became the place where the month gets done: a ring for what is
+// logged against what the plan sends this month, one tap to log the rest,
+// swipe a row right to log it or left to put it off, and reminders in the
+// phone's own calendar. Every figure comes from what already existed:
+// stillPlannedThisMonth() for the plan, upcomingDues() for due dates, and
+// logPaymentCore() for the ledger, so nothing here does its own payoff math.
+// ══════════════════════════════════════════════════════════════════════
+var LS_DUE_SKIPS = 'debtfree_due_skips';
+var LS_CAL_EXPORT = 'debtfree_cal_export';
+var LS_SWIPE_TIP = 'debtfree_swipe_tip';
+
+// Skips are a note to the reminders, nothing more: balances, the plan and
+// every figure stay as they are. Kept by month so they lapse on their own.
+function _dueSkips() {
+  try { var o = JSON.parse(localStorage.getItem(LS_DUE_SKIPS) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
+}
+function isDueSkipped(debtId, ym) {
+  var l = _dueSkips()[ym];
+  return Array.isArray(l) && l.indexOf(String(debtId)) !== -1;
+}
+function setDueSkipped(debtId, ym, on) {
+  var o = _dueSkips(), cur = currentMonthKey();
+  // Keep this month and later only.
+  Object.keys(o).forEach(function (k) { if (k < cur) delete o[k]; });
+  var l = Array.isArray(o[ym]) ? o[ym] : [];
+  var k = String(debtId), i = l.indexOf(k);
+  if (on && i === -1) l.push(k);
+  if (!on && i !== -1) l.splice(i, 1);
+  if (l.length) o[ym] = l; else delete o[ym];
+  try { localStorage.setItem(LS_DUE_SKIPS, JSON.stringify(o)); } catch (e) {}
+}
+
+// Money already set to leave from today on, per debt (pending payments).
+function _pendingAheadFor(debtId) {
+  var today = localDateStr(), t = 0, first = null;
+  (payments || []).forEach(function (p) {
+    if (!p || !p.pending || p.debtId !== debtId || String(p.date) < today) return;
+    t += parseFloat(p.amount) || 0;
+    if (!first || String(p.date) < first) first = String(p.date);
+  });
+  return { amount: t, date: first };
+}
+function _isoToDate(iso) {
+  var p = String(iso).split('-');
+  return new Date(+p[0], (+p[1]) - 1, +p[2]);
+}
+
+// Everything the This Month card shows, in one place so the card, the
+// "Paid as planned" sheet and the tests read the same answer.
+function thisMonthModel() {
+  var ym = currentMonthKey();
+  var monthName = new Date().toLocaleDateString('en-US', { month: 'long' });
+  var sp = null;
+  try { sp = stillPlannedThisMonth(true); } catch (e) { sp = null; }
+  var spMap = {};
+  ((sp && sp.rows) || []).forEach(function (r) { spMap[r.id] = r.amount; });
+
+  // Logged this month toward debts in the plan, applied or scheduled.
+  var planIds = {};
+  (debts || []).forEach(function (d) { if (d && d.includeInStrategy !== false) planIds[d.id] = true; });
+  var logged = 0;
+  (payments || []).forEach(function (p) {
+    if (!p || !planIds[p.debtId] || _monthKey(p.date) !== ym) return;
+    logged += parseFloat(p.amount) || 0;
+  });
+  var remaining = (sp && sp.total) || 0;
+
+  var dues = [];
+  try { dues = upcomingDues(); } catch (e) { dues = []; }
+  var rows = [], seen = {};
+
+  dues.forEach(function (r) {
+    if (r.kind === 'bill') {
+      if (r.status === 'later' || r.status === 'logged') {
+        if (!(r.marked && r.days <= DUE_SOON_DAYS)) return;
+      }
+      rows.push({ kind: 'bill', id: r.id, name: r.name, status: r.status, sub: dueRowLabel(r),
+                  amount: r.amount, marked: r.marked, markYm: r.markYm, due: r });
+      return;
+    }
+    var d = (debts || []).find(function (x) { return x.id === r.id; });
+    if (!d) return;
+    var plan = spMap[r.id] || 0;
+    var attention = r.status === 'passed' || r.status === 'today' || r.status === 'soon';
+    if (!attention && plan < 1) return;
+    seen[r.id] = true;
+    var row = { kind: 'debt', id: r.id, name: r.name, status: r.status, due: r,
+                minAmount: r.amount, plan: plan };
+    if (!attention) {
+      // The minimum is covered (or the day is still far off) but the plan has
+      // more going to this debt this month.
+      row.status = 'plan';
+      row.sub = (r.status === 'logged' ? 'minimum logged' : dueRowLabel(r)) + ' \u00b7 ' + fmt(plan) + ' more planned';
+      row.amount = plan;
+    } else {
+      // The plan's figure already includes the minimum; a debt outside the
+      // plan (a mortgage, say) is asked for its minimum only.
+      row.amount = plan >= 1 ? Math.max(plan, 0) : r.amount;
+      row.sub = dueRowLabel(r) + (plan >= 1 && Math.abs(plan - r.amount) >= 1 ? ' \u00b7 min ' + fmt(r.due) : '');
+      var ahead = _pendingAheadFor(r.id);
+      if (ahead.amount > 0 && ahead.amount + 0.005 >= r.amount && plan < 1) {
+        row.status = 'scheduled';
+        row.sub = 'payment scheduled for ' + dueDayLabel(_isoToDate(ahead.date));
+      }
+    }
+    rows.push(row);
+  });
+
+  // Debts with no due day still have a plan amount this month.
+  Object.keys(spMap).forEach(function (id) {
+    var d = (debts || []).find(function (x) { return String(x.id) === String(id); });
+    if (!d || seen[d.id] || isDueSkipped(d.id, ym)) return;
+    rows.push({ kind: 'debt', id: d.id, name: d.name, status: 'plan', plan: spMap[id],
+                amount: spMap[id], minAmount: 0, sub: 'planned for ' + monthName });
+  });
+
+  var rank = { passed: 0, today: 1, soon: 2, plan: 3, later: 4, scheduled: 5, logged: 6 };
+  rows.sort(function (a, b) {
+    var ra = rank[a.status] === undefined ? 4 : rank[a.status], rb = rank[b.status] === undefined ? 4 : rank[b.status];
+    if (ra !== rb) return ra - rb;
+    var da = a.due ? a.due.date : null, db = b.due ? b.due.date : null;
+    if (da && db) return da - db;
+    if (da) return -1; if (db) return 1;
+    return b.amount - a.amount;
+  });
+
+  var batch = rows.filter(function (r) { return r.kind === 'debt' && r.status !== 'scheduled' && r.amount >= 1; });
+  return {
+    ym: ym, monthName: monthName, logged: logged, remaining: remaining,
+    target: logged + remaining, rows: rows, batch: batch,
+    batchTotal: batch.reduce(function (t, r) { return t + r.amount; }, 0)
+  };
+}
+
+function _tmRing(pct) {
+  var r = 19, c = 2 * Math.PI * r, p = Math.max(0, Math.min(1, pct));
+  return '<svg class="tm-ring" viewBox="0 0 48 48" aria-hidden="true">'
+    + '<circle cx="24" cy="24" r="' + r + '" class="tm-ring-track"/>'
+    + '<circle cx="24" cy="24" r="' + r + '" class="tm-ring-fill" stroke-dasharray="' + (c * p).toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 24 24)"/>'
+    + '<text x="24" y="28" text-anchor="middle" class="tm-ring-txt">' + Math.round(p * 100) + '%</text></svg>';
+}
+
+function renderUpcoming() {
+  var card = document.getElementById('upcoming-card');
+  if (!card) return;
+  var body = document.getElementById('upcoming-body');
+  var quiet = document.getElementById('upcoming-quiet');
+  var head = document.getElementById('tm-head');
+  var foot = document.getElementById('tm-foot');
+  if (!body || !quiet) return;
+  // The example's accounts aren't the visitor's: nothing here should log to them.
+  if (_demoMode || !(debts || []).some(function (d) { return d && d.balance > 0; })) { card.style.display = 'none'; return; }
+
+  var m = thisMonthModel();
+  var missing = debtsMissingDueDay();
+  card.style.display = '';
+
+  // Head: the month's ring and the one-tap action.
+  if (head) {
+    if (m.target >= 1) {
+      var done = m.remaining < 1;
+      head.innerHTML = '<div class="tm-head">' + _tmRing(m.target ? m.logged / m.target : 0)
+        + '<div class="tm-head-txt"><div class="tm-head-big">' + fmt(m.logged) + ' <span>of ' + fmt(m.target) + '</span></div>'
+        + '<div class="tm-head-sub">' + (done ? 'Everything planned for ' + m.monthName + ' is logged' : 'logged toward ' + m.monthName + '\u2019s plan') + '</div></div>'
+        + (m.batch.length ? '<button type="button" class="btn btn-primary tm-batch-btn" onclick="openPaidAsPlanned()">Paid as planned</button>' : '')
+        + '</div>';
+    } else head.innerHTML = '';
+  }
+
+  // Due-date rows earn the space. Plan amounts for later in the month fold
+  // into one line while anything is due, so the card stays short.
+  var urgent = m.rows.some(function (r) { return r.status === 'passed' || r.status === 'today' || r.status === 'soon'; });
+  var folded = urgent && !_tmShowAll ? m.rows.filter(function (r) { return r.kind === 'debt' && r.status === 'plan'; }) : [];
+  var html = '';
+  m.rows.forEach(function (r) {
+    if (folded.indexOf(r) !== -1) return;
+    if (r.kind === 'bill') {
+      html += '<div class="due-row due-' + r.status + '">'
+        + '<div class="due-row-main"><div class="due-row-name">' + escapeHtml(r.name) + '</div>'
+        + '<div class="due-row-sub">' + escapeHtml(r.sub) + '</div></div>'
+        + '<div class="due-row-right"><div class="due-row-amt">' + fmt(r.amount) + '</div>'
+        + '<button type="button" class="due-row-tick' + (r.marked ? ' is-marked' : '') + '" '
+        + 'onclick="toggleBillPaid(' + r.id + (r.markYm ? ', \'' + r.markYm + '\'' : '') + ')" '
+        + 'aria-pressed="' + (r.marked ? 'true' : 'false') + '" '
+        + 'aria-label="' + (r.marked ? 'Unmark' : 'Mark') + ' ' + escapeHtml(r.name) + ' as paid this month">'
+        + (r.marked ? '\u2713' : 'Mark') + '</button></div></div>';
+      return;
+    }
+    var swipe = r.status !== 'scheduled';
+    html += '<div class="tm-swipe' + (swipe ? '' : ' tm-noswipe') + '" data-id="' + r.id + '" data-amt="' + (Math.round(r.amount * 100) / 100) + '">'
+      + (swipe ? '<div class="tm-act tm-act-log" aria-hidden="true">Log ' + fmt(r.amount) + '</div><div class="tm-act tm-act-later" aria-hidden="true">Later</div>' : '')
+      + '<div class="due-row tm-row due-' + r.status + '">'
+      + '<div class="due-row-main" onclick="tmRowTap(this,' + r.id + ')"><div class="due-row-name">' + escapeHtml(r.name) + '</div>'
+      + '<div class="due-row-sub">' + escapeHtml(r.sub) + '</div></div>'
+      + '<div class="due-row-right"><div class="due-row-amt">' + fmt(r.amount) + '</div>'
+      + (swipe ? '<button type="button" class="due-row-log" onclick="tmLogNow(' + r.id + ')" aria-label="Log ' + fmt(r.amount) + ' to ' + escapeHtml(r.name) + '">Log</button>'
+               + '<button type="button" class="tm-more" onclick="openDueLater(' + r.id + ')" aria-label="Later or skip ' + escapeHtml(r.name) + '">\u22EF</button>' : '')
+      + '</div></div></div>';
+  });
+  if (folded.length) {
+    var ft = folded.reduce(function (t, r) { return t + r.amount; }, 0);
+    html += '<button type="button" class="tm-more-rows" onclick="_tmShowAll=true;renderUpcoming()">'
+      + folded.length + ' more planned later in ' + m.monthName + ' · ' + fmt(ft) + ' <span aria-hidden="true">▾</span></button>';
+  }
+  body.innerHTML = html;
+
+  if (!m.rows.length) {
+    var _hasDay = (debts || []).some(function (d) { return d && d.balance > 0 && sanitizeDueDay(d.dueDay); });
+    quiet.style.display = _hasDay || m.target >= 1 ? '' : 'none';
+    quiet.textContent = _hasDay ? _tmQuietLine() : 'Nothing left to log this month.';
+  } else {
+    quiet.style.display = 'none';
+  }
+
+  // Swipe tip, shown until the first swipe (or five showings).
+  var tipShown = 0;
+  try { tipShown = parseInt(localStorage.getItem(LS_SWIPE_TIP) || '0', 10) || 0; } catch (e) {}
+  var tip = (m.rows.some(function (r) { return r.kind === 'debt' && r.status !== 'scheduled'; }) && tipShown >= 0 && tipShown < 5)
+    ? '<div class="tm-tip">Tip: swipe a payment right to log it, or left to move it or skip it.</div>' : '';
+  if (tip && !_tmTipCounted) { _tmTipCounted = true; try { localStorage.setItem(LS_SWIPE_TIP, String(tipShown + 1)); } catch (e) {} }
+
+  if (foot) foot.innerHTML = tip + _tmFootHtml(missing);
+  _tmBindSwipes(body);
+}
+var _tmTipCounted = false;
+var _tmShowAll = false;
+
+function _tmQuietLine() {
+  var rows = upcomingDues(), _now = new Date();
+  if (!rows.length) return 'Nothing left to log this month.';
+  var owed = rows.map(function (r) {
+    var d = r.nextOwed ? r.nextOwed : (r.status === 'logged' && r.dueDay)
+      ? dueDateIn(_now.getFullYear(), _now.getMonth() + (r.forNext ? 2 : 1), r.dueDay) : r.date;
+    return { name: r.name, date: d };
+  });
+  owed.sort(function (a, b) { return a.date - b.date; });
+  var next = owed[0];
+  var sameDay = owed.filter(function (o) { return o.date.getTime() === next.date.getTime(); }).map(function (o) { return o.name; });
+  var namesStr = sameDay.length <= 1 ? (sameDay[0] || '') : sameDay.slice(0, -1).join(', ') + ' and ' + sameDay[sameDay.length - 1];
+  return 'Nothing due in the next ' + DUE_SOON_DAYS + ' days. Next up: ' + namesStr + ' on ' + dueDayLabel(next.date) + '.';
+}
+
+function _tmFootHtml(missing) {
+  var withDay = (debts || []).filter(function (d) { return d && d.balance > 0 && sanitizeDueDay(d.dueDay); });
+  var parts = [];
+  if (withDay.length) {
+    var st = _calExportState();
+    if (!st) parts.push('<button type="button" class="tm-link" onclick="openCalReminders()">&#128197; Add payment reminders to my calendar</button>');
+    else if (st.hash !== calReminderHash()) parts.push('<button type="button" class="tm-link tm-link-warn" onclick="openCalReminders()">Due dates changed since your calendar reminders were added \u00b7 Update</button>');
+    else parts.push('<button type="button" class="tm-link tm-link-quiet" onclick="openCalReminders()">Calendar reminders added ' + dueDayLabel(new Date(st.at)) + '</button>');
+  }
+  // No due days at all yet: the reminders and the due list both depend on
+  // them, so the invite stays a real button until it is dismissed.
+  if (missing.length && !withDay.length && !dueInviteDismissed()) {
+    return '<div class="due-invite" style="margin-top:10px;"><div class="due-invite-text">Add a due day to each account to see what&rsquo;s coming up '
+      + 'and get reminders in your phone&rsquo;s calendar.</div><div class="due-invite-actions">'
+      + '<button type="button" class="btn btn-primary due-invite-go" onclick="openDueSetter()">Add due dates</button>'
+      + '<button type="button" class="btn btn-ghost" onclick="dismissDueInvite()">Not now</button></div></div>';
+  }
+  if (missing.length) parts.push('<button type="button" class="tm-link tm-link-quiet" onclick="openDueSetter()">' + missing.length + (missing.length === 1 ? ' account has' : ' accounts have') + ' no due day \u00b7 Add</button>');
+  return parts.length ? '<div class="tm-foot">' + parts.join('') + '</div>' : '';
+}
+
+// Tapping a row opens the log form with this row's amount in it, so a
+// different amount is one edit away. Not after a swipe.
+function tmRowTap(el, debtId) {
+  var w = el && el.closest ? el.closest('.tm-swipe') : null;
+  var t = w ? parseInt(w.getAttribute('data-swiped') || '0', 10) : 0;
+  if (t && Date.now() - t < 600) return;
+  logFromDue(debtId);
+}
+
+function _tmRowById(id) {
+  var m = thisMonthModel();
+  return m.rows.filter(function (r) { return r.kind === 'debt' && r.id === id; })[0] || null;
+}
+
+// One tap: log this row's amount today, with Undo.
+function tmLogNow(debtId, via) {
+  var r = _tmRowById(debtId);
+  if (!r || r.amount < 0.01) return;
+  var res = logPaymentCore(debtId, Math.round(r.amount * 100) / 100, localDateStr());
+  if (!res) return;
+  showUndoToast(res.paymentId, 'Logged ' + fmtDec(res.amount) + ' to ' + escapeHtml(res.debtName));
+  trackShare('tm_log', { _category: 'engagement', via: via || 'button' });
+}
+
+// ── Swipe ─────────────────────────────────────────────────────────────
+// Right logs, left opens "Later". The row only moves sideways once the finger
+// has clearly gone sideways, so scrolling the page past the card still works.
+function _tmBindSwipes(root) {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  root.querySelectorAll('.tm-swipe:not(.tm-noswipe)').forEach(function (el) {
+    var row = el.querySelector('.tm-row');
+    if (!row) return;
+    var x0 = 0, y0 = 0, dx = 0, mode = null, pid = null;
+    var limit = function () { return Math.max(90, el.offsetWidth * 0.32); };
+    el.addEventListener('pointerdown', function (e) {
+      if (e.button !== 0 || (e.target && e.target.closest && e.target.closest('button'))) return;
+      x0 = e.clientX; y0 = e.clientY; dx = 0; mode = null; pid = e.pointerId;
+    });
+    el.addEventListener('pointermove', function (e) {
+      if (pid !== e.pointerId) return;
+      var mx = e.clientX - x0, my = e.clientY - y0;
+      if (!mode) {
+        if (Math.abs(mx) < 8 && Math.abs(my) < 8) return;
+        mode = Math.abs(mx) > Math.abs(my) * 1.2 ? 'x' : 'y';
+        if (mode === 'x') { try { el.setPointerCapture(e.pointerId); } catch (_) {} el.classList.add('is-dragging'); }
+      }
+      if (mode !== 'x') return;
+      dx = mx;
+      row.style.transform = 'translateX(' + dx + 'px)';
+      el.classList.toggle('show-log', dx > 0);
+      el.classList.toggle('show-later', dx < 0);
+      el.classList.toggle('past', Math.abs(dx) >= limit());
+    });
+    var end = function (e) {
+      if (pid !== e.pointerId) return;
+      pid = null;
+      var wasX = mode === 'x', go = Math.abs(dx) >= limit(), dir = dx;
+      el.classList.remove('is-dragging', 'past');
+      row.style.transform = '';
+      setTimeout(function () { el.classList.remove('show-log', 'show-later'); }, 200);
+      if (!wasX) return;
+      // A sideways drag is never also a tap on the row (see tmRowTap).
+      el.setAttribute('data-swiped', String(Date.now()));
+      if (!go) return;
+      try { localStorage.setItem(LS_SWIPE_TIP, '-1'); } catch (_) {}
+      var id = parseInt(el.getAttribute('data-id'), 10);
+      if (dir > 0) tmLogNow(id, 'swipe');
+      else openDueLater(id, 'swipe');
+    };
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', function (e) { mode = 'y'; end(e); });
+  });
+}
+
+// ── Later / skip sheet ────────────────────────────────────────────────
+var _laterId = null;
+function openDueLater(debtId, via) {
+  var r = _tmRowById(debtId);
+  var d = (debts || []).find(function (x) { return x.id === debtId; });
+  if (!r || !d) return;
+  _laterId = debtId;
+  var modal = document.getElementById('tm-later-modal');
+  if (!modal) return;
+  document.getElementById('tm-later-name').textContent = d.name;
+  var amt = document.getElementById('tm-later-amount');
+  amt.value = Math.round(r.amount * 100) / 100;
+  var dt = document.getElementById('tm-later-date');
+  var t = new Date(); t.setDate(t.getDate() + 1);
+  dt.min = localDateStr(t);
+  dt.value = localDateStr(t);
+  var due = r.due && r.due.date;
+  document.getElementById('tm-later-skip-note').textContent =
+    'Skipping only quiets this reminder for ' + (due ? due.toLocaleDateString('en-US', { month: 'long' }) : 'this month')
+    + '. Your balances and your plan stay as they are.';
+  modal.classList.remove('hidden');
+  trackShare('tm_later_open', { _category: 'engagement', via: via || 'button' });
+}
+function closeDueLater(e) {
+  var modal = document.getElementById('tm-later-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
+  _laterId = null;
+}
+function saveDueLater() {
+  var id = _laterId;
+  if (id === null) return;
+  var amount = parseAmount(document.getElementById('tm-later-amount').value);
+  var date = document.getElementById('tm-later-date').value;
+  if (!date || date <= localDateStr()) { alert('Pick a date after today.'); return; }
+  var res = logPaymentCore(id, amount, date);
+  if (!res) return;
+  closeDueLater();
+  showUndoToast(res.paymentId, 'Scheduled ' + fmtDec(res.amount) + ' to ' + escapeHtml(res.debtName) + ' for ' + dueDayLabel(_isoToDate(date)));
+  trackShare('tm_later_scheduled', { _category: 'engagement' });
+}
+function skipDueThisMonth() {
+  var id = _laterId;
+  if (id === null) return;
+  var r = _tmRowById(id);
+  var ym = (r && r.due && r.due.date) ? monthKeyOf(r.due.date) : currentMonthKey();
+  setDueSkipped(id, ym, true);
+  closeDueLater();
+  render();
+  var d = (debts || []).find(function (x) { return x.id === id; });
+  _showActionToast('Skipped ' + escapeHtml(d ? d.name : 'it') + ' this month', function () { setDueSkipped(id, ym, false); render(); });
+  trackShare('tm_skip', { _category: 'engagement' });
+}
+
+// A toast with any undo, for actions that aren't a single payment.
+function _showActionToast(text, undo) {
+  var root = document.getElementById('toast-root');
+  if (!root) return;
+  clearTimeout(_toastTimer);
+  root.innerHTML = '<div class="toast"><span>' + text + '</span><button class="toast-undo" id="toast-undo-any">Undo</button></div>';
+  document.getElementById('toast-undo-any').onclick = function () { dismissToast(); try { undo(); } catch (e) {} };
+  _toastTimer = setTimeout(dismissToast, 7000);
+}
+
+// ── Paid as planned ───────────────────────────────────────────────────
+function openPaidAsPlanned() {
+  var m = thisMonthModel();
+  if (!m.batch.length) return;
+  var list = document.getElementById('tm-batch-list');
+  var html = '';
+  m.batch.forEach(function (r) {
+    html += '<label class="tm-b-row"><input type="checkbox" class="tm-b-on" data-id="' + r.id + '" checked onchange="tmBatchTotal()">'
+      + '<span class="tm-b-name">' + escapeHtml(r.name) + '<span class="tm-b-sub">' + escapeHtml(r.sub) + '</span></span>'
+      + '<input type="text" inputmode="decimal" class="tm-b-amt" data-id="' + r.id + '" value="' + (Math.round(r.amount * 100) / 100) + '" oninput="tmBatchTotal()" aria-label="Amount for ' + escapeHtml(r.name) + '"></label>';
+  });
+  list.innerHTML = html;
+  document.getElementById('tm-batch-date').value = localDateStr();
+  document.getElementById('tm-batch-month').textContent = m.monthName;
+  tmBatchTotal();
+  document.getElementById('tm-batch-modal').classList.remove('hidden');
+  trackShare('tm_batch_open', { _category: 'engagement', rows: m.batch.length });
+}
+function _tmBatchPicks() {
+  var out = [];
+  document.querySelectorAll('#tm-batch-list .tm-b-row').forEach(function (row) {
+    var on = row.querySelector('.tm-b-on'), a = row.querySelector('.tm-b-amt');
+    if (!on || !on.checked) return;
+    var amt = parseAmount(a.value);
+    if (!(amt > 0)) return;
+    out.push({ id: parseInt(on.getAttribute('data-id'), 10), amount: Math.round(amt * 100) / 100 });
+  });
+  return out;
+}
+function tmBatchTotal() {
+  var p = _tmBatchPicks(), t = p.reduce(function (s, x) { return s + x.amount; }, 0);
+  var b = document.getElementById('tm-batch-go');
+  if (b) {
+    b.textContent = p.length ? 'Log ' + p.length + (p.length === 1 ? ' payment' : ' payments') + ' \u00b7 ' + fmtDec(t) : 'Nothing selected';
+    b.disabled = !p.length;
+  }
+}
+function closePaidAsPlanned(e) {
+  var modal = document.getElementById('tm-batch-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
+}
+function savePaidAsPlanned() {
+  var picks = _tmBatchPicks();
+  if (!picks.length) return;
+  var date = document.getElementById('tm-batch-date').value || localDateStr();
+  var ids = [], total = 0, future = false;
+  picks.forEach(function (p) {
+    var res = logPaymentCore(p.id, p.amount, date);
+    if (res) { ids.push(res.paymentId); total += res.amount; if (res.status === 'future') future = true; }
+  });
+  closePaidAsPlanned();
+  if (!ids.length) return;
+  _showActionToast((future ? 'Scheduled ' : 'Logged ') + ids.length + (ids.length === 1 ? ' payment' : ' payments') + ' \u00b7 ' + fmtDec(total),
+    function () { ids.slice().reverse().forEach(function (id) { deletePayment(id); }); });
+  trackShare('tm_batch_logged', { _category: 'engagement', rows: ids.length });
+}
+
+// ── Calendar reminders ────────────────────────────────────────────────
+// Nothing is sent anywhere: the app writes a calendar file (or opens Google
+// Calendar's add-event page) and the phone's own calendar does the reminding.
+function _calExportState() {
+  try { var s = JSON.parse(localStorage.getItem(LS_CAL_EXPORT) || 'null'); return (s && s.at) ? s : null; } catch (e) { return null; }
+}
+function calReminderHash() {
+  return (debts || []).filter(function (d) { return d && d.balance > 0 && sanitizeDueDay(d.dueDay); })
+    .map(function (d) { return d.id + ':' + (splitDueDays(d) || [sanitizeDueDay(d.dueDay)]).join('/'); }).sort().join(',');
+}
+function _calTitle(d, names) {
+  if (names) return d.name + ' payment due';
+  if (d.type === 'cc') return 'Card payment due';
+  if (d.type === 'mortgage') return 'Mortgage payment due';
+  return 'Loan payment due';
+}
+function _calRrule(day) {
+  if (day <= 28) return 'FREQ=MONTHLY;BYMONTHDAY=' + day;
+  // The 29th-31st fall on the month's last day when the month is shorter.
+  var days = []; for (var i = 28; i <= day; i++) days.push(i);
+  return 'FREQ=MONTHLY;BYMONTHDAY=' + days.join(',') + ';BYSETPOS=-1';
+}
+function _ymd(dt) {
+  return dt.getFullYear() + String(dt.getMonth() + 1).padStart(2, '0') + String(dt.getDate()).padStart(2, '0');
+}
+function calReminderEvents(opts) {
+  opts = opts || {};
+  var names = !!opts.names, appUrl = opts.appUrl || 'https://mydebtdashboard.com/app/dashboard.html';
+  var ev = [];
+  (debts || []).forEach(function (d) {
+    if (!d || d.balance <= 0) return;
+    var day = sanitizeDueDay(d.dueDay);
+    if (!day) return;
+    var days = splitDueDays(d) || [day];
+    days.forEach(function (dd, i) {
+      var title = _calTitle(d, names) + (days.length > 1 ? (i === 0 ? ' (1 of 2)' : ' (2 of 2)') : '');
+      ev.push({
+        uid: 'debtfree-' + d.id + '-' + dd + '@mydebtdashboard.com',
+        title: title, day: dd, start: nextDueDate(dd), rrule: _calRrule(dd),
+        desc: (names ? 'Minimum ' + fmt(d.minPayment) + '. ' : '') + 'Open DebtFree to log it: ' + appUrl
+      });
+    });
+  });
+  if (opts.checkin !== false && ev.length) {
+    ev.push({ uid: 'debtfree-checkin@mydebtdashboard.com', title: 'DebtFree check-in', day: 1,
+              start: nextDueDate(1), rrule: 'FREQ=MONTHLY;BYMONTHDAY=1', checkin: true,
+              desc: 'Log last month\u2019s payments and see where your debt-free date landed: ' + appUrl });
+  }
+  return ev;
+}
+function _icsEsc(s) { return String(s).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+function _icsFold(line) {
+  // Lines over 75 characters continue on the next line after a space.
+  var out = [], s = line;
+  while (s.length > 74) { out.push(s.slice(0, 74)); s = ' ' + s.slice(74); }
+  out.push(s);
+  return out.join('\r\n');
+}
+function buildReminderIcs(opts) {
+  opts = opts || {};
+  var lead = Math.max(0, parseInt(opts.daysBefore, 10) || 0);
+  var now = new Date(), stamp = now.toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//DebtFree Dashboard//Payment reminders//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
+  calReminderEvents(opts).forEach(function (e) {
+    var end = new Date(e.start.getFullYear(), e.start.getMonth(), e.start.getDate() + 1);
+    L.push('BEGIN:VEVENT', 'UID:' + e.uid, 'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + _ymd(e.start), 'DTEND;VALUE=DATE:' + _ymd(end),
+      'RRULE:' + e.rrule, 'SUMMARY:' + _icsEsc(e.title), 'DESCRIPTION:' + _icsEsc(e.desc), 'TRANSP:TRANSPARENT');
+    // All-day events start at midnight: 9 AM is +9h on the day, and
+    // (24*days - 9)h before it on an earlier day.
+    if (lead && !e.checkin) L.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + _icsEsc(e.title), 'TRIGGER:-PT' + (24 * lead - 9) + 'H', 'END:VALARM');
+    L.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + _icsEsc(e.title), 'TRIGGER:PT9H', 'END:VALARM');
+    L.push('END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.map(_icsFold).join('\r\n') + '\r\n';
+}
+function googleCalLink(e) {
+  var end = new Date(e.start.getFullYear(), e.start.getMonth(), e.start.getDate() + 1);
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=' + encodeURIComponent(e.title)
+    + '&dates=' + _ymd(e.start) + '/' + _ymd(end)
+    + '&details=' + encodeURIComponent(e.desc)
+    + '&recur=' + encodeURIComponent('RRULE:' + e.rrule);
+}
+function _calOpts() {
+  var g = function (id) { return document.getElementById(id); };
+  return {
+    daysBefore: g('cal-lead') ? g('cal-lead').value : 3,
+    names: g('cal-names') ? g('cal-names').checked : false,
+    checkin: g('cal-checkin') ? g('cal-checkin').checked : true,
+    appUrl: (location.origin && /^https?:/.test(location.origin) ? location.origin : 'https://mydebtdashboard.com') + '/app/dashboard.html'
+  };
+}
+function _isIOSLike() {
+  var ua = navigator.userAgent || '';
+  return /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+}
+function openCalReminders() {
+  var modal = document.getElementById('cal-modal');
+  if (!modal) return;
+  var st = _calExportState();
+  document.getElementById('cal-update-note').style.display = st ? '' : 'none';
+  var android = /Android/i.test(navigator.userAgent || '');
+  document.getElementById('cal-google-wrap').style.display = android ? '' : 'none';
+  document.getElementById('cal-ics-btn').textContent = android ? 'Download calendar file instead' : 'Add to my calendar';
+  document.getElementById('cal-ics-btn').className = android ? 'btn btn-ghost' : 'btn btn-primary';
+  renderCalGoogleLinks();
+  modal.classList.remove('hidden');
+  trackShare('cal_open', { _category: 'engagement' });
+}
+function renderCalGoogleLinks() {
+  var wrap = document.getElementById('cal-google-list');
+  if (!wrap) return;
+  var ev = calReminderEvents(_calOpts());
+  wrap.innerHTML = ev.map(function (e, i) {
+    return '<a class="cal-g-link" href="' + googleCalLink(e) + '" target="_blank" rel="noopener" onclick="this.classList.add(\'is-done\');_calMarkDone(\'google\')">'
+      + '<span>' + escapeHtml(e.title) + '</span><span class="cal-g-day">' + (e.checkin ? 'the 1st' : 'the ' + ordinalDay(e.day)) + '</span></a>';
+  }).join('');
+}
+function closeCalReminders(e) {
+  var modal = document.getElementById('cal-modal');
+  if (!modal) return;
+  if (e && e.target !== modal) return;
+  modal.classList.add('hidden');
+  render();
+}
+function _calMarkDone(via) {
+  try { localStorage.setItem(LS_CAL_EXPORT, JSON.stringify({ at: Date.now(), hash: calReminderHash(), via: via })); } catch (e) {}
+  trackShare('cal_added', { _category: 'engagement', via: via });
+}
+function downloadReminderIcs() {
+  var ics = buildReminderIcs(_calOpts());
+  _calMarkDone('ics');
+  if (_isIOSLike()) {
+    // Safari hands a calendar data link straight to Calendar's "Add All".
+    window.location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+    return;
+  }
+  var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'debtfree-reminders.ics';
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
 function renderNextDebt() {

@@ -82,12 +82,14 @@ async function boot(b,premium,at){
     return { names:rows.map(r=>r.name+':'+(r.kind||'debt')),
              text:card.innerText.replace(/\n+/g,' | '),
              logButtons:card.querySelectorAll('.due-row-log').length,
+             // v1.65.0 — every debt row on This Month can be logged (plan rows too)
+             debtRows:card.querySelectorAll('.tm-swipe:not(.tm-noswipe)').length,
              // part 4 replaced the passive "bill" label with a tick control
              billTicks:card.querySelectorAll('.due-row-tick').length };
   });
   ck('debts and bills share the card', merged.names.length===3, merged.names.join(', '));
   ck('debt rows offer Log, bill rows offer a tick (payments track debts, not bills)',
-     merged.logButtons===1 && merged.billTicks===2, `${merged.logButtons} log, ${merged.billTicks} ticks`);
+     merged.logButtons>=1 && merged.logButtons===merged.debtRows && merged.billTicks===2, `${merged.logButtons} log, ${merged.debtRows} debt rows, ${merged.billTicks} ticks`);
 
   const rollFwd=await P.pg.evaluate(()=>{
     bills[0].dueDay=3;                        // already passed on Feb 10

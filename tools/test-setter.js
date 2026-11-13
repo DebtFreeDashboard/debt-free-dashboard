@@ -96,9 +96,10 @@ async function boot(b, premium){
     dismissDueInvite();
     render();
     const c=document.getElementById('upcoming-card');
-    return { display:getComputedStyle(c).display, flag:localStorage.getItem('debtfree_due_prompt_dismissed') };
+    return { display:getComputedStyle(c).display, invite:!!c.querySelector('.due-invite-go'), flag:localStorage.getItem('debtfree_due_prompt_dismissed') };
   });
-  ck('"Not now" hides it for good', dismissed.display==='none' && dismissed.flag==='1');
+  // v1.65.0 — the card is This Month now and stays for the plan; the invite is what goes.
+  ck('"Not now" hides it for good', !dismissed.invite && dismissed.flag==='1', JSON.stringify(dismissed));
   ck('no JS errors (free)', errs.length===0, errs.slice(0,2).join(' | ')||'none');
   await ctx.close();
 

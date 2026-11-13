@@ -163,6 +163,8 @@ Besides page views, the site sends:
 | `demo_scrolled_half`, `demo_scrolled_end` | The app's example screen | A first-time visitor scrolled half way, or to the end, of the example (once each per visit) |
 | `demo_tab_view` | The app's example screen | A first-time visitor opened another tab while the example was showing (`tab` says which) |
 | `demo_dismissed` | The app's example screen | A first-time visitor left the example for their own numbers (`via` is `start_my_numbers` for the banner button, `fab` for the floating button) |
+| `tm_log`, `tm_batch_open`, `tm_batch_logged`, `tm_later_open`, `tm_later_scheduled`, `tm_skip` | The app's This Month card | A payment logged from a row (`via` is `button` or `swipe`), the Paid as planned sheet opened or used (`rows`), the Later sheet opened, a payment scheduled from it, a month skipped |
+| `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
 
@@ -356,6 +358,30 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (evening)** — Homepage testimonials removed (they were placeholder
+  copy written at launch, not customer quotes; never add invented reviews). v1.65.0
+  "This Month": Coming Up became the monthly routine and moved above the
+  Focus card. A ring shows what's logged against the plan for the month
+  (`thisMonthModel()`, built on `stillPlannedThisMonth(true)` and
+  `upcomingDues()`). "Paid as planned" logs every remaining plan amount
+  through `logPaymentCore()`, with one Undo. Swipe right logs a row; swipe left
+  opens Later, which schedules a pending payment or skips the month.
+  Skips are local only (`debtfree_due_skips`) and do not sync. Rows show the
+  plan amount, not just the minimum. Calendar reminders: an .ics file (data URL
+  on iOS) or per-event Google Calendar links on Android, private by default, with
+  a check-in on the 1st. Nothing leaves the device. Tests:
+  `tools/test-this-month.js`; test-due/bills/setter/example-screen were updated
+  for the card's new behaviour. Planned next: push and email reminders via
+  the existing Cloudflare account plus Resend. Cadence options are before each
+  payment (the default), weekly or monthly. The server stores only an address
+  and due days.
+- **2026-11-12 (late)** — v1.61.0 and v1.62.x: Option B debt cards (lender
+  colour glow), Option C Total Owed hero (ring, by-lender split, red-to-green
+  bar), shaded Focus box; premium row keeps its glow when tapped. `terms.html`
+  added for the Play trader declaration. Six new Play screenshots (3 light, 3
+  dark) plus 2 captioned. SEO pass: `llms.txt`, noindex on internal kit/pro
+  pages, user-guide meta, sitemap additions. 12 indexing requests in Search
+  Console (see the project note `seo-indexing-pass-2026-11-12`).
 - **2026-11-13 (later)** — v1.64.0: example screen. The floating button
   says "Start with my numbers" while the example shows (it used to log a
   payment on the sample debts); the "Add due dates" invite is hidden on the

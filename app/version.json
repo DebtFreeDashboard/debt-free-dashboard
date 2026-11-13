@@ -1,10 +1,12 @@
 {
-  "version": "1.64.0",
+  "version": "1.65.0",
   "releaseDate": "2026-11-13",
-  "releaseName": "An easier start",
+  "releaseName": "This Month",
   "notes": [
-    "The example screen's floating button now says Start with my numbers, so the way to your own plan follows you down the page instead of offering to log a payment on the sample debts.",
-    "Opened DebtFree from a link inside Instagram, Facebook or TikTok? You can now look around the example first. The tip about opening it in your browser appears when you start with your own numbers, which is when it matters.",
-    "The example screen no longer asks you to set due dates on the sample accounts."
+    "Coming Up is now This Month: a ring shows how much you've logged against what your plan sends this month.",
+    "Paid as planned logs every payment your plan has left for the month in one tap. It shows the list first, you can untick or change any amount, and Undo takes it all back.",
+    "Swipe a payment right to log it. Swipe left to pay it on a later date or skip it this month. Tapping a payment opens the log form with the amount already filled in.",
+    "Each payment now shows what your plan sends to it, not just the minimum.",
+    "Payment reminders: add a repeating event for each due date to your phone's calendar, with an alert 1, 3 or 7 days before and on the day. Account names stay out of your calendar unless you choose to show them, and nothing is sent to us."
   ]
 }

@@ -120,10 +120,13 @@ async function boot(b, file, at) {
       shown: getComputedStyle(card).display !== 'none',
       quietShown: getComputedStyle(q).display !== 'none',
       quietText: q.textContent,
-      rows: body.querySelectorAll('.due-row').length
+      rows: body.querySelectorAll('.due-row').length,
+      // v1.65.0 — This Month lists what the plan still sends this month; only
+      // due-date rows (passed / today / soon) count as "something close".
+      dueRows: body.querySelectorAll('.due-passed, .due-today, .due-soon').length
     };
   });
-  check('card collapses to one muted line, no rows', quiet.quietShown && quiet.rows === 0, quiet.quietText);
+  check('nothing close: no due-date rows', quiet.dueRows === 0, JSON.stringify(quiet));
 
   // v1.42.0 part 2 changed this deliberately: with no due days set the card now
   // offers the batch setter rather than vanishing, because vanishing reads as
@@ -140,9 +143,9 @@ async function boot(b, file, at) {
 
   const afterDismiss = await cal.page.evaluate(() => {
     dismissDueInvite();
-    return getComputedStyle(document.getElementById('upcoming-card')).display;
+    return !!document.getElementById('upcoming-card').querySelector('.due-invite-go');
   });
-  check('card hidden entirely once the invitation is dismissed', afterDismiss === 'none', `display: ${afterDismiss}`);
+  check('invitation gone once dismissed', afterDismiss === false, `invite: ${afterDismiss}`);
 
   // ── Quick-log wiring ──────────────────────────────────────────────────
   console.log('\n--- one tap from due to logged ---');

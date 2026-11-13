@@ -36,12 +36,19 @@ function world(ua, demo) {
     showSection: id => log.push('section:' + id), expandCollapse() {},
     openQuickLog() { log.push('quicklog'); }, goAddDebt() { log.push('goadd'); },
     upcomingDues: () => [], debtsMissingDueDay: () => [{ id: -1 }], dueInviteDismissed: () => false,
-    escapeHtml: s => s, fmtDec: n => String(n), legacyCopy() {}
+    escapeHtml: s => s, fmtDec: n => String(n), legacyCopy() {},
+    // v1.65.0 — This Month reads these
+    currentMonthKey: () => '2026-11', _monthKey: s => String(s || '').slice(0, 7), monthKeyOf: () => '2026-11',
+    sanitizeDueDay: v => (v >= 1 && v <= 31 ? v : null), splitDueDays: () => null, fmt: n => '$' + n,
+    DUE_SOON_DAYS: 7, localDateStr: () => '2026-11-13', dueRowLabel: () => '', dueDayLabel: () => ''
   };
   vm.createContext(ctx);
   vm.runInContext(['var _inAppDeferred = null; var _inAppThenForm = false;',
     grab('detectInAppBrowser'), grab('showDeferredInAppBanner'), grab('initInAppBanner'), grab('dismissInAppBanner'),
-    grab('exitDemo'), grab('startMyNumbers'), grab('focusFirstDebtField'), grab('renderUpcoming'), grab('populateDebtSelects')].join('\n'), ctx);
+    grab('exitDemo'), grab('startMyNumbers'), grab('focusFirstDebtField'), grab('renderUpcoming'), grab('populateDebtSelects'),
+    'var LS_DUE_SKIPS = "s", LS_CAL_EXPORT = "c", LS_SWIPE_TIP = "t", _tmTipCounted = false;',
+    grab('thisMonthModel'), grab('_tmRing'), grab('_tmFootHtml'), grab('_tmQuietLine'), grab('_tmBindSwipes'),
+    grab('_calExportState'), grab('calReminderHash'), grab('_dueSkips'), grab('isDueSkipped'), grab('_pendingAheadFor')].join('\n'), ctx);
   return { ctx, el, log, ev, els };
 }
 
@@ -62,7 +69,7 @@ ck('with a real debt: floating button is + Log Payment again', fab.textContent =
 w = world(SAFARI, true); w.el('upcoming-card').style.display = ''; w.ctx.renderUpcoming();
 ck('example: Coming Up card hidden, no due-date invite', w.el('upcoming-card').style.display === 'none' && !/Add due dates/.test(w.el('upcoming-body').innerHTML), w.el('upcoming-body').innerHTML);
 w = world(SAFARI, false); w.ctx.debts = [{ id: 1, balance: 500 }]; w.ctx.renderUpcoming();
-ck('real debts without due days: invite still shows', /Add due dates/.test(w.el('upcoming-body').innerHTML), w.el('upcoming-body').innerHTML);
+ck('real debts without due days: invite still shows', /Add due dates/.test(w.el('tm-foot').innerHTML), w.el('tm-foot').innerHTML);
 
 // 3. In-app warning
 w = world(IG_IPHONE, true); w.ctx.initInAppBanner();
