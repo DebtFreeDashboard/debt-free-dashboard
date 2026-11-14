@@ -1,11 +1,11 @@
 {
-  "version": "1.70.0",
-  "releaseDate": "2026-11-13",
-  "releaseName": "Recaps and a faster start",
+  "version": "1.71.0",
+  "releaseDate": "2026-11-14",
+  "releaseName": "Autopay and one-tap logging",
   "notes": [
-    "Monthly recap: on the first open of a new month you'll see last month at a glance: what you paid toward debt, how much less you owe, debts paid off, badges, and whether your debt-free date moved. It's also on the Wins tab, with a card to share.",
-    "Year in review: from mid-December, your year's payments, debts paid off and progress in one place, with a share card.",
-    "Faster start: after adding your first debts, slide to set how much goes to debt each month and watch your debt-free date move, add due dates, and turn on reminders in one step.",
-    "Balance transfer fees now stay exactly as entered. Before, the fee % shown could drift after editing a balance, changing the fee % charged it twice, turning the promo off and on added a second fee, and the fee box could carry over from the last debt you opened. Older transfers keep the dollars you were charged; if the rate shown looks off, type the right one once and it sticks."
+    "On autopay: mark a debt as on autopay (in Edit, or under More details when adding it) and its payment logs itself on each due day from then on. Nothing to tap, and each one can be undone. Leave the amount blank to use the minimum.",
+    "When a payment’s day comes, the app asks “Did these go out?” the next time you open it: one tap per debt to log it, change the amount first if it was different, or tap “It’s on autopay” so it logs itself from then on.",
+    "Due-day notifications open that same check. On Android they also have a Paid button that logs the payment straight from the notification.",
+    "Debts on autopay no longer get payment reminders, since there’s nothing to do for them."
   ]
 }

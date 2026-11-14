@@ -602,6 +602,22 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 .tm-b-amt { width:96px; flex-shrink:0; text-align:right; font-family:var(--font-mono); font-size:0.88rem;
   padding:8px 10px; border-radius:8px; border:1px solid var(--border2); background:var(--surface2); color:var(--text); }
 #tm-batch-list { max-height:46vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+/* v1.71.0 - autopay and the payment check */
+#dc-list { max-height:52vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+.dc-row { padding:11px 0; border-bottom:1px solid var(--border); }
+.dc-row:last-child { border-bottom:none; }
+.dc-top { display:flex; align-items:center; gap:10px; }
+.dc-row .tm-b-amt { width:92px; }
+.dc-paid { flex-shrink:0; padding:8px 14px; }
+.dc-links { margin-top:6px; font-size:0.74rem; color:var(--text-muted); display:flex; gap:14px; flex-wrap:wrap; }
+.dc-links button { background:none; border:none; padding:2px 0; color:var(--accent); font:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:2px; }
+.dc-done { font-size:0.84rem; display:flex; align-items:center; gap:10px; }
+.dc-done b { color:var(--green, #16a34a); }
+.ap-box { display:flex; flex-direction:column; gap:8px; padding:12px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); }
+.ap-box label.ap-tog { display:flex; align-items:center; gap:10px; font-size:0.86rem; font-weight:600; cursor:pointer; text-transform:none; letter-spacing:0; color:var(--text); font-family:inherit; }
+.ap-box label.ap-tog input[type=checkbox] { -webkit-appearance:checkbox; appearance:auto; width:18px; height:18px; min-height:0; padding:0; margin:0; flex:none; border:none; background:none; box-shadow:none; accent-color:var(--accent); }
+.ap-amt-wrap { display:none; }
+.ap-box.on .ap-amt-wrap { display:block; }
 .cal-opt { display:flex; align-items:center; gap:10px; font-size:0.85rem; padding:6px 0; }
 .cal-opt select { width:auto; }
 .cal-g-link { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; margin-top:6px;
@@ -3700,6 +3716,16 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
           <input type="text" inputmode="decimal" id="debt-credit-limit" placeholder="5000" min="0" step="1" data-affix="$" />
           <div class="field-hint">Shows how much of your limit is in use</div>
         </div>
+        <div class="form-field field-full">
+          <div class="ap-box" id="debt-ap-box">
+            <label class="ap-tog"><input type="checkbox" id="debt-autopay" onchange="apBoxToggle('debt')" /> On autopay</label>
+            <div class="ap-amt-wrap">
+              <label for="debt-autopay-amount">Autopay amount ($)</label>
+              <input type="text" inputmode="decimal" id="debt-autopay-amount" placeholder="Minimum" />
+            </div>
+            <div class="field-hint">Logged for you on each due day, so there&rsquo;s nothing to tap. Needs a due day. Leave the amount blank to use the minimum.</div>
+          </div>
+        </div>
         </div>
       <!-- Promo APR toggle -->
       <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
@@ -4694,6 +4720,20 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   </div>
 </div>
 
+<div id="due-check-sheet" class="modal-overlay hidden" onclick="closeDueCheck(event)" role="dialog" aria-modal="true" aria-labelledby="dc-title">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title" id="dc-title">Did these go out?</div>
+      <button class="modal-close" aria-label="Close" onclick="closeDueCheck()">&times;</button>
+    </div>
+    <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.5;margin-bottom:6px;">Tap Paid for each one that went out. Change the amount first if it was different.</div>
+    <div id="dc-list"></div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-ghost" id="dc-close-btn" onclick="closeDueCheck()">Not yet</button>
+    </div>
+  </div>
+</div>
+
 <div id="tm-batch-modal" class="modal-overlay hidden" onclick="closePaidAsPlanned(event)" role="dialog" aria-modal="true" aria-labelledby="tm-batch-title">
   <div class="modal" style="max-width:460px;">
     <div class="modal-header">
@@ -4923,7 +4963,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.70.0';
+const APP_VERSION = '1.71.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4931,6 +4971,18 @@ const APP_VERSION = '1.70.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.71.0',
+    date: 'November 14, 2026',
+    name: 'Autopay and one-tap logging',
+    whatsNew: [
+      'On autopay: mark a debt as on autopay (in Edit, or under More details when adding it) and its payment logs itself on each due day from then on. Nothing to tap, and each one can be undone. Leave the amount blank to use the minimum.',
+      'When a payment’s day comes, the app asks “Did these go out?” the next time you open it: one tap per debt to log it, change the amount first if it was different, or tap “It’s on autopay” so it logs itself from then on.',
+      'Due-day notifications open that same check. On Android they also have a Paid button that logs the payment straight from the notification.',
+      'Debts on autopay no longer get payment reminders, since there’s nothing to do for them.'
+    ],
+    fixes: []
+  },
   {
     version: '1.70.0',
     date: 'November 13, 2026',
@@ -9616,7 +9668,11 @@ function addDebt(confirmed) {
       ? sanitizeCreditLimit(parseAmount((document.getElementById('debt-credit-limit') || {}).value || ''))
       : null,
     // v1.69.0 — remembered so the card can say the minimum is an estimate.
-    minEstimated: (minRaw === '' || minRaw === null || typeof minRaw === 'undefined')
+    minEstimated: (minRaw === '' || minRaw === null || typeof minRaw === 'undefined'),
+    // v1.71.0 — autopay: logged for the user on each due day from today on.
+    autopay: !!((document.getElementById('debt-autopay') || {}).checked && sanitizeDueDay((document.getElementById('debt-due-day') || {}).value)),
+    autopaySince: localDateStr(),
+    autopayAmount: _apAmountField('debt')
   };
   if (!confirmed) { showAddPreview(_newDebt); return; }
   closeAddPreview();
@@ -9678,6 +9734,11 @@ function addDebt(confirmed) {
   // v1.56.0 — the due day was never cleared, so the next debt added inherited it.
   var _dd = document.getElementById('debt-due-day');        if (_dd) _dd.value = '';
   var _dd2 = document.getElementById('debt-due-day2');      if (_dd2) _dd2.value = '';
+  // v1.71.0 — autopay starts unticked for the next debt.
+  if (_newDebt && _newDebt.autopay) trackShare('autopay_on', { _category: 'engagement', via: 'add' });
+  var _apc = document.getElementById('debt-autopay'); if (_apc) _apc.checked = false;
+  var _apa = document.getElementById('debt-autopay-amount'); if (_apa) _apa.value = '';
+  apBoxToggle('debt');
   // v1.69.0 — each new debt starts as a card with More details closed.
   { var _ty = document.getElementById('debt-type'); if (_ty) { _ty.value = 'cc'; onDebtTypeChange('add'); } _typeTouched = false; }
   { var _am = document.getElementById('add-more'); if (_am) _am.open = false; }
@@ -9888,7 +9949,7 @@ function renderRecapLinks() {
 // opens on launch has been closed.
 function maybeShowRecap() {
   if (_demoMode || !debts.length) return;
-  var busy = ['whatsnew-modal', 'celebrate-overlay', 'finish-sheet', 'add-preview-modal'].some(function (id) { var m = document.getElementById(id); return m && !m.classList.contains('hidden'); })
+  var busy = ['whatsnew-modal', 'celebrate-overlay', 'finish-sheet', 'add-preview-modal', 'due-check-sheet'].some(function (id) { var m = document.getElementById(id); return m && !m.classList.contains('hidden'); })
     || document.documentElement.classList.contains('app-locked');
   if (busy) { if ((maybeShowRecap._tries = (maybeShowRecap._tries || 0) + 1) < 60) setTimeout(maybeShowRecap, 2000); return; }
   var thisYm = _ym(new Date()), seen = null, ys = null;
@@ -10224,6 +10285,7 @@ function openEditModal(id) {
   if (_eddIn) _eddIn.value = d.dueDay || '';
   var _edd2In = document.getElementById('edit-due-day2');
   if (_edd2In) _edd2In.value = sanitizeSecondDueDay(d.dueDay, d.dueDay2) || '';
+  apBoxFill('edit', d);
   populateIssuerSelects();
   var _eisIn = document.getElementById('edit-issuer');
   if (_eisIn) _eisIn.value = sanitizeIssuer(d.issuer) || '';
@@ -10481,6 +10543,15 @@ function saveEditDebt() {
   d.dueDay = _edd ? sanitizeDueDay(_edd.value) : (d.dueDay || null);
   var _edd2 = document.getElementById('edit-due-day2');
   d.dueDay2 = sanitizeSecondDueDay(d.dueDay, _edd2 ? _edd2.value : d.dueDay2);
+  // v1.71.0 — autopay. Turning it on starts from today: nothing earlier is
+  // logged, because the balance entered already reflects it.
+  var _eap = document.getElementById('edit-autopay');
+  if (_eap) {
+    var _apOn = !!_eap.checked && !!d.dueDay;
+    if (_apOn && !d.autopay) { d.autopaySince = localDateStr(); _apJustOn = true; }
+    d.autopay = _apOn;
+    d.autopayAmount = _apAmountField('edit');
+  }
   // v1.58.0 — issuer + credit limit (limit kept only while it's a credit card)
   var _eis = document.getElementById('edit-issuer');
   d.issuer = _eis ? sanitizeIssuer(_eis.value) : sanitizeIssuer(d.issuer);
@@ -10534,6 +10605,7 @@ function saveEditDebt() {
   editingId = null;
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save(); render();
+  _apAfterSave();
 }
 
 // ═══════════════════════════════════════════
@@ -14598,6 +14670,19 @@ function thisMonthModel() {
     var d = (debts || []).find(function (x) { return x.id === r.id; });
     if (!d) return;
     var plan = spMap[r.id] || 0;
+    // v1.71.0 — autopay still to come this month is not the user's to log:
+    // only what the plan sends beyond it is.
+    var apLeft = autopayLeftThisMonth(d);
+    if (apLeft > 0) {
+      var apWhen = _apNextDate(d);
+      var extra = plan >= 1 ? Math.max(0, plan - apLeft) : 0;
+      seen[r.id] = true;
+      if (extra >= 1) rows.push({ kind: 'debt', id: r.id, name: r.name, status: 'plan', due: r, minAmount: r.amount, plan: plan,
+        amount: extra, autopay: true, sub: 'autopay ' + (apWhen ? dueDayLabel(apWhen) : '') + ' \u00b7 ' + fmt(extra) + ' more planned' });
+      else if (r.status === 'today' || r.status === 'soon' || plan >= 1) rows.push({ kind: 'debt', id: r.id, name: r.name, status: 'scheduled', due: r,
+        minAmount: r.amount, plan: plan, amount: apLeft, autopay: true, sub: 'autopay on ' + (apWhen ? dueDayLabel(apWhen) : 'its due day') });
+      return;
+    }
     var attention = r.status === 'passed' || r.status === 'today' || r.status === 'soon';
     if (!attention && plan < 1) return;
     seen[r.id] = true;
@@ -14924,6 +15009,293 @@ function skipDueThisMonth() {
   var d = (debts || []).find(function (x) { return x.id === id; });
   _showActionToast('Skipped ' + escapeHtml(d ? d.name : 'it') + ' this month', function () { setDueSkipped(id, ym, false); render(); });
   trackShare('tm_skip', { _category: 'engagement' });
+}
+
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.71.0 — Autopay and the payment check
+// A debt marked "on autopay" logs its payment on each due day by itself, from
+// the day autopay was turned on (never earlier: the balance entered already
+// reflects those). Everything else gets one question when its day comes:
+// "Did these go out?", answered with one tap per debt. Nothing leaves the
+// device. Each autopay payment has an id made from the debt and the date, so
+// two synced devices make the same row rather than two, and one the user
+// removes (Undo, or deleting it) is remembered and never made again.
+// ══════════════════════════════════════════════════════════════════════
+var LS_AUTOPAY_DONE = 'debtfree_autopay_done';
+var LS_DUE_ASKED = 'debtfree_due_asked';
+var _apJustOn = false;
+
+function isAutopay(d) { return !!(d && d.autopay && sanitizeDueDay(d.dueDay)); }
+function _apAmountField(prefix) {
+  var el = document.getElementById(prefix + '-autopay-amount');
+  if (!el) return null;
+  var v = parseAmount(el.value || '');
+  return (v > 0 && isFinite(v)) ? Math.round(v * 100) / 100 : null;
+}
+function apBoxToggle(prefix) {
+  var cb = document.getElementById(prefix + '-autopay'), box = document.getElementById(prefix + '-ap-box');
+  if (box && cb) box.classList.toggle('on', !!cb.checked);
+}
+function apBoxFill(prefix, d) {
+  var cb = document.getElementById(prefix + '-autopay'), amt = document.getElementById(prefix + '-autopay-amount');
+  if (cb) cb.checked = !!(d && d.autopay);
+  if (amt) amt.value = (d && d.autopayAmount > 0) ? d.autopayAmount : '';
+  apBoxToggle(prefix);
+}
+// What one autopay payment is: the amount set, or the current minimum.
+function autopayAmountFor(d) {
+  var fixed = parseFloat(d.autopayAmount);
+  var base;
+  if (fixed > 0) base = fixed;
+  else { var f = minPaymentFloors(d); base = (f && f.now) ? f.now : d.minPayment; }
+  return Math.round(Math.max(0, Math.min(d.balance, base || 0)) * 100) / 100;
+}
+// Due dates between two ISO days (inclusive). A debt paid twice a month pays
+// half on each day; two days that land on the same date are one payment.
+function _apOccurrences(d, fromIso, toIso) {
+  var out = [];
+  if (!fromIso || !toIso || fromIso > toIso) return out;
+  var days = splitDueDays(d) || [sanitizeDueDay(d.dueDay)];
+  var f = _isoToDate(fromIso), t = _isoToDate(toIso);
+  var y = f.getFullYear(), m = f.getMonth(), guard = 0;
+  while ((y < t.getFullYear() || (y === t.getFullYear() && m <= t.getMonth())) && guard++ < 14) {
+    var dates = [];
+    days.forEach(function (day) { var iso = localDateStr(dueDateIn(y, m, day)); if (dates.indexOf(iso) === -1) dates.push(iso); });
+    dates.forEach(function (iso) {
+      if (iso >= fromIso && iso <= toIso) out.push({ iso: iso, share: dates.length > 1 ? 0.5 : 1 });
+    });
+    m++; if (m > 11) { m = 0; y++; }
+  }
+  return out;
+}
+function _apPayId(debtId, iso) {
+  var p = String(iso).split('-');
+  return Date.UTC(+p[0], (+p[1]) - 1, +p[2], 12, 0, 0) + (Math.abs(Math.round(Number(debtId) || 0)) % 50000) + 1;
+}
+function _apDone() {
+  try { var o = JSON.parse(localStorage.getItem(LS_AUTOPAY_DONE) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
+}
+function _apSaveDone(o) { try { localStorage.setItem(LS_AUTOPAY_DONE, JSON.stringify(o)); } catch (e) {} }
+function _apFrom(d) {
+  // At most a year back, whatever autopaySince says.
+  var since = d.autopaySince || localDateStr();
+  var y = new Date(); y.setFullYear(y.getFullYear() - 1);
+  var floor = localDateStr(y);
+  return since < floor ? floor : since;
+}
+
+// Logs every autopay due day that has come round. Returns what it made.
+function processAutopay() {
+  if (typeof _demoMode !== 'undefined' && _demoMode) return [];
+  var today = localDateStr(), done = _apDone(), tombs = {}, made = [];
+  try { (syncDeletions() || []).forEach(function (t) { if (t && t.c === 'payments') tombs[String(t.k)] = 1; }); } catch (e) {}
+  (debts || []).forEach(function (d) {
+    if (!isAutopay(d)) return;
+    var key = String(d.id), list = Array.isArray(done[key]) ? done[key] : [];
+    _apOccurrences(d, _apFrom(d), today).forEach(function (o) {
+      if (list.indexOf(o.iso) !== -1) return;
+      list.push(o.iso);
+      if (d.balance <= 0) return;
+      var id = _apPayId(d.id, o.iso);
+      if (tombs[String(id)] || payments.some(function (p) { return p && p.id === id; })) return;
+      if (isDueSkipped(d.id, o.iso.slice(0, 7))) return;
+      var amt = Math.round(autopayAmountFor(d) * o.share * 100) / 100;
+      if (amt < 0.01) return;
+      // Already logged by hand: a payment of about this amount within five days.
+      var od = _isoToDate(o.iso).getTime();
+      var byHand = payments.some(function (p) {
+        if (!p || p.debtId !== d.id) return false;
+        var pa = parseFloat(p.amount) || 0;
+        return Math.abs(pa - amt) <= Math.max(1, amt * 0.02) && Math.abs(_isoToDate(p.date).getTime() - od) <= 5 * 864e5;
+      });
+      if (byHand) return;
+      var actual = Math.round(Math.min(amt, d.balance) * 100) / 100;
+      d.balance = Math.max(0, Math.round((d.balance - actual) * 100) / 100);
+      payments.push({ id: id, debtId: d.id, debtName: d.name, amount: actual, date: o.iso, eliminated: d.balance <= 0, autopay: true, note: 'Autopay' });
+      made.push({ paymentId: id, debtName: d.name, amount: actual, date: o.iso });
+    });
+    done[key] = list.slice(-36);
+  });
+  _apSaveDone(done);
+  if (made.length) {
+    if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
+    save();
+    trackShare('autopay_logged', { _category: 'engagement', count: made.length });
+  }
+  return made;
+}
+function _autopayToast(made) {
+  if (!made || !made.length) return;
+  var total = made.reduce(function (t, x) { return t + x.amount; }, 0);
+  var txt = made.length === 1
+    ? 'Autopay logged ' + fmtDec(made[0].amount) + ' to ' + escapeHtml(made[0].debtName) + ' (' + dueDayLabel(_isoToDate(made[0].date)) + ')'
+    : 'Autopay logged ' + made.length + ' payments · ' + fmtDec(total);
+  _showActionToast(txt, function () { made.slice().reverse().forEach(function (x) { deletePayment(x.paymentId); }); });
+}
+// Autopay still to come this month (today included), for the This Month card.
+function autopayLeftThisMonth(d) {
+  if (!isAutopay(d) || d.balance <= 0) return 0;
+  var now = new Date(), today = localDateStr();
+  var end = localDateStr(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  var from = (d.autopaySince && d.autopaySince > today) ? d.autopaySince : today;
+  var done = _apDone()[String(d.id)] || [];
+  var amt = autopayAmountFor(d);
+  return Math.round(_apOccurrences(d, from, end).reduce(function (t, o) {
+    return t + (done.indexOf(o.iso) !== -1 || isDueSkipped(d.id, o.iso.slice(0, 7)) ? 0 : amt * o.share);
+  }, 0) * 100) / 100;
+}
+function _apNextDate(d) {
+  var now = new Date(), today = localDateStr();
+  var end = localDateStr(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  var occ = _apOccurrences(d, today, end);
+  return occ.length ? _isoToDate(occ[0].iso) : null;
+}
+// After saving a debt with autopay just turned on, log today's if it's due.
+function _apAfterSave() {
+  if (!_apJustOn) return;
+  _apJustOn = false;
+  trackShare('autopay_on', { _category: 'engagement', via: 'edit' });
+  var made = processAutopay();
+  if (made.length) { render(); _autopayToast(made); }
+}
+
+// ── Payment check ─────────────────────────────────────────────────────
+function _dueAsked() {
+  try { var o = JSON.parse(localStorage.getItem(LS_DUE_ASKED) || '{}'); return (o && typeof o === 'object') ? o : {}; } catch (e) { return {}; }
+}
+function _dcKey(r) { return r.id + '@' + localDateStr(r.due.date); }
+// Debts whose day has come (today or passed this month) with nothing logged.
+function dueCheckRows() {
+  var m = thisMonthModel();
+  return m.rows.filter(function (r) {
+    if (!(r.kind === 'debt' && !r.autopay && (r.status === 'passed' || r.status === 'today') && r.due && r.due.date && r.amount >= 0.01)) return false;
+    // A debt added on or after that due day: the balance typed in already
+    // reflects whatever went out, so asking would invite a double count.
+    var d = (debts || []).find(function (x) { return x.id === r.id; });
+    return !(d && d.id > 1e15 && localDateStr(new Date(Math.floor(d.id / 1000))) >= localDateStr(r.due.date));
+  });
+}
+function _dcBusy() {
+  return ['whatsnew-modal', 'celebrate-overlay', 'finish-sheet', 'add-preview-modal', 'recap-sheet', 'edit-modal'].some(function (id) {
+    var el = document.getElementById(id); return el && !el.classList.contains('hidden');
+  }) || document.documentElement.classList.contains('app-locked');
+}
+// On open: once per due day, never on the example, after anything else that
+// opens on launch has closed.
+function maybeShowDueCheck() {
+  if ((typeof _demoMode !== 'undefined' && _demoMode) || !debts.length) return;
+  if (_dcBusy()) { if ((maybeShowDueCheck._tries = (maybeShowDueCheck._tries || 0) + 1) < 60) setTimeout(maybeShowDueCheck, 2000); return; }
+  maybeShowDueCheck._tries = 0;
+  var asked = _dueAsked();
+  var fresh = dueCheckRows().filter(function (r) { return !asked[_dcKey(r)]; });
+  if (!fresh.length) return;
+  openDueCheck('open');
+}
+var _dcIds = [];
+function openDueCheck(via) {
+  var rows = dueCheckRows();
+  var sheet = document.getElementById('due-check-sheet'), list = document.getElementById('dc-list');
+  if (!sheet || !list) return false;
+  if (!rows.length) { _showActionToast('Nothing waiting to be logged right now', function () {}); return false; }
+  var asked = _dueAsked(), today = localDateStr();
+  // Keep this month's answers only.
+  Object.keys(asked).forEach(function (k) { if (String(asked[k]) < today.slice(0, 7)) delete asked[k]; });
+  rows.forEach(function (r) { asked[_dcKey(r)] = today.slice(0, 7); });
+  try { localStorage.setItem(LS_DUE_ASKED, JSON.stringify(asked)); } catch (e) {}
+  _dcIds = rows.map(function (r) { return r.id; });
+  list.innerHTML = rows.map(_dcRowHtml).join('');
+  document.getElementById('dc-close-btn').textContent = 'Not yet';
+  sheet.classList.remove('hidden');
+  trackShare('due_check_open', { _category: 'engagement', rows: rows.length, via: via || 'button' });
+  return true;
+}
+function _dcRowHtml(r) {
+  var when = r.due.date, isToday = r.status === 'today';
+  return '<div class="dc-row" id="dc-' + r.id + '" data-iso="' + localDateStr(when) + '">'
+    + '<div class="dc-top"><span class="tm-b-name">' + escapeHtml(r.name) + '<span class="tm-b-sub">' + (isToday ? 'due today' : 'was due ' + dueDayLabel(when)) + '</span></span>'
+    + '<input type="text" inputmode="decimal" class="tm-b-amt" id="dc-amt-' + r.id + '" value="' + (Math.round(r.amount * 100) / 100) + '" aria-label="Amount paid to ' + escapeHtml(r.name) + '">'
+    + '<button type="button" class="btn btn-primary dc-paid" onclick="dueCheckPaid(' + r.id + ')">Paid</button></div>'
+    + '<div class="dc-links"><button type="button" onclick="dueCheckAutopay(' + r.id + ')">It&rsquo;s on autopay</button>'
+    + '<button type="button" onclick="dueCheckSkip(' + r.id + ')">Skip this month</button></div></div>';
+}
+function _dcMarkDone(id, html) {
+  var el = document.getElementById('dc-' + id);
+  if (el) el.innerHTML = '<div class="dc-done">' + html + '</div>';
+  var left = _dcIds.filter(function (x) { var e = document.getElementById('dc-' + x); return e && e.querySelector('.dc-paid'); });
+  var btn = document.getElementById('dc-close-btn');
+  if (btn) btn.textContent = left.length ? 'Not yet' : 'Done';
+}
+function dueCheckPaid(id) {
+  var el = document.getElementById('dc-' + id), a = document.getElementById('dc-amt-' + id);
+  if (!el || !a) return;
+  var amt = parseAmount(a.value);
+  if (!(amt > 0)) { a.focus(); return; }
+  var iso = el.getAttribute('data-iso'), today = localDateStr();
+  var res = logPaymentCore(id, Math.round(amt * 100) / 100, iso && iso < today ? iso : today);
+  if (!res) return;
+  _dcMarkDone(id, '<b>&#10003;</b><span>Logged ' + fmtDec(res.amount) + ' to ' + escapeHtml(res.debtName) + '</span>'
+    + '<span class="dc-links"><button type="button" onclick="dueCheckUndo(' + id + ',' + res.paymentId + ')">Undo</button></span>');
+  trackShare('due_check_paid', { _category: 'engagement' });
+}
+function dueCheckUndo(id, paymentId) {
+  deletePayment(paymentId);
+  var r = dueCheckRows().filter(function (x) { return x.id === id; })[0];
+  var el = document.getElementById('dc-' + id);
+  if (r && el) { el.outerHTML = _dcRowHtml(r); _dcMarkDone(-1, ''); }
+}
+function dueCheckSkip(id) {
+  var el = document.getElementById('dc-' + id);
+  var iso = el ? el.getAttribute('data-iso') : localDateStr();
+  setDueSkipped(id, iso.slice(0, 7), true);
+  render();
+  _dcMarkDone(id, '<span>Skipped for ' + _isoToDate(iso).toLocaleDateString('en-US', { month: 'long' }) + '. Balances and the plan stay as they are.</span>');
+  trackShare('tm_skip', { _category: 'engagement', via: 'due_check' });
+}
+// "It's on autopay": from this due day on, logged without asking.
+function dueCheckAutopay(id) {
+  var d = (debts || []).find(function (x) { return x.id === id; });
+  var el = document.getElementById('dc-' + id), a = document.getElementById('dc-amt-' + id);
+  if (!d || !el) return;
+  var iso = el.getAttribute('data-iso');
+  var amt = a ? parseAmount(a.value) : 0;
+  d.autopay = true;
+  d.autopaySince = iso;
+  var dflt = (function () { var keep = d.autopayAmount; d.autopayAmount = null; var v = autopayAmountFor(d); d.autopayAmount = keep; return v; })();
+  d.autopayAmount = (amt > 0 && Math.abs(amt - dflt) >= 1) ? Math.round(amt * 100) / 100 : null;
+  var made = processAutopay();
+  save(); render();
+  var got = made.filter(function (x) { return x.debtName === d.name; })[0];
+  _dcMarkDone(id, '<b>&#10003;</b><span>On autopay' + (got ? '. Logged ' + fmtDec(got.amount) : '') + '. From now on it logs itself on the ' + ordinalDay(sanitizeDueDay(d.dueDay)) + '.</span>');
+  trackShare('autopay_on', { _category: 'engagement', via: 'due_check' });
+}
+function closeDueCheck(e) {
+  var sheet = document.getElementById('due-check-sheet');
+  if (!sheet) return;
+  if (e && e.target !== sheet) return;
+  sheet.classList.add('hidden');
+}
+// Notification taps: "#paid=<debt id>" (the Paid button on Android) logs that
+// debt's amount with Undo; "#due-check" opens the check.
+function handleNotifHash(hash) {
+  hash = String(hash || '');
+  if (document.documentElement.classList.contains('app-locked')) {
+    if ((handleNotifHash._tries = (handleNotifHash._tries || 0) + 1) < 120) setTimeout(function () { handleNotifHash(hash); }, 1000);
+    return;
+  }
+  handleNotifHash._tries = 0;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+  var m = /^#paid=(\d+)/.exec(hash);
+  if (m) {
+    var id = Number(m[1]);
+    var r = dueCheckRows().filter(function (x) { return x.id === id; })[0] || _tmRowById(id);
+    if (r && r.status !== 'scheduled' && r.status !== 'logged' && r.amount >= 0.01) {
+      var res = logPaymentCore(id, Math.round(r.amount * 100) / 100, localDateStr());
+      if (res) { showUndoToast(res.paymentId, 'Logged ' + fmtDec(res.amount) + ' to ' + escapeHtml(res.debtName)); trackShare('tm_log', { _category: 'engagement', via: 'notification' }); }
+    } else _showActionToast('Already logged', function () {});
+    return;
+  }
+  if (/^#due-check/.test(hash)) setTimeout(function () { if (!openDueCheck('notification')) {} }, 300);
 }
 
 // A toast with any undo, for actions that aren't a single payment.
@@ -15699,7 +16071,7 @@ function pushSupport() {
 function _pushDays() {
   var out = [];
   (debts || []).forEach(function (d) {
-    if (!d || d.balance <= 0) return;
+    if (!d || d.balance <= 0 || isAutopay(d)) return;   // v1.71.0 — nothing to remind
     var day = sanitizeDueDay(d.dueDay);
     if (!day) return;
     (splitDueDays(d) || [day]).forEach(function (n) { if (out.indexOf(n) === -1) out.push(n); });
@@ -15715,9 +16087,9 @@ function writeReminderState() {
   var p = pushPrefs();
   if (!p || !('caches' in window)) return;
   var state = { v: 1, cadence: p.cadence || 'before', lead: p.lead || 3, names: !!p.names,
-    debts: (debts || []).filter(function (d) { return d && d.balance > 0 && sanitizeDueDay(d.dueDay); }).map(function (d) {
+    debts: (debts || []).filter(function (d) { return d && d.balance > 0 && sanitizeDueDay(d.dueDay) && !isAutopay(d); }).map(function (d) {
       var floors = minPaymentFloors(d);
-      return { n: p.names ? d.name : null, t: d.type, days: splitDueDays(d) || [sanitizeDueDay(d.dueDay)],
+      return { i: d.id, n: p.names ? d.name : null, t: d.type, days: splitDueDays(d) || [sanitizeDueDay(d.dueDay)],
                m: p.names ? fmt(Math.max(0, Math.min(d.balance, floors && floors.now ? floors.now : d.minPayment))) : null };
     }) };
   var body = JSON.stringify(state);
@@ -21094,7 +21466,11 @@ if (_bootDeduped > 0) {
 }
 var _bootDue = processDuePayments();
 var _bootAcc = processInterestAccrual();
-if (_bootDue || _bootAcc) render();
+// v1.71.0 — autopay debts log themselves for any due day that has come round.
+var _bootAuto = [];
+try { _bootAuto = processAutopay(); } catch (e) { _bootAuto = []; }
+if (_bootDue || _bootAcc || _bootAuto.length) render();
+if (_bootAuto.length) setTimeout(function () { try { _autopayToast(_bootAuto); } catch (e) {} }, 1500);
 
 // Integrity check — surface any orphan lumps/payments before they cause confusion
 showOrphanBanner();
@@ -21105,7 +21481,9 @@ initWiSliders();
 setInterval(function() {
   var _due = processDuePayments();
   var _acc = processInterestAccrual();
-  if (_due || _acc) render();
+  var _ap = []; try { _ap = processAutopay(); } catch (e) {}
+  if (_due || _acc || _ap.length) render();
+  if (_ap.length) _autopayToast(_ap);
 }, 1000 * 60 * 60 * 24);
 // v1.23.0 — iOS suspends timers when a PWA is backgrounded, so the 24h tick
 // above can silently stall. When the app becomes visible again on a NEW day,
@@ -21116,7 +21494,10 @@ document.addEventListener('visibilitychange', function() {
     _lastDayCheck = localDateStr();
     var _d = processDuePayments();
     var _a = processInterestAccrual();
-    if (_d || _a) render();
+    var _p = []; try { _p = processAutopay(); } catch (e) {}
+    if (_d || _a || _p.length) render();
+    if (_p.length) _autopayToast(_p);
+    setTimeout(function () { try { maybeShowDueCheck(); } catch (e) {} }, 1200);
   }
 });
 // Restore hybrid body class if strategy was saved as hybrid
@@ -21307,6 +21688,10 @@ try { updateDriveUI(); } catch(e) {}
 // v1.70.0 - month snapshot for recaps, then the recap itself once things settle.
 try { recordMonthSnapshot(); } catch (e) {}
 setTimeout(function () { try { maybeShowRecap(); } catch (e) {} }, 1800);
+// v1.71.0 — ask about payments whose day has come, then notification taps.
+setTimeout(function () { try { maybeShowDueCheck(); } catch (e) {} }, 2600);
+try { if (/^#(paid=|due-check)/.test(location.hash)) handleNotifHash(location.hash); } catch (e) {}
+try { if (navigator.serviceWorker) navigator.serviceWorker.addEventListener('message', function (e) { if (e.data && e.data.type === 'debtfree-notif') handleNotifHash(e.data.hash); }); } catch (e) {}
 try { if (/^#(year-review|month-recap)$/.test(location.hash)) setTimeout(function () { location.hash === '#year-review' ? openYearReview() : openMonthRecap(_lastMonthYm()); }, 900); } catch (e) {}
 
 // v1.31.1 — RESTORED. This call was lost in v1.18.0 when the milestone
@@ -21510,6 +21895,16 @@ if (isInStandaloneMode() ||
         <label for="edit-due-day2">2nd Payment Day <span class="field-optional">optional</span></label>
         <input type="text" inputmode="numeric" id="edit-due-day2" min="1" max="31" placeholder="--" />
         <div class="field-hint">If you pay twice a month, Coming Up splits the minimum across both days</div>
+      </div>
+      <div class="form-field" style="grid-column:1/-1">
+        <div class="ap-box" id="edit-ap-box">
+          <label class="ap-tog"><input type="checkbox" id="edit-autopay" onchange="apBoxToggle('edit')" /> On autopay</label>
+          <div class="ap-amt-wrap">
+            <label for="edit-autopay-amount">Autopay amount ($)</label>
+            <input type="text" inputmode="decimal" id="edit-autopay-amount" placeholder="Minimum" />
+          </div>
+          <div class="field-hint">Logged for you on each due day from now on. Needs a due day. Leave the amount blank to use the minimum.</div>
+        </div>
       </div>
 
     </div>

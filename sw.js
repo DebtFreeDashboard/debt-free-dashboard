@@ -4,7 +4,7 @@
 // release so installed PWA clients always re-fetch, and so you can tell at a
 // glance which build a device has cached.
 
-const CACHE_NAME = 'debtfree-1.70.0';
+const CACHE_NAME = 'debtfree-1.71.0';
 // v1.40.6 — './dashboard.html' resolved to /dashboard.html (this file sits at
 // the repo root), which did not exist: every cache.addAll() rejected, the
 // fallback cache.add() rejected too, and the app precached NOTHING. Runtime
@@ -151,12 +151,21 @@ function reminderText(state, now) {
     return checkin;
   }
   var names = !!state.names;
+  // v1.71.0 — on the day itself: Paid / Different amount buttons (Android)
+  // and a tap opens the one-tap payment check.
+  var check = url + '#due-check';
   if (due.length === 1) {
     var x = due[0];
     var who = _rmLabel(x.d, names);
     var t = _rmWhen(x.when, today);
+    var onDay = x.n === 0 && x.d.i;
     return { title: (names && x.d.n ? who + ' is due ' : who + ' is due ') + t,
-             body: (names && x.d.m ? 'Minimum ' + x.d.m + '. ' : '') + 'Tap to log it when it’s paid.', url: url };
+             body: (names && x.d.m ? 'Minimum ' + x.d.m + '. ' : '') + (onDay ? 'Paid it? Log it in one tap.' : 'Tap to log it when it’s paid.'),
+             url: onDay ? check : url, paidUrl: onDay ? url + '#paid=' + x.d.i : null };
+  }
+  if (due[0].n === 0) {
+    return { title: due.length + ' payments due ' + (state.cadence === 'weekly' ? 'this week' : 'soon'),
+             body: 'First: ' + _rmLabel(due[0].d, names) + ', today. Tap to log what’s paid.', url: check };
   }
   var first = due[0];
   return { title: due.length + ' payments due ' + (state.cadence === 'weekly' ? 'this week' : 'soon'),
@@ -170,20 +179,28 @@ self.addEventListener('push', function (event) {
       .catch(function () { return null; })
       .then(function (state) {
         var msg = reminderText(state, new Date());
-        return self.registration.showNotification(msg.title, {
+        var opts = {
           body: msg.body, tag: 'debtfree-reminder', renotify: true,
-          icon: '/assets/icons/icon-192.png', badge: '/assets/icons/icon-192.png', data: { url: msg.url }
-        });
+          icon: '/assets/icons/icon-192.png', badge: '/assets/icons/icon-192.png', data: { url: msg.url, paidUrl: msg.paidUrl || null }
+        };
+        if (msg.paidUrl) opts.actions = [{ action: 'paid', title: 'Paid' }, { action: 'check', title: 'Different amount' }];
+        return self.registration.showNotification(msg.title, opts);
       })
   );
 });
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  var url = (event.notification.data && event.notification.data.url) || '/app/dashboard.html';
+  var data = event.notification.data || {};
+  var url = (event.action === 'paid' && data.paidUrl) ? data.paidUrl : (data.url || '/app/dashboard.html');
+  var hash = url.indexOf('#') !== -1 ? url.slice(url.indexOf('#')) : '';
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
       for (var i = 0; i < list.length; i++) {
-        if (list[i].url.indexOf('/app/dashboard.html') !== -1 && 'focus' in list[i]) return list[i].focus();
+        if (list[i].url.indexOf('/app/dashboard.html') !== -1 && 'focus' in list[i]) {
+          // v1.71.0 — an open app gets the tap as a message.
+          if (hash) list[i].postMessage({ type: 'debtfree-notif', hash: hash });
+          return list[i].focus();
+        }
       }
       return self.clients.openWindow(url);
     })

@@ -173,6 +173,8 @@ Besides page views, the site sends:
 | `add_another`, `add_session_done` | The app's Add a Debt card | A debt saved with Save & add another (`session_count`); a run of adds finished with Save & see my plan |
 | `setup_finish_open`, `setup_finish_done` | The app's finish step after a new user's first debts | Shown (`debt_count`); saved (`extra_band`, `due_days` added, `reminders` yes/no) |
 | `recap_open` | The app's recap sheet | A monthly recap or year in review opened (`kind` month/year, `auto` yes/no). Shares send `card_shown` with `card_type: recap` |
+| `autopay_on`, `autopay_logged` | The app | Autopay turned on for a debt (`via`: `edit`, `add`, `due_check`); autopay payments logged on open (`count`) |
+| `due_check_open`, `due_check_paid` | The app's payment check ("Did these go out?") | Shown (`rows`, `via`: `open`, `notification`); a payment logged from it. Skips send `tm_skip` with `via: due_check`, notification Paid taps send `tm_log` with `via: notification` |
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -367,6 +369,27 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-14** — v1.71.0 "Autopay and one-tap logging". Kevin ruled out
+  bank linking for good (cost, regulation, day-job conflict; no LLC). Feedback
+  from friends and family: setup and logging feel like a lot. Debt fields
+  `autopay`, `autopaySince` (ISO day it was turned on; nothing earlier is
+  logged), `autopayAmount` (null = current minimum). `processAutopay()` runs at
+  boot, on the daily tick and on a new-day return: one payment per due day
+  (half each on split days), id from `_apPayId(debtId, date)` so synced devices
+  make the same row, done days in `debtfree_autopay_done` so Undo or a deletion
+  is never redone, skipped if a payment of about that amount was logged within
+  5 days or the month is skipped. Toast with Undo. This Month shows autopay
+  still to come as handled (`autopayLeftThisMonth()`), only the plan's extra
+  is asked for. Payment check `#due-check-sheet` ("Did these go out?"):
+  passed/today rows with nothing logged, once per due day
+  (`debtfree_due_asked`), never for a debt added on or after that day; Paid
+  (dated the due day), Skip this month, It's on autopay. Autopay debts drop out
+  of push reminders. sw.js: on the due day the notification opens
+  `#due-check`; with one debt due, Android gets Paid / Different amount
+  buttons (`#paid=<debt id>`); an open app gets the tap by postMessage. Reminder
+  state now carries debt ids (numbers only, stays on the device). Free tier.
+  Tests: `tools/test-autopay.js` (66). Snap a statement is next, on-device,
+  after a test on a few of Kevin's own statements.
 - **2026-11-13 (night, final)** — v1.70.0 "Recaps and a faster start".
   Transfer fee review done early (the Mon Nov 16 task was cancelled). Leaks
   found: the fee % was derived from `originalBalance`, which edits reset; a
