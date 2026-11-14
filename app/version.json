@@ -1,9 +1,9 @@
 {
-  "version": "1.69.1",
+  "version": "1.69.2",
   "releaseDate": "2026-11-13",
-  "releaseName": "Bottom bar fix",
+  "releaseName": "Promo fields fit on phones",
   "notes": [
-    "On iPhone, the bottom bar could float above the bottom of the screen after typing (for example after entering your app lock PIN). It now drops back into place as soon as the keyboard closes.",
-    "Add a Debt is tidier: More details says once that everything in it is optional, so the labels line up."
+    "The 0% / promo fields no longer squeeze or wrap on a phone: two columns, with the end date on its own row, in both Add a Debt and Edit.",
+    "Editing a balance transfer showed a 3% fee as 2.91%. It now shows the rate you entered."
   ]
 }

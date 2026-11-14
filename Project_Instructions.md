@@ -365,6 +365,12 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (night, last)** — v1.69.2: promo fields in Add and Edit share
+  one layout (`.promo-box` / `.promo-grid`: two columns, end date full width,
+  no wrapping at 375px). Edit showed the transfer fee % as fee / fee-inclusive
+  balance (3% read 2.91%); now fee / (originalBalance − transferFee). Kevin
+  has seen the fee % drift on his own data; a full review of transfer-fee
+  handling is scheduled for Mon Nov 16, 3 PM ET.
 - **2026-11-13 (night, latest)** — v1.69.1: iPhone installed app left the
   bottom bar floating above the screen edge after the keyboard closed (seen
   after entering the app-lock PIN). `_fixAfterKeyboard()` nudges the scroll by

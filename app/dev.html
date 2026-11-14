@@ -1581,6 +1581,16 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .add-session { background: rgba(0,168,132,0.08); border: 1px solid rgba(0,168,132,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.5; }
   .add-session b { color: var(--accent); }
   .add-session .as-list { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
+  /* v1.69.2 — promo fields: two columns, end date on its own row, so nothing wraps on a phone */
+  .promo-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 14px; }
+  .add-more .promo-box { background: var(--surface); }
+  .promo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+  .promo-grid .pg-full { grid-column: 1 / -1; }
+  .promo-grid label { white-space: nowrap; }
+  .promo-grid .pg-fee { display: flex; align-items: flex-end; padding-bottom: 12px; min-width: 0; }
+  .promo-grid input[type="date"] { width: 100%; min-width: 0; font-size: 0.95rem; }
+  .promo-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 10px; line-height: 1.5; }
+  @media (max-width: 420px) { .promo-box { padding: 12px; } .add-more { padding: 12px; } }
   .btn-ghost {
     background: transparent;
     color: var(--text-muted);
@@ -3667,39 +3677,32 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
         <input type="checkbox" id="debt-has-promo" onchange="togglePromoFields()" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
         <label for="debt-has-promo" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
-          This debt has a 0% / promotional APR
+          0% or promo rate on this debt
         </label>
       </div>
 
         <!-- Promo fields (hidden by default) -->
-      <div id="promo-fields" style="display:none; margin-top:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:16px;">
-        <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">🎯 Promotional APR Details</div>
-        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+      <div id="promo-fields" class="promo-box" style="display:none; margin-top:12px;">
+        <div class="promo-grid">
           <div class="form-field">
             <label for="debt-promo-apr">Promo APR (%)</label>
             <input type="text" inputmode="decimal" id="debt-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
           </div>
           <div class="form-field">
-            <label for="debt-promo-end">Promo End Date</label>
+            <label for="debt-post-promo-apr">APR after (%)</label>
+            <input type="text" inputmode="decimal" id="debt-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
+          </div>
+          <div class="form-field pg-full">
+            <label for="debt-promo-end">Promo ends</label>
             <input type="date" id="debt-promo-end" />
           </div>
           <div class="form-field">
-            <label for="debt-post-promo-apr">Post-Promo APR (%)</label>
-            <input type="text" inputmode="decimal" id="debt-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
-          </div>
-        </div>
-        <div class="form-grid" style="grid-template-columns:1fr 2fr; margin-top:10px;">
-          <div class="form-field">
-            <label for="debt-transfer-fee">Transfer Fee (%)</label>
+            <label for="debt-transfer-fee">Transfer fee (%)</label>
             <input type="text" inputmode="decimal" id="debt-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateFeePreview()" />
           </div>
-          <div id="promo-fee-preview" style="display:flex;align-items:flex-end;padding-bottom:10px;">
-            <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>
-          </div>
+          <div id="promo-fee-preview" class="pg-fee"><span style="font-size:0.75rem;color:var(--text-muted);">Fee amount shows here</span></div>
         </div>
-        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;line-height:1.5;">
-          The transfer fee will be added to your balance. After the promo end date, the post-promo APR kicks in automatically in all calculations.
-        </div>
+        <div class="promo-note">Any transfer fee is added to the balance. On the end date the plan switches to the APR after.</div>
       </div>
 
         <!-- v1.7.0 — installment-loan controls.  Shown automatically for
@@ -4859,7 +4862,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.69.1';
+const APP_VERSION = '1.69.2';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4867,6 +4870,16 @@ const APP_VERSION = '1.69.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.69.2',
+    date: 'November 13, 2026',
+    name: 'Promo fields fit on phones',
+    whatsNew: [],
+    fixes: [
+      'The 0% / promo fields no longer squeeze or wrap on a phone: two columns, with the end date on its own row, in both Add a Debt and Edit.',
+      'Editing a balance transfer showed a 3% fee as 2.91%. It now shows the rate you entered.'
+    ]
+  },
   {
     version: '1.69.1',
     date: 'November 13, 2026',
@@ -9557,7 +9570,7 @@ function addDebt(confirmed) {
   document.getElementById('debt-post-promo-apr').value = '';
   document.getElementById('debt-transfer-fee').value = '';
   document.getElementById('promo-fields').style.display = 'none';
-  document.getElementById('promo-fee-preview').innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>';
+  document.getElementById('promo-fee-preview').innerHTML = '<span style="font-size:0.75rem;color:var(--text-muted);">Fee amount shows here</span>';
   // v1.7.0 — reset installment fields
   var _op = document.getElementById('debt-orig-principal'); if (_op) _op.value = '';
   var _tm = document.getElementById('debt-term-months');    if (_tm) _tm.value = '';
@@ -9881,8 +9894,11 @@ function openEditModal(id) {
     document.getElementById('edit-promo-apr').value       = d.promoApr || 0;
     document.getElementById('edit-promo-end').value       = d.promoEnd || '';
     document.getElementById('edit-post-promo-apr').value  = d.postPromoApr || '';
-    var _feeRateValue = d.transferFee > 0
-      ? ((d.transferFee / d.originalBalance) * 100).toFixed(2)
+    // v1.69.2 - the fee was a % of the balance BEFORE the fee; dividing by the
+    // fee-inclusive balance showed 3% as 2.91%.
+    var _feeBase = (d.originalBalance || 0) - (d.transferFee || 0);
+    var _feeRateValue = (d.transferFee > 0 && _feeBase > 0)
+      ? String(+((d.transferFee / _feeBase) * 100).toFixed(2))
       : '';
     var _feeEl = document.getElementById('edit-transfer-fee');
     _feeEl.value = _feeRateValue;
@@ -9967,7 +9983,7 @@ function updateEditFeePreview() {
   } else if (balance > 0 && fee > 0 && !willApplyFee) {
     preview.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Original transfer fee already applied. Change the fee % to recompute.</span>';
   } else {
-    preview.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>';
+    preview.innerHTML = '<span style="font-size:0.75rem;color:var(--text-muted);">Fee amount shows here</span>';
   }
 }
 
@@ -20411,7 +20427,7 @@ function updateFeePreview() {
   if (balance > 0 && fee > 0) {
     preview.innerHTML = `<span style="font-family:var(--font-mono);font-size:0.8rem;color:var(--accent4);">Fee: ${fmtDec(feeAmt)} → New balance: ${fmtDec(balance + feeAmt)}</span>`;
   } else {
-    preview.innerHTML = '<span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>';
+    preview.innerHTML = '<span style="font-size:0.75rem;color:var(--text-muted);">Fee amount shows here</span>';
   }
 }
 
@@ -21115,36 +21131,32 @@ if (isInStandaloneMode() ||
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
       <input type="checkbox" id="edit-has-promo" onchange="toggleEditPromoFields()" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
       <label for="edit-has-promo" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
-        This debt has a 0% / promotional APR
+        0% or promo rate on this debt
       </label>
     </div>
 
     <!-- Promo fields (hidden by default) -->
-    <div id="edit-promo-fields" style="display:none;margin-bottom:16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:16px;">
-      <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:10px;">
+    <div id="edit-promo-fields" class="promo-box" style="display:none;margin-bottom:16px;">
+      <div class="promo-grid">
         <div class="form-field">
           <label for="edit-promo-apr">Promo APR (%)</label>
           <input type="text" inputmode="decimal" id="edit-promo-apr" placeholder="0" min="0" step="0.01" value="0" />
         </div>
         <div class="form-field">
-          <label for="edit-promo-end">Promo End Date</label>
+          <label for="edit-post-promo-apr">APR after (%)</label>
+          <input type="text" inputmode="decimal" id="edit-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
+        </div>
+        <div class="form-field pg-full">
+          <label for="edit-promo-end">Promo ends</label>
           <input type="date" id="edit-promo-end" />
         </div>
         <div class="form-field">
-          <label for="edit-post-promo-apr">Post-Promo APR (%)</label>
-          <input type="text" inputmode="decimal" id="edit-post-promo-apr" placeholder="24.99" min="0" step="0.01" />
-        </div>
-        <div class="form-field">
-          <label for="edit-transfer-fee">Transfer Fee (%)</label>
+          <label for="edit-transfer-fee">Transfer fee (%)</label>
           <input type="text" inputmode="decimal" id="edit-transfer-fee" placeholder="3" min="0" step="0.1" oninput="updateEditFeePreview()" />
         </div>
+        <div id="edit-promo-fee-preview" class="pg-fee"><span style="font-size:0.75rem;color:var(--text-muted);">Fee amount shows here</span></div>
       </div>
-      <div id="edit-promo-fee-preview" style="margin-top:10px;">
-        <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">Enter balance + fee % to see fee amount</span>
-      </div>
-      <div style="margin-top:10px;font-size:0.75rem;color:var(--text-muted);line-height:1.5;">
-        The transfer fee will be added to your balance. After the promo end date, the post-promo APR kicks in automatically in all calculations.
-      </div>
+      <div class="promo-note">Any transfer fee is added to the balance. On the end date the plan switches to the APR after.</div>
     </div>
 
     <!-- v1.7.0 — installment-loan controls in edit modal -->

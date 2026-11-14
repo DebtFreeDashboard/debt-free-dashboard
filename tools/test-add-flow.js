@@ -82,6 +82,11 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); i
   st = await p.evaluate(() => ({ n: debts.length, d: debts[2], hidden: document.getElementById('add-session').hidden, more: document.getElementById('add-more').open }));
   ok(st.n === 3 && st.d.hasPromo && st.d.promoEnd === '2027-06-30' && st.d.dueDay === 20 && st.d.balance === 3090 && st.d.transferFee === 90, 'promo, due day and 3% fee saved');
   ok(st.hidden && !st.more, 'after confirm: session strip cleared, More details closed');
+  const btId = await p.evaluate(() => debts[2].id);
+  await p.evaluate(id => { document.getElementById('celebrate-overlay').classList.add('hidden'); openEditModal(id); }, btId); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => document.getElementById('edit-transfer-fee').value) === '3', 'edit shows the 3% fee as 3, not 2.91');
+  await p.evaluate(() => saveEditDebt()); await p.waitForTimeout(300);
+  ok(await p.evaluate(id => { const d = debts.find(x => x.id === id); return d.balance === 3090 && d.transferFee === 90; }, btId), 're-saving the transfer does not add the fee again');
 
   console.log('C. Estimated label on both debt views, and edits');
   ok(await p.evaluate(() => /\$\d[\d,]* min \(est\.\)/.test(document.getElementById('debt-list').textContent)), 'free card shows "min (est.)"');
