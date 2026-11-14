@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#f4f4f7">
 <title>DebtFree Dashboard User Guide: How to Plan and Track Your Debt Payoff</title>
-<meta name="description" content="How to use DebtFree Dashboard: add your debts, pick a payoff strategy, log payments, use What If, and back up your data. Step-by-step guide for the free debt payoff planner." />
+<meta name="description" content="How to use DebtFree Dashboard: install it, add your debts, log a month of payments in one tap, turn on payment reminders, compare payoff orders, use What If, lock the app and back up your data." />
 <link rel="canonical" href="https://mydebtdashboard.com/user-guide.html" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
@@ -80,7 +80,7 @@
     align-items: center;
     gap: 8px;
     text-decoration: none;
-    color: var(--text);
+    color: #f0f0f8;
   }
 
   .logo-dot {
@@ -522,433 +522,201 @@
 
 <div class="page">
 
-  <!-- ══════════════════ HERO ══════════════════ -->
+    <!-- ══════════════════ HERO ══════════════════ -->
   <div class="hero">
-    <div class="hero-eyebrow">Getting Started</div>
+    <div class="hero-eyebrow">User guide · updated Nov 13, 2026 (v1.68)</div>
     <h1>Your <span>Freedom Date</span><br>starts here.</h1>
-    <p class="hero-sub">This guide walks you through every feature of DebtFree Dashboard — from adding your first debt to using the strategy and scenario tools to accelerate your payoff.</p>
+    <p class="hero-sub">How to set up DebtFree, keep it current in a minute a month, turn on reminders, and use the planning tools. Everything here works on the free tier unless it says Premium.</p>
   </div>
 
   <!-- ══════════════════ TOC ══════════════════ -->
   <div class="toc">
     <div class="toc-title">In this guide</div>
     <ul class="toc-list">
-      <li><a href="#adding-debts"><span class="toc-num">01</span>Adding Your Debts</a></li>
-      <li><a href="#dashboard"><span class="toc-num">02</span>Dashboard Tab</a></li>
-      <li><a href="#logging-payments"><span class="toc-num">03</span>Logging Payments</a></li>
-      <li><a href="#strategy"><span class="toc-num">04</span>Strategy Tab</a></li>
-      <li><a href="#whatif"><span class="toc-num">05</span>What If Tab</a></li>
-      <li><a href="#wins"><span class="toc-num">06</span>Wins Tab</a></li>
-      <li><a href="#backup"><span class="toc-num">07</span>Backup &amp; Updates</a></li>
-      <li><a href="#tips"><span class="toc-num">08</span>Tips &amp; Tricks</a></li>
+      <li><a href="#get-the-app"><span class="toc-num">01</span>Get the app</a></li>
+      <li><a href="#adding-debts"><span class="toc-num">02</span>Add your debts</a></li>
+      <li><a href="#dashboard"><span class="toc-num">03</span>Home and This Month</a></li>
+      <li><a href="#logging-payments"><span class="toc-num">04</span>Log payments</a></li>
+      <li><a href="#reminders"><span class="toc-num">05</span>Payment reminders</a></li>
+      <li><a href="#strategy"><span class="toc-num">06</span>Strategy</a></li>
+      <li><a href="#whatif"><span class="toc-num">07</span>What If</a></li>
+      <li><a href="#wins"><span class="toc-num">08</span>Wins</a></li>
+      <li><a href="#backup"><span class="toc-num">09</span>Privacy, app lock and backup</a></li>
+      <li><a href="#tips"><span class="toc-num">10</span>Troubleshooting</a></li>
     </ul>
   </div>
 
-  <!-- ══════════════════ SECTION 1: ADDING DEBTS ══════════════════ -->
+  <!-- ══════════════════ 01 GET THE APP ══════════════════ -->
+  <div class="guide-section" id="get-the-app">
+    <div class="section-header">
+      <div class="section-icon teal">📱</div>
+      <div><div class="section-label">Step 01</div><div class="section-title">Get the app</div></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Same app everywhere, no account. Your numbers are saved on the device you use, so pick the one you'll check each month.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">A</div><div class="step-content"><h4>Android</h4><p>Install <a href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app" style="color:var(--accent)">DebtFree: Debt Payoff Tracker</a> from Google Play.</p></div></div>
+      <div class="step"><div class="step-num">B</div><div class="step-content"><h4>iPhone and iPad</h4><p>Open <strong>mydebtdashboard.com/app/dashboard.html</strong> in Safari, tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>. Open it from the new icon from then on: phone notifications and app lock only work in the Home Screen app.</p></div></div>
+      <div class="step"><div class="step-num">C</div><div class="step-content"><h4>Computer</h4><p>Open the same address in Chrome, Edge or Safari. Chrome and Edge offer an Install button in the address bar.</p></div></div>
+    </div>
+    <div class="callout green"><span class="callout-icon">💡</span><span><strong>Just looking?</strong> The first screen is an example plan with made-up debts. Explore it, then tap <strong>Start with my numbers</strong> to clear it and add your own.</span></div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- ══════════════════ 02 ADDING DEBTS ══════════════════ -->
   <div class="guide-section" id="adding-debts">
     <div class="section-header">
       <div class="section-icon green">💳</div>
-      <div>
-        <div class="section-label">Step 01</div>
-        <div class="section-title">Adding Your Debts</div>
-      </div>
+      <div><div class="section-label">Step 02</div><div class="section-title">Add your debts</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">The most important step. Pull up your actual statements — not what you think you owe. The accuracy of every calculation depends on what you enter here.</p>
-
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Have your latest statements handy. Every number the app shows comes from what you enter here.</p>
     <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <h4>Scroll to "Add a Debt"</h4>
-          <p>On the Dashboard tab, scroll past your stats cards to find the debt entry form. You'll fill this out once for each debt you have.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <h4>Enter the debt name and type</h4>
-          <p>Give it a recognizable name — <strong>Chase Sapphire</strong>, <strong>Student Loan</strong>, <strong>Car Payment</strong>. Select the type from the dropdown. The type is used for display only and doesn't affect calculations.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <h4>Enter your current balance</h4>
-          <p>Use your current statement balance — the exact amount you owe right now. Don't round up or down. Every dollar matters for your Freedom Date.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">4</div>
-        <div class="step-content">
-          <h4>Enter your APR (interest rate)</h4>
-          <p>Find this on your statement or online account. Enter it as a number — for example, enter <strong>22.99</strong> not 0.2299. If you have multiple APRs on one card (purchases vs cash advance), use the purchase APR.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">5</div>
-        <div class="step-content">
-          <h4>Enter your minimum payment</h4>
-          <p>The minimum monthly payment shown on your statement. This is used to calculate how long payoff takes if you only pay minimums — and as the baseline for extra payment calculations.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">6</div>
-        <div class="step-content">
-          <h4>If you have a 0% promo rate — check "Promotional APR"</h4>
-          <p>For balance transfers or promo credit cards at 0%, tick the checkbox. You'll get three extra fields: <strong>Promo Rate</strong> (enter 0), <strong>Promo End Date</strong>, and <strong>Rate After Promo</strong>. The dashboard automatically switches to the real rate when the promo expires in your simulation. Don't skip this — it significantly affects your payoff projections.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">7</div>
-        <div class="step-content">
-          <h4>Click Add Debt</h4>
-          <p>Your debt appears in the list and all stats update immediately. Repeat for every debt you have. The more complete your list, the more accurate your Freedom Date.</p>
-        </div>
-      </div>
+      <div class="step"><div class="step-num">1</div><div class="step-content"><h4>Tap + and choose Add a debt</h4><p>On a phone, the + sits in the middle of the bottom bar. On a computer, the Add a Debt card is on the Home tab.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><h4>Name, type and lender</h4><p>Any name you'll recognise. Picking a lender adds its logo; "Not listed" is fine.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><h4>Balance, APR and minimum payment</h4><p>From your statement. Enter APR as a number (22.99, not 0.2299). If a card has several rates, the purchase APR is the one most plans use.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><h4>Due day (and a second day if you pay twice a month)</h4><p>The due day drives This Month, the calendar and reminders. With a second day, the app splits the minimum across both.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-content"><h4>Credit limit and 0% promo (cards)</h4><p>The limit adds a credit-used bar. For a 0% balance transfer, tick Promotional APR and enter the promo rate, end date, transfer fee and the rate after the promo. The plan switches rates on the end date.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-content"><h4>Check the preview, then Confirm and save</h4><p>The preview shows how this debt changes your debt-free date before anything is saved. Repeat for each debt.</p></div></div>
     </div>
-
     <table class="field-table">
-      <thead>
-        <tr>
-          <th>Field</th>
-          <th>Where to find it</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Field</th><th>Where to find it</th></tr></thead>
       <tbody>
-        <tr><td>Balance</td><td>Current statement balance or online account</td></tr>
-        <tr><td>APR</td><td>Statement, online account, or back of card agreement</td></tr>
-        <tr><td>Min Payment</td><td>"Minimum Payment Due" on your statement</td></tr>
-        <tr><td>Promo End Date</td><td>Your balance transfer confirmation email or statement</td></tr>
-        <tr><td>Rate After Promo</td><td>Your original card agreement or online account</td></tr>
+        <tr><td>Balance</td><td>Statement balance, or "current balance" in your online account</td></tr>
+        <tr><td>APR</td><td>Statement (often in the "Interest charge calculation" box) or online account</td></tr>
+        <tr><td>Min payment</td><td>"Minimum payment due" on the statement</td></tr>
+        <tr><td>Due day</td><td>"Payment due date" on the statement</td></tr>
+        <tr><td>Promo end date and rate after</td><td>Balance transfer confirmation, statement or card agreement</td></tr>
       </tbody>
     </table>
-
-    <div class="callout green">
-      <span class="callout-icon">💡</span>
-      <span><strong>Tip:</strong> You can edit any debt at any time by clicking the Edit button on its card. Update your balance each month after making a payment to keep your Freedom Date accurate.</span>
-    </div>
+    <div class="callout green"><span class="callout-icon">✏️</span><span><strong>Change anything later:</strong> tap a debt, then Edit. Every tab updates at once.</span></div>
   </div>
-
   <div class="divider"></div>
 
-  <!-- ══════════════════ SECTION 2: DASHBOARD ══════════════════ -->
+  <!-- ══════════════════ 03 HOME ══════════════════ -->
   <div class="guide-section" id="dashboard">
     <div class="section-header">
       <div class="section-icon teal">📊</div>
-      <div>
-        <div class="section-label">Step 02</div>
-        <div class="section-title">Dashboard Tab</div>
-      </div>
+      <div><div class="section-label">Step 03</div><div class="section-title">Home and This Month</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Your command center. Four live stats at the top update instantly as you add debts, change your extra payment, or log payments.</p>
-
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Home answers two questions: where you stand, and what's left to pay this month.</p>
     <div class="tips-grid">
-      <div class="tip-card accent">
-        <div class="tip-emoji">🗓️</div>
-        <h4>Freedom Date</h4>
-        <p>The month and year your last debt hits zero. This is your north star. Every feature in the app exists to pull this date closer.</p>
-      </div>
-      <div class="tip-card teal">
-        <div class="tip-emoji">💰</div>
-        <h4>Interest Saved</h4>
-        <p>How much less interest you'll pay vs. making minimum payments only. This number grows significantly when you add an extra monthly payment.</p>
-      </div>
-      <div class="tip-card yellow">
-        <div class="tip-emoji">📈</div>
-        <h4>Extra Monthly Payment</h4>
-        <p>Any amount you can consistently add above your minimums. Even <strong>$50/month</strong> can save thousands and shave years off your timeline. Change this anytime.</p>
-      </div>
-      <div class="tip-card purple">
-        <div class="tip-emoji">🔥</div>
-        <h4>Monthly Interest</h4>
-        <p>What you're paying in interest <em>this month</em> just to stand still. Use this as motivation — every extra dollar you pay reduces this number permanently.</p>
-      </div>
+      <div class="tip-card accent"><div class="tip-emoji">💰</div><h4>Total Owed</h4><p>Everything you owe, the share already paid down, and a split by account.</p></div>
+      <div class="tip-card yellow"><div class="tip-emoji">🔥</div><h4>Interest/mo, Freedom Date, Interest Saved</h4><p>This month's interest, the month your last debt reaches $0 on your plan, and the interest your plan avoids compared with minimums only.</p></div>
+      <div class="tip-card teal"><div class="tip-emoji">📅</div><h4>This Month</h4><p>Every payment your plan has for this month. The ring fills as you log them. Switch between List and Calendar at the top of the card.</p></div>
+      <div class="tip-card purple"><div class="tip-emoji">🩺</div><h4>Plan check</h4><p>Shows up only when it applies: a 0% promo ending within 60 days, a planned payment smaller than this month's interest, or a card at 90% of its limit.</p></div>
     </div>
-
-    <div class="callout yellow">
-      <span class="callout-icon">⚡</span>
-      <span><strong>Payoff Chart:</strong> The curve below your stats shows your debt balance month by month from today to your Freedom Date. The steeper the curve, the faster you're paying down. Watch it change when you increase your extra monthly payment.</span>
-    </div>
+    <div class="callout yellow"><span class="callout-icon">🎯</span><span><strong>Where your extra goes:</strong> the card under This Month names the debt your plan is focused on and what it sends there each month.</span></div>
   </div>
-
   <div class="divider"></div>
 
-  <!-- ══════════════════ SECTION 3: LOGGING PAYMENTS ══════════════════ -->
+  <!-- ══════════════════ 04 LOGGING ══════════════════ -->
   <div class="guide-section" id="logging-payments">
     <div class="section-header">
       <div class="section-icon green">✅</div>
-      <div>
-        <div class="section-label">Step 03</div>
-        <div class="section-title">Logging Payments</div>
-      </div>
+      <div><div class="section-label">Step 04</div><div class="section-title">Log payments</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Log every payment as you make it. This keeps your balances accurate and tracks your real progress toward milestones.</p>
-
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Logging keeps balances, the ring and your debt-free date accurate. Three ways, fastest first.</p>
     <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <div class="step-content">
-          <h4>Select the debt account</h4>
-          <p>Choose which debt you made a payment to from the dropdown.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <div class="step-content">
-          <h4>Enter the payment amount</h4>
-          <p>The exact amount you paid — including both the minimum and any extra. If you paid $350 on a $200 minimum, enter <strong>350</strong>.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <div class="step-content">
-          <h4>Set the date and click Log</h4>
-          <p>Defaults to today. You can backdate payments if you forgot to log one. The debt balance updates immediately and the payment appears in your history below.</p>
-        </div>
-      </div>
+      <div class="step"><div class="step-num">1</div><div class="step-content"><h4>Paid as planned (the whole month)</h4><p>Tap <strong>Paid as planned</strong> in This Month, or + then Paid as planned. Untick anything you didn't pay or change an amount, then log them all at once. One Undo reverses it.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><h4>Swipe one payment</h4><p>In This Month, swipe a payment <strong>right</strong> to log the planned amount, or tap <strong>Log</strong>. Swipe <strong>left</strong> (or tap ⋯) for Later: schedule it for another date or skip it this month.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><h4>Any amount, any debt</h4><p>Tap + then <strong>Log a payment</strong>. Pick the debt, the amount you actually paid (minimum plus any extra) and the date. A future date is saved as pending and counts on that day.</p></div></div>
     </div>
-
     <div class="tips-grid" style="margin-top:16px;">
-      <div class="tip-card accent">
-        <div class="tip-emoji">✏️</div>
-        <h4>Edit a payment</h4>
-        <p>Made a mistake? Tap <strong>Edit</strong> on any payment in the log. The balance recalculates correctly from your original starting balance — not just a patch on top.</p>
-      </div>
-      <div class="tip-card red">
-        <div class="tip-emoji">🔮</div>
-        <h4>Future-dated payments</h4>
-        <p>Log a payment with a future date and it shows as <strong>pending</strong> — it won't affect your balance until that date arrives. The app auto-confirms it when the date comes.</p>
-      </div>
-    </div>
-
-    <div class="callout green">
-      <span class="callout-icon">💡</span>
-      <span><strong>Monthly Summary Card:</strong> Above the payment log you'll see your total minimum payments plus your extra, so you know exactly what's going out this month for debt. Use this for budgeting.</span>
+      <div class="tip-card accent"><div class="tip-emoji">🧾</div><h4>Statement check-in</h4><p>When a statement arrives, open the payment's ⋯ menu and enter the statement balance and date. The app records the difference (interest, fees) on that date, so the balance matches your lender's without a bank login.</p></div>
+      <div class="tip-card red"><div class="tip-emoji">↩️</div><h4>Fix a mistake</h4><p>Every payment is in the Payment Log on Home. Edit or delete any entry, even an old one, and balances are recalculated from the start.</p></div>
     </div>
   </div>
-
   <div class="divider"></div>
 
-  <!-- ══════════════════ SECTION 4: STRATEGY ══════════════════ -->
+  <!-- ══════════════════ 05 REMINDERS ══════════════════ -->
+  <div class="guide-section" id="reminders">
+    <div class="section-header">
+      <div class="section-icon yellow">🔔</div>
+      <div><div class="section-label">Step 05</div><div class="section-title">Payment reminders</div></div>
+    </div>
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Free. Open them from <strong>Get payment reminders</strong> at the bottom of the This Month card. Your debts need a due day first.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><h4>Phone notifications</h4><p>Choose <strong>before each payment</strong> (1, 3 or 7 days ahead, on the day, plus a check-in on the 1st), <strong>every Monday</strong> or <strong>on the 1st of the month</strong>, then tap Turn on notifications and allow them when your phone asks. They arrive around 9 AM your time.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><h4>Or calendar reminders</h4><p>Adds a repeating event for each due date to your phone's calendar, which does the reminding. On Android you get one Google Calendar link per date; on iPhone each opens in the Calendar app.</p></div></div>
+    </div>
+    <div class="callout green"><span class="callout-icon">🔒</span><span><strong>What leaves your phone:</strong> for notifications, our reminder service stores the phone's push address, your due days as numbers, how often to remind and your time zone. No names, balances or amounts. The notification text is written on your phone, and account names only appear if you tick <strong>Show account names in reminders</strong>. Calendar reminders send nothing to us at all.</span></div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- ══════════════════ 06 STRATEGY ══════════════════ -->
   <div class="guide-section" id="strategy">
     <div class="section-header">
       <div class="section-icon purple">⚔️</div>
-      <div>
-        <div class="section-label">Step 04</div>
-        <div class="section-title">Strategy Tab</div>
-      </div>
+      <div><div class="section-label">Step 06</div><div class="section-title">Strategy</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Three strategies for attacking your debt. Pick the one you'll actually stick to — the best strategy is the one you follow.</p>
-
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">The Strategy tab sets the order your extra money goes to. Each card shows that order's debt-free month and total interest on your own numbers.</p>
     <div class="steps">
-      <div class="step">
-        <div class="step-num">①</div>
-        <div class="step-content">
-          <h4>Avalanche — Mathematically optimal</h4>
-          <p>Attacks your <strong>highest APR debt first</strong>. Minimums paid on everything else, all extra goes to the top-rate debt. You pay the least total interest over time. Best if you're disciplined and want to minimize cost.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">②</div>
-        <div class="step-content">
-          <h4>Snowball — Motivationally powerful</h4>
-          <p>Attacks your <strong>smallest balance first</strong>. You eliminate debts faster in terms of count. Research shows this keeps people more motivated. If you've struggled staying on track before, start here.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">③</div>
-        <div class="step-content">
-          <h4>Hybrid — Balanced approach</h4>
-          <p>Blends both — considers APR and balance together. Good middle ground if you want some interest savings without waiting forever for your first debt to be eliminated.</p>
-        </div>
-      </div>
+      <div class="step"><div class="step-num">①</div><div class="step-content"><h4>Optimized</h4><p>Tests every payoff order and uses the one with the lowest total interest, including what happens when 0% promos end.</p></div></div>
+      <div class="step"><div class="step-num">②</div><div class="step-content"><h4>Avalanche</h4><p>Highest APR first. A 0% promo card is ranked by the rate it will switch to.</p></div></div>
+      <div class="step"><div class="step-num">③</div><div class="step-content"><h4>Snowball</h4><p>Smallest balance first, so accounts close sooner.</p></div></div>
+      <div class="step"><div class="step-num">④</div><div class="step-content"><h4>Your own order</h4><p>Drag debts into any order you like.</p></div></div>
     </div>
-
-    <div class="callout yellow">
-      <span class="callout-icon">📊</span>
-      <span><strong>Comparison Grid:</strong> The Strategy tab shows all three side by side — months to payoff, total interest paid, and payoff order. Read this before picking. The difference in total interest between Avalanche and Snowball is often <strong>hundreds or thousands of dollars</strong>.</span>
-    </div>
-
-    <div class="callout green">
-      <span class="callout-icon">💡</span>
-      <span><strong>About 0% promo cards:</strong> In Avalanche mode, your promo cards are prioritized by their <em>post-promo</em> rate — not their current 0%. So a card that becomes 26.99% after the promo ends correctly sorts as high priority. The app handles this automatically.</span>
-    </div>
+    <div class="callout yellow"><span class="callout-icon">📊</span><span><strong>Your Monthly Plan:</strong> set the extra amount you put toward debt each month above the minimums. When a debt is paid off, its minimum rolls into the next one automatically. Premium adds the payoff-by-payoff roadmap, amortization schedules and Dial-a-Date (pick a date, see the monthly amount it takes).</span></div>
   </div>
-
   <div class="divider"></div>
 
-  <!-- ══════════════════ SECTION 5: WHAT IF ══════════════════ -->
+  <!-- ══════════════════ 07 WHAT IF ══════════════════ -->
   <div class="guide-section" id="whatif">
     <div class="section-header">
       <div class="section-icon yellow">🔮</div>
-      <div>
-        <div class="section-label">Step 05</div>
-        <div class="section-title">What If Tab</div>
-      </div>
+      <div><div class="section-label">Step 07</div><div class="section-title">What If</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Your scenario sandbox. Model what happens if you find extra money — without changing any of your real data. Sliders reset every time you open this tab.</p>
-
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">A sandbox. Nothing you try here changes your real plan.</p>
     <div class="tips-grid">
-      <div class="tip-card accent">
-        <div class="tip-emoji">📅</div>
-        <h4>Additional Monthly Payment</h4>
-        <p>Slide to see how much time and interest you'd save by consistently adding that amount above your current plan. Even <strong>$100/mo</strong> often saves a year or more.</p>
-      </div>
-      <div class="tip-card yellow">
-        <div class="tip-emoji">💵</div>
-        <h4>Lump Sum Paydown</h4>
-        <p>Model an immediate one-time payment — a tax refund, bonus, or windfall. The slider goes up to your full remaining balance so you can see what full payoff looks like.</p>
-      </div>
-      <div class="tip-card teal">
-        <div class="tip-emoji">🎉</div>
-        <h4>Debt Free!</h4>
-        <p>Slide the lump sum to your full remaining balance and you'll see "Debt Free! 🎉" appear in the Freedom Date card with full months saved displayed.</p>
-      </div>
-      <div class="tip-card purple">
-        <div class="tip-emoji">📌</div>
-        <h4>Baseline includes lump sums</h4>
-        <p>The baseline freedom date in What If already accounts for any Planned Lump Sum payments you've entered on the Dashboard. You're modeling on top of your real plan.</p>
-      </div>
+      <div class="tip-card accent"><div class="tip-emoji">📅</div><h4>Additional monthly payment</h4><p>Slide to see time saved, interest saved and the new Freedom Date, measured against your current plan.</p></div>
+      <div class="tip-card yellow"><div class="tip-emoji">💵</div><h4>Lump sum (Premium)</h4><p>Model a one-time payment such as a tax refund or bonus, on top of any lump sums you've already planned.</p></div>
     </div>
-
-    <div class="callout yellow">
-      <span class="callout-icon">⚠️</span>
-      <span><strong>0 months saved?</strong> If you have planned lump sum payments that already cover your full payoff, the monthly slider may show 0 months saved — but will still show interest savings. This is correct — your existing plan is already optimal for the payoff date, and extra monthly payments just reduce the interest you pay along the way.</span>
-    </div>
+    <div class="callout yellow"><span class="callout-icon">⚠️</span><span><strong>0 months saved?</strong> If planned lump sums already pay everything off, the monthly slider can show 0 months saved while still showing interest saved. That's correct.</span></div>
   </div>
-
   <div class="divider"></div>
 
-  <!-- ══════════════════ SECTION 6: WINS ══════════════════ -->
+  <!-- ══════════════════ 08 WINS ══════════════════ -->
   <div class="guide-section" id="wins">
     <div class="section-header">
       <div class="section-icon red">🏆</div>
-      <div>
-        <div class="section-label">Step 06</div>
-        <div class="section-title">Wins Tab</div>
-      </div>
+      <div><div class="section-label">Step 08</div><div class="section-title">Wins</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Nine milestone badges that unlock automatically as you hit thresholds. Paying off debt takes years — this tab keeps the wins visible.</p>
-
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Paying off debt takes a while. Wins keeps the progress visible.</p>
     <div class="tips-grid">
-      <div class="tip-card accent">
-        <div class="tip-emoji">🥇</div>
-        <h4>First Payment</h4>
-        <p>Unlocks the moment you log your first payment. The easiest badge — and the most important one to get, because it means you've started.</p>
-      </div>
-      <div class="tip-card yellow">
-        <div class="tip-emoji">💪</div>
-        <h4>Dollar Milestones</h4>
-        <p>Badges at $500, $5,000, and $10,000 paid off. These track cumulative payments across all debts so every dollar counts toward the next milestone.</p>
-      </div>
-      <div class="tip-card teal">
-        <div class="tip-emoji">✅</div>
-        <h4>First Debt Eliminated</h4>
-        <p>Unlocks when you pay any debt to $0. This one feels different. Hold onto that feeling — use it to attack the next one.</p>
-      </div>
-      <div class="tip-card purple">
-        <div class="tip-emoji">🌙</div>
-        <h4>Halfway There &amp; Final Stretch</h4>
-        <p>Based on your overall progress percentage. Halfway unlocks at 50%, Final Stretch at 75%. These are the hardest to earn and the most satisfying to see.</p>
-      </div>
+      <div class="tip-card accent"><div class="tip-emoji">🥇</div><h4>Badges and streaks</h4><p>Unlock automatically from your logged payments and balances. Up Next shows the closest ones and how far away they are.</p></div>
+      <div class="tip-card teal"><div class="tip-emoji">✅</div><h4>Paid-off debts</h4><p>Every debt you clear stays here with what it took. A shareable card appears when it happens; share it or tap Done.</p></div>
     </div>
   </div>
-
   <div class="divider"></div>
 
-  <!-- ══════════════════ SECTION 7: BACKUP ══════════════════ -->
+  <!-- ══════════════════ 09 PRIVACY / BACKUP ══════════════════ -->
   <div class="guide-section" id="backup">
     <div class="section-header">
       <div class="section-icon teal">💾</div>
-      <div>
-        <div class="section-label">Step 07</div>
-        <div class="section-title">Backup &amp; Updates</div>
-      </div>
+      <div><div class="section-label">Step 09</div><div class="section-title">Privacy, app lock and backup</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Found in the Backup &amp; Restore section on the Dashboard tab. Three tools that protect your data and keep your app current.</p>
-
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Your debts are stored on your device, not on our servers. That makes backups your job, and the tools below make it quick. All of them are in Settings (the gear, top right).</p>
     <div class="steps">
-      <div class="step">
-        <div class="step-num">📤</div>
-        <div class="step-content">
-          <h4>Export Backup</h4>
-          <p>Downloads a JSON file containing everything — all debts, payment history, planned lump sums, strategy, and settings. <strong>Save this to your Files app, iCloud, or email it to yourself.</strong> Do this every few months or after entering a lot of new data.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">📥</div>
-        <div class="step-content">
-          <h4>Import Backup</h4>
-          <p>Restores your full data from a backup file. Use this when switching devices, reinstalling the app, or recovering after clearing browser data. Select your JSON backup file and everything restores instantly.</p>
-        </div>
-      </div>
-      <div class="step">
-        <div class="step-num">🔄</div>
-        <div class="step-content">
-          <h4>Check for Updates</h4>
-          <p>Checks if a newer version of the dashboard is available. If one exists, it <strong>automatically saves your data, loads the new version, and restores your data</strong>. You never lose anything during an update. Tap this periodically to get new features.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout green">
-      <span class="callout-icon">📱</span>
-      <span><strong>Installing as an app:</strong> In Safari, tap Share → Add to Home Screen. The dashboard opens as a full-screen app with no browser chrome. Your data lives on your device — no account, no login, no cloud required.</span>
+      <div class="step"><div class="step-num">🔒</div><div class="step-content"><h4>App lock</h4><p>Set a PIN, and optionally Face ID or fingerprint. Choose whether it locks right away or after 1 or 5 minutes away. It's a screen lock, not encryption. Forgot the PIN? The lock can be removed after a 60-second wait, so you're never locked out of your own data.</p></div></div>
+      <div class="step"><div class="step-num">☁️</div><div class="step-content"><h4>Back up to Google Drive</h4><p>Saves a copy to your own Google Drive. Use it to move to a new phone or recover after clearing your browser.</p></div></div>
+      <div class="step"><div class="step-num">📤</div><div class="step-content"><h4>Export and Import Backup</h4><p>Export downloads one file with all debts, payments and settings. Import restores it on any device.</p></div></div>
+      <div class="step"><div class="step-num">🔄</div><div class="step-content"><h4>Check for Updates</h4><p>Updates arrive on their own. If you want the newest version right away, tap this; your data is kept.</p></div></div>
     </div>
   </div>
-
   <div class="divider"></div>
 
-  <!-- ══════════════════ SECTION 8: TIPS ══════════════════ -->
+  <!-- ══════════════════ 10 TROUBLESHOOTING ══════════════════ -->
   <div class="guide-section" id="tips">
     <div class="section-header">
       <div class="section-icon yellow">⚡</div>
-      <div>
-        <div class="section-label">Step 08</div>
-        <div class="section-title">Tips &amp; Tricks</div>
-      </div>
+      <div><div class="section-label">Step 10</div><div class="section-title">Troubleshooting</div></div>
     </div>
-
-    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;line-height:1.7;">Things that make the dashboard more powerful once you've got the basics down.</p>
-
     <div class="tips-grid">
-      <div class="tip-card accent">
-        <div class="tip-emoji">📅</div>
-        <h4>Update balances monthly</h4>
-        <p>After making your payments each month, tap Edit on each debt card and update the current balance from your statement. Keeps your Freedom Date accurate as you make real progress.</p>
-      </div>
-      <div class="tip-card yellow">
-        <div class="tip-emoji">🎁</div>
-        <h4>Plan future windfalls</h4>
-        <p>Use Planned Lump Sum Payments on the Dashboard to schedule future bonuses, tax refunds, or any irregular income. The system allocates them by strategy and updates your Freedom Date automatically.</p>
-      </div>
-      <div class="tip-card teal">
-        <div class="tip-emoji">🔁</div>
-        <h4>Switch strategies any time</h4>
-        <p>Not happy with your current strategy? Switch it on the Strategy tab. Your payment log stays intact and all calculations update immediately to reflect the new approach.</p>
-      </div>
-      <div class="tip-card purple">
-        <div class="tip-emoji">🧮</div>
-        <h4>Extra payment is the lever</h4>
-        <p>The single most impactful input in the entire dashboard is the Extra Monthly Payment field. Even finding $25 more per month moves your Freedom Date noticeably. Model it in What If first.</p>
-      </div>
-      <div class="tip-card red">
-        <div class="tip-emoji">⚠️</div>
-        <h4>Don't log partial minimums</h4>
-        <p>Log the full amount you paid on each debt, not just the "extra" portion. If you paid $350 on a card with a $200 minimum, log $350. The simulation tracks your minimum payments internally.</p>
-      </div>
-      <div class="tip-card accent">
-        <div class="tip-emoji">🚀</div>
-        <h4>The snowball effect is real</h4>
-        <p>When a debt hits $0, your minimum payments for that card get freed up. The app automatically rolls that freed cash into attacking your next target. This is why the payoff accelerates dramatically near the end.</p>
-      </div>
+      <div class="tip-card accent"><div class="tip-emoji">🔕</div><h4>No notifications</h4><p>On iPhone, open the app from the Home Screen icon, not Safari. Check the phone's settings allow notifications for DebtFree (or Chrome on Android), and that your debts have due days.</p></div>
+      <div class="tip-card yellow"><div class="tip-emoji">🫥</div><h4>My debts disappeared</h4><p>Each browser and the Home Screen app keep separate data. Open the one you used before, or restore from Google Drive or an exported backup.</p></div>
+      <div class="tip-card teal"><div class="tip-emoji">🧮</div><h4>Balance doesn't match my statement</h4><p>Use statement check-in on that debt. Interest and fees between payments are why balances drift.</p></div>
+      <div class="tip-card purple"><div class="tip-emoji">📆</div><h4>A payment shows as pending</h4><p>It has a future date. It counts on that date automatically.</p></div>
+      <div class="tip-card red"><div class="tip-emoji">⭐</div><h4>Premium on a new device</h4><p>Website: enter your license key in Settings. Play app: Premium is restored from your Google Play account.</p></div>
+      <div class="tip-card accent"><div class="tip-emoji">✉️</div><h4>Still stuck?</h4><p>Email <a href="mailto:support@mydebtdashboard.com" style="color:var(--accent)">support@mydebtdashboard.com</a> with what you tapped and what you saw.</p></div>
     </div>
   </div>
 

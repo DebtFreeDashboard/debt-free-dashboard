@@ -9,9 +9,9 @@ DebtFree Dashboard is an independent tool, not a lender, credit counselor or fin
 - [DebtFree Dashboard web app](https://mydebtdashboard.com/app/dashboard.html): the full planner. Free tier plus a one-time $24 Premium upgrade (no subscription).
 - [Google Play app](https://play.google.com/store/apps/details?id=com.mydebtdashboard.app): "DebtFree: Debt Payoff Tracker", the same app for Android.
 - [Homepage](https://mydebtdashboard.com/): features, FAQ and pricing.
-- [User guide](https://mydebtdashboard.com/user-guide.html): how to add debts, choose a strategy, log payments and back up data.
+- [User guide](https://mydebtdashboard.com/user-guide.html): how to install it, add debts, log a month of payments in one tap, turn on payment reminders, compare payoff orders, lock the app and back up data.
 
-Main features: Snowball, Avalanche, an interest-minimizing order and a custom order; 0% promo and balance-transfer tracking; payment logging with a running ledger; What If scenarios for extra monthly payments and lump sums; credit-card utilization; lender logos; light and dark themes; export, backup and optional Google Drive sync.
+Main features: Snowball, Avalanche, an interest-minimizing order and a custom order; a This Month view with swipe and one-tap logging; free payment reminders by phone notification or calendar; statement check-in; app lock with PIN, Face ID or fingerprint; 0% promo and balance-transfer tracking; payment logging with a running ledger; What If scenarios for extra monthly payments and lump sums; credit-card utilization; lender logos; light and dark themes; export, backup and optional Google Drive sync.
 
 ## Free calculators
 
@@ -45,6 +45,6 @@ Each calculator runs in the browser with no sign-up, and uses the same payoff ma
 
 ## Policies
 
-- [Privacy policy](https://mydebtdashboard.com/privacy.html): debt data is stored on the user's device and never sent to a server.
+- [Privacy policy](https://mydebtdashboard.com/privacy.html): debt data is stored on the user's device and never sent to a server. Optional reminders send only due days as numbers.
 - [Terms of service](https://mydebtdashboard.com/terms.html)
 - Contact: support@mydebtdashboard.com

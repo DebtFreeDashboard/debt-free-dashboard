@@ -6,14 +6,14 @@
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DebtFree Dashboard — See Your Debt-Free Date</title>
-<meta name="description" content="See your real debt-free date in about 60 seconds. A free, private debt payoff planner with Avalanche, Snowball, and Hybrid strategies, a live 'What-If' extra-payment slider, 0% promo-APR tracking, and a payment logger. Your data stays on your device. Optional $24 one-time premium — no subscription.">
+<meta name="description" content="See your real debt-free date in about 60 seconds. A free, private debt payoff planner with Optimized, Avalanche and Snowball payoff orders, one-tap monthly logging, payment reminders, a live 'What-If' slider and 0% promo-APR tracking. Your data stays on your device. Optional $24 one-time premium — no subscription.">
 <link rel="canonical" href="https://mydebtdashboard.com/">
 
 <!-- Open Graph / social sharing -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="DebtFree Dashboard">
 <meta property="og:title" content="DebtFree Dashboard — See Your Debt-Free Date">
-<meta property="og:description" content="A free, private debt payoff planner that shows your real debt-free date in 60 seconds. Avalanche, Snowball & Hybrid strategies, a What-If slider, and promo-APR tracking. $24 one-time premium, no subscription.">
+<meta property="og:description" content="A free, private debt payoff planner that shows your real debt-free date in 60 seconds. Optimized, Avalanche and Snowball payoff orders, one-tap logging, payment reminders and a What-If slider. $24 one-time premium, no subscription.">
 <meta property="og:url" content="https://mydebtdashboard.com/">
 <meta property="og:image" content="https://mydebtdashboard.com/assets/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
@@ -32,14 +32,14 @@
   "operatingSystem": "Any modern web browser (Chrome, Safari, Firefox, Edge); installable as a PWA on iOS, Android, Windows, and macOS",
   "browserRequirements": "Requires a modern web browser. Works offline after first load.",
   "isAccessibleForFree": true,
-  "description": "A private, single-file debt payoff planner that shows your real debt-free date in about 60 seconds. Track credit cards, auto loans, student loans, personal loans, and mortgages; compare Avalanche, Snowball, and Hybrid payoff strategies side by side; model extra payments with a live What-If slider; track 0% promotional APR periods; and log payments as you go. All data is stored locally on your device — no account, no server, no cloud sync.",
+  "description": "A private debt payoff planner that shows your real debt-free date in about 60 seconds. Track credit cards, auto loans, student loans, personal loans, and mortgages; compare Optimized, Avalanche, Snowball and your own payoff order side by side; model extra payments with a live What-If slider; track 0% promotional APR periods; and log payments as you go. All debt data is stored locally on your device — no account and no bank login.",
   "offers": [
     {
       "@type": "Offer",
       "price": "0",
       "priceCurrency": "USD",
       "name": "Free",
-      "description": "Full free tier that takes you all the way to debt-free: unlimited debts, Avalanche / Snowball / Hybrid strategies, your real freedom date, the What-If extra-payment slider, live payoff chart, promotional-APR tracking, payment logger, and milestone badges."
+      "description": "Full free tier that takes you all the way to debt-free: unlimited debts, Optimized / Avalanche / Snowball / custom payoff orders, This Month with one-tap logging, payment reminders, app lock, your real freedom date, the What-If extra-payment slider, live payoff chart, promotional-APR tracking, payment logger, and milestone badges."
     },
     {
       "@type": "Offer",
@@ -52,8 +52,8 @@
   "featureList": [
     "See your real debt-free date in about 60 seconds",
     "Track credit cards, auto loans, student loans, personal loans, and mortgages as first-class debts",
-    "Three payoff strategies — Avalanche, Snowball, and Hybrid — with a live side-by-side comparison of which saves the most",
-    "Hybrid mode: drag debts into your own custom payoff order",
+    "Four payoff orders — Optimized, Avalanche, Snowball and your own — each showing its debt-free month and interest on your numbers",
+    "This Month: swipe to log a payment, or log the whole month in one tap", "Payment reminders by phone notification or calendar", "App lock with Face ID, fingerprint or PIN",
     "Live payoff chart that recalculates your freedom date in real time",
     "What-If modeler: add extra monthly payment and instantly see months saved and interest avoided",
     "Promotional / 0% balance-transfer APR tracking that automatically switches rates when the promo expires",
@@ -1233,6 +1233,14 @@
     background: #0a0a0f;
   }
 
+  /* 2026-11-13: phone-shaped frame for the new portrait app videos */
+  .video-frame.phone { border-radius: 40px; border: 10px solid #15171c; background: #15171c; }
+  .video-frame.phone video { border-radius: 30px; background: #fff; }
+  .phone-caption { text-align: center; margin-top: 16px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.03em; color: var(--text-muted); }
+  .shots-strip { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 4px 22px; margin-top: 40px; -webkit-overflow-scrolling: touch; }
+  .shots-strip img { flex: 0 0 auto; width: 230px; height: auto; border-radius: 18px; scroll-snap-align: start; box-shadow: 0 14px 40px rgba(0,0,0,0.12); }
+  @media(max-width:600px) { .shots-strip img { width: 200px; } }
+
   /* hero-specific caption overlay (autoplay loop) */
   .hero-video-caption {
     position: absolute;
@@ -1464,17 +1472,27 @@
     {
       "@type": "Question",
       "name": "Is my financial data safe?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Your debt figures stay on your device. Everything is stored locally in your browser \u2014 no account, no server, no cloud sync of your balances \u2014 so we can't see your numbers." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Your debt figures stay on your device. Everything is stored locally in your browser \u2014 no account, and no server ever receives your balances \u2014 so we can't see your numbers." }
     },
     {
       "@type": "Question",
       "name": "Does it work on my phone?",
-      "acceptedAnswer": { "@type": "Answer", "text": "Yes. The dashboard is fully mobile-responsive. Open it in your phone's browser and add it to your home screen for easy access \u2014 it'll feel like a native app." }
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. On Android, get it from Google Play. On iPhone, open mydebtdashboard.com/app/dashboard.html in Safari, tap Share, then Add to Home Screen. It opens like an app, works offline and can send payment reminders." }
     },
     {
       "@type": "Question",
       "name": "What if I want to update my balances over time?",
-      "acceptedAnswer": { "@type": "Answer", "text": "That's exactly what it's built for. Tap Edit next to any balance, enter your new number, and your entire plan recalculates instantly. Log payments as you make them to track real progress over time." }
+      "acceptedAnswer": { "@type": "Answer", "text": "That's exactly what it's built for. Each month, swipe a payment in This Month to log it, or tap Paid as planned to log them all. When a statement arrives, statement check-in matches the balance exactly. Your whole plan recalculates instantly." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can it remind me when payments are due?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, for free. Turn on phone notifications (before each payment, every Monday or on the 1st), or add repeating events to your phone's calendar. The reminder service only gets due days as numbers; your balances never leave your phone. On iPhone, notifications need the Home Screen app." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to connect my bank?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. You type in the balance, rate and minimum for each debt, so it works with any lender, including store cards, medical bills and family loans. There is no login to break and nothing to re-link." }
     },
     {
       "@type": "Question",
@@ -1535,7 +1553,7 @@
            data-cta-location="hero">
           Open the Dashboard — Free <span class="arrow">→</span>
         </a>
-        <a href="#dashboard-demo" class="hero-cta-secondary">▸ Watch 60-second demo</a>
+        <a href="#dashboard-demo" class="hero-cta-secondary">▸ Watch the 40-second demo</a>
       </div>
       <div class="hero-reassure">
         <span>Free, unlimited debts</span>
@@ -1546,35 +1564,22 @@
       <a class="play-badge" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dhome_hero" target="_blank" rel="noopener" data-play-badge="home_hero" style="display:inline-flex;align-items:center;gap:10px;line-height:1.3;text-decoration:none;margin-top:18px;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.8rem;color:var(--text-muted)">On Android? Get the app.</span></a>
     </div>
     <div class="hero-right">
-      <div class="video-frame">
-        <div class="video-frame-bar">
-          <div class="video-dot" style="background:#ff5f56"></div>
-          <div class="video-dot" style="background:#ffbd2e"></div>
-          <div class="video-dot" style="background:#27c93f"></div>
-          <span class="video-frame-url">debtfree-dashboard.html · "What If" slider</span>
+      <div>
+        <div class="video-frame phone">
+          <!-- 2026-11-13: ~21s loop of the v1.68 app (This Month swipe, Paid as planned, What If). 780x1560 H.264, ~0.9 MB. -->
+          <video autoplay muted loop playsinline preload="metadata" poster="assets/videos/app-hero-cover.jpg" aria-label="DebtFree on a phone: logging a payment with a swipe, logging the month, and the What If slider">
+            <source src="assets/videos/app-hero.mp4" type="video/mp4">
+          </video>
         </div>
-        <!--
-          ~22s WhatIf slider loop — autoplay, muted, looped.
-          1280x720 H.264 / AAC. ~1.1 MB.
-        -->
-        <video
-          autoplay
-          muted
-          loop
-          playsinline
-          preload="metadata"
-          poster="assets/videos/WhatIf-cover.jpg">
-          <source src="assets/videos/WhatIf.mp4" type="video/mp4">
-          Your browser doesn't support HTML5 video.
-        </video>
-        <div class="hero-video-caption">▸ Drag the "What If" slider — watch years disappear from your timeline.</div>
+        <div class="phone-caption">Swipe to log a payment. One tap logs the month.</div>
       </div>
     </div>
   </div>
+
   <div class="hero-stats" style="max-width:1100px; margin-left:auto; margin-right:auto;">
     <div class="hero-stat-item">
-      <span class="hero-stat-num">3</span>
-      <span class="hero-stat-label">payoff strategies built in</span>
+      <span class="hero-stat-num">4</span>
+      <span class="hero-stat-label">payoff orders built in</span>
     </div>
     <div class="hero-stat-item">
       <span class="hero-stat-num">$0</span>
@@ -1600,27 +1605,24 @@
     </div>
     <h2 class="section-title" style="color:var(--ink)">A real payoff plan,<br>built in 60 seconds.</h2>
     <div class="demo-video-wrap">
-      <div class="video-frame">
-        <div class="video-frame-bar">
-          <div class="video-dot" style="background:#ff5f56"></div>
-          <div class="video-dot" style="background:#ffbd2e"></div>
-          <div class="video-dot" style="background:#27c93f"></div>
-          <span class="video-frame-url">debtfree-dashboard.html</span>
-        </div>
-        <!--
-          61s full dashboard demo — click-to-play with controls.
-          1920x1080 H.264 / AAC. ~5.5 MB.
-        -->
-        <video
-          controls
-          preload="metadata"
-          playsinline
-          poster="assets/videos/FullDemo-cover.jpg">
-          <source src="assets/videos/FullDemo.mp4" type="video/mp4">
+      <div class="video-frame phone">
+        <!-- 2026-11-13: 38s tour of v1.68 (This Month, Paid as planned, calendar, payoff orders, What If, Wins, reminders). 780x1560 H.264, ~1.7 MB. -->
+        <video controls preload="metadata" playsinline poster="assets/videos/app-demo-cover.jpg">
+          <source src="assets/videos/app-demo.mp4" type="video/mp4">
           Your browser doesn't support HTML5 video.
         </video>
       </div>
-      <div class="demo-video-caption">▸ Press play. Every feature in action — strategies, What If modeler, payment logger, milestones.</div>
+      <div class="phone-caption">Press play: This Month, swipe to log, the calendar, payoff orders, What If, Wins and reminders.</div>
+    </div>
+    <div class="shots-strip" aria-label="App screenshots">
+      <img src="assets/screens/01-light.webp" width="540" height="960" loading="lazy" alt="Every debt, one total: what you owe, what is paid off and your debt-free date">
+      <img src="assets/screens/02-dark.webp" width="540" height="960" loading="lazy" alt="This month at a glance: log a payment with one tap or a swipe">
+      <img src="assets/screens/03-light.webp" width="540" height="960" loading="lazy" alt="Pick your payoff method: snowball, avalanche or optimized">
+      <img src="assets/screens/04-dark.webp" width="540" height="960" loading="lazy" alt="Try a what-if: an extra 200 dollars a month moves the date">
+      <img src="assets/screens/05-light.webp" width="540" height="960" loading="lazy" alt="Each debt in detail: credit used, daily interest and payoff date">
+      <img src="assets/screens/06-dark.webp" width="540" height="960" loading="lazy" alt="Count every win: milestones and paid-off debts">
+      <img src="assets/screens/07-light.webp" width="540" height="960" loading="lazy" alt="Due dates on a calendar">
+      <img src="assets/screens/08-dark.webp" width="540" height="960" loading="lazy" alt="Payment reminders: phone notifications or calendar alerts">
     </div>
   </div>
 </section>
@@ -1648,7 +1650,7 @@
       </div>
       <div class="pain-item">
         <div class="pain-num">04</div>
-        <div class="pain-text">Every debt tool either wants a monthly fee or <em>sells your data</em> to lenders.</div>
+        <div class="pain-text">Most debt apps charge <em>every month</em> or ask for your bank login.</div>
       </div>
     </div>
   </div>
@@ -1661,54 +1663,64 @@
     <h2 class="section-title">Built for people who are<br>serious about getting out.</h2>
     <div class="features-grid">
       <div class="feature-card">
-        <span class="feature-icon">🏦</span>
-        <div class="feature-name">Installment Loans <span class="feature-badge-new">New</span></div>
-        <div class="feature-desc">Auto, student, personal, and mortgage loans are first-class debts — alongside your credit cards. Mortgages stay out of your payoff plan by default so the timeline focuses on what you’re actively crushing. Flip a checkbox to change it.</div>
+        <span class="feature-icon">📅</span>
+        <div class="feature-name">This Month, in one tap <span class="feature-badge-new">New</span></div>
+        <div class="feature-desc">See what's due this month and what's already logged, with a ring that fills as you go. Swipe a payment right to log it, left to move or skip it, or log the whole month with Paid as planned.</div>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🏔️</span>
-        <div class="feature-name">3 Payoff Strategies</div>
-        <div class="feature-desc">Avalanche, Snowball, and Hybrid — with a live side-by-side comparison showing exactly which method saves you the most. Hybrid mode lets you drag debts into your own custom payoff order.</div>
+        <span class="feature-icon">🔔</span>
+        <div class="feature-name">Payment reminders <span class="feature-badge-new">New</span></div>
+        <div class="feature-desc">Phone notifications before each due date, every Monday or on the 1st. Or add repeating events to your calendar. The notification text is written on your phone; the reminder service only gets due days as numbers.</div>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">📊</span>
-        <div class="feature-name">Live Payoff Chart</div>
-        <div class="feature-desc">Watch your balance curve drop to zero as you adjust your monthly budget. Your Freedom Date recalculates in real-time every time you change a number.</div>
+        <span class="feature-icon">🧠</span>
+        <div class="feature-name">4 payoff orders</div>
+        <div class="feature-desc">Optimized, Avalanche, Snowball or your own order. Each one shows its debt-free month and total interest on your own numbers.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🔮</span>
-        <div class="feature-name">"What If" Modeler</div>
-        <div class="feature-desc">Add more monthly payment on top of your current plan and instantly see months saved and interest avoided — compared against your actual plan, not a hypothetical baseline.</div>
+        <div class="feature-name">"What If" modeler</div>
+        <div class="feature-desc">Slide an extra monthly amount and watch months saved and interest avoided, measured against your actual plan. Premium adds lump sums and planned windfalls.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🩺</span>
+        <div class="feature-name">Plan check <span class="feature-badge-new">New</span></div>
+        <div class="feature-desc">Flags a 0% promo ending within 60 days, a planned payment smaller than this month's interest, or a card at 90% of its limit. Plain facts about your numbers.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🧾</span>
+        <div class="feature-name">Statement check-in <span class="feature-badge-new">New</span></div>
+        <div class="feature-desc">Type the balance from your statement. The app records the difference (interest, fees) on the statement date, so balances stay exact without a bank login.</div>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🗓️</span>
+        <div class="feature-name">Calendar view <span class="feature-badge-new">New</span></div>
+        <div class="feature-desc">Every due date this month on a calendar. Pay twice a month on any debt, and the plan splits the minimum for you.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🎯</span>
-        <div class="feature-name">Promotional APR Tracking</div>
-        <div class="feature-desc">Have a 0% balance transfer? Enter the promo rate, end date, transfer fee, and post-promo APR. The dashboard automatically switches rates when your promo expires — so your math is always accurate.</div>
+        <div class="feature-name">Promo APR tracking</div>
+        <div class="feature-desc">Enter the promo rate, end date, transfer fee and regular APR. The plan switches rates the day the promo ends.</div>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">💸</span>
-        <div class="feature-name">Windfall Planner</div>
-        <div class="feature-desc">Apply a tax refund, bonus, or side hustle income to any debt and instantly see the ripple effect on your entire timeline. Made a mistake? Undo it — your balance restores automatically.</div>
+        <span class="feature-icon">🏦</span>
+        <div class="feature-name">Every kind of debt</div>
+        <div class="feature-desc">Credit cards, auto, student, personal and mortgage loans, with lender logos, credit-limit bars and a red-to-green payoff bar on each.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">📝</span>
-        <div class="feature-name">Payment Logger with Undo</div>
-        <div class="feature-desc">Log every payment with a date and amount. Delete any entry — even out of order — and the dashboard recalculates your balance from scratch so the math is always right.</div>
-      </div>
-      <div class="feature-card">
-        <span class="feature-icon">✏️</span>
-        <div class="feature-name">Full Debt Editing</div>
-        <div class="feature-desc">Edit any field on any debt at any time — name, type, balance, APR, minimum payment, and all promo fields. Your entire plan updates immediately. Built for real ongoing use.</div>
+        <div class="feature-name">Payment log with undo</div>
+        <div class="feature-desc">Every payment with its date and amount. Delete any entry, even out of order, and every balance is recalculated from the start.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🏆</span>
         <div class="feature-name">Milestones & Wins</div>
-        <div class="feature-desc">Nine achievement badges unlock automatically — from your first payment logged to $10,000 paid off. Momentum is the real product. Every win gets its moment.</div>
+        <div class="feature-desc">Badges, streaks and a shareable card each time a debt is paid off or a milestone lands.</div>
       </div>
       <div class="feature-card">
         <span class="feature-icon">🔒</span>
-        <div class="feature-name">100% Private</div>
-        <div class="feature-desc">Your debt data stays on your device. No account, no server, no cloud sync. Open in any browser — your data saves locally and persists automatically across every session.</div>
+        <div class="feature-name">Private, with app lock <span class="feature-badge-new">New</span></div>
+        <div class="feature-desc">No account and no bank login. Your numbers stay on your device, with optional Face ID, fingerprint or PIN lock and an optional backup to your own Google Drive.</div>
       </div>
     </div>
   </div>
@@ -1773,14 +1785,13 @@
         </div>
         <div class="price-note" style="text-align:left">Everything you need to get out of debt</div>
         <div class="pricing-items" style="margin-top:20px">
-          <div class="pricing-item">Avalanche, Snowball &amp; Hybrid — with full payment rollover</div>
-          <div class="pricing-item">Unlimited debts, your real freedom date</div>
-          <div class="pricing-item">Next Debt to Eliminate spotlight</div>
-          <div class="pricing-item">Debt-Free Progress tracker</div>
+          <div class="pricing-item">Unlimited debts and your real debt-free date</div>
+          <div class="pricing-item">Optimized, Avalanche, Snowball or your own order</div>
+          <div class="pricing-item">This Month with swipe and one-tap logging</div>
+          <div class="pricing-item">Payment reminders: phone or calendar</div>
           <div class="pricing-item">What-If extra-payment slider</div>
-          <div class="pricing-item">Live payoff chart, promo APR tracking</div>
-          <div class="pricing-item">Light &amp; dark themes</div>
-          <div class="pricing-item">Installs as an app · works offline · 100% private</div>
+          <div class="pricing-item">Plan check, statement check-in, promo APR tracking</div>
+          <div class="pricing-item">App lock · installs as an app · works offline · private</div>
         </div>
         <a href="https://mydebtdashboard.com/app/dashboard.html"
    class="btn-buy" style="background:transparent;color:var(--ink);border:1px solid var(--border2);margin-top:24px"
@@ -1845,21 +1856,35 @@
           <span>Is my financial data safe?</span>
           <span class="faq-toggle">+</span>
         </div>
-        <div class="faq-a">Your debt figures stay on your device. Everything is stored locally in your browser — no account, no server, no cloud sync of your balances — so we can't see your numbers.</div>
+        <div class="faq-a">Your debt figures stay on your device. Everything is stored locally in your browser — no account, and no server ever receives your balances — so we can't see your numbers. Optional reminders send only due days as numbers.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
           <span>Does it work on my phone?</span>
           <span class="faq-toggle">+</span>
         </div>
-        <div class="faq-a">Yes. The dashboard is fully mobile-responsive. Open the file in your phone's browser and bookmark it to your home screen for easy access — it'll feel like a native app.</div>
+        <div class="faq-a">Yes. On Android, get it from Google Play. On iPhone, open mydebtdashboard.com/app/dashboard.html in Safari, tap Share, then Add to Home Screen. It opens like an app, works offline and can send payment reminders.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
           <span>What if I want to update my balances over time?</span>
           <span class="faq-toggle">+</span>
         </div>
-        <div class="faq-a">That's exactly what it's built for. Tap "Edit" next to any balance, enter your new number, and your entire plan recalculates instantly. Log payments as you make them to track real progress over time.</div>
+        <div class="faq-a">That's exactly what it's built for. Each month, swipe a payment in This Month to log it, or tap Paid as planned to log them all. When a statement arrives, statement check-in matches the balance exactly. Your whole plan recalculates instantly.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Can it remind me when payments are due?</span>
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-a">Yes, for free. Turn on phone notifications (before each payment, every Monday or on the 1st), or add repeating events to your phone's calendar. The reminder service only gets due days as numbers; your balances never leave your phone. On iPhone, notifications need the Home Screen app.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Do I need to connect my bank?</span>
+          <span class="faq-toggle">+</span>
+        </div>
+        <div class="faq-a">No. You type in the balance, rate and minimum for each debt, so it works with any lender, including store cards, medical bills and family loans. There is no login to break and nothing to re-link.</div>
       </div>
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
