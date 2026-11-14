@@ -170,6 +170,7 @@ Besides page views, the site sends:
 | `tm_view`, `plus_open`, `plus_pick` | The app | This Month list/calendar switch (`view`); the phone bar's + opened, and what was picked (`pick`: `log`, `batch`, `add`) |
 | `applock_on`, `applock_off`, `applock_pin_changed`, `applock_removed_forgot` | The app's Settings | App lock turned on (`bio` true when Face ID / fingerprint was added), off, PIN changed, removed after the forgot-PIN wait |
 | `push_on`, `push_off` | The app's reminders sheet | Phone notifications turned on (`cadence`, `lead`) or off |
+| `add_another`, `add_session_done` | The app's Add a Debt card | A debt saved with Save & add another (`session_count`); a run of adds finished with Save & see my plan |
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -364,6 +365,21 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (night, later)** — Website and guide refresh (commit 6fb0685):
+  phone-frame hero loop and 38s demo (`assets/videos/app-hero.mp4`,
+  `app-demo.mp4`, filmed with `tools/play-store/film.js`), the 8 Play screenshots
+  as WebP in `assets/screens/`, 12 feature cards, 4 payoff orders, overclaim and
+  "open the file" copy removed, two FAQs; user guide rewritten for v1.68.
+  v1.69.0 "Faster setup": the add form shows name, balance, APR and minimum;
+  type, lender, due days, limit and promo sit in `<details id="add-more">`.
+  "Save & add another debt" (`addDebtAndAnother()`) saves without the preview,
+  clears the form and shows `#add-session` (count, names, debt-free date so
+  far); "Save & see my plan" (`addDebtFinish()`) keeps the preview for a single
+  debt and ends a session on an empty form. Milestone cards are held during a
+  session (`_addSessionDefer`) and shown at the end. Type is guessed from the
+  name or lender group until the user picks one (`guessDebtType()`). A blank
+  minimum sets `minEstimated` and both debt views show "min (est.)". Events
+  `add_another`, `add_session_done`. Tests: `tools/test-add-flow.js`.
 - **2026-11-13 (late night)** — v1.68.0: phone notifications. New Worker
   `tools/reminders-worker/worker.mjs` (debtfree-reminders.debtfreedashboard.workers.dev):
   KV `SUBS`, an hourly cron, and a VAPID key it makes itself on first use and keeps in KV

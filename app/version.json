@@ -1,11 +1,11 @@
 {
-  "version": "1.68.0",
+  "version": "1.69.0",
   "releaseDate": "2026-11-13",
-  "releaseName": "Payment notifications",
+  "releaseName": "Faster setup",
   "notes": [
-    "Phone notifications for payments: in This Month, tap Get payment reminders and choose before each payment, every Monday, or on the 1st. They arrive at 9 AM your time.",
-    "Private by design: our reminder service only gets your due days as numbers and when to send. The notification text is written on your phone, and account names show only if you choose.",
-    "On iPhone, notifications work once DebtFree is added to your Home Screen. Calendar reminders still work everywhere.",
-    "On iPhone, the bottom tab bar no longer lets the page show through underneath it when Safari's toolbar slides away."
+    "Adding debts is quicker: the form asks only for balance, APR and minimum (name and minimum are optional). Type, lender, due date, limit and 0% promo sit under More details.",
+    "Add all your debts in one go: tap Save & add another debt and the form is ready for the next one, with your debt-free date updating as you go.",
+    "Type a name like \"Car loan\" or pick a lender and the debt type is set for you.",
+    "A minimum you left blank is estimated and marked (est.) on the debt until you change it."
   ]
 }

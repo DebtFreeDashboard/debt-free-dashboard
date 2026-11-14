@@ -1446,6 +1446,18 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     transform: translateY(-1px);
   }
 
+  /* v1.69.0 — add-debt form: core fields + More details + add another */
+  .add-more { margin-top: 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; background: var(--surface2); }
+  .add-more > summary { cursor: pointer; font-weight: 600; font-size: 0.88rem; color: var(--text); list-style: none; }
+  .add-more > summary::-webkit-details-marker { display: none; }
+  .add-more > summary::before { content: '\25B8'; display: inline-block; margin-right: 8px; color: var(--accent); transition: transform .15s; }
+  .add-more[open] > summary::before { transform: rotate(90deg); }
+  .add-more > summary span { font-weight: 400; font-size: 0.76rem; color: var(--text-muted); margin-left: 4px; }
+  .add-another-btn { margin-top: 14px; }
+  #add-save-btn { margin-top: 10px; }
+  .add-session { background: rgba(0,168,132,0.08); border: 1px solid rgba(0,168,132,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.5; }
+  .add-session b { color: var(--accent); }
+  .add-session .as-list { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
   .btn-ghost {
     background: transparent;
     color: var(--text-muted);
@@ -3445,6 +3457,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <div id="welcome-hint" style="display:none;background:rgba(0,168,132,0.08);border:1px solid rgba(0,168,132,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.5;">
         &#128075; <strong>Welcome!</strong> Add your first debt below &mdash; your freedom date appears the moment you do. Your balances stay on your device &mdash; never on our servers.
       </div>
+      <!-- v1.69.0 — what this session has added so far, with the date it gives. -->
+      <div id="add-session" class="add-session" hidden aria-live="polite"></div>
       <!-- v1.57.0 — field help. Collapsed by default; dismiss hides it for good. -->
       <div id="field-help" class="field-help">
         <button type="button" class="field-help-toggle" onclick="toggleFieldHelp()" aria-expanded="false" aria-controls="field-help-body">
@@ -3463,26 +3477,11 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
           </dl>
         </div>
       </div>
-      <div class="form-grid">
+      <!-- v1.69.0 — the four fields the plan needs; everything else sits behind More details. -->
+      <div class="form-grid add-core">
         <div class="form-field">
           <label for="debt-name">Debt Name <span class="field-optional">optional</span></label>
           <input type="text" id="debt-name" placeholder="Rewards Visa" oninput="onDebtNameInput()" />
-        </div>
-        <div class="form-field">
-          <label for="debt-type">Type</label>
-          <select id="debt-type" onchange="onDebtTypeChange('add')">
-            <option value="cc">Credit Card</option>
-            <option value="student">Student Loan</option>
-            <option value="auto">Auto Loan</option>
-            <option value="personal">Personal Loan</option>
-            <option value="mortgage">Mortgage</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div class="form-field field-full">
-          <label for="debt-issuer">Issuer / Lender <span class="field-optional">optional</span></label>
-          <select id="debt-issuer" onchange="onIssuerPicked()"></select>
-          <div class="field-hint">Shows the lender&rsquo;s logo on this debt</div>
         </div>
         <div class="form-field">
           <label for="debt-balance">Balance ($)</label>
@@ -3497,6 +3496,33 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
           </div>
         </div>
         <div class="form-field">
+          <label for="debt-min">Min Payment ($) <span class="field-optional">optional</span></label>
+          <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
+            oninput="clearFieldError(this)"  data-affix="$"/>
+          <div class="field-hint" id="min-hint">Leave blank and we&rsquo;ll estimate it</div>
+        </div>
+      </div>
+      <div class="form-error" id="add-debt-error" style="display:none;"></div>
+      <details class="add-more" id="add-more">
+        <summary>More details <span>type, lender, due date, limit, 0% promo &middot; optional</span></summary>
+        <div class="form-grid" style="margin-top:12px">
+        <div class="form-field">
+          <label for="debt-type">Type</label>
+          <select id="debt-type" onchange="_typeTouched = true; onDebtTypeChange('add')">
+            <option value="cc">Credit Card</option>
+            <option value="student">Student Loan</option>
+            <option value="auto">Auto Loan</option>
+            <option value="personal">Personal Loan</option>
+            <option value="mortgage">Mortgage</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-field field-full">
+          <label for="debt-issuer">Issuer / Lender <span class="field-optional">optional</span></label>
+          <select id="debt-issuer" onchange="onIssuerPicked()"></select>
+          <div class="field-hint">Shows the lender&rsquo;s logo on this debt</div>
+        </div>
+        <div class="form-field">
           <label for="debt-due-day">Due Day <span class="field-optional">optional</span></label>
           <input type="text" inputmode="numeric" id="debt-due-day" placeholder="15" min="1" max="31"
             oninput="clearFieldError(this)" />
@@ -3508,20 +3534,12 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
             oninput="clearFieldError(this)" />
           <div class="field-hint">If you pay twice a month</div>
         </div>
-        <div class="form-field field-full">
-          <label for="debt-min">Min Payment ($) <span class="field-optional">optional</span></label>
-          <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
-            oninput="clearFieldError(this)"  data-affix="$"/>
-          <div class="field-hint" id="min-hint">Blank = we'll estimate it</div>
-        </div>
         <div class="form-field field-full" id="credit-limit-field">
           <label for="debt-credit-limit">Credit Limit ($) <span class="field-optional">optional</span></label>
           <input type="text" inputmode="decimal" id="debt-credit-limit" placeholder="5000" min="0" step="1" data-affix="$" />
           <div class="field-hint">Shows how much of your limit is in use</div>
         </div>
-      </div>
-      <div class="form-error" id="add-debt-error" style="display:none;"></div>
-
+        </div>
       <!-- Promo APR toggle -->
       <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
         <input type="checkbox" id="debt-has-promo" onchange="togglePromoFields()" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
@@ -3530,7 +3548,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         </label>
       </div>
 
-      <!-- Promo fields (hidden by default) -->
+        <!-- Promo fields (hidden by default) -->
       <div id="promo-fields" style="display:none; margin-top:12px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:16px;">
         <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">🎯 Promotional APR Details</div>
         <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
@@ -3561,7 +3579,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         </div>
       </div>
 
-      <!-- v1.7.0 — installment-loan controls.  Shown automatically for
+        <!-- v1.7.0 — installment-loan controls.  Shown automatically for
            non-credit-card types; mortgages default to excluded from strategy. -->
       <div id="installment-fields" style="display:none; margin-top:12px;">
         <div style="display:flex; align-items:center; gap:10px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
@@ -3590,7 +3608,10 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         </details>
       </div>
 
-      <button class="btn btn-primary btn-full" onclick="addDebt()">+ Add Debt</button>
+      </details>
+
+      <button type="button" class="btn btn-ghost btn-full add-another-btn" id="add-another-btn" onclick="addDebtAndAnother()">+ Save &amp; add another debt</button>
+      <button type="button" class="btn btn-primary btn-full" id="add-save-btn" onclick="addDebtFinish()">Save &amp; see my plan</button>
     </div>
 
     <!-- v1.26.0 — Paid Off Debts. Eliminated debts leave the active list (so it
@@ -4715,7 +4736,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.68.0';
+const APP_VERSION = '1.69.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4723,6 +4744,17 @@ const APP_VERSION = '1.68.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.69.0',
+    date: 'November 13, 2026',
+    name: 'Faster setup',
+    whatsNew: [
+      'Adding debts is quicker: the form asks only for balance, APR and minimum (name and minimum are optional). Type, lender, due date, limit and 0% promo sit under More details.',
+      'Add all your debts in one go: tap Save & add another debt and the form is ready for the next one, with your debt-free date updating as you go.',
+      'Type a name like "Car loan" or pick a lender and the debt type is set for you.',
+      'A minimum you left blank is estimated and marked (est.) on the debt until you change it.'
+    ]
+  },
   {
     version: '1.68.0',
     date: 'November 13, 2026',
@@ -7303,6 +7335,12 @@ function checkMilestones() {
   fresh = fresh.filter(function(k){ return _msMayCelebrate(k, causes); });
   if (!fresh.length) return;
   fresh.sort(function(a, b){ return priority(a) - priority(b); });
+  // v1.69.0 - mid "Save & add another" a card would interrupt the next debt;
+  // hold the best one and show it when the person finishes adding.
+  if (_addSessionDefer) {
+    if (!_deferredMs || priority(fresh[0]) < priority(_deferredMs)) _deferredMs = fresh[0];
+    return;
+  }
   celebrateMilestone(fresh[0]);
 }
 
@@ -8425,7 +8463,7 @@ function debtCardHtml(d, idx, total, preview) {
   } else {
     mini.push(aprNow + '% APR');
   }
-  mini.push(fmt(d.minPayment) + ' min');
+  mini.push(fmt(d.minPayment) + (d.minEstimated ? ' min (est.)' : ' min'));
   if (d.transferFee > 0) mini.push(fmtDec(d.transferFee) + ' transfer fee');
   const accrued = preview ? 0 : accruedInterestFor(d.id);
   if (accrued > 0) mini.push(fmtDec(accrued) + ' est. interest added');
@@ -8509,13 +8547,40 @@ document.addEventListener('keydown', function(e) {
 
 // Add-form wiring: fill the issuer from the name until the user picks one.
 var _issuerTouched = false;
-function onIssuerPicked() { _issuerTouched = true; }
+var _typeTouched = false;
+function onIssuerPicked() { _issuerTouched = true; _guessAddType(); }
 function onDebtNameInput() {
-  if (_issuerTouched) return;
-  var sel = document.getElementById('debt-issuer');
+  if (!_issuerTouched) {
+    var sel = document.getElementById('debt-issuer');
+    var nm = document.getElementById('debt-name');
+    if (sel && nm) sel.value = guessIssuer(nm.value) || '';
+  }
+  _guessAddType();
+}
+// v1.69.0 — Type now sits behind More details, so set it from the name or
+// lender until the user picks one ("Car loan" or Toyota Financial -> Auto loan).
+function guessDebtType(name, issuerId) {
+  var n = String(name || '').toLowerCase();
+  if (/mortgage|home loan|heloc/.test(n)) return 'mortgage';
+  if (/student|navient|sallie|nelnet|mohela|aidvantage|fedloan|great lakes/.test(n)) return 'student';
+  if (/\b(car|auto|truck|vehicle)\b/.test(n)) return 'auto';
+  if (/personal loan|\bloan\b/.test(n)) return 'personal';
+  var g = issuerId && ISSUER_BY_ID[issuerId] ? ISSUER_BY_ID[issuerId].group : null;
+  if (g === 'student') return 'student';
+  if (g === 'auto') return 'auto';
+  if (g === 'home') return 'mortgage';
+  if (g === 'loan') return 'personal';
+  if (g === 'bnpl') return 'other';
+  return 'cc';
+}
+function _guessAddType() {
+  if (_typeTouched) return;
+  var ty = document.getElementById('debt-type');
   var nm = document.getElementById('debt-name');
-  if (!sel || !nm) return;
-  sel.value = guessIssuer(nm.value) || '';
+  var is = document.getElementById('debt-issuer');
+  if (!ty) return;
+  var t = guessDebtType(nm ? nm.value : '', is ? is.value : '');
+  if (ty.value !== t) { ty.value = t; onDebtTypeChange('add'); }
 }
 function populateIssuerSelects() {
   ['debt-issuer', 'edit-issuer'].forEach(function (id) {
@@ -9303,7 +9368,9 @@ function addDebt(confirmed) {
     issuer: sanitizeIssuer((document.getElementById('debt-issuer') || {}).value),
     creditLimit: type === 'cc'
       ? sanitizeCreditLimit(parseAmount((document.getElementById('debt-credit-limit') || {}).value || ''))
-      : null
+      : null,
+    // v1.69.0 — remembered so the card can say the minimum is an estimate.
+    minEstimated: (minRaw === '' || minRaw === null || typeof minRaw === 'undefined')
   };
   if (!confirmed) { showAddPreview(_newDebt); return; }
   closeAddPreview();
@@ -9365,10 +9432,75 @@ function addDebt(confirmed) {
   // v1.56.0 — the due day was never cleared, so the next debt added inherited it.
   var _dd = document.getElementById('debt-due-day');        if (_dd) _dd.value = '';
   var _dd2 = document.getElementById('debt-due-day2');      if (_dd2) _dd2.value = '';
+  // v1.69.0 — each new debt starts as a card with More details closed.
+  { var _ty = document.getElementById('debt-type'); if (_ty) { _ty.value = 'cc'; onDebtTypeChange('add'); } _typeTouched = false; }
+  { var _am = document.getElementById('add-more'); if (_am) _am.open = false; }
+  _addSessionNames.push(name);
 
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save();
   render();
+  renderAddSession();
+  return true;
+}
+
+// v1.69.0 — several debts in one sitting. "Save & add another" saves this
+// one straight away (no preview) and leaves the form ready for the next;
+// "Save & see my plan" keeps the preview for a single debt, and with an
+// empty form after a session it just shows the plan.
+var _addSessionNames = [];
+var _addSessionDefer = false, _deferredMs = null;
+function _endAddSession() {
+  _addSessionDefer = false;
+  _addSessionNames = []; renderAddSession();
+  if (_deferredMs) {
+    var k = _deferredMs; _deferredMs = null;
+    var ov = document.getElementById('celebrate-overlay');
+    if (ov && ov.classList.contains('hidden')) setTimeout(function () { celebrateMilestone(k); }, 450);
+  }
+}
+function _addFormBlank() {
+  return ['debt-name', 'debt-balance', 'debt-apr', 'debt-min'].every(function (id) {
+    var el = document.getElementById(id); return !el || String(el.value || '').trim() === '';
+  });
+}
+function addDebtAndAnother() {
+  if (_addFormBlank() && _addSessionNames.length) { var n0 = document.getElementById('debt-name'); if (n0) n0.focus(); return; }
+  _addSessionDefer = true;
+  var ok = addDebt(true);
+  if (ok !== true) return;
+  trackShare('add_another', { _category: 'activation', session_count: _addSessionNames.length });
+  var card = document.getElementById('add-debt-card');
+  if (card && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(function () { var n = document.getElementById('debt-name'); if (n && n.focus) n.focus(); }, 300);
+}
+function addDebtFinish() {
+  if (_addFormBlank() && _addSessionNames.length) {
+    trackShare('add_session_done', { _category: 'activation', session_count: _addSessionNames.length });
+    _endAddSession();
+    showSection('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  addDebt();
+}
+// The preview's Confirm: save, then show the plan this debt produced.
+function addDebtConfirmed() {
+  if (addDebt(true) !== true) return;
+  _endAddSession();
+  showSection('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function renderAddSession() {
+  var box = document.getElementById('add-session');
+  if (!box) return;
+  if (!_addSessionNames.length) { box.hidden = true; box.innerHTML = ''; return; }
+  var date = (document.getElementById('stat-date') || {}).textContent || '';
+  var months = (document.getElementById('stat-months') || {}).textContent || '';
+  var n = _addSessionNames.length;
+  box.innerHTML = '&#10003; <b>' + n + (n === 1 ? ' debt' : ' debts') + ' added.</b> '
+    + (date && date !== '\u2014' ? 'Debt-free date so far: <b>' + escapeHtml(date) + '</b>' + (months ? ' (' + escapeHtml(months) + ')' : '') + '. ' : '')
+    + 'Add the next one, or tap Save &amp; see my plan.'
+    + '<div class="as-list">' + _addSessionNames.map(escapeHtml).join(' &middot; ') + '</div>';
+  box.hidden = false;
 }
 
 // ═══════════════════════════════════════════
@@ -9796,6 +9928,9 @@ function saveEditDebt() {
   d.apr            = hasPromo ? promoApr : apr;
   d.realApr        = apr;
   d.regularApr     = apr;
+  // v1.69.0 — a blank field is a fresh estimate; the same estimate re-saved stays one.
+  d.minEstimated   = (minRawEdit === '' || minRawEdit === null || typeof minRawEdit === 'undefined')
+    || (!!d.minEstimated && min === d.minPayment);
   d.minPayment     = min;
   d.hasPromo       = hasPromo;
   d.promoApr       = hasPromo ? promoApr : null;
@@ -15775,7 +15910,7 @@ function renderPortfolioTable(list) {
       '<td class="pf-td pf-name debt-type-' + badgeClass(d.type).replace('badge-','') + '"><span class="pf-name-line">' + issuerTileHtml(d) + '<span class="pf-title"><span class="dc-name">' + escapeHtml(d.name) + '</span><span class="dc-sub">' + badgeLabel(d.type) + dueTagFor(d) + '</span></span></span>' +
         // v1.61.0 — phone layout: big balance + rate/min line, as on the free cards
         '<div class="pf-bigbal"><div class="dc-bal">' + fmtDec(r.balance) + '<span>balance</span></div>' +
-        '<div class="dc-mini">' + r.apr + '% APR \u00b7 ' + fmt(r.min) + ' min</div></div>' + exclTag + promoTag + tcTag + utilizationHtml(d) + progTag + '</td>' +
+        '<div class="dc-mini">' + r.apr + '% APR \u00b7 ' + fmt(r.min) + (d.minEstimated ? ' min (est.)' : ' min') + '</div></div>' + exclTag + promoTag + tcTag + utilizationHtml(d) + progTag + '</td>' +
       '<td class="pf-td pf-num" data-label="Balance">' + fmtDec(r.balance) + '</td>' +
       '<td class="pf-td pf-num" data-label="APR">' + r.apr + '%</td>' +
       '<td class="pf-td pf-num" data-label="Min">' + fmtDec(r.min) + '</td>' +
@@ -20748,7 +20883,7 @@ if (isInStandaloneMode() ||
     <div id="add-preview-note" class="add-preview-note" style="display:none;"></div>
     <div class="modal-actions add-preview-actions">
       <button class="btn btn-ghost" onclick="closeAddPreview()">Keep editing</button>
-      <button class="btn btn-primary" id="add-preview-confirm" onclick="addDebt(true)">Confirm and save</button>
+      <button class="btn btn-primary" id="add-preview-confirm" onclick="addDebtConfirmed()">Confirm and save</button>
     </div>
   </div>
 </div>
