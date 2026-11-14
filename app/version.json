@@ -1,11 +1,8 @@
 {
-  "version": "1.71.0",
+  "version": "1.71.1",
   "releaseDate": "2026-11-14",
-  "releaseName": "Autopay and one-tap logging",
+  "releaseName": "Bottom bar stays put on iPhone",
   "notes": [
-    "On autopay: mark a debt as on autopay (in Edit, or under More details when adding it) and its payment logs itself on each due day from then on. Nothing to tap, and each one can be undone. Leave the amount blank to use the minimum.",
-    "When a payment’s day comes, the app asks “Did these go out?” the next time you open it: one tap per debt to log it, change the amount first if it was different, or tap “It’s on autopay” so it logs itself from then on.",
-    "Due-day notifications open that same check. On Android they also have a Paid button that logs the payment straight from the notification.",
-    "Debts on autopay no longer get payment reminders, since there’s nothing to do for them."
+    "On iPhone (the Home Screen app), the bottom bar now stays fixed to the bottom of the screen. It could float above the bottom edge after typing in a form or saving changes, and bob up and down while scrolling. It also hides while the keyboard is open."
   ]
 }

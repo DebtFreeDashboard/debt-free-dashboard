@@ -426,6 +426,10 @@
    away, which left page content showing underneath. The bar now carries its
    background well below itself, so a lift shows bar colour, not content. */
 .bnav::after { content:''; position:absolute; left:0; right:0; top:100%; height:160px; background:var(--surface); }
+/* v1.71.1 — iPhone Home Screen app: the bar is placed from the top of the
+   screen by script (see _pinBottomBar), so a stale viewport can't lift it. */
+html.bnav-pin .bnav { bottom:auto; }
+.bnav.bnav-hide { visibility:hidden; }
 .bnav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; cursor:pointer;
   color:var(--text-muted); font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.04em; text-transform:uppercase; padding:4px 0; }
 .bnav-item svg { width:22px; height:22px; }
@@ -4840,7 +4844,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.71.0';
+const APP_VERSION = '1.71.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4848,6 +4852,15 @@ const APP_VERSION = '1.71.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.71.1',
+    date: 'November 14, 2026',
+    name: 'Bottom bar stays put on iPhone',
+    whatsNew: [],
+    fixes: [
+      'On iPhone (the Home Screen app), the bottom bar now stays fixed to the bottom of the screen. It could float above the bottom edge after typing in a form or saving changes, and bob up and down while scrolling. It also hides while the keyboard is open.'
+    ]
+  },
   {
     version: '1.71.0',
     date: 'November 14, 2026',
@@ -15790,6 +15803,56 @@ function _fixAfterKeyboard() {
     if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) _fixAfterKeyboard();
   });
 })();
+// v1.71.1 — the keyboard fix above wasn't enough: on the iPhone Home Screen
+// app the bar still floated after saving a sheet, and bobbed while scrolling.
+// iOS keeps placing bottom:0 against a viewport height it hasn't updated. In
+// the Home Screen app there is no browser toolbar, so the full height of the
+// screen never changes for a given orientation: remember the tallest height
+// seen and place the bar from the top at that height minus the bar. While the
+// keyboard is up the bar hides (it would only sit on top of the keys).
+// Safari tabs and Android keep the plain CSS.
+function _pinBottomBar() {
+  var standalone = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+  if (!_isIOSLike() || !standalone) return false;
+  var bar = document.querySelector('.bnav');
+  if (!bar) return false;
+  document.documentElement.classList.add('bnav-pin');
+  var best = {}, lastTop = null, raf = 0;
+  var longSide = Math.max(screen.width || 0, screen.height || 0) || 99999;
+  function typing() {
+    var a = document.activeElement, vv = window.visualViewport;
+    if (!a || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;
+    if (/^(checkbox|radio|range|button|submit|color|file)$/i.test(a.type || '')) return false;
+    return !vv || vv.height < (window.innerHeight || 0) * 0.85;
+  }
+  function place() {
+    raf = 0;
+    // Keyed by width: a rotation or an iPad split view is a new screen shape.
+    var k = 'w' + (window.innerWidth || 0);
+    var cur = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0);
+    var t = typing();
+    if (!t && cur <= longSide) best[k] = Math.max(best[k] || 0, cur);
+    var H = Math.max(best[k] || 0, cur);
+    var top = Math.round(H - bar.offsetHeight);
+    if (top !== lastTop) { bar.style.top = top + 'px'; lastTop = top; }
+    bar.classList.toggle('bnav-hide', t);
+  }
+  function soon() { if (!raf) raf = requestAnimationFrame(place); }
+  function later() { soon(); setTimeout(soon, 350); setTimeout(soon, 800); }
+  window.addEventListener('resize', soon);
+  window.addEventListener('orientationchange', later);
+  window.addEventListener('scroll', soon, { passive: true });
+  window.addEventListener('pageshow', later);
+  document.addEventListener('visibilitychange', later);
+  document.addEventListener('focusin', later);
+  document.addEventListener('focusout', later);
+  document.addEventListener('click', function () { setTimeout(soon, 60); }, true);
+  if (window.visualViewport) { window.visualViewport.addEventListener('resize', soon); window.visualViewport.addEventListener('scroll', soon); }
+  place();
+  _pinBottomBar.place = place;
+  return true;
+}
+try { _pinBottomBar(); } catch (e) {}
 async function lockTryPin() {
   var st = lockState(); if (!st) { hideLockScreen(); return; }
   var msg = document.getElementById('applock-msg');

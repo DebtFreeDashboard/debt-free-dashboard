@@ -369,6 +369,14 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-14 (later)** — v1.71.1: the iPhone Home Screen app still showed
+  the bottom bar floating after saving a sheet (and bobbing while scrolling),
+  despite v1.69.1's scroll nudge. `_pinBottomBar()` (iOS standalone only,
+  `html.bnav-pin`): the bar is placed with `top` = tallest viewport height seen
+  for the current width minus the bar, so a stale, shorter viewport can't lift
+  it; hidden (`.bnav-hide`) while the keyboard is up. Safari tabs and Android
+  keep `bottom:0`. Tests: `tools/test-bnav-pin.js`. Needs confirming on
+  Kevin's iPhone.
 - **2026-11-14** — v1.71.0 "Autopay and one-tap logging". Kevin ruled out
   bank linking for good (cost, regulation, day-job conflict; no LLC). Feedback
   from friends and family: setup and logging feel like a lot. Debt fields
