@@ -3622,12 +3622,12 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
           <label for="debt-min">Min Payment ($) <span class="field-optional">optional</span></label>
           <input type="text" inputmode="decimal" id="debt-min" placeholder="100" min="0" step="1"
             oninput="clearFieldError(this)"  data-affix="$"/>
-          <div class="field-hint" id="min-hint">Leave blank and we&rsquo;ll estimate it</div>
+          <div class="field-hint" id="min-hint">Blank = we&rsquo;ll estimate it</div>
         </div>
       </div>
       <div class="form-error" id="add-debt-error" style="display:none;"></div>
       <details class="add-more" id="add-more">
-        <summary>More details <span>type, lender, due date, limit, 0% promo &middot; optional</span></summary>
+        <summary>More details <span>All optional: type, lender, due date, limit, 0% promo</span></summary>
         <div class="form-grid" style="margin-top:12px">
         <div class="form-field">
           <label for="debt-type">Type</label>
@@ -3641,24 +3641,24 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
           </select>
         </div>
         <div class="form-field field-full">
-          <label for="debt-issuer">Issuer / Lender <span class="field-optional">optional</span></label>
+          <label for="debt-issuer">Issuer / Lender</label>
           <select id="debt-issuer" onchange="onIssuerPicked()"></select>
           <div class="field-hint">Shows the lender&rsquo;s logo on this debt</div>
         </div>
         <div class="form-field">
-          <label for="debt-due-day">Due Day <span class="field-optional">optional</span></label>
+          <label for="debt-due-day">Due Day</label>
           <input type="text" inputmode="numeric" id="debt-due-day" placeholder="15" min="1" max="31"
             oninput="clearFieldError(this)" />
           <div class="field-hint">Day of the month it&rsquo;s due</div>
         </div>
         <div class="form-field">
-          <label for="debt-due-day2">2nd Payment Day <span class="field-optional">optional</span></label>
+          <label for="debt-due-day2">2nd Payment Day</label>
           <input type="text" inputmode="numeric" id="debt-due-day2" placeholder="--" min="1" max="31"
             oninput="clearFieldError(this)" />
           <div class="field-hint">If you pay twice a month</div>
         </div>
         <div class="form-field field-full" id="credit-limit-field">
-          <label for="debt-credit-limit">Credit Limit ($) <span class="field-optional">optional</span></label>
+          <label for="debt-credit-limit">Credit Limit ($)</label>
           <input type="text" inputmode="decimal" id="debt-credit-limit" placeholder="5000" min="0" step="1" data-affix="$" />
           <div class="field-hint">Shows how much of your limit is in use</div>
         </div>
@@ -4859,7 +4859,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.69.0';
+const APP_VERSION = '1.69.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4867,6 +4867,16 @@ const APP_VERSION = '1.69.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.69.1',
+    date: 'November 13, 2026',
+    name: 'Bottom bar fix',
+    whatsNew: [],
+    fixes: [
+      'On iPhone, the bottom bar could float above the bottom of the screen after typing (for example after entering your app lock PIN). It now drops back into place as soon as the keyboard closes.',
+      'Add a Debt is tidier: More details says once that everything in it is optional, so the labels line up.'
+    ]
+  },
   {
     version: '1.69.0',
     date: 'November 13, 2026',
@@ -15108,7 +15118,36 @@ function showLockScreen() {
 function hideLockScreen() {
   document.documentElement.classList.remove('app-locked');
   _lockForgotCancel();
+  // v1.69.1 - the PIN keyboard is still closing; drop focus so it goes, then
+  // let the keyboard fix below put the bottom bar back.
+  var a = document.activeElement; if (a && a.blur && a.id === 'applock-pin') a.blur();
+  _fixAfterKeyboard();
 }
+// v1.69.1 - iPhone (installed web app): after the on-screen keyboard closes,
+// iOS can leave position:fixed elements where they sat while it was open, so
+// the bottom bar floats above the bottom edge with the page showing under it
+// until the next scroll. A one-pixel scroll and back makes iOS place them
+// again. Runs when the keyboard closes anywhere: the PIN screen, Add a Debt,
+// every sheet.
+var _kbFixT = null;
+function _fixAfterKeyboard() {
+  clearTimeout(_kbFixT);
+  _kbFixT = setTimeout(function () {
+    var x = window.scrollX || 0, y = window.scrollY || 0;
+    window.scrollTo(x, y + 1); window.scrollTo(x, y);
+  }, 320);
+}
+(function () {
+  var vv = window.visualViewport, last = vv ? vv.height : 0;
+  if (vv) vv.addEventListener('resize', function () {
+    if (vv.height > last + 80) _fixAfterKeyboard();   // grew a lot: the keyboard went away
+    last = vv.height;
+  });
+  document.addEventListener('focusout', function (e) {
+    var t = e.target;
+    if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) _fixAfterKeyboard();
+  });
+})();
 async function lockTryPin() {
   var st = lockState(); if (!st) { hideLockScreen(); return; }
   var msg = document.getElementById('applock-msg');

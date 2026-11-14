@@ -1,11 +1,9 @@
 {
-  "version": "1.69.0",
+  "version": "1.69.1",
   "releaseDate": "2026-11-13",
-  "releaseName": "Faster setup",
+  "releaseName": "Bottom bar fix",
   "notes": [
-    "Adding debts is quicker: the form asks only for balance, APR and minimum (name and minimum are optional). Type, lender, due date, limit and 0% promo sit under More details.",
-    "Add all your debts in one go: tap Save & add another debt and the form is ready for the next one, with your debt-free date updating as you go.",
-    "Type a name like \"Car loan\" or pick a lender and the debt type is set for you.",
-    "A minimum you left blank is estimated and marked (est.) on the debt until you change it."
+    "On iPhone, the bottom bar could float above the bottom of the screen after typing (for example after entering your app lock PIN). It now drops back into place as soon as the keyboard closes.",
+    "Add a Debt is tidier: More details says once that everything in it is optional, so the labels line up."
   ]
 }

@@ -365,6 +365,12 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (night, latest)** — v1.69.1: iPhone installed app left the
+  bottom bar floating above the screen edge after the keyboard closed (seen
+  after entering the app-lock PIN). `_fixAfterKeyboard()` nudges the scroll by
+  1px and back 320 ms after any input loses focus, the visual viewport grows by
+  80px+, or the lock screen hides. Add a Debt: "optional" removed from each
+  field inside More details; the summary says "All optional" once.
 - **2026-11-13 (night, later)** — Website and guide refresh (commit 6fb0685):
   phone-frame hero loop and 38s demo (`assets/videos/app-hero.mp4`,
   `app-demo.mp4`, filmed with `tools/play-store/film.js`), the 8 Play screenshots
