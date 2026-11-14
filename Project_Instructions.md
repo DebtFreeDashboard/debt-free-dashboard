@@ -171,7 +171,8 @@ Besides page views, the site sends:
 | `applock_on`, `applock_off`, `applock_pin_changed`, `applock_removed_forgot` | The app's Settings | App lock turned on (`bio` true when Face ID / fingerprint was added), off, PIN changed, removed after the forgot-PIN wait |
 | `push_on`, `push_off` | The app's reminders sheet | Phone notifications turned on (`cadence`, `lead`) or off |
 | `add_another`, `add_session_done` | The app's Add a Debt card | A debt saved with Save & add another (`session_count`); a run of adds finished with Save & see my plan |
-| `setup_finish_open`, `setup_finish_done` | The app's finish step after a new user's first debts | Shown (`debt_count`); saved (`extra_band`, `due_days` added, `reminders` yes/no) |
+| `setup_step`, `setup_finish_done` | The app's first setup (steps inside Add a Debt) | A step reached (`step` 2 or 3, `debt_count`); finished (`extra_band`, `due_days`, `autopay`, `reminders` yes/no). `setup_finish_open` is retired |
+| `setup_copy`, `setup_paste` | iPhone setup hand-off | Setup copied in Safari (`ok`); pasted in the Home Screen app (`debt_count`) |
 | `recap_open` | The app's recap sheet | A monthly recap or year in review opened (`kind` month/year, `auto` yes/no). Shares send `card_shown` with `card_type: recap` |
 | `autopay_on`, `autopay_logged` | The app | Autopay turned on for a debt (`via`: `edit`, `add`, `due_check`); autopay payments logged on open (`count`) |
 | `due_check_open`, `due_check_paid` | The app's payment check ("Did these go out?") | Shown (`rows`, `via`: `open`, `notification`); a payment logged from it. Skips send `tm_skip` with `via: due_check`, notification Paid taps send `tm_log` with `via: notification` |
@@ -369,6 +370,27 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-14 (evening)** — v1.72.0 "Setup in one flow". Kevin's testers
+  found setup much easier; ask was one uninterrupted flow: debts, monthly
+  extra, notifications, plan. First setup (`_inFirstSetup()`: no
+  `debtfree_setup_finish = done` and no debts, or the example showing) now
+  runs as three steps inside the Add a Debt card (`#setup-s1/2/3`,
+  `#setup-steps`, `setupGo(n)`): no preview, no finish popup, no tab change,
+  milestone cards held until See my plan. Step 2: Extra / Total switch,
+  +$50/+$100/+$250/+$500 chips, minimums + extra = total line, live date and
+  "sooner than minimums only"; the plan starts at minimums only
+  (`_setupStartPlan()`), Skip keeps it there. Step 3: due day + Autopay per
+  debt, then notifications (`enablePush`) or, without support, calendar. iPhone
+  Safari: Home Screen storage is separate, so step 3 shows Copy my setup
+  (`DEBTFREE-SETUP:` + base64 of `buildBackupPayload()` on the clipboard),
+  Share > Add to Home Screen, then Paste my setup in the app (`setupPaste()`
+  on the example banner and in step 1; clears the clipboard; lands on step 3).
+  The Safari install banner hides during first setup and, with debts saved,
+  gets a Copy button. Old `#finish-sheet` retired (`_shouldFinishSetup()`
+  returns false). Info toasts no longer carry a do-nothing Undo
+  (`_infoToast`). Events `setup_step`, `setup_copy`, `setup_paste`;
+  `setup_finish_done` gains `autopay`. Tests: `test-add-flow.js` (rewritten
+  for the steps, 55), `test-setup-iphone.js` (14).
 - **2026-11-14 (later)** — v1.71.1: the iPhone Home Screen app still showed
   the bottom bar floating after saving a sheet (and bobbing while scrolling),
   despite v1.69.1's scroll nudge. `_pinBottomBar()` (iOS standalone only,

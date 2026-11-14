@@ -1,8 +1,11 @@
 {
-  "version": "1.71.1",
+  "version": "1.72.0",
   "releaseDate": "2026-11-14",
-  "releaseName": "Bottom bar stays put on iPhone",
+  "releaseName": "Setup in one flow",
   "notes": [
-    "On iPhone (the Home Screen app), the bottom bar now stays fixed to the bottom of the screen. It could float above the bottom edge after typing in a form or saving changes, and bob up and down while scrolling. It also hides while the keyboard is open."
+    "Setting up is now one flow in one place: add your debts, choose what goes to debt each month, add due dates and reminders, then see your plan. No jumping between screens.",
+    "The monthly step lets you enter the extra on top of your minimums, or your total for the month, with quick +$50, +$100, +$250 and +$500 buttons. Your debt-free date and the interest saved update as you go.",
+    "On iPhone, setup shows how to put DebtFree on your Home Screen for notifications, and your debts come with you: copy your setup in Safari, then tap Paste my setup in the Home Screen app.",
+    "Messages that only confirm something no longer show an Undo button that did nothing."
   ]
 }

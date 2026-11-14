@@ -1504,6 +1504,53 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .fs-due-wrap { margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
   .fs-due-row { display:flex; align-items:center; gap:10px; padding:6px 0; }
   .fs-due-row span { flex:1; min-width:0; font-size:0.86rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  /* v1.72.0 — first setup in the Add a Debt card: Debts, Extra, Reminders */
+  .setup-steps { display:flex; gap:6px; margin:-4px 0 14px; }
+  .setup-steps[hidden] { display:none; }
+  .setup-steps span { flex:1; text-align:center; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--text-muted); padding:7px 0 0; border-top:3px solid var(--border2); }
+  .setup-steps span.on { color:var(--accent); border-top-color:var(--accent); font-weight:700; }
+  .setup-steps span.done { color:var(--text); border-top-color:var(--accent); opacity:0.75; }
+  .ss-h { font-family:var(--font-display); font-weight:800; font-size:1.15rem; margin:2px 0 12px; color:var(--text); }
+  .ss-seg { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:3px; margin-bottom:12px; }
+  .ss-seg button { flex:1; border:none; background:none; padding:9px 6px; border-radius:8px; font:inherit; font-size:0.84rem; font-weight:600; color:var(--text-muted); cursor:pointer; }
+  .ss-seg button.on { background:var(--surface); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.12); }
+  .ss-lbl { display:block; font-size:0.84rem; font-weight:600; color:var(--text); margin-bottom:6px; }
+  .ss-amt-row { display:flex; align-items:center; gap:6px; border:1px solid var(--border2); background:var(--surface3); border-radius:var(--radius-sm); padding:4px 12px; }
+  .ss-amt-row span { font-family:var(--font-display); font-weight:800; font-size:1.5rem; color:var(--text-muted); }
+  .ss-amt-row input { flex:1; min-width:0; border:none !important; background:none !important; box-shadow:none !important; font-family:var(--font-display); font-weight:800; font-size:1.5rem; padding:6px 0 !important; color:var(--text); }
+  .ss-amt-row input:focus { outline:none; }
+  .ss-chips { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px; }
+  .ss-chips button { border:1px solid var(--border2); background:var(--surface2); color:var(--text); border-radius:999px; padding:8px 14px; font:inherit; font-size:0.84rem; font-weight:700; cursor:pointer; }
+  .ss-chips button.ss-clear { font-weight:500; color:var(--text-muted); }
+  .ss-sum { font-size:0.8rem; color:var(--text-muted); margin:8px 0 14px; font-family:var(--font-mono); }
+  .ss-sum b { color:var(--text); }
+  .ss-gain { font-size:0.78rem; color:var(--accent); font-weight:700; margin-top:4px; }
+  .ss-nav { display:flex; gap:10px; margin-top:16px; }
+  .ss-nav .btn { flex:1; }
+  .ss-nav .btn-ghost { flex:0 0 32%; }
+  .ss-skip { display:block; margin:12px auto 0; background:none; border:none; color:var(--text-muted); font:inherit; font-size:0.8rem; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  .ss-q { font-weight:700; font-size:0.9rem; margin:2px 0 6px; color:var(--text); }
+  .ss-q span { font-weight:400; font-size:0.74rem; color:var(--text-muted); }
+  .ss-due-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); }
+  .ss-due-row:last-child { border-bottom:none; }
+  .ss-due-row .nm { flex:1; min-width:0; font-size:0.86rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .ss-due-row input[type=text] { width:62px; text-align:center; padding:8px 6px; font-size:0.95rem; border-radius:var(--radius-sm); border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-family:var(--font-mono); }
+  .ss-due-row label { display:flex; align-items:center; gap:5px; font-size:0.74rem; color:var(--text-muted); cursor:pointer; white-space:nowrap; }
+  .ss-due-row label input { width:16px; height:16px; accent-color:var(--accent); -webkit-appearance:checkbox; appearance:auto; padding:0; margin:0; }
+  .ss-notify { margin-top:14px; padding:14px; border:1px solid var(--border); background:var(--surface2); border-radius:var(--radius-sm); }
+  .ss-notify .btn { width:100%; }
+  .ss-notify .btn:disabled { opacity:0.45; cursor:not-allowed; }
+  .ss-note { font-size:0.76rem; color:var(--text-muted); line-height:1.5; margin-top:8px; }
+  .ss-on { font-size:0.88rem; font-weight:700; color:var(--accent); }
+  .ss-ios { list-style:none; margin:10px 0 0; padding:0; counter-reset:ss; }
+  .ss-ios li { counter-increment:ss; display:flex; gap:10px; align-items:flex-start; padding:8px 0; font-size:0.86rem; line-height:1.45; border-top:1px solid var(--border); }
+  .ss-ios li::before { content:counter(ss); flex:0 0 24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; }
+  .ss-ios li .btn { margin-top:6px; }
+  .ss-share { display:inline-block; vertical-align:-3px; width:16px; height:16px; }
+  .setup-paste { display:flex; align-items:center; gap:10px; background:rgba(0,168,132,0.08); border:1px solid rgba(0,168,132,0.25); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px; font-size:0.84rem; }
+  .setup-paste[hidden] { display:none; }
+  .setup-paste div { flex:1; }
   .fs-due-row input { width:84px; text-align:center; padding:9px 8px; font-size:0.95rem; border-radius:var(--radius-sm); border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-family:var(--font-mono); }
   .fs-actions { display:flex; flex-direction:column; gap:8px; margin-top:18px; }
   /* v1.69.2 — promo fields: two columns, end date on its own row, so nothing wraps on a phone */
@@ -3313,6 +3360,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         <span class="demo-banner-tag">Example</span>Sample numbers so you can see how this works. Nothing here is saved.
       </div>
       <button class="demo-banner-btn" onclick="startMyNumbers()">Start with my numbers</button>
+      <button class="demo-banner-btn" id="demo-paste-btn" style="display:none" onclick="setupPaste()">Paste my setup from Safari</button>
       <!-- v1.63.0: Android browsers only. Most web-app visitors land here
            straight from a bio or shared link and never see the homepage badge. -->
       <a class="demo-banner-play android-web-only" data-play-badge="app_demo" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dapp_demo" target="_blank" rel="noopener"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="104" height="40"><span>On Android? Get the app.</span></a>
@@ -3510,7 +3558,15 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     </div>
     <!-- Add Debt Form -->
     <div class="card" id="add-debt-card" data-collapse="adddebt" data-collapse-default="dynamic">
-      <div class="card-title"><div class="dot"></div> Add a Debt</div>
+      <div class="card-title"><div class="dot"></div> <span id="add-card-title">Add a Debt</span></div>
+      <!-- v1.72.0 — first setup runs as three steps inside this card. -->
+      <div id="setup-steps" class="setup-steps" hidden aria-label="Setup steps"><span data-s="1">1 Debts</span><span data-s="2">2 Monthly plan</span><span data-s="3">3 Reminders</span></div>
+      <div id="setup-s1">
+      <!-- v1.72.0 — iPhone: setup started in Safari carries over to the Home Screen app. -->
+      <div id="setup-paste" class="setup-paste" hidden>
+        <div><b>Started in Safari?</b><br>Bring your debts over.</div>
+        <button type="button" class="btn btn-primary" onclick="setupPaste()">Paste my setup</button>
+      </div>
       <!-- v1.23.0 — first-run welcome (shows only with zero debts) -->
       <div id="welcome-hint" style="display:none;background:rgba(0,168,132,0.08);border:1px solid rgba(0,168,132,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.5;">
         &#128075; <strong>Welcome!</strong> Add your first debt below &mdash; your freedom date appears the moment you do. Your balances stay on your device &mdash; never on our servers.
@@ -3673,6 +3729,32 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
       <button type="button" class="btn btn-ghost btn-full add-another-btn" id="add-another-btn" onclick="addDebtAndAnother()">+ Save &amp; add another debt</button>
       <button type="button" class="btn btn-primary btn-full" id="add-save-btn" onclick="addDebtFinish()">Save &amp; see my plan</button>
+      </div>
+      <!-- v1.72.0 — step 2: what goes to debt each month -->
+      <div id="setup-s2" hidden>
+        <div class="ss-h">How much each month?</div>
+        <div class="ss-seg" role="group" aria-label="Enter the extra or the total">
+          <button type="button" data-m="extra" class="on" onclick="ssMode('extra')">Extra</button>
+          <button type="button" data-m="total" onclick="ssMode('total')">Total</button>
+        </div>
+        <label class="ss-lbl" id="ss-lbl" for="ss-amt">Extra each month, on top of your minimums</label>
+        <div class="ss-amt-row"><span>$</span><input type="text" inputmode="decimal" id="ss-amt" autocomplete="off" oninput="ssPreview()" /></div>
+        <div class="ss-chips">
+          <button type="button" onclick="ssBump(50)">+$50</button><button type="button" onclick="ssBump(100)">+$100</button><button type="button" onclick="ssBump(250)">+$250</button><button type="button" onclick="ssBump(500)">+$500</button><button type="button" class="ss-clear" onclick="ssBump(0)">Clear</button>
+        </div>
+        <div class="ss-sum" id="ss-sum"></div>
+        <div class="fs-result"><div class="fs-label">Debt-free</div><div class="fs-date" id="ss-date">&mdash;</div><div class="fs-sub" id="ss-sub"></div><div class="ss-gain" id="ss-gain"></div></div>
+        <div class="ss-nav"><button type="button" class="btn btn-ghost" onclick="setupSaveExtra(); setupGo(1)">Back</button><button type="button" class="btn btn-primary" onclick="setupSaveExtra(); setupGo(3)">Next</button></div>
+        <button type="button" class="ss-skip" onclick="document.getElementById('ss-amt').value=''; ssMode('extra'); setupSaveExtra(); setupGo(3)">Skip &middot; minimums only</button>
+      </div>
+      <!-- v1.72.0 — step 3: due days, autopay and notifications -->
+      <div id="setup-s3" hidden>
+        <div class="ss-h">Payment reminders</div>
+        <div class="ss-q">When is each one due? <span>Optional</span></div>
+        <div id="ss-due"></div>
+        <div class="ss-notify" id="ss-notify"></div>
+        <div class="ss-nav"><button type="button" class="btn btn-ghost" onclick="setupSaveDue(); setupGo(2)">Back</button><button type="button" class="btn btn-primary" onclick="setupFinish()">See my plan</button></div>
+      </div>
     </div>
 
     <!-- v1.26.0 — Paid Off Debts. Eliminated debts leave the active list (so it
@@ -4844,7 +4926,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.71.1';
+const APP_VERSION = '1.72.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4852,6 +4934,19 @@ const APP_VERSION = '1.71.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.72.0',
+    date: 'November 14, 2026',
+    name: 'Setup in one flow',
+    whatsNew: [
+      'Setting up is now one flow in one place: add your debts, choose what goes to debt each month, add due dates and reminders, then see your plan. No jumping between screens.',
+      'The monthly step lets you enter the extra on top of your minimums, or your total for the month, with quick +$50, +$100, +$250 and +$500 buttons. Your debt-free date and the interest saved update as you go.',
+      'On iPhone, setup shows how to put DebtFree on your Home Screen for notifications, and your debts come with you: copy your setup in Safari, then tap Paste my setup in the Home Screen app.'
+    ],
+    fixes: [
+      'Messages that only confirm something no longer show an Undo button that did nothing.'
+    ]
+  },
   {
     version: '1.71.1',
     date: 'November 14, 2026',
@@ -9669,7 +9764,7 @@ function _addFormBlank() {
 function addDebtAndAnother() {
   if (_addFormBlank() && _addSessionNames.length) { var n0 = document.getElementById('debt-name'); if (n0) n0.focus(); return; }
   _addSessionDefer = true;
-  if (_addSessionStartCount === null) _addSessionStartCount = _demoMode ? 0 : _activePlanDebts().length;
+  if (_addSessionStartCount === null) { _addSessionStartCount = (_demoMode || _inFirstSetup()) ? 0 : _activePlanDebts().length; if (_addSessionStartCount === 0) _setupStartPlan(); }
   var ok = addDebt(true);
   if (ok !== true) return;
   trackShare('add_another', { _category: 'activation', session_count: _addSessionNames.length });
@@ -9678,6 +9773,16 @@ function addDebtAndAnother() {
   setTimeout(function () { var n = document.getElementById('debt-name'); if (n && n.focus) n.focus(); }, 300);
 }
 function addDebtFinish() {
+  // v1.72.0 — first setup: no preview, no jump to Home; on to step 2.
+  if (_inFirstSetup()) {
+    if (!(_addFormBlank() && _addSessionNames.length)) {
+      _addSessionDefer = true;
+      if (_addSessionStartCount === null) { _addSessionStartCount = 0; _setupStartPlan(); }
+      if (addDebt(true) !== true) return;
+    }
+    setupGo(2);
+    return;
+  }
   if (_addFormBlank() && _addSessionNames.length) {
     trackShare('add_session_done', { _category: 'activation', session_count: _addSessionNames.length });
     _endAddSession();
@@ -9861,6 +9966,9 @@ function maybeShowRecap() {
 var _addSessionStartCount = null;
 var LS_SETUP_FINISH = 'debtfree_setup_finish';
 function _shouldFinishSetup() {
+  return false;   // v1.72.0 — replaced by the in-card setup steps
+}
+function _shouldFinishSetupOld() {
   try { if (localStorage.getItem(LS_SETUP_FINISH)) return false; } catch (e) { return false; }
   return _addSessionStartCount === 0 && _activePlanDebts().length > 0;
 }
@@ -9931,6 +10039,279 @@ function finishSetup(reminders) {
   _flushHeldMilestone();
 }
 
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.72.0 — FIRST SETUP, ALL IN THE ADD A DEBT CARD
+// Debts, then what goes to debt each month (extra or total), then due days,
+// autopay and notifications, then the plan. No popups, no tab changes until
+// "See my plan". First time only: someone who already has debts just adds.
+// iPhone Safari can't show notifications and its storage is separate from
+// the Home Screen app, so step 3 there copies the setup and the Home Screen
+// app pastes it back in.
+// ══════════════════════════════════════════════════════════════════════
+var _setupStep = 1, _ssModeV = 'extra', _ssSeen = false;
+function _infoToast(text) {
+  var root = document.getElementById('toast-root');
+  if (!root) return;
+  clearTimeout(_toastTimer);
+  root.innerHTML = '<div class="toast"><span>' + text + '</span></div>';
+  _toastTimer = setTimeout(dismissToast, 5000);
+}
+function _inFirstSetup() {
+  try { if (localStorage.getItem(LS_SETUP_FINISH) === 'done') return false; } catch (e) { return false; }
+  if (_addSessionStartCount !== null) return _addSessionStartCount === 0;
+  return _demoMode || _activePlanDebts().length === 0;
+}
+// The plan starts at minimums only; step 2 is where the extra is chosen, so
+// every date shown before it is the minimums-only date.
+function _setupStartPlan() {
+  if (_ssSeen) return;
+  extraMonthly = 0;
+  var f = document.getElementById('extra-payment'); if (f) f.value = '';
+}
+function _isIOSSafariTab() {
+  var standalone = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+  return _isIOSLike() && !standalone;
+}
+function _isIOSHomeApp() {
+  var standalone = !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches));
+  return _isIOSLike() && standalone;
+}
+// Keeps the card's labels, step bar and paste prompt in line with the state.
+function setupSync() {
+  var first = _inFirstSetup();
+  var bar = document.getElementById('setup-steps');
+  if (bar) {
+    bar.hidden = !first;
+    bar.querySelectorAll('span').forEach(function (sp) {
+      var n = +sp.getAttribute('data-s');
+      sp.className = n === _setupStep ? 'on' : (n < _setupStep ? 'done' : '');
+    });
+  }
+  var save = document.getElementById('add-save-btn');
+  if (save) save.innerHTML = first ? 'Next: monthly plan &rarr;' : 'Save &amp; see my plan';
+  var t = document.getElementById('add-card-title');
+  if (t) t.textContent = first ? (_setupStep === 1 ? 'Add your debts' : 'Set up your plan') : 'Add a Debt';
+  var noData = _demoMode || !(debts || []).some(function (d) { return d && d.balance > 0; });
+  var paste = document.getElementById('setup-paste');
+  var canPaste = _isIOSHomeApp() && noData && first;
+  if (paste) paste.hidden = !(canPaste && _setupStep === 1);
+  var dp = document.getElementById('demo-paste-btn');
+  if (dp) dp.style.display = canPaste ? '' : 'none';
+}
+function setupGo(n) {
+  if (n >= 2 && !(debts || []).some(function (d) { return d && d.balance > 0; }) ) n = 1;
+  _setupStep = n;
+  ['1', '2', '3'].forEach(function (k) { var el = document.getElementById('setup-s' + k); if (el) el.hidden = String(n) !== k; });
+  if (n === 2) setupOpenExtra();
+  if (n === 3) setupOpenReminders();
+  setupSync();
+  var card = document.getElementById('add-debt-card');
+  if (card) {
+    if (typeof expandCollapse === 'function') { try { expandCollapse('adddebt', false); } catch (e) {} }
+    if (card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  if (n > 1) trackShare('setup_step', { _category: 'activation', step: n, debt_count: _activePlanDebts().length });
+}
+
+// ── Step 2: monthly plan ──────────────────────────────────────────────
+function _ssMins() { return Math.round(_activePlanDebts().reduce(function (t, d) { return t + (Number(d.minPayment) || 0); }, 0)); }
+function _ssVal() { var v = parseAmount((document.getElementById('ss-amt') || {}).value || ''); return (v > 0 && isFinite(v)) ? v : 0; }
+function _ssExtra() {
+  var v = _ssVal();
+  return Math.round(Math.max(0, _ssModeV === 'total' ? v - _ssMins() : v));
+}
+function setupOpenExtra() {
+  var amt = document.getElementById('ss-amt');
+  // First visit starts empty (minimums only) so the number is the user's own.
+  var ex = _ssSeen ? Math.round(Number(extraMonthly) || 0) : 0;
+  if (amt) amt.value = _ssModeV === 'total' ? String(_ssMins() + ex) : (ex ? String(ex) : '');
+  ssPreview();
+}
+function ssMode(m) {
+  var ex = _ssExtra();
+  _ssModeV = m === 'total' ? 'total' : 'extra';
+  document.querySelectorAll('#setup-s2 .ss-seg button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-m') === _ssModeV); });
+  document.getElementById('ss-lbl').textContent = _ssModeV === 'total' ? 'Total each month for debt, minimums included' : 'Extra each month, on top of your minimums';
+  var amt = document.getElementById('ss-amt');
+  amt.value = _ssModeV === 'total' ? String(_ssMins() + ex) : (ex ? String(ex) : '');
+  ssPreview();
+}
+function ssBump(n) {
+  var amt = document.getElementById('ss-amt');
+  if (!n) amt.value = _ssModeV === 'total' ? String(_ssMins()) : '';
+  else amt.value = String(Math.round((_ssModeV === 'total' && !_ssVal() ? _ssMins() : _ssVal()) + n));
+  ssPreview();
+}
+function _ssSim(extra) {
+  var act = _activePlanDebts();
+  if (!act.length) return null;
+  try { return simulate(act.map(function (d) { return Object.assign({}, d); }), extra + rolledOverTotal(), 0, strategy, plannedDisbursements()); } catch (e) { return null; }
+}
+function ssPreview() {
+  var mins = _ssMins(), extra = _ssExtra(), total = mins + extra;
+  var sum = document.getElementById('ss-sum');
+  if (sum) sum.innerHTML = (_ssModeV === 'total' && _ssVal() && _ssVal() < mins)
+    ? 'Minimums alone are <b>' + fmt(mins) + '</b>'
+    : 'Minimums ' + fmt(mins) + ' + extra ' + fmt(extra) + ' = <b>' + fmt(total) + '/mo</b>';
+  var res = _ssSim(extra), base = extra > 0 ? _ssSim(0) : null;
+  var dEl = document.getElementById('ss-date'), sEl = document.getElementById('ss-sub'), gEl = document.getElementById('ss-gain');
+  if (!dEl) return;
+  if (!res || res.diverged) {
+    dEl.textContent = 'Not yet';
+    sEl.textContent = 'At this amount the balances keep growing.';
+    gEl.textContent = '';
+    return;
+  }
+  dEl.textContent = planMonthDate(res.months).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  sEl.textContent = res.months + (res.months === 1 ? ' month' : ' months') + ' · ' + fmt(res.totalInterest) + ' interest';
+  if (base && !base.diverged && base.months > res.months) {
+    var mo = base.months - res.months, saved = Math.max(0, base.totalInterest - res.totalInterest);
+    gEl.textContent = mo + (mo === 1 ? ' month' : ' months') + ' sooner and ' + fmt(saved) + ' less interest than minimums only';
+  } else if (base && base.diverged) gEl.textContent = 'Minimums alone never pay these off';
+  else gEl.textContent = '';
+}
+function setupSaveExtra() {
+  _ssSeen = true;
+  var extra = _ssExtra();
+  extraMonthly = extra;
+  var field = document.getElementById('extra-payment');
+  if (field) field.value = extra || '';
+  save(); render();
+}
+
+// ── Step 3: due days, autopay, notifications ──────────────────────────
+function setupOpenReminders() {
+  var list = document.getElementById('ss-due');
+  var act = (debts || []).filter(function (d) { return d && d.balance > 0; });
+  if (list) list.innerHTML = act.map(function (d) {
+    return '<div class="ss-due-row"><span class="nm">' + escapeHtml(d.name) + '</span>'
+      + '<input type="text" inputmode="numeric" maxlength="2" placeholder="Day" data-id="' + d.id + '" value="' + (sanitizeDueDay(d.dueDay) || '') + '" aria-label="Due day for ' + escapeHtml(d.name) + '" oninput="setupNotifySync()" />'
+      + '<label><input type="checkbox" data-ap="' + d.id + '"' + (d.autopay ? ' checked' : '') + ' /> Autopay</label></div>';
+  }).join('');
+  setupNotifyRender();
+}
+function setupSaveDue() {
+  var today = localDateStr(), n = 0, ap = 0;
+  document.querySelectorAll('#ss-due input[data-id]').forEach(function (inp) {
+    var d = (debts || []).find(function (x) { return String(x.id) === inp.getAttribute('data-id'); });
+    if (!d) return;
+    var day = sanitizeDueDay(inp.value);
+    d.dueDay = day || null;
+    if (!day) d.dueDay2 = null;
+    if (day) n++;
+    var cb = document.querySelector('#ss-due input[data-ap="' + d.id + '"]');
+    var on = !!(cb && cb.checked && day);
+    if (on && !d.autopay) { d.autopaySince = today; ap++; }
+    d.autopay = on;
+  });
+  save(); render();
+  return { days: n, autopay: ap };
+}
+function _ssHasDueDays() {
+  return [].some.call(document.querySelectorAll('#ss-due input[data-id]'), function (i) { return !!sanitizeDueDay(i.value); });
+}
+var _ssPushState = '';
+function setupNotifySync() {
+  var b = document.getElementById('ss-push-btn');
+  if (b) b.disabled = !_ssHasDueDays();
+  var h = document.getElementById('ss-push-hint');
+  if (h) h.style.display = _ssHasDueDays() ? 'none' : '';
+}
+var _SHARE_SVG = '<svg class="ss-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+function setupNotifyRender() {
+  var box = document.getElementById('ss-notify');
+  if (!box) return;
+  var p = pushPrefs();
+  if (p) { box.innerHTML = '<div class="ss-on">&#10003; Notifications are on</div><div class="ss-note">3 days before each payment and on the day, at 9 AM.</div>'; return; }
+  if (_isIOSSafariTab()) {
+    box.innerHTML = '<div class="ss-q">Get notifications on iPhone</div>'
+      + '<div class="ss-note" style="margin-top:0">They need DebtFree on your Home Screen. Your debts come with you:</div>'
+      + '<ol class="ss-ios">'
+      + '<li><div>Copy your setup.<br><button type="button" class="btn btn-primary" id="ss-copy-btn" onclick="setupCopy()">Copy my setup</button></div></li>'
+      + '<li><div>Tap Share ' + _SHARE_SVG + ' in Safari&rsquo;s toolbar, then <b>Add to Home Screen</b>.</div></li>'
+      + '<li><div>Open DebtFree from your Home Screen and tap <b>Paste my setup</b>. Then turn on notifications there.</div></li>'
+      + '</ol>'
+      + '<div class="ss-note">Not now? Tap See my plan. <button type="button" class="ss-skip" style="display:inline;margin:0" onclick="setupSaveDue(); openCalReminders()">Use calendar reminders instead</button></div>';
+    return;
+  }
+  var s = pushSupport();
+  if (!s.ok || _pushServerOk === false) {
+    box.innerHTML = '<div class="ss-q">Reminders</div><div class="ss-note" style="margin-top:0">' + (s.why === 'denied' ? 'Notifications are blocked for DebtFree in your phone settings.' : 'This browser can&rsquo;t show notifications.') + ' Your phone&rsquo;s calendar can remind you instead.</div>'
+      + '<button type="button" class="btn btn-ghost" style="margin-top:10px" onclick="setupSaveDue(); openCalReminders()">Add calendar reminders</button>';
+    return;
+  }
+  box.innerHTML = '<button type="button" class="btn btn-primary" id="ss-push-btn" onclick="setupPushOn()">&#128276; Turn on notifications</button>'
+    + '<div class="ss-note" id="ss-push-hint">Add a due day above first.</div>'
+    + '<div class="ss-note">3 days before each payment and on the day. Debts on autopay log themselves, so they don&rsquo;t need one.</div>'
+    + '<div class="ss-note" id="ss-push-msg" role="status"></div>';
+  setupNotifySync();
+}
+async function setupPushOn() {
+  var msg = document.getElementById('ss-push-msg'), b = document.getElementById('ss-push-btn');
+  setupSaveDue();
+  if (b) b.disabled = true;
+  try {
+    await enablePush('before', 3, false);
+    setupNotifyRender();
+  } catch (e) {
+    if (b) b.disabled = false;
+    if (msg) msg.textContent = /permission/.test(String(e && e.message)) ? 'Notifications weren’t allowed. You can still finish setup.' : 'Couldn’t reach the reminder service. Try again, or finish setup and turn them on later.';
+  }
+}
+// iPhone hand-off: Safari and the Home Screen app don't share storage.
+var SETUP_CLIP_PREFIX = 'DEBTFREE-SETUP:';
+function _setupB64(str) { return btoa(unescape(encodeURIComponent(str))); }
+function _setupUnB64(str) { return decodeURIComponent(escape(atob(str))); }
+async function setupCopy() {
+  setupSaveDue();
+  var payload = buildBackupPayload();
+  payload.setupStep = 3;
+  var text = SETUP_CLIP_PREFIX + _setupB64(JSON.stringify(payload));
+  var ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch (e) {
+    try { var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch (e2) {}
+  }
+  var b = document.getElementById('ss-copy-btn');
+  if (b) { b.innerHTML = ok ? '&#10003; Copied' : 'Copy didn’t work, tap again'; }
+  trackShare('setup_copy', { _category: 'activation', ok: ok ? 'yes' : 'no' });
+}
+async function setupPaste() {
+  var text = '';
+  try { text = await navigator.clipboard.readText(); } catch (e) { text = ''; }
+  if (!text || text.indexOf(SETUP_CLIP_PREFIX) !== 0) {
+    text = window.prompt('Paste your setup here (long-press, then Paste):') || '';
+  }
+  text = String(text).trim();
+  if (text.indexOf(SETUP_CLIP_PREFIX) !== 0) { if (text) _infoToast('That isn’t a DebtFree setup. Copy it again in Safari.'); return; }
+  var data;
+  try { data = JSON.parse(_setupUnB64(text.slice(SETUP_CLIP_PREFIX.length))); } catch (e) { _infoToast('That setup couldn’t be read. Copy it again in Safari.'); return; }
+  if (_demoMode) exitDemo(true);
+  try { applyBackupPayload(data); } catch (e) { _infoToast('That setup couldn’t be read. Copy it again in Safari.'); return; }
+  save(); render();
+  try { navigator.clipboard.writeText(''); } catch (e) {}
+  _addSessionStartCount = 0;
+  trackShare('setup_paste', { _category: 'activation', debt_count: debts.length });
+  showSection('dashboard');
+  setupGo(3);
+  _infoToast('Your setup is here: ' + debts.filter(function (d) { return d.balance > 0; }).length + ' debts');
+}
+function setupFinish() {
+  var r = setupSaveDue();
+  try { localStorage.setItem(LS_SETUP_FINISH, 'done'); } catch (e) {}
+  trackShare('setup_finish_done', { _category: 'activation', extra_band: amountBand(Number(extraMonthly) || 0), due_days: r.days, autopay: r.autopay, reminders: pushPrefs() ? 'yes' : 'no' });
+  if (_addSessionNames.length) trackShare('add_session_done', { _category: 'activation', session_count: _addSessionNames.length });
+  _addSessionDefer = false;
+  _addSessionNames = []; renderAddSession();
+  _addSessionStartCount = null;
+  _setupStep = 1;
+  ['1', '2', '3'].forEach(function (k) { var el = document.getElementById('setup-s' + k); if (el) el.hidden = k !== '1'; });
+  setupSync();
+  render();
+  showSection('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' });
+  _flushHeldMilestone();
+}
+
 function renderAddSession() {
   var box = document.getElementById('add-session');
   if (!box) return;
@@ -9940,7 +10321,7 @@ function renderAddSession() {
   var n = _addSessionNames.length;
   box.innerHTML = '&#10003; <b>' + n + (n === 1 ? ' debt' : ' debts') + ' added.</b> '
     + (date && date !== '\u2014' ? 'Debt-free date so far: <b>' + escapeHtml(date) + '</b>' + (months ? ' (' + escapeHtml(months) + ')' : '') + '. ' : '')
-    + 'Add the next one, or tap Save &amp; see my plan.'
+    + (_inFirstSetup() ? 'Add the next one, or tap Next when they&rsquo;re all in.' : 'Add the next one, or tap Save &amp; see my plan.')
     + '<div class="as-list">' + _addSessionNames.map(escapeHtml).join(' &middot; ') + '</div>';
   box.hidden = false;
 }
@@ -15087,7 +15468,7 @@ function openDueCheck(via) {
   var rows = dueCheckRows();
   var sheet = document.getElementById('due-check-sheet'), list = document.getElementById('dc-list');
   if (!sheet || !list) return false;
-  if (!rows.length) { _showActionToast('Nothing waiting to be logged right now', function () {}); return false; }
+  if (!rows.length) { _infoToast('Nothing waiting to be logged right now'); return false; }
   var asked = _dueAsked(), today = localDateStr();
   // Keep this month's answers only.
   Object.keys(asked).forEach(function (k) { if (String(asked[k]) < today.slice(0, 7)) delete asked[k]; });
@@ -15182,7 +15563,7 @@ function handleNotifHash(hash) {
     if (r && r.status !== 'scheduled' && r.status !== 'logged' && r.amount >= 0.01) {
       var res = logPaymentCore(id, Math.round(r.amount * 100) / 100, localDateStr());
       if (res) { showUndoToast(res.paymentId, 'Logged ' + fmtDec(res.amount) + ' to ' + escapeHtml(res.debtName)); trackShare('tm_log', { _category: 'engagement', via: 'notification' }); }
-    } else _showActionToast('Already logged', function () {});
+    } else _infoToast('Already logged');
     return;
   }
   if (/^#due-check/.test(hash)) setTimeout(function () { if (!openDueCheck('notification')) {} }, 300);
@@ -15556,7 +15937,7 @@ function saveStatementFromSheet() {
   var name = escapeHtml(res.debt.name);
   if (!res.adjId) {
     render();
-    _showActionToast(name + ' already matches your statement', function () {});
+    _infoToast(name + ' already matches your statement');
   } else {
     var txt = res.delta > 0
       ? name + ': ' + fmtDec(res.delta) + ' of interest and fees added from your statement'
@@ -15885,7 +16266,7 @@ function lockForgot() {
     if (left <= 0) {
       _lockForgotCancel();
       _saveLock(null); hideLockScreen(); renderLockSettings();
-      _showActionToast('App lock removed. You can turn it on again in Settings.', function () {});
+      _infoToast('App lock removed. You can turn it on again in Settings.');
       trackShare('applock_removed_forgot', { _category: 'security' });
     }
   }, 1000);
@@ -15965,7 +16346,7 @@ async function saveLockSetup() {
 }
 async function addLockBio() {
   var st = lockState(); if (!st) return;
-  try { st.cred = await _bioRegister(); _saveLock(st); renderLockSettings(); _showActionToast('Face ID / fingerprint added', function () {}); }
+  try { st.cred = await _bioRegister(); _saveLock(st); renderLockSettings(); _infoToast('Face ID / fingerprint added'); }
   catch (e) { alert('Face ID / fingerprint wasn’t set up.'); }
 }
 async function turnOffLock() {
@@ -16144,7 +16525,7 @@ async function pushSaveFromSheet() {
   try {
     await enablePush(cad, parseInt(o.daysBefore, 10) || 3, o.names);
     renderPushControls(); render();
-    _showActionToast('Notifications are on', function () {});
+    _infoToast('Notifications are on');
   } catch (e) {
     if (msg) msg.textContent = /permission/.test(String(e && e.message)) ? 'Notifications weren’t allowed, so nothing changed.'
       : 'Couldn’t reach the reminder service. Check your connection and try again.';
@@ -21624,6 +22005,7 @@ trackPlayBadges();
 
 recordOpenDay();
 render();
+try { setupSync(); } catch (e) {}
 try { updateDriveUI(); } catch(e) {}
 // v1.70.0 - month snapshot for recaps, then the recap itself once things settle.
 try { recordMonthSnapshot(); } catch (e) {}
@@ -21674,7 +22056,14 @@ function isInStandaloneMode() {
   return ('standalone' in window.navigator) && window.navigator.standalone;
 }
 
-if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed')) {
+// v1.72.0 — not during first setup (its last step has the same steps, with
+// the setup carried over); with debts saved, the banner carries them too,
+// because Safari and the Home Screen app don't share storage on iPhone.
+var _bannerHasData = false;
+try { _bannerHasData = !_demoMode && (debts || []).some(function (d) { return d && d.balance > 0; }); } catch (e) {}
+var _bannerInSetup = false;
+try { _bannerInSetup = _inFirstSetup(); } catch (e) {}
+if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed') && !_bannerInSetup) {
   const banner = document.createElement('div');
   banner.id = 'install-banner';
   banner.style.cssText = `
@@ -21690,11 +22079,12 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
         Add DebtFree to your home screen
       </div>
       <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">
-        Tap <strong style="color:var(--accent)">Share</strong> then 
-        <strong style="color:var(--accent)">Add to Home Screen</strong> 
-        for the full app experience
+        ${_bannerHasData
+          ? 'Tap <strong style="color:var(--accent)">Copy</strong>, then <strong style="color:var(--accent)">Share</strong> &rsaquo; <strong style="color:var(--accent)">Add to Home Screen</strong>. In the app, tap Paste my setup to bring your debts.'
+          : 'Tap <strong style="color:var(--accent)">Share</strong> then <strong style="color:var(--accent)">Add to Home Screen</strong> for the full app experience'}
       </div>
     </div>
+    ${_bannerHasData ? '<button id="install-copy-btn" onclick="setupCopy().then(function(){var b=document.getElementById(\'install-copy-btn\');if(b)b.textContent=\'Copied\';})" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">Copy</button>' : ''}
     <button onclick="document.getElementById('install-banner').remove();localStorage.setItem('installDismissed','1')"
       style="background:none;border:1px solid var(--border2);color:var(--text-muted);
              border-radius:6px;padding:6px 12px;font-size:0.75rem;cursor:pointer;

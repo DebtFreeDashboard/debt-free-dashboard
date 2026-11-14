@@ -61,34 +61,56 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); i
   await p.click('#add-another-btn'); await p.waitForTimeout(200);
   ok(await p.evaluate(() => debts.length) === 2, 'blank form + add another adds nothing');
 
+  ok(await p.evaluate(() => document.getElementById('add-save-btn').textContent.trim()) === 'Next: monthly plan →', 'first setup: the main button says Next: monthly plan');
+  ok(await p.evaluate(() => !document.getElementById('setup-steps').hidden), 'first setup: step bar shows');
   await p.click('#add-save-btn'); await p.waitForTimeout(600);
-  st = await p.evaluate(() => ({ hidden: document.getElementById('add-session').hidden, y: scrollY, n: debts.length }));
-  ok(st.hidden && st.n === 2, 'Save & see my plan with an empty form ends the session');
-  await p.waitForTimeout(400);
-  console.log('A2. Finish step');
-  const fs = await p.evaluate(() => {
-    const m = document.getElementById('finish-sheet'); const sl = document.getElementById('fs-slider');
-    return { open: !m.classList.contains('hidden'), min: +sl.min, val: +sl.value, date: document.getElementById('fs-date').textContent,
-      dueRows: document.querySelectorAll('#fs-due input').length, celebrate: !document.getElementById('celebrate-overlay').classList.contains('hidden') };
-  });
-  ok(fs.open && !fs.celebrate, 'finish step opens after the first debts, before any celebration card');
-  ok(fs.min === 486 && fs.val === 486, 'slider starts at the minimums ($' + fs.min + ')');
-  ok(fs.dueRows === 2, 'asks for due days for both debts (no due day yet)');
-  await p.evaluate(() => { const sl = document.getElementById('fs-slider'); sl.value = String(+sl.min + 300); sl.dispatchEvent(new Event('input')); });
-  const fs2 = await p.evaluate(() => ({ date: document.getElementById('fs-date').textContent, amt: document.getElementById('fs-amt').textContent }));
-  ok(fs2.date !== fs.date && /\+ \$300 extra/.test(fs2.amt), 'sliding to +$300 moves the date: ' + fs.date + ' -> ' + fs2.date);
-  await p.evaluate(() => { const i = document.querySelectorAll('#fs-due input'); i[0].value = '18'; i[1].value = '40'; });
-  await p.evaluate(() => finishSetup(false)); await p.waitForTimeout(700);
-  const fs3 = await p.evaluate(() => ({ extra: extraMonthly, field: document.getElementById('extra-payment').value, d0: debts[0].dueDay, d1: debts[1].dueDay,
-    stat: document.getElementById('stat-date').textContent, flag: localStorage.getItem('debtfree_setup_finish') }));
-  ok(fs3.extra === 300 && fs3.field === '300', 'Save sets $300 extra in the plan');
-  ok(fs3.d0 === 18 && !fs3.d1, 'due day 18 saved; an invalid 40 is ignored');
-  ok(fs3.stat === fs2.date, 'Home shows the same date the slider showed (' + fs3.stat + ')');
-  ok(fs3.flag === 'done', 'finish step marked done for this device');
+  st = await p.evaluate(() => ({ s2: !document.getElementById('setup-s2').hidden, s1: !document.getElementById('setup-s1').hidden, n: debts.length,
+    preview: !document.getElementById('add-preview-modal').classList.contains('hidden'), finish: !document.getElementById('finish-sheet').classList.contains('hidden'),
+    celebrate: !document.getElementById('celebrate-overlay').classList.contains('hidden'), sect: document.querySelector('#section-dashboard, [data-section="dashboard"]') ? 'ok' : 'ok' }));
+  ok(st.s2 && !st.s1 && st.n === 2, 'Next with an empty form moves to step 2 in the same card');
+  ok(!st.preview && !st.finish && !st.celebrate, 'no preview, no finish popup, no celebration on the way');
+  console.log('A2. Monthly plan step');
+  await p.evaluate(() => { document.getElementById('ss-amt').value = ''; ssPreview(); });
+  const s2a = await p.evaluate(() => ({ mins: _ssMins(), date: document.getElementById('ss-date').textContent, sum: document.getElementById('ss-sum').textContent }));
+  ok(s2a.mins === 486 && /Minimums \$486 \+ extra \$0 = \$486/.test(s2a.sum), 'shows minimums + extra = total: ' + s2a.sum);
+  await p.evaluate(() => { ssBump(100); ssBump(100); ssBump(100); });
+  const s2b = await p.evaluate(() => ({ v: document.getElementById('ss-amt').value, sum: document.getElementById('ss-sum').textContent, date: document.getElementById('ss-date').textContent, gain: document.getElementById('ss-gain').textContent }));
+  ok(s2b.v === '300' && /= \$786\/mo/.test(s2b.sum), 'three taps of +$100 make $300 extra, $786 a month');
+  ok(s2b.date !== s2a.date && /sooner/.test(s2b.gain), 'date moves and shows the gain: ' + s2a.date + ' -> ' + s2b.date + ' (' + s2b.gain + ')');
+  await p.evaluate(() => ssMode('total'));
+  ok(await p.evaluate(() => document.getElementById('ss-amt').value) === '786' && /minimums included/.test(await p.evaluate(() => document.getElementById('ss-lbl').textContent)), 'Total shows $786 with its own label');
+  await p.evaluate(() => { document.getElementById('ss-amt').value = '400'; ssPreview(); });
+  ok(/Minimums alone are \$486/.test(await p.evaluate(() => document.getElementById('ss-sum').textContent)), 'a total under the minimums says so');
+  await p.evaluate(() => { document.getElementById('ss-amt').value = '786'; ssPreview(); ssMode('extra'); });
+  ok(await p.evaluate(() => document.getElementById('ss-amt').value) === '300', 'back to Extra keeps the same $300');
+  await p.evaluate(() => document.querySelector('#setup-s2 .btn-ghost').click()); await p.waitForTimeout(300);
+  ok(await p.evaluate(() => !document.getElementById('setup-s1').hidden && document.getElementById('setup-s2').hidden && extraMonthly === 300), 'Back returns to the debts and keeps $300');
+  await p.click('#add-save-btn'); await p.waitForTimeout(400);
+  ok(await p.evaluate(() => document.getElementById('ss-amt').value) === '300', 'and Next brings it back');
+  await p.evaluate(() => document.querySelector('#setup-s2 .btn-primary').click()); await p.waitForTimeout(400);
+  console.log('A3. Reminders step');
+  const cal = await p.evaluate(() => /calendar/i.test(document.getElementById('ss-notify').textContent));
+  ok(cal, 'without notification support (this test browser) it offers calendar reminders in place');
+  await p.evaluate(() => { window.pushSupport = () => ({ ok: true }); setupNotifyRender(); });
+  const s3 = await p.evaluate(() => ({ on: !document.getElementById('setup-s3').hidden, rows: document.querySelectorAll('#ss-due .ss-due-row').length, btn: !!document.getElementById('ss-push-btn'),
+    dis: document.getElementById('ss-push-btn') && document.getElementById('ss-push-btn').disabled }));
+  ok(s3.on && s3.rows === 2, 'step 3 lists both debts for due days');
+  ok(await p.evaluate(() => document.getElementById('celebrate-overlay').classList.contains('hidden')), 'no celebration popup during setup');
+  ok(s3.btn && s3.dis, 'Turn on notifications waits for a due day');
+  await p.evaluate(() => { const i = document.querySelectorAll('#ss-due input[data-id]'); i[0].value = '18'; i[1].value = '40'; setupNotifySync(); document.querySelectorAll('#ss-due input[data-ap]')[1].checked = true; });
+  ok(await p.evaluate(() => !document.getElementById('ss-push-btn').disabled), 'a due day enables it');
+  await p.evaluate(() => setupFinish()); await p.waitForTimeout(700);
+  const fs3 = await p.evaluate(() => ({ extra: extraMonthly, field: document.getElementById('extra-payment').value, d0: debts[0].dueDay, d1: debts[1].dueDay, ap1: debts[1].autopay,
+    stat: document.getElementById('stat-date').textContent, flag: localStorage.getItem('debtfree_setup_finish'), bar: document.getElementById('setup-steps').hidden,
+    btn: document.getElementById('add-save-btn').textContent.trim(), s1: !document.getElementById('setup-s1').hidden }));
+  ok(fs3.extra === 300 && fs3.field === '300', 'the plan has $300 extra');
+  ok(fs3.d0 === 18 && !fs3.d1 && !fs3.ap1, 'due day 18 saved; invalid 40 ignored; autopay needs a day');
+  ok(fs3.stat === s2b.date, 'Home shows the date step 2 showed (' + fs3.stat + ')');
+  ok(fs3.flag === 'done' && fs3.bar && fs3.s1 && fs3.btn === 'Save & see my plan', 'setup done: card back to normal Add a Debt');
   await p.waitForTimeout(500);
   const cel = await p.evaluate(() => { const o = document.getElementById('celebrate-overlay'); return { shown: !o.classList.contains('hidden'), h: document.getElementById('celebrate-headline').textContent }; });
-  ok(cel.shown && /First debt/.test(cel.h), 'the held "First debt added" card shows after the finish step');
-  ok(await p.evaluate(() => { _addSessionStartCount = 0; return _shouldFinishSetup(); }) === false, 'finish step never shows twice'); await p.evaluate(() => { _addSessionStartCount = null; });
+  ok(cel.shown && /First debt|Plan avoids/.test(cel.h), 'one held win card shows after See my plan, none during setup: ' + cel.h);
+  ok(await p.evaluate(() => _inFirstSetup()) === false, 'setup never runs twice');
   await p.evaluate(() => document.getElementById('celebrate-overlay').classList.add('hidden'));
 
   console.log('B. Single debt with More details and preview');
