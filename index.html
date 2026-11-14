@@ -517,20 +517,24 @@
   .pain-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    margin-top: 60px;
+    gap: 14px;
+    margin-top: 48px;
   }
 
-  @media(max-width:640px) { .pain-grid { grid-template-columns: 1fr; } }
+  @media(max-width:640px) { .pain-grid { grid-template-columns: 1fr; gap: 12px; } }
 
+  /* 2026-11-13: light cards. They were dark (--ink2) with dark ink text, so the
+     copy was nearly invisible on phones. */
   .pain-item {
-    background: var(--ink2);
-    padding: 32px;
-    border: 1px solid rgba(255,255,255,0.05);
-    transition: background 0.2s;
+    background: var(--cream2);
+    padding: 28px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    border-radius: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
 
-  .pain-item:hover { background: #222; }
+  .pain-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
 
   .pain-num {
     font-family: var(--font-mono);
@@ -542,7 +546,7 @@
 
   .pain-text {
     font-family: var(--font-serif);
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
     line-height: 1.4;
     color: var(--ink);
