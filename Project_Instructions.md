@@ -171,6 +171,8 @@ Besides page views, the site sends:
 | `applock_on`, `applock_off`, `applock_pin_changed`, `applock_removed_forgot` | The app's Settings | App lock turned on (`bio` true when Face ID / fingerprint was added), off, PIN changed, removed after the forgot-PIN wait |
 | `push_on`, `push_off` | The app's reminders sheet | Phone notifications turned on (`cadence`, `lead`) or off |
 | `add_another`, `add_session_done` | The app's Add a Debt card | A debt saved with Save & add another (`session_count`); a run of adds finished with Save & see my plan |
+| `setup_finish_open`, `setup_finish_done` | The app's finish step after a new user's first debts | Shown (`debt_count`); saved (`extra_band`, `due_days` added, `reminders` yes/no) |
+| `recap_open` | The app's recap sheet | A monthly recap or year in review opened (`kind` month/year, `auto` yes/no). Shares send `card_shown` with `card_type: recap` |
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -365,12 +367,34 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-13 (night, final)** — v1.70.0 "Recaps and a faster start".
+  Transfer fee review done early (the Mon Nov 16 task was cancelled). Leaks
+  found: the fee % was derived from `originalBalance`, which edits reset; a
+  changed % recharged the fee on the fee-inclusive balance and added it on top
+  (3%→5% on $3,000 added $200, not $60); promo off/on added a second fee; the
+  edit modal's fee field kept the previous debt's %, so ticking promo charged
+  a fee nobody typed. Fix: new debt fields `transferFeeRate` and `transferBase`
+  set at creation; `transferFeeRateOf()` / `transferBaseOf()`; a rate change
+  moves balance and `originalBalance` by the difference only; fee kept on record
+  when promo is turned off; legacy debts get the rate estimated once on load
+  (`transferFeeEstimated`, rounded to a 0.5 step within 0.05) and the first
+  typed rate corrects the label without changing the dollars. Finish step
+  (`#finish-sheet`, once per device, `debtfree_setup_finish`) after a new user's
+  first debts: monthly amount slider with live date, due days, reminders.
+  Monthly recap and year in review (`#recap-sheet`): `recordMonthSnapshot()`
+  stores the plan's debt-free month, owed and % gone at the first open of each
+  month (`debtfree_month_snap`, 30 kept); `owedAsOf(date)` reads the ledger;
+  auto-shown once per month (`debtfree_recap_seen`) when last month has
+  payments, once per year Dec 15 to Jan 31 (`debtfree_yir_seen`); Wins tab
+  links; `#month-recap` / `#year-review` open them. Share cards carry no
+  dollar amounts. Tests: `tools/test-transfer-fee.js`, `test-recap.js`,
+  `test-add-flow.js` (finish step).
 - **2026-11-13 (night, last)** — v1.69.2: promo fields in Add and Edit share
   one layout (`.promo-box` / `.promo-grid`: two columns, end date full width,
   no wrapping at 375px). Edit showed the transfer fee % as fee / fee-inclusive
   balance (3% read 2.91%); now fee / (originalBalance − transferFee). Kevin
   has seen the fee % drift on his own data; a full review of transfer-fee
-  handling is scheduled for Mon Nov 16, 3 PM ET.
+  handling followed the same night in v1.70.0.
 - **2026-11-13 (night, latest)** — v1.69.1: iPhone installed app left the
   bottom bar floating above the screen edge after the keyboard closed (seen
   after entering the app-lock PIN). `_fixAfterKeyboard()` nudges the scroll by

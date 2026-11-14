@@ -1581,6 +1581,34 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .add-session { background: rgba(0,168,132,0.08); border: 1px solid rgba(0,168,132,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.5; }
   .add-session b { color: var(--accent); }
   .add-session .as-list { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
+  /* v1.70.0 — recaps */
+  .rc-links { display:flex; gap:8px; flex-wrap:wrap; margin:-4px 0 16px; }
+  .rc-links:empty { display:none; }
+  .rc-link { background:var(--surface); border:1px solid var(--border2); border-radius:999px; padding:7px 14px; font-size:0.8rem; font-weight:600; color:var(--text); cursor:pointer; font-family:inherit; }
+  .rc-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .rc-stat { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; }
+  .rc-stat .k { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
+  .rc-stat .v { font-family:var(--font-display); font-weight:900; font-size:1.25rem; color:var(--text); margin-top:2px; }
+  .rc-stat .s { font-size:0.72rem; color:var(--text-muted); margin-top:1px; }
+  .rc-stat.good .v { color:var(--accent); }
+  .rc-wide { grid-column:1 / -1; }
+  .rc-line { font-size:0.84rem; line-height:1.5; margin-top:12px; color:var(--text); }
+  .rc-muted { font-size:0.74rem; color:var(--text-muted); margin-top:10px; line-height:1.45; }
+  /* v1.69.3 — finish step */
+  .fs-result { text-align:center; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px; }
+  .fs-label { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); }
+  .fs-date { font-family:var(--font-display); font-weight:900; font-size:1.8rem; color:var(--accent); line-height:1.15; margin-top:2px; }
+  .fs-sub { font-size:0.78rem; color:var(--text-muted); margin-top:2px; }
+  .fs-q { display:block; font-weight:700; font-size:0.9rem; margin:4px 0 8px; color:var(--text); }
+  .fs-q span { display:block; font-weight:400; font-size:0.74rem; color:var(--text-muted); margin-top:2px; }
+  .fs-amt { font-size:0.82rem; color:var(--text); margin-top:6px; }
+  .fs-amt b { color:var(--accent); }
+  .fs-note { font-size:0.72rem; color:var(--text-muted); margin-top:4px; }
+  .fs-due-wrap { margin-top:16px; padding-top:14px; border-top:1px solid var(--border); }
+  .fs-due-row { display:flex; align-items:center; gap:10px; padding:6px 0; }
+  .fs-due-row span { flex:1; min-width:0; font-size:0.86rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .fs-due-row input { width:84px; text-align:center; padding:9px 8px; font-size:0.95rem; border-radius:var(--radius-sm); border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-family:var(--font-mono); }
+  .fs-actions { display:flex; flex-direction:column; gap:8px; margin-top:18px; }
   /* v1.69.2 — promo fields: two columns, end date on its own row, so nothing wraps on a phone */
   .promo-box { background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 14px; }
   .add-more .promo-box { background: var(--surface); }
@@ -4363,6 +4391,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   <div class="section" id="section-milestones">
     <div class="page-title">Wins &amp; Milestones</div>
     <div class="page-subtitle">Every step forward counts. Track your momentum here.</div>
+    <div class="rc-links" id="rc-links"></div>
 
     <div class="stat-grid" style="grid-template-columns: repeat(2,1fr)">
       <div class="stat-card">
@@ -4724,6 +4753,38 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     <button type="button" class="plus-btn" onclick="plusDo('add')"><b aria-hidden="true">+</b><div>Add a debt<span>A card, loan or anything else you owe</span></div></button>
   </div>
 </div>
+<!-- v1.70.0 — monthly recap and year in review (same sheet) -->
+<div id="recap-sheet" class="modal-overlay hidden" onclick="closeRecap(event)" role="dialog" aria-modal="true" aria-labelledby="rc-title">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header"><div class="modal-title" id="rc-title">Your month</div>
+      <button class="modal-close" aria-label="Close" onclick="closeRecap()">&times;</button></div>
+    <div id="rc-body"></div>
+    <div class="fs-actions">
+      <button type="button" class="btn btn-primary btn-full" onclick="shareRecap()">Share a card</button>
+      <button type="button" class="btn btn-ghost btn-full" onclick="closeRecap()">Done</button>
+    </div>
+  </div>
+</div>
+<!-- v1.69.3 — finish step after a new user's first debts -->
+<div id="finish-sheet" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="fs-title">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header"><div class="modal-title" id="fs-title">Your plan is ready</div>
+      <button class="modal-close" aria-label="Close" onclick="finishSetup(false)">&times;</button></div>
+    <div class="fs-result"><div class="fs-label">Debt-free</div><div class="fs-date" id="fs-date">&mdash;</div><div class="fs-sub" id="fs-sub"></div></div>
+    <label class="fs-q" for="fs-slider">How much can go to debt each month?</label>
+    <input type="range" id="fs-slider" class="wi-slider" min="0" max="1000" step="25" oninput="finishPreview()" />
+    <div class="fs-amt" id="fs-amt"></div>
+    <div class="fs-note">You can change this any time under Strategy &rsaquo; Your Monthly Plan.</div>
+    <div id="fs-due-wrap" class="fs-due-wrap">
+      <div class="fs-q">When is each one due? <span>Optional. This Month and reminders use it.</span></div>
+      <div id="fs-due"></div>
+    </div>
+    <div class="fs-actions">
+      <button type="button" class="btn btn-primary btn-full" id="fs-remind" onclick="finishSetup(true)">&#128276; Save &amp; turn on reminders</button>
+      <button type="button" class="btn btn-ghost btn-full" onclick="finishSetup(false)">Save &amp; see my plan</button>
+    </div>
+  </div>
+</div>
 <!-- v1.67.0 — app lock -->
 <div id="applock-screen" role="dialog" aria-modal="true" aria-labelledby="applock-title">
   <div class="applock-box">
@@ -4862,7 +4923,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.69.2';
+const APP_VERSION = '1.70.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4870,6 +4931,19 @@ const APP_VERSION = '1.69.2';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.70.0',
+    date: 'November 13, 2026',
+    name: 'Recaps and a faster start',
+    whatsNew: [
+      'Monthly recap: on the first open of a new month you\'ll see last month at a glance: what you paid toward debt, how much less you owe, debts paid off, badges, and whether your debt-free date moved. It\'s also on the Wins tab, with a card to share.',
+      'Year in review: from mid-December, your year\'s payments, debts paid off and progress in one place, with a share card.',
+      'Faster start: after adding your first debts, slide to set how much goes to debt each month and watch your debt-free date move, add due dates, and turn on reminders in one step.'
+    ],
+    fixes: [
+      'Balance transfer fees now stay exactly as entered. Before, the fee % shown could drift after editing a balance, changing the fee % charged it twice, turning the promo off and on added a second fee, and the fee box could carry over from the last debt you opened. Older transfers keep the dollars you were charged; if the rate shown looks off, type the right one once and it sticks.'
+    ]
+  },
   {
     version: '1.69.2',
     date: 'November 13, 2026',
@@ -7109,6 +7183,7 @@ function showSection(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('section-' + id).classList.add('active');
+  if (id === 'milestones') { try { renderRecapLinks(); } catch (e) {} }
   document.querySelectorAll('.nav-tab').forEach(t => {
     if (t.textContent.trim().toLowerCase().includes(id === 'whatif' ? 'what' : id === 'milestones' ? 'win' : id)) {
       t.classList.add('active');
@@ -9313,6 +9388,27 @@ function simulate(debtList, extraPerMonth, lumpSum, customStrategy, plannedLumps
 // Installment debt is a straight amortization over its remaining term.
 // This is a starting estimate the user can overwrite, never a claim about
 // what any particular lender will actually charge.
+// v1.69.3 - transfer fee rate as typed. Older debts carry only the dollar fee;
+// their rate is worked out once from what was transferred and rounded to a
+// common fee step (3%, 4.5%) when it is within 0.05 of one.
+function niceFeeRate(r) {
+  if (!(r > 0)) return 0;
+  var half = Math.round(r * 2) / 2;
+  return Math.abs(r - half) < 0.05 ? half : Math.round(r * 100) / 100;
+}
+function transferFeeRateOf(d) {
+  if (!d || !(d.transferFee > 0)) return 0;
+  if (d.transferFeeRate > 0) return d.transferFeeRate;
+  var base = d.transferBase > 0 ? d.transferBase : (d.originalBalance || 0) - d.transferFee;
+  return base > 0 ? niceFeeRate(d.transferFee / base * 100) : 0;
+}
+function transferBaseOf(d) {
+  if (!d || !(d.transferFee > 0)) return 0;
+  if (d.transferBase > 0) return d.transferBase;
+  var r = transferFeeRateOf(d);
+  return r > 0 ? Math.round(d.transferFee / (r / 100) * 100) / 100 : 0;
+}
+
 function estimateMinPayment(balance, apr, type) {
   if (!(balance > 0)) return 0;
   const r = (apr || 0) / 100 / 12;
@@ -9498,6 +9594,10 @@ function addDebt(confirmed) {
     promoEnd: hasPromo ? promoEnd : null,
     postPromoApr: hasPromo ? postPromoApr : null,
     transferFee: hasPromo ? transferFee : 0,
+    // v1.69.3 - the fee is fixed at creation: keep the rate typed and the
+    // amount it was charged on, so it is never re-derived from a balance.
+    transferFeeRate: (hasPromo && transferFee > 0) ? (parseAmount(document.getElementById('debt-transfer-fee').value) || 0) : null,
+    transferBase: (hasPromo && transferFee > 0) ? balance : null,
     hasPromo,
     loanType: loanType,
     includeInStrategy: includeInStrategy,
@@ -9599,11 +9699,16 @@ var _addSessionDefer = false, _deferredMs = null;
 function _endAddSession() {
   _addSessionDefer = false;
   _addSessionNames = []; renderAddSession();
-  if (_deferredMs) {
-    var k = _deferredMs; _deferredMs = null;
-    var ov = document.getElementById('celebrate-overlay');
-    if (ov && ov.classList.contains('hidden')) setTimeout(function () { celebrateMilestone(k); }, 450);
-  }
+  var finish = _shouldFinishSetup();
+  _addSessionStartCount = null;
+  if (finish && openFinishSetup()) return;   // the held card shows after it
+  _flushHeldMilestone();
+}
+function _flushHeldMilestone() {
+  if (!_deferredMs) return;
+  var k = _deferredMs; _deferredMs = null;
+  var ov = document.getElementById('celebrate-overlay');
+  if (ov && ov.classList.contains('hidden')) setTimeout(function () { celebrateMilestone(k); }, 450);
 }
 function _addFormBlank() {
   return ['debt-name', 'debt-balance', 'debt-apr', 'debt-min'].every(function (id) {
@@ -9613,6 +9718,7 @@ function _addFormBlank() {
 function addDebtAndAnother() {
   if (_addFormBlank() && _addSessionNames.length) { var n0 = document.getElementById('debt-name'); if (n0) n0.focus(); return; }
   _addSessionDefer = true;
+  if (_addSessionStartCount === null) _addSessionStartCount = _demoMode ? 0 : _activePlanDebts().length;
   var ok = addDebt(true);
   if (ok !== true) return;
   trackShare('add_another', { _category: 'activation', session_count: _addSessionNames.length });
@@ -9631,10 +9737,249 @@ function addDebtFinish() {
 }
 // The preview's Confirm: save, then show the plan this debt produced.
 function addDebtConfirmed() {
-  if (addDebt(true) !== true) return;
+  if (_addSessionStartCount === null) _addSessionStartCount = _demoMode ? 0 : _activePlanDebts().length;
+  _addSessionDefer = true;
+  if (addDebt(true) !== true) { _addSessionDefer = false; return; }
   _endAddSession();
   showSection('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+// ══════════════════════════════════════════════════════════════════════
+// v1.70.0 - MONTHLY RECAP and YEAR IN REVIEW
+// Built only from what is saved on the device: the payment log, interest and
+// corrections, and a snapshot of the plan taken the first time the app opens
+// in each month (that is how "the date moved" is known). Shown once, on the
+// first open of a month (and once in late December for the year), and any
+// time from the Wins tab. Plain facts; no advice.
+// ══════════════════════════════════════════════════════════════════════
+var LS_MONTH_SNAP = 'debtfree_month_snap', LS_RECAP_SEEN = 'debtfree_recap_seen', LS_YIR_SEEN = 'debtfree_yir_seen';
+function _ym(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function _ymLabel(ym, long) { var p = ym.split('-'); return new Date(+p[0], +p[1] - 1, 1).toLocaleDateString('en-US', long ? { month: 'long', year: 'numeric' } : { month: 'long' }); }
+function _snaps() { try { return JSON.parse(localStorage.getItem(LS_MONTH_SNAP) || '{}') || {}; } catch (e) { return {}; } }
+// The plan as it stands when a month starts: debt-free month, owed, % gone.
+function recordMonthSnapshot() {
+  if (_demoMode || !debts.length) return;
+  var ym = _ym(new Date()), all = _snaps();
+  if (all[ym]) return;
+  var res = getPlanSim();
+  all[ym] = { free: res && !res.diverged ? _ym(planMonthDate(res.months)) : null, owed: Math.round(totalBalance()), pct: Math.round(progressPct() * 10) / 10 };
+  var keys = Object.keys(all).sort(); while (keys.length > 30) delete all[keys.shift()];
+  try { localStorage.setItem(LS_MONTH_SNAP, JSON.stringify(all)); } catch (e) {}
+}
+// What was owed at the end of a day, from the ledger (start + interest +
+// corrections - payments), so past months read the same on any device.
+function owedAsOf(dateStr) {
+  return debts.reduce(function (t, d) {
+    if (isTransferred(d)) return t;
+    // Newer ids carry their creation time (ms x 1000): a debt added later
+    // than this day was not owed yet.
+    if (d.id > 1e15 && localDateStr(new Date(Math.floor(d.id / 1000))) > dateStr) return t;
+    var v = (d.originalBalance || 0);
+    accruals.forEach(function (a) { if (a.debtId === d.id && (a.date || (a.month + '-01')) <= dateStr) v += a.amount || 0; });
+    adjustments.forEach(function (a) { if (a.debtId === d.id && a.date <= dateStr) v += a.amount || 0; });
+    payments.forEach(function (p) { if (p.debtId === d.id && !p.pending && p.date <= dateStr) v -= p.amount || 0; });
+    return t + Math.max(0, v);
+  }, 0);
+}
+function recapData(from, to) {   // dates 'YYYY-MM-DD', inclusive
+  var inRange = function (x) { return x && x >= from && x <= to; };
+  var pays = payments.filter(function (p) { return !p.pending && p.amount > 0 && inRange(p.date); });
+  var paid = pays.reduce(function (t, p) { return t + p.amount; }, 0);
+  var interest = accruals.filter(function (a) { return inRange(a.date || (a.month + '-01')); }).reduce(function (t, a) { return t + (a.amount || 0); }, 0);
+  var dayBefore = localDateStr(new Date(new Date(from + 'T00:00:00').getTime() - 86400000));
+  var cleared = [];
+  pays.forEach(function (p) { if (p.eliminated) { var d = debts.find(function (x) { return x.id === p.debtId; }); var n = d ? d.name : p.debtName; if (n && cleared.indexOf(n) === -1) cleared.push(n); } });
+  var badges = Object.keys(_msLog || {}).filter(function (k) { var e = _msLog[k] && _msLog[k].e; return e && inRange(e.slice(0, 10)) && shownMilestones.indexOf(k) !== -1; });
+  var months = {}; pays.forEach(function (p) { months[p.date.slice(0, 7)] = 1; });
+  return { paid: paid, count: pays.length, interest: interest, owedStart: owedAsOf(dayBefore), owedEnd: owedAsOf(to), cleared: cleared, badges: badges.length, monthsPaid: Object.keys(months).length };
+}
+var _recapCard = null;
+function _recapStat(k, v, sub, cls) { return '<div class="rc-stat ' + (cls || '') + '"><div class="k">' + k + '</div><div class="v">' + v + '</div>' + (sub ? '<div class="s">' + sub + '</div>' : '') + '</div>'; }
+function _freeLine(fromYm) {
+  var res = getPlanSim(); if (!res || res.diverged) return '';
+  var now = planMonthDate(res.months), nowYm = _ym(now), snap = _snaps()[fromYm];
+  var label = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  if (!snap || !snap.free) return { text: 'Debt-free date now: <b>' + label + '</b>.', moved: 0, label: label };
+  var p = snap.free.split('-'), was = new Date(+p[0], +p[1] - 1, 1);
+  var moved = (was.getFullYear() - now.getFullYear()) * 12 + (was.getMonth() - now.getMonth());
+  var wasLabel = was.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  var t = moved > 0 ? 'Debt-free date: <b>' + label + '</b>, ' + moved + (moved === 1 ? ' month' : ' months') + ' sooner than ' + wasLabel + '.'
+        : moved < 0 ? 'Debt-free date: <b>' + label + '</b>, ' + (-moved) + (moved === -1 ? ' month' : ' months') + ' later than ' + wasLabel + '.'
+        : 'Debt-free date: <b>' + label + '</b>, same as at the start.';
+  return { text: t, moved: moved, label: label };
+}
+function openMonthRecap(ym, auto) {
+  var p = ym.split('-'), y = +p[0], m = +p[1];
+  var from = ym + '-01', to = localDateStr(new Date(y, m, 0));
+  var r = recapData(from, to), name = _ymLabel(ym);
+  var down = r.owedStart - r.owedEnd;
+  var nextYm = _ym(new Date(y, m, 1));
+  var fl = _freeLine(ym);
+  document.getElementById('rc-title').textContent = 'Your ' + name;
+  document.getElementById('rc-body').innerHTML = '<div class="rc-grid">'
+    + _recapStat('Paid toward debt', fmt(r.paid), r.count + (r.count === 1 ? ' payment logged' : ' payments logged'), r.paid > 0 ? 'good' : '')
+    + _recapStat('Owed', fmt(r.owedEnd), down > 0.5 ? fmt(down) + ' less than ' + fmt(r.owedStart) : (down < -0.5 ? fmt(-down) + ' more than ' + fmt(r.owedStart) : 'about the same'), down > 0.5 ? 'good' : '')
+    + (r.interest > 0 ? _recapStat('Interest added', fmt(r.interest), 'estimated') : '')
+    + (r.badges + r.cleared.length === 0 ? '' : _recapStat('Wins', String(r.badges + r.cleared.length), (r.cleared.length ? r.cleared.length + ' paid off' : '') + (r.cleared.length && r.badges ? ', ' : '') + (r.badges ? r.badges + (r.badges === 1 ? ' badge' : ' badges') : '')))
+    + '</div>'
+    + (r.cleared.length ? '<div class="rc-line">&#127881; Paid off: <b>' + r.cleared.map(escapeHtml).join(', ') + '</b></div>' : '')
+    + (fl ? '<div class="rc-line">' + fl.text + '</div>' : '')
+    + '<div class="rc-muted">From the payments, interest and corrections logged here' + (r.count ? '' : '. Nothing was logged in ' + name) + '.</div>';
+  var pctDelta = 0, snapNow = _snaps()[nextYm], snapThen = _snaps()[ym];
+  if (snapNow && snapThen) pctDelta = Math.max(0, Math.round((snapNow.pct - snapThen.pct) * 10) / 10);
+  _recapCard = { emoji: '\uD83D\uDCC5', headline: 'My ' + name,
+    big: r.cleared.length ? r.cleared.length + (r.cleared.length === 1 ? ' debt paid off' : ' debts paid off') : (pctDelta > 0 ? pctDelta + '% more of my debt gone' : r.count + (r.count === 1 ? ' payment logged' : ' payments logged')),
+    sub: fl && fl.moved > 0 ? 'Debt-free ' + fl.moved + (fl.moved === 1 ? ' month' : ' months') + ' sooner.' : 'Still on the plan.' };
+  document.getElementById('recap-sheet').classList.remove('hidden');
+  trackShare('recap_open', { _category: 'engagement', kind: 'month', auto: auto ? 'yes' : 'no' });
+}
+function _yirYear() { var n = new Date(); return n.getMonth() === 0 ? n.getFullYear() - 1 : n.getFullYear(); }
+function _yirWindow() { var n = new Date(); return (n.getMonth() === 11 && n.getDate() >= 15) || n.getMonth() === 0; }
+function openYearReview(year, auto) {
+  year = year || _yirYear();
+  var r = recapData(year + '-01-01', year + '-12-31');
+  var all = _snaps(), first = Object.keys(all).sort().filter(function (k) { return k.indexOf(String(year)) === 0; })[0];
+  var down = r.owedStart - r.owedEnd;
+  var fl = first ? _freeLine(first) : _freeLine('none');
+  document.getElementById('rc-title').textContent = 'Your ' + year + ' in review';
+  document.getElementById('rc-body').innerHTML = '<div class="rc-grid">'
+    + _recapStat('Paid toward debt', fmt(r.paid), r.count + (r.count === 1 ? ' payment' : ' payments') + ' in ' + r.monthsPaid + (r.monthsPaid === 1 ? ' month' : ' months'), r.paid > 0 ? 'good' : '')
+    + _recapStat('Debts paid off', String(r.cleared.length), r.cleared.length ? r.cleared.slice(0, 3).map(escapeHtml).join(', ') + (r.cleared.length > 3 ? '…' : '') : 'not yet', r.cleared.length ? 'good' : '')
+    + _recapStat('Owed now', fmt(r.owedEnd), down > 0.5 ? fmt(down) + ' less since Jan 1' : '', down > 0.5 ? 'good' : '')
+    + _recapStat('Badges', String(r.badges), 'earned in ' + year)
+    + '</div>'
+    + (fl ? '<div class="rc-line">' + fl.text + '</div>' : '')
+    + '<div class="rc-muted">From everything logged here in ' + year + '.</div>';
+  _recapCard = { emoji: '\uD83C\uDF86', headline: 'My ' + year,
+    big: r.cleared.length ? r.cleared.length + (r.cleared.length === 1 ? ' debt paid off' : ' debts paid off') : Math.round(progressPct()) + '% of my debt gone',
+    sub: r.monthsPaid + (r.monthsPaid === 1 ? ' month' : ' months') + ' of payments logged. On to ' + (year + 1) + '.' };
+  document.getElementById('recap-sheet').classList.remove('hidden');
+  trackShare('recap_open', { _category: 'engagement', kind: 'year', auto: auto ? 'yes' : 'no' });
+}
+function closeRecap(e) {
+  var m = document.getElementById('recap-sheet');
+  if (!m || (e && e.target !== m)) return;
+  m.classList.add('hidden');
+}
+function shareRecap() {
+  if (!_recapCard) return;
+  closeRecap();
+  var c = _recapCard, overlay = document.getElementById('celebrate-overlay');
+  if (!overlay) return;
+  document.getElementById('celebrate-emoji').textContent = c.emoji;
+  document.getElementById('celebrate-headline').textContent = c.headline;
+  document.getElementById('celebrate-sub').textContent = c.sub;
+  _celebrateContent = c; _cardFormat = 'square';
+  drawShareCard(c, 'square');
+  ['square', 'story'].forEach(function (f) { var b = document.getElementById('fmt-' + f); if (b) b.classList.toggle('seg-active', f === 'square'); });
+  overlay.classList.remove('hidden');
+  trackShare('card_shown', { card_type: 'recap' });
+}
+function _lastMonthYm() { var n = new Date(); return _ym(new Date(n.getFullYear(), n.getMonth() - 1, 1)); }
+function renderRecapLinks() {
+  var el = document.getElementById('rc-links'); if (!el) return;
+  if (_demoMode || !debts.length) { el.innerHTML = ''; return; }
+  var lm = _lastMonthYm(), h = '';
+  if (payments.some(function (p) { return !p.pending && p.date && p.date.slice(0, 7) === lm; }))
+    h += '<button type="button" class="rc-link" onclick="openMonthRecap(\'' + lm + '\')">&#128197; ' + _ymLabel(lm) + ' recap</button>';
+  if (_yirWindow()) h += '<button type="button" class="rc-link" onclick="openYearReview()">&#127878; Your ' + _yirYear() + ' in review</button>';
+  el.innerHTML = h;
+}
+// Once per month (and once per year in the window), after anything else that
+// opens on launch has been closed.
+function maybeShowRecap() {
+  if (_demoMode || !debts.length) return;
+  var busy = ['whatsnew-modal', 'celebrate-overlay', 'finish-sheet', 'add-preview-modal'].some(function (id) { var m = document.getElementById(id); return m && !m.classList.contains('hidden'); })
+    || document.documentElement.classList.contains('app-locked');
+  if (busy) { if ((maybeShowRecap._tries = (maybeShowRecap._tries || 0) + 1) < 60) setTimeout(maybeShowRecap, 2000); return; }
+  var thisYm = _ym(new Date()), seen = null, ys = null;
+  try { seen = localStorage.getItem(LS_RECAP_SEEN); ys = localStorage.getItem(LS_YIR_SEEN); } catch (e) { return; }
+  var year = _yirYear();
+  if (_yirWindow() && ys !== String(year) && payments.some(function (p) { return !p.pending && p.date && p.date.slice(0, 4) === String(year); })) {
+    try { localStorage.setItem(LS_YIR_SEEN, String(year)); localStorage.setItem(LS_RECAP_SEEN, thisYm); } catch (e) {}
+    openYearReview(year, true); return;
+  }
+  if (seen === thisYm) return;
+  try { localStorage.setItem(LS_RECAP_SEEN, thisYm); } catch (e) {}
+  var lm = _lastMonthYm();
+  if (payments.some(function (p) { return !p.pending && p.date && p.date.slice(0, 7) === lm; })) openMonthRecap(lm, true);
+}
+
+// v1.69.3 - finish step. Shown once per device, after the first debts a new
+// user saves (the session started with no debts): the monthly amount with
+// the date moving live, optional due days, and reminders in one tap.
+var _addSessionStartCount = null;
+var LS_SETUP_FINISH = 'debtfree_setup_finish';
+function _shouldFinishSetup() {
+  try { if (localStorage.getItem(LS_SETUP_FINISH)) return false; } catch (e) { return false; }
+  return _addSessionStartCount === 0 && _activePlanDebts().length > 0;
+}
+function _finishMinimums() {
+  return Math.round(_activePlanDebts().reduce(function (t, d) { return t + (Number(d.minPayment) || 0); }, 0));
+}
+function openFinishSetup() {
+  var m = document.getElementById('finish-sheet');
+  if (!m) return false;
+  var mins = _finishMinimums();
+  var sl = document.getElementById('fs-slider');
+  var cur = mins + (Number(extraMonthly) || 0);
+  sl.min = String(mins);
+  sl.max = String(Math.max(mins + 1500, Math.ceil((cur + 500) / 100) * 100));
+  sl.step = '25';
+  sl.value = String(cur);
+  var need = debts.filter(function (d) { return d.balance > 0 && !d.dueDay; });
+  var wrap = document.getElementById('fs-due-wrap');
+  wrap.style.display = need.length ? '' : 'none';
+  document.getElementById('fs-due').innerHTML = need.map(function (d) {
+    return '<div class="fs-due-row"><span>' + escapeHtml(d.name) + '</span>'
+      + '<input type="text" inputmode="numeric" maxlength="2" placeholder="Day" aria-label="Due day for ' + escapeHtml(d.name) + '" data-id="' + d.id + '" /></div>';
+  }).join('');
+  finishPreview();
+  m.classList.remove('hidden');
+  try { localStorage.setItem(LS_SETUP_FINISH, 'shown'); } catch (e) {}
+  trackShare('setup_finish_open', { _category: 'activation', debt_count: debts.length });
+  return true;
+}
+function finishPreview() {
+  var sl = document.getElementById('fs-slider');
+  var mins = Number(sl.min) || 0;
+  var total = Number(sl.value) || mins;
+  var extra = Math.max(0, total - mins);
+  document.getElementById('fs-amt').innerHTML = '<b>' + fmt(total) + '/mo</b> &middot; minimums ' + fmt(mins) + (extra > 0 ? ' + ' + fmt(extra) + ' extra' : '');
+  var act = _activePlanDebts();
+  var res = act.length ? simulate(act.map(function (d) { return {...d}; }), extra + rolledOverTotal(), 0, strategy, plannedDisbursements()) : null;
+  var dEl = document.getElementById('fs-date'), sEl = document.getElementById('fs-sub');
+  if (!res || res.diverged) {
+    dEl.textContent = 'Not yet';
+    sEl.textContent = 'At this amount the balances keep growing. Slide right to see a date.';
+    return;
+  }
+  dEl.textContent = planMonthDate(res.months).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  sEl.textContent = res.months + (res.months === 1 ? ' month' : ' months') + ' \u00b7 ' + fmt(res.totalInterest) + ' total interest';
+}
+function finishSetup(reminders) {
+  var m = document.getElementById('finish-sheet');
+  if (!m || m.classList.contains('hidden')) return;
+  var sl = document.getElementById('fs-slider');
+  var extra = Math.max(0, (Number(sl.value) || 0) - (Number(sl.min) || 0));
+  var field = document.getElementById('extra-payment');
+  if (field) field.value = extra || '';
+  extraMonthly = extra;
+  var added = 0;
+  document.querySelectorAll('#fs-due input[data-id]').forEach(function (inp) {
+    var day = sanitizeDueDay(inp.value);
+    if (!day) return;
+    var d = debts.find(function (x) { return String(x.id) === inp.getAttribute('data-id'); });
+    if (d) { d.dueDay = day; added++; }
+  });
+  m.classList.add('hidden');
+  try { localStorage.setItem(LS_SETUP_FINISH, 'done'); } catch (e) {}
+  trackShare('setup_finish_done', { _category: 'activation', extra_band: amountBand(extra), due_days: added, reminders: reminders ? 'yes' : 'no' });
+  save(); render();
+  showSection('dashboard'); window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (reminders) { setTimeout(function () { openCalReminders(); }, 350); return; }
+  _flushHeldMilestone();
+}
+
 function renderAddSession() {
   var box = document.getElementById('add-session');
   if (!box) return;
@@ -9894,12 +10239,9 @@ function openEditModal(id) {
     document.getElementById('edit-promo-apr').value       = d.promoApr || 0;
     document.getElementById('edit-promo-end').value       = d.promoEnd || '';
     document.getElementById('edit-post-promo-apr').value  = d.postPromoApr || '';
-    // v1.69.2 - the fee was a % of the balance BEFORE the fee; dividing by the
-    // fee-inclusive balance showed 3% as 2.91%.
-    var _feeBase = (d.originalBalance || 0) - (d.transferFee || 0);
-    var _feeRateValue = (d.transferFee > 0 && _feeBase > 0)
-      ? String(+((d.transferFee / _feeBase) * 100).toFixed(2))
-      : '';
+    // v1.69.3 - the rate stored at creation, never re-derived from a balance
+    // that payments, edits and statements move.
+    var _feeRateValue = d.transferFee > 0 ? String(transferFeeRateOf(d)) : '';
     var _feeEl = document.getElementById('edit-transfer-fee');
     _feeEl.value = _feeRateValue;
     // v1.7.2 — stash original state so saveEditDebt can detect whether the
@@ -9912,7 +10254,11 @@ function openEditModal(id) {
     // v1.7.2 — mark non-promo state so a later toggle on counts as fresh
     var _feeEl2 = document.getElementById('edit-transfer-fee');
     if (_feeEl2) {
-      _feeEl2.dataset.originalRate = '0';
+      // v1.69.3 - this field kept the last debt's fee %, so ticking promo here
+      // charged a fee nobody typed. Show this debt's own (kept) fee, or nothing.
+      var _kept = d.transferFee > 0 ? String(transferFeeRateOf(d)) : '';
+      _feeEl2.value = _kept;
+      _feeEl2.dataset.originalRate = _kept || '0';
       _feeEl2.dataset.originalHasPromo = 'false';
     }
   }
@@ -10028,6 +10374,7 @@ function saveEditDebt() {
 
   let finalBalance = Math.max(0, balance);
   let promoApr = null, promoEnd = null, postPromoApr = null, transferFee = 0;
+  var _feeDelta = 0, _newFeeRate, _newFeeBase;
 
   if (hasPromo) {
     promoApr     = parseAmount(document.getElementById('edit-promo-apr').value) || 0;
@@ -10053,16 +10400,40 @@ function saveEditDebt() {
     var _origFeeRate = parseFloat(_feeEl.dataset.originalRate || '0');
     var _origHasPromo = _feeEl.dataset.originalHasPromo === 'true';
     var _feeRateChanged = Math.abs(feeRate - _origFeeRate) > 0.01;
-    var _promoJustEnabled = !_origHasPromo;
-    if (_promoJustEnabled || _feeRateChanged) {
-      // Fresh declaration or fee correction — treat balance as principal
+    var _hadFee = (d.transferFee || 0) > 0;
+    // v1.69.3 - a fee already on this debt is kept unless its rate is changed.
+    // Turning the promo off and on again is not a new transfer.
+    var _promoJustEnabled = !_origHasPromo && !_hadFee;
+    if (_promoJustEnabled) {
+      // A new transfer declared on an existing debt: the balance typed is what moved.
       transferFee = Math.round(balance * (feeRate / 100) * 100) / 100;
       finalBalance = balance + transferFee;
+      _newFeeRate = transferFee > 0 ? feeRate : null;
+      _newFeeBase = transferFee > 0 ? balance : null;
+    } else if (_feeRateChanged && _hadFee && d.transferFeeEstimated) {
+      // An older debt whose rate was estimated: typing the real rate corrects
+      // the label; the dollars charged stay as they were.
+      transferFee = d.transferFee;
+      finalBalance = balance;
+      _newFeeRate = feeRate > 0 ? feeRate : null;
+      _newFeeBase = feeRate > 0 ? Math.round(d.transferFee / (feeRate / 100) * 100) / 100 : null;
+    } else if (_feeRateChanged) {
+      // Fee corrected: recharge it on the amount originally transferred and
+      // move the balance by the difference only (the old fee is already in it).
+      var _base = _hadFee ? transferBaseOf(d) : balance;
+      transferFee = Math.round(_base * (feeRate / 100) * 100) / 100;
+      _feeDelta = Math.round((transferFee - (d.transferFee || 0)) * 100) / 100;
+      finalBalance = Math.max(0, balance + _feeDelta);
+      _newFeeRate = transferFee > 0 ? feeRate : null;
+      _newFeeBase = transferFee > 0 ? _base : null;
     } else {
-      // Existing promo, fee unchanged — balance is current owed; preserve fee
+      // Existing fee, unchanged: the balance typed is what is owed now.
       transferFee = d.transferFee || 0;
       finalBalance = balance;
     }
+  } else {
+    // Promo off: the fee was still charged once; keep it on record.
+    transferFee = d.transferFee || 0;
   }
 
   // Update debt object
@@ -10072,6 +10443,10 @@ function saveEditDebt() {
   const paymentsOnDebt = payments.filter(p => p.debtId === d.id);
   if (paymentsOnDebt.length === 0 || finalBalance > d.originalBalance) {
     d.originalBalance = finalBalance;
+  } else if (_feeDelta) {
+    // v1.69.3 - a corrected fee moves the starting balance too, so the ledger
+    // (start + interest + corrections - payments) still equals the balance.
+    d.originalBalance = Math.round((d.originalBalance + _feeDelta) * 100) / 100;
   }
   d.balance        = finalBalance;
   d.apr            = hasPromo ? promoApr : apr;
@@ -10085,7 +10460,9 @@ function saveEditDebt() {
   d.promoApr       = hasPromo ? promoApr : null;
   d.promoEnd       = hasPromo ? promoEnd : null;
   d.postPromoApr   = hasPromo ? postPromoApr : null;
-  d.transferFee    = hasPromo ? transferFee : 0;
+  d.transferFee    = transferFee;
+  if (_newFeeRate !== undefined) { d.transferFeeRate = _newFeeRate; d.transferBase = _newFeeBase; d.transferFeeEstimated = false; }
+  else if (d.transferFee > 0 && !(d.transferFeeRate > 0)) { d.transferFeeRate = transferFeeRateOf(d); d.transferBase = transferBaseOf(d); }
   if (!hasPromo) d.originalApr = apr;
 
   // v1.7.0 — installment fields
@@ -19904,6 +20281,12 @@ function sanitizeDebts(parsed) {
       promoEnd: promoEnd,
       hasPromo: hasPromo,
       transferFee: transferFee,
+      // v1.69.3 - fix the fee rate once for debts saved before it was stored.
+      transferFeeRate: transferFee > 0 ? (debt.transferFeeRate > 0 ? debt.transferFeeRate : transferFeeRateOf(Object.assign({}, debt, { transferFee: transferFee, originalBalance: origBal }))) : (debt.transferFeeRate || null),
+      transferBase: transferFee > 0 ? (debt.transferBase > 0 ? debt.transferBase : transferBaseOf(Object.assign({}, debt, { transferFee: transferFee, originalBalance: origBal }))) : (debt.transferBase || null),
+      // Estimated, not typed: the first rate change on such a debt corrects the
+      // label and keeps the dollars actually charged (see saveEditDebt).
+      transferFeeEstimated: transferFee > 0 && !(debt.transferFeeRate > 0) ? true : !!debt.transferFeeEstimated,
       type: type,
       loanType: loanType,
       includeInStrategy: includeInStrategy,
@@ -20921,6 +21304,10 @@ trackPlayBadges();
 recordOpenDay();
 render();
 try { updateDriveUI(); } catch(e) {}
+// v1.70.0 - month snapshot for recaps, then the recap itself once things settle.
+try { recordMonthSnapshot(); } catch (e) {}
+setTimeout(function () { try { maybeShowRecap(); } catch (e) {} }, 1800);
+try { if (/^#(year-review|month-recap)$/.test(location.hash)) setTimeout(function () { location.hash === '#year-review' ? openYearReview() : openMonthRecap(_lastMonthYm()); }, 900); } catch (e) {}
 
 // v1.31.1 — RESTORED. This call was lost in v1.18.0 when the milestone
 // baseline was added to the boot sequence, so checkAndShowWhatsNew() sat

@@ -1,9 +1,11 @@
 {
-  "version": "1.69.2",
+  "version": "1.70.0",
   "releaseDate": "2026-11-13",
-  "releaseName": "Promo fields fit on phones",
+  "releaseName": "Recaps and a faster start",
   "notes": [
-    "The 0% / promo fields no longer squeeze or wrap on a phone: two columns, with the end date on its own row, in both Add a Debt and Edit.",
-    "Editing a balance transfer showed a 3% fee as 2.91%. It now shows the rate you entered."
+    "Monthly recap: on the first open of a new month you'll see last month at a glance: what you paid toward debt, how much less you owe, debts paid off, badges, and whether your debt-free date moved. It's also on the Wins tab, with a card to share.",
+    "Year in review: from mid-December, your year's payments, debts paid off and progress in one place, with a share card.",
+    "Faster start: after adding your first debts, slide to set how much goes to debt each month and watch your debt-free date move, add due dates, and turn on reminders in one step.",
+    "Balance transfer fees now stay exactly as entered. Before, the fee % shown could drift after editing a balance, changing the fee % charged it twice, turning the promo off and on added a second fee, and the fee box could carry over from the last debt you opened. Older transfers keep the dollars you were charged; if the rate shown looks off, type the right one once and it sticks."
   ]
 }

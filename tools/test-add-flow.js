@@ -64,9 +64,31 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); i
   await p.click('#add-save-btn'); await p.waitForTimeout(600);
   st = await p.evaluate(() => ({ hidden: document.getElementById('add-session').hidden, y: scrollY, n: debts.length }));
   ok(st.hidden && st.n === 2, 'Save & see my plan with an empty form ends the session');
-  await p.waitForTimeout(700);
+  await p.waitForTimeout(400);
+  console.log('A2. Finish step');
+  const fs = await p.evaluate(() => {
+    const m = document.getElementById('finish-sheet'); const sl = document.getElementById('fs-slider');
+    return { open: !m.classList.contains('hidden'), min: +sl.min, val: +sl.value, date: document.getElementById('fs-date').textContent,
+      dueRows: document.querySelectorAll('#fs-due input').length, celebrate: !document.getElementById('celebrate-overlay').classList.contains('hidden') };
+  });
+  ok(fs.open && !fs.celebrate, 'finish step opens after the first debts, before any celebration card');
+  ok(fs.min === 486 && fs.val === 486, 'slider starts at the minimums ($' + fs.min + ')');
+  ok(fs.dueRows === 2, 'asks for due days for both debts (no due day yet)');
+  await p.evaluate(() => { const sl = document.getElementById('fs-slider'); sl.value = String(+sl.min + 300); sl.dispatchEvent(new Event('input')); });
+  const fs2 = await p.evaluate(() => ({ date: document.getElementById('fs-date').textContent, amt: document.getElementById('fs-amt').textContent }));
+  ok(fs2.date !== fs.date && /\+ \$300 extra/.test(fs2.amt), 'sliding to +$300 moves the date: ' + fs.date + ' -> ' + fs2.date);
+  await p.evaluate(() => { const i = document.querySelectorAll('#fs-due input'); i[0].value = '18'; i[1].value = '40'; });
+  await p.evaluate(() => finishSetup(false)); await p.waitForTimeout(700);
+  const fs3 = await p.evaluate(() => ({ extra: extraMonthly, field: document.getElementById('extra-payment').value, d0: debts[0].dueDay, d1: debts[1].dueDay,
+    stat: document.getElementById('stat-date').textContent, flag: localStorage.getItem('debtfree_setup_finish') }));
+  ok(fs3.extra === 300 && fs3.field === '300', 'Save sets $300 extra in the plan');
+  ok(fs3.d0 === 18 && !fs3.d1, 'due day 18 saved; an invalid 40 is ignored');
+  ok(fs3.stat === fs2.date, 'Home shows the same date the slider showed (' + fs3.stat + ')');
+  ok(fs3.flag === 'done', 'finish step marked done for this device');
+  await p.waitForTimeout(500);
   const cel = await p.evaluate(() => { const o = document.getElementById('celebrate-overlay'); return { shown: !o.classList.contains('hidden'), h: document.getElementById('celebrate-headline').textContent }; });
-  ok(cel.shown && /First debt/.test(cel.h), 'the held "First debt added" card shows once adding is done');
+  ok(cel.shown && /First debt/.test(cel.h), 'the held "First debt added" card shows after the finish step');
+  ok(await p.evaluate(() => { _addSessionStartCount = 0; return _shouldFinishSetup(); }) === false, 'finish step never shows twice'); await p.evaluate(() => { _addSessionStartCount = null; });
   await p.evaluate(() => document.getElementById('celebrate-overlay').classList.add('hidden'));
 
   console.log('B. Single debt with More details and preview');
