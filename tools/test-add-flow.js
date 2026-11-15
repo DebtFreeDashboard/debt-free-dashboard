@@ -111,6 +111,9 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); i
   const cel = await p.evaluate(() => { const o = document.getElementById('celebrate-overlay'); return { shown: !o.classList.contains('hidden'), h: document.getElementById('celebrate-headline').textContent }; });
   ok(cel.shown && /First debt|Plan avoids/.test(cel.h), 'one held win card shows after See my plan, none during setup: ' + cel.h);
   ok(await p.evaluate(() => _inFirstSetup()) === false, 'setup never runs twice');
+  // v1.72.1 — the guide must not ask for the monthly plan right after setup did it.
+  const gd = await p.evaluate(() => ({ plan: !!guideState().plan, title: (document.getElementById('guide-title') || {}).textContent || '' }));
+  ok(gd.plan && !/plan to pay each month/i.test(gd.title), 'guide counts the monthly step as done after setup (next: ' + gd.title.trim() + ')');
   await p.evaluate(() => document.getElementById('celebrate-overlay').classList.add('hidden'));
 
   console.log('B. Single debt with More details and preview');

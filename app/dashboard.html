@@ -4926,7 +4926,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.72.0';
+const APP_VERSION = '1.72.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -4934,6 +4934,15 @@ const APP_VERSION = '1.72.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.72.1',
+    date: 'November 14, 2026',
+    name: 'Setup checklist fix',
+    whatsNew: [],
+    fixes: [
+      'After setup, the What\u2019s next? list no longer asks you to enter what you plan to pay each month. You just did that in setup, so it now counts as done.'
+    ]
+  },
   {
     version: '1.72.0',
     date: 'November 14, 2026',
@@ -10104,7 +10113,9 @@ function setupGo(n) {
   _setupStep = n;
   ['1', '2', '3'].forEach(function (k) { var el = document.getElementById('setup-s' + k); if (el) el.hidden = String(n) !== k; });
   if (n === 2) setupOpenExtra();
-  if (n === 3) setupOpenReminders();
+  // v1.72.1 — step 2 is the monthly plan (Next and Skip both land here), so
+  // the "What's next?" guide must not ask for it again after setup.
+  if (n === 3) { guideMark('plan'); setupOpenReminders(); }
   setupSync();
   var card = document.getElementById('add-debt-card');
   if (card) {
@@ -10298,6 +10309,7 @@ async function setupPaste() {
 }
 function setupFinish() {
   var r = setupSaveDue();
+  guideMark('plan');   // v1.72.1 — also covers Paste my setup, which lands on step 3
   try { localStorage.setItem(LS_SETUP_FINISH, 'done'); } catch (e) {}
   trackShare('setup_finish_done', { _category: 'activation', extra_band: amountBand(Number(extraMonthly) || 0), due_days: r.days, autopay: r.autopay, reminders: pushPrefs() ? 'yes' : 'no' });
   if (_addSessionNames.length) trackShare('add_session_done', { _category: 'activation', session_count: _addSessionNames.length });

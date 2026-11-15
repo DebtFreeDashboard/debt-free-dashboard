@@ -370,6 +370,19 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-14 (night)** — v1.72.1: the "What's next?" guide asked "Enter
+  what you plan to pay each month" straight after first setup, because the
+  setup flow's monthly step (`#ss-amt`) never called `guideMark('plan')`.
+  Now `setupGo(3)` (Next or Skip from step 2) and `setupFinish()` mark it.
+  Test added to `test-add-flow.js` (56). Homepage: the demo section now
+  leads with `assets/videos/setup-demo.mp4` (silent, captioned, real-time
+  first setup with an on-screen timer: 0:44; recorded with a CDP screencast
+  at 780x1560 from a 390px layout, notifications permission stubbed since
+  headless can't grant it), heading "built in under a minute", hero link
+  "Watch setup, start to finish". The 38s feature tour moved below the
+  screenshots under "Then, every month." Kevin timed a real setup on a new
+  iPhone at under a minute.
+
 - **2026-11-14 (evening)** — v1.72.0 "Setup in one flow". Kevin's testers
   found setup much easier; ask was one uninterrupted flow: debts, monthly
   extra, notifications, plan. First setup (`_inFirstSetup()`: no

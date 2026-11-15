@@ -1,11 +1,8 @@
 {
-  "version": "1.72.0",
+  "version": "1.72.1",
   "releaseDate": "2026-11-14",
-  "releaseName": "Setup in one flow",
+  "releaseName": "Setup checklist fix",
   "notes": [
-    "Setting up is now one flow in one place: add your debts, choose what goes to debt each month, add due dates and reminders, then see your plan. No jumping between screens.",
-    "The monthly step lets you enter the extra on top of your minimums, or your total for the month, with quick +$50, +$100, +$250 and +$500 buttons. Your debt-free date and the interest saved update as you go.",
-    "On iPhone, setup shows how to put DebtFree on your Home Screen for notifications, and your debts come with you: copy your setup in Safari, then tap Paste my setup in the Home Screen app.",
-    "Messages that only confirm something no longer show an Undo button that did nothing."
+    "After setup, the What’s next? list no longer asks you to enter what you plan to pay each month. You just did that in setup, so it now counts as done."
   ]
 }
