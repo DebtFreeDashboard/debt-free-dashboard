@@ -370,6 +370,15 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-16** — v1.73.1: the hero label (`#hero-label`) reads "Owed in
+  Your Plan" when any debt with a balance is excluded, else "Total Owed"
+  (Kevin: with an exclusion it isn't the total). The subline drops "in your
+  plan" since the label says it. Marketing assets show the example screen,
+  which excludes nothing, so they still read "Total Owed". Kevin also asked
+  how other tools treat a car lease: no consensus (budgeting tools file it as
+  a bill, net-worth tools as a 0% loan); decided not to build lease-specific
+  handling. Excluded + the hero line covers it; a lease can also go in Bills.
+
 - **2026-11-15** — v1.73.0 "Total Owed matches your plan". Kevin added a
   Jeep lease marked "not in payoff plan" and it still counted in Total Owed
   while the Freedom Date beside it left it out (deliberate since v1.10.3,

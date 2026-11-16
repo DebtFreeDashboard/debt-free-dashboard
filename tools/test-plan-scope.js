@@ -48,7 +48,7 @@ async function open(browser, s, url) {
   console.log('Headline figures cover the plan only');
   let { ctx, p, errs } = await open(browser, seed);
   let r = await p.evaluate(() => ({
-    total: document.getElementById('stat-total').textContent, acc: document.getElementById('hero-accounts').textContent,
+    total: document.getElementById('stat-total').textContent, acc: document.getElementById('hero-accounts').textContent, lbl: document.getElementById('hero-label').textContent,
     ex: document.getElementById('hero-excluded').hidden ? null : document.getElementById('hero-excluded').textContent,
     tb: totalBalance(), to: totalOriginal(), tp: totalPaid(), pct: progressPct(), mi: monthlyInterest(),
     interestTxt: document.getElementById('stat-interest').textContent, legend: document.getElementById('hero-legend').textContent,
@@ -57,7 +57,7 @@ async function open(browser, s, url) {
     ms: JSON.parse(localStorage.getItem('debtfree_milestones')), log: JSON.parse(localStorage.getItem('debtfree_ms_log') || '{}')
   }));
   ok(near(r.tb, 6000) && r.total === '$6,000', 'Total Owed is the plan: $6,000 (was $217,055 with the lease and mortgage)');
-  ok(r.acc === 'across 2 accounts in your plan', 'subline: "' + r.acc + '"');
+  ok(r.acc === 'across 2 accounts' && r.lbl === 'Owed in Your Plan', 'label "' + r.lbl + '", subline "' + r.acc + '"');
   ok(r.ex && /\+\$211,055 not in your plan/.test(r.ex) && /2 accounts/.test(r.ex) && /\$1,000\/mo interest/.test(r.ex), 'excluded line: "' + r.ex + '"');
   ok(near(r.to, 8000) && near(r.pct, 25), 'progress is plan only: $2,000 of $8,000 = 25%');
   ok(r.ringPct === '25.0%' && r.barPct === '25.0%', 'ring and bar both read 25.0%');
@@ -109,8 +109,8 @@ async function open(browser, s, url) {
 
   console.log('Nothing excluded: unchanged');
   ({ ctx, p, errs } = await open(browser, Object.assign({}, seed, { debtfree_debts: JSON.stringify(debts.slice(0, 2)), debtfree_payments: JSON.stringify(payments.slice(0, 2)) })));
-  r = await p.evaluate(() => ({ acc: document.getElementById('hero-accounts').textContent, hid: document.getElementById('hero-excluded').hidden, total: document.getElementById('stat-total').textContent }));
-  ok(r.acc === 'across 2 accounts' && r.hid && r.total === '$6,000', 'no excluded debts: "across 2 accounts", no extra line');
+  r = await p.evaluate(() => ({ lbl: document.getElementById('hero-label').textContent, acc: document.getElementById('hero-accounts').textContent, hid: document.getElementById('hero-excluded').hidden, total: document.getElementById('stat-total').textContent }));
+  ok(r.lbl === 'Total Owed' && r.acc === 'across 2 accounts' && r.hid && r.total === '$6,000', 'no excluded debts: "Total Owed", "across 2 accounts", no extra line');
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await ctx.close();
 

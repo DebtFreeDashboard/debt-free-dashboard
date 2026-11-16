@@ -3513,7 +3513,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
          split by lender, and the red-to-green progress bar. Same ids as before. -->
     <div class="card hero-card" id="hero-card">
       <div class="hero-head">
-        <div class="hero-label">Total Owed</div>
+        <div class="hero-label" id="hero-label">Total Owed</div>
         <button id="share-progress-btn" class="btn btn-ghost pc-share" onclick="shareProgress()" style="display:none">Share</button>
       </div>
       <div class="hero-main">
@@ -5051,7 +5051,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.73.0';
+const APP_VERSION = '1.73.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5059,6 +5059,15 @@ const APP_VERSION = '1.73.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.73.1',
+    date: 'November 16, 2026',
+    name: 'A clearer label for your plan',
+    whatsNew: [
+      'When you leave a debt out of your payoff plan, like a car lease or a mortgage, the top card now reads “Owed in Your Plan” instead of “Total Owed,” so the label matches the number. If every debt is in your plan, nothing changes.'
+    ],
+    fixes: []
+  },
   {
     version: '1.73.0',
     date: 'November 15, 2026',
@@ -17023,10 +17032,13 @@ function renderStats() {
   const _ex = excludedSummary();
   if (_accEl) {
     const _n = debts.filter(function(d){ return d.balance > 0 && inPlan(d); }).length;
-    const _inP = _ex.list.length ? ' in your plan' : '';
     _accEl.textContent = _n === 0 ? (_ex.list.length ? 'nothing left in your plan' : 'nothing owed')
-      : _n === 1 ? 'across 1 account' + _inP : 'across ' + _n + ' accounts' + _inP;
+      : _n === 1 ? 'across 1 account' : 'across ' + _n + ' accounts';
   }
+  // v1.73.1 — "Total Owed" isn't the total once something is left out of the
+  // plan, so the label says what the number is. Nothing excluded: unchanged.
+  const _lblEl = document.getElementById('hero-label');
+  if (_lblEl) _lblEl.textContent = _ex.list.length ? 'Owed in Your Plan' : 'Total Owed';
   // v1.73.0 — what was left out of the plan, on its own line, so the total
   // above matches the Freedom Date and an excluded debt never looks lost.
   const _exEl = document.getElementById('hero-excluded');
