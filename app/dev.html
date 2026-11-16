@@ -326,6 +326,7 @@
     font-size:clamp(2.1rem, 11vw, 2.9rem);
   }
   .hero-sub { font-size:0.78rem; color:var(--text-muted); margin-top:6px; }
+  .hero-excl { font-size:0.72rem; color:var(--text-muted); margin-top:3px; opacity:0.85; }
   .hero-prog-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
   .hero-prog-line { font-size:clamp(0.7rem, 3.1vw, 0.78rem); color:var(--text); min-width:0; }
   .hero-prog-line b { color:var(--accent); font-weight:700; }
@@ -3520,6 +3521,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         <div class="hero-main-txt">
           <div class="hero-total" id="stat-total">$0</div>
           <div class="hero-sub" id="hero-accounts">across all accounts</div>
+          <div class="hero-excl" id="hero-excluded" hidden></div>
         </div>
       </div>
       <div class="hero-split" id="hero-split" style="display:none">
@@ -5049,7 +5051,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.72.1';
+const APP_VERSION = '1.73.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5057,6 +5059,17 @@ const APP_VERSION = '1.72.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.73.0',
+    date: 'November 15, 2026',
+    name: 'Total Owed matches your plan',
+    whatsNew: [
+      'Total Owed now matches your Freedom Date. Debts you\'ve marked “not in payoff plan,” like a car lease or a mortgage, no longer count toward Total Owed, the paid-off ring, your progress % or Interest/mo.',
+      'Those debts still show on your dashboard: a line under Total Owed lists what\'s outside your plan and how much it is.',
+      'Monthly recaps, share cards and your progress wins follow the same rule, so every number on the screen describes the same plan.'
+    ],
+    fixes: []
+  },
   {
     version: '1.72.1',
     date: 'November 14, 2026',
@@ -7420,9 +7433,33 @@ function fmt(n) {
 
 function fmtDec(n) { return '$' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 
-function totalBalance() { return debts.filter(d=>d.balance>0).reduce((a,d)=>a+(isNaN(d.balance)?0:d.balance),0); }
+// v1.73.0 — the headline figures (Total Owed, the paid-off ring and bar,
+// progress %, Interest/mo, recaps, share cards, progress wins) describe the
+// PAYOFF PLAN, the same debts the Freedom Date is built from. A debt marked
+// "not in payoff plan" (a lease, a mortgage) used to be counted in Total Owed
+// while the date beside it left it out, so the two described different sets
+// of debts. Excluded debts are still listed, and the hero shows them on one
+// line of their own (excludedSummary) so nothing looks lost.
+function inPlan(d) { return !!d && d.includeInStrategy !== false; }
+// A payment belongs to the plan unless its debt is one the person excluded.
+// A payment whose debt was deleted keeps counting, as it did before.
+function payInPlan(p) {
+  var d = debts.find(function (x) { return x.id === p.debtId; });
+  return !d || inPlan(d);
+}
+function totalBalance() { return debts.filter(d=>d.balance>0 && inPlan(d)).reduce((a,d)=>a+(isNaN(d.balance)?0:d.balance),0); }
 
-function totalOriginal() { return debts.reduce((a,d)=>a+(isNaN(d.originalBalance) ? 0 : d.originalBalance),0); }
+function totalOriginal() { return debts.filter(inPlan).reduce((a,d)=>a+(isNaN(d.originalBalance) ? 0 : d.originalBalance),0); }
+
+// Debts with a balance that the person left out of the plan.
+function excludedSummary() {
+  var list = debts.filter(function (d) { return d.balance > 0 && !inPlan(d); });
+  return {
+    list: list,
+    owed: list.reduce(function (a, d) { return a + (isNaN(d.balance) ? 0 : d.balance); }, 0),
+    interest: _monthlyInterestOf(list)
+  };
+}
 
 // v1.33.0 — a balance transfer is NOT a payment. Recording one as a payoff told
 // the app you had extinguished debt when you had only relocated it, inflating
@@ -7434,14 +7471,14 @@ function totalOriginal() { return debts.reduce((a,d)=>a+(isNaN(d.originalBalance
 // only, so the two could drift.
 function transferredTotal() {
   return debts.reduce(function(a, d) {
-    if (!isTransferred(d)) return a;
+    if (!isTransferred(d) || !inPlan(d)) return a;
     const amt = (d.transferAmount != null) ? d.transferAmount : (d.originalBalance || 0);
     return a + Math.max(0, amt);
   }, 0);
 }
 
 function totalPaid() {
-  const gross = payments.filter(function(p) { return !p.pending; })
+  const gross = payments.filter(function(p) { return !p.pending && payInPlan(p); })
                         .reduce(function(a, p) { return a + p.amount; }, 0);
   // v1.33.1 — subtract only the portion of each closed account that was MOVED,
   // not the whole payoff. The first version flagged entire payment records as
@@ -7537,7 +7574,9 @@ let _milestonesBaselined = false;  // gate: suppress celebrations until first lo
 // dump five retroactive celebrations on load).
 function milestoneKeysAchieved() {
   const keys = [];
-  const active = debts.filter(function(d){ return d.balance > 0; });
+  // v1.73.0 — "debt-free" means the plan is clear, the same thing the
+  // Freedom Date counts down to. An excluded lease or mortgage doesn't block it.
+  const active = debts.filter(function(d){ return d.balance > 0 && inPlan(d); });
   // v1.33.3 — transferred balances are excluded everywhere a "debt eliminated"
   // count is derived, including the celebration payloads and the share cards.
   const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); });
@@ -8636,7 +8675,10 @@ function trueCostOf(debt) {
 }
 
 function monthlyInterest() {
-  return debts.filter(d=>d.balance>0).reduce((a,d)=>{
+  return _monthlyInterestOf(debts.filter(d=>d.balance>0 && inPlan(d)));
+}
+function _monthlyInterestOf(list) {
+  return list.filter(d=>d.balance>0).reduce((a,d)=>{
     const safeApr = (!isNaN(d.apr) && d.apr >= 0 && d.apr <= 100) ? d.apr : 0;
     let effectiveApr = safeApr;
     if (d.promoEnd) {
@@ -8777,7 +8819,7 @@ function progressScaleRgb(p) {
 }
 function renderHeroExtras(pct) {
   var card = document.getElementById('hero-card');
-  var live = debts.filter(function(d) { return d.balance > 0; }).sort(function(a, b) { return b.balance - a.balance; });
+  var live = debts.filter(function(d) { return d.balance > 0 && inPlan(d); }).sort(function(a, b) { return b.balance - a.balance; });
   var hasOrig = totalOriginal() > 0;
   var c = progressScaleRgb(pct), rgb = c.join(',');
   if (card) {
@@ -9957,7 +9999,7 @@ function recordMonthSnapshot() {
 // corrections - payments), so past months read the same on any device.
 function owedAsOf(dateStr) {
   return debts.reduce(function (t, d) {
-    if (isTransferred(d)) return t;
+    if (isTransferred(d) || !inPlan(d)) return t;
     // Newer ids carry their creation time (ms x 1000): a debt added later
     // than this day was not owed yet.
     if (d.id > 1e15 && localDateStr(new Date(Math.floor(d.id / 1000))) > dateStr) return t;
@@ -9970,9 +10012,10 @@ function owedAsOf(dateStr) {
 }
 function recapData(from, to) {   // dates 'YYYY-MM-DD', inclusive
   var inRange = function (x) { return x && x >= from && x <= to; };
-  var pays = payments.filter(function (p) { return !p.pending && p.amount > 0 && inRange(p.date); });
+  // v1.73.0 — plan debts only, so paid, interest and owed-at-start/end agree.
+  var pays = payments.filter(function (p) { return !p.pending && p.amount > 0 && inRange(p.date) && payInPlan(p); });
   var paid = pays.reduce(function (t, p) { return t + p.amount; }, 0);
-  var interest = accruals.filter(function (a) { return inRange(a.date || (a.month + '-01')); }).reduce(function (t, a) { return t + (a.amount || 0); }, 0);
+  var interest = accruals.filter(function (a) { return inRange(a.date || (a.month + '-01')) && payInPlan(a); }).reduce(function (t, a) { return t + (a.amount || 0); }, 0);
   var dayBefore = localDateStr(new Date(new Date(from + 'T00:00:00').getTime() - 86400000));
   var cleared = [];
   pays.forEach(function (p) { if (p.eliminated) { var d = debts.find(function (x) { return x.id === p.debtId; }); var n = d ? d.name : p.debtName; if (n && cleared.indexOf(n) === -1) cleared.push(n); } });
@@ -10936,7 +10979,11 @@ function saveEditDebt() {
   // v1.7.0 — installment fields
   d.loanType = inferLoanType(type);
   var editIncEl = document.getElementById('edit-include-strategy');
+  var _wasInPlan = inPlan(d);
   d.includeInStrategy = editIncEl ? editIncEl.checked : shouldIncludeInStrategy(type);
+  // v1.73.0 — moving a debt in or out of the plan changes progress %, which is
+  // not a payment; note any win it makes true without celebrating it.
+  if (_wasInPlan !== inPlan(d)) { try { _msSeedProgress(); } catch (e) {} }
   var _eop = document.getElementById('edit-orig-principal');
   var _etm = document.getElementById('edit-term-months');
   var _eod = document.getElementById('edit-orig-date');
@@ -11440,7 +11487,7 @@ function celebrateMilestone(key) {
 function shareProgress() {
   const pct = Math.round(progressPct());
   const paidOff = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); }).length;
-  const active = debts.filter(function(d){ return d.balance > 0; }).length;
+  const active = debts.filter(function(d){ return d.balance > 0 && inPlan(d); }).length;
 
   let big, sub, emoji;
   if (active === 0 && debts.some(function(d){ return d.originalBalance > 0; })) {
@@ -12371,7 +12418,7 @@ function resetWiInputs() {
   if (lp) {
     delete lp.dataset.exact;
     // Set lump slider max to total remaining debt so full payoff is reachable
-    var totalBal = debts.filter(function(d){ return d.balance > 0; })
+    var totalBal = debts.filter(function(d){ return d.balance > 0 && inPlan(d); })
                         .reduce(function(a, d){ return a + d.balance; }, 0);
     var sliderMax = Math.ceil(Math.max(20000, totalBal) / 1000) * 1000;
     lp.max = sliderMax;
@@ -13596,10 +13643,12 @@ function showDebtFreeModal(date, leftover, allocations) {
   document.getElementById('debt-free-date').textContent = 'Expected payoff: ' + dateStr;
 
   // Main message
-  const totalDebt = debts.reduce(function(a, d) { return a + d.balance; }, 0);
+  // v1.73.0 — counts the debts in the plan that still have a balance; it
+  // used to count every debt ever added, paid-off and excluded ones included.
+  const _planLeft = debts.filter(function(d) { return d.balance > 0 && inPlan(d); }).length;
   document.getElementById('debt-free-msg').textContent =
-    'Based on your planned lump sum payments and monthly strategy, all ' +
-    debts.length + ' of your debts are projected to be completely paid off by ' +
+    'Based on your planned lump sum payments and monthly strategy, ' +
+    (_planLeft === 1 ? 'the 1 debt in your plan is' : 'all ' + _planLeft + ' debts in your plan are') + ' projected to be completely paid off by ' +
     dateStr + '. This is a massive milestone. You did the work to get here.';
 
   // Leftover amount
@@ -16971,10 +17020,25 @@ function renderStats() {
   // fine beside three sibling tiles; alone under a 46px figure it invites
   // the question it doesn't answer.
   const _accEl = document.getElementById('hero-accounts');
+  const _ex = excludedSummary();
   if (_accEl) {
-    const _n = debts.filter(function(d){ return d.balance > 0; }).length;
-    _accEl.textContent = _n === 0 ? 'nothing owed'
-      : _n === 1 ? 'across 1 account' : 'across ' + _n + ' accounts';
+    const _n = debts.filter(function(d){ return d.balance > 0 && inPlan(d); }).length;
+    const _inP = _ex.list.length ? ' in your plan' : '';
+    _accEl.textContent = _n === 0 ? (_ex.list.length ? 'nothing left in your plan' : 'nothing owed')
+      : _n === 1 ? 'across 1 account' + _inP : 'across ' + _n + ' accounts' + _inP;
+  }
+  // v1.73.0 — what was left out of the plan, on its own line, so the total
+  // above matches the Freedom Date and an excluded debt never looks lost.
+  const _exEl = document.getElementById('hero-excluded');
+  if (_exEl) {
+    if (_ex.list.length) {
+      const _who = _ex.list.length === 1 ? escapeHtml(_ex.list[0].name) : _ex.list.length + ' accounts';
+      _exEl.innerHTML = '+' + fmt(_ex.owed) + ' not in your plan &middot; ' + _who +
+        (_ex.interest >= 0.5 ? ' &middot; ' + fmt(_ex.interest) + '/mo interest' : '');
+      _exEl.hidden = false;
+    } else {
+      _exEl.hidden = true;
+    }
   }
   document.getElementById('stat-interest').textContent = fmtDec(interest);
 
@@ -22002,6 +22066,27 @@ try {
     });
     persistMilestones();
     localStorage.setItem('debtfree_badges_seeded', '1');
+  }
+} catch (e) {}
+
+// v1.73.0 — Total Owed and progress now count only the plan's debts, so for
+// anyone with an excluded mortgage or lease the progress % jumps the first
+// time this version loads. Wins that jump makes true are noted quietly (no
+// log date, so no recap counts them as earned this month) and never celebrate.
+// Same when a debt is moved in or out of the plan (saveEditDebt).
+function _msSeedProgress() {
+  var hit = false;
+  milestoneKeysAchieved().forEach(function (k) {
+    if ((k.indexOf('b.pct.') === 0 || k === 'debtfree') && shownMilestones.indexOf(k) === -1) {
+      shownMilestones.push(k); hit = true;
+    }
+  });
+  if (hit) persistMilestones();
+}
+try {
+  if (localStorage.getItem('debtfree_plan_scope') !== '1') {
+    _msSeedProgress();
+    localStorage.setItem('debtfree_plan_scope', '1');
   }
 } catch (e) {}
 

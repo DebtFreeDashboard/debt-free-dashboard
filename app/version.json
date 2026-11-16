@@ -1,8 +1,10 @@
 {
-  "version": "1.72.1",
-  "releaseDate": "2026-11-14",
-  "releaseName": "Setup checklist fix",
+  "version": "1.73.0",
+  "releaseDate": "2026-11-15",
+  "releaseName": "Total Owed matches your plan",
   "notes": [
-    "After setup, the What’s next? list no longer asks you to enter what you plan to pay each month. You just did that in setup, so it now counts as done."
+    "Total Owed now matches your Freedom Date. Debts you've marked “not in payoff plan,” like a car lease or a mortgage, no longer count toward Total Owed, the paid-off ring, your progress % or Interest/mo.",
+    "Those debts still show on your dashboard: a line under Total Owed lists what's outside your plan and how much it is.",
+    "Monthly recaps, share cards and your progress wins follow the same rule, so every number on the screen describes the same plan."
   ]
 }

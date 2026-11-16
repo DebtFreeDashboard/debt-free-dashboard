@@ -370,6 +370,22 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-15** — v1.73.0 "Total Owed matches your plan". Kevin added a
+  Jeep lease marked "not in payoff plan" and it still counted in Total Owed
+  while the Freedom Date beside it left it out (deliberate since v1.10.3,
+  when excluded meant a mortgage). Now `inPlan(d)` / `payInPlan(p)` scope
+  `totalBalance`, `totalOriginal`, `transferredTotal`, `totalPaid`,
+  `monthlyInterest` (via `_monthlyInterestOf`), so the hero total, ring, bar,
+  by-account split, account count, progress %, Wins figures, `owedAsOf` and
+  `recapData`, share cards, the What-If lump slider max and the debt-free
+  modal count all describe the plan. `debtfree` milestone = plan cleared.
+  `#hero-excluded` under the total: "+$X not in your plan · name (or N
+  accounts) · $Y/mo interest". `_msSeedProgress()` notes b.pct / debtfree
+  wins quietly (no log date) once per device (`debtfree_plan_scope`) and when
+  `saveEditDebt` moves a debt in or out of the plan. Debt list count and
+  "eliminated" counts unchanged. User guide's Total Owed card updated.
+  Tests: `tools/test-plan-scope.js` (25).
+
 - **2026-11-14 (night)** — v1.72.1: the "What's next?" guide asked "Enter
   what you plan to pay each month" straight after first setup, because the
   setup flow's monthly step (`#ss-amt`) never called `guideMark('plan')`.
