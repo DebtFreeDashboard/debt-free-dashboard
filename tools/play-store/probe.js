@@ -31,8 +31,8 @@ async function page(theme) {
     S('debtfree_debts', debts); S('debtfree_payments', payments);
     S('debtfree_strategy', 'optimized'); S('debtfree_extra', '300'); S('debtfree_nextid', '200');
     S('debtfree_premium', '1'); S('debtfree_premium_source', 'play'); S('debtfree_theme', theme);
-    S('debtfree_demo_dismissed', '1'); S('debtfree_last_seen_version', '1.68.0');
-    S('debtfree_badges_seeded', '1'); S('debtfree_push', {on:true,cadence:'before',lead:3,names:false});
+    S('debtfree_demo_dismissed', '1'); S('debtfree_last_seen_version', '99.0.0');
+    S('debtfree_badges_seeded', '1'); { const _n = new Date(); S('debtfree_recap_seen', _n.getFullYear() + '-' + String(_n.getMonth() + 1).padStart(2, '0')); S('debtfree_yir_seen', String(_n.getFullYear())); } S('debtfree_push', {on:true,cadence:'before',lead:3,names:false});
   }, [debts, payments, theme]);
   await ctx.grantPermissions(['notifications'], { origin: 'http://localhost:8911' });
   const p = await ctx.newPage();

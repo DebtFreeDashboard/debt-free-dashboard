@@ -5,20 +5,21 @@ const F = '/tmp/fontsrc/node_modules/@fontsource/sora/files';
 const font = w => `@font-face{font-family:Sora;font-weight:${w};src:url(data:font/woff2;base64,${fs.readFileSync(`${F}/sora-latin-${w}-normal.woff2`).toString('base64')}) format('woff2');}`;
 const C = [
   [1, 'light', 'Every debt, one total', 'What you owe, what’s paid off and your debt-free date.'],
-  [2, 'dark', 'This month at a glance', 'Log a payment with one tap or a swipe.'],
-  [3, 'light', 'Pick your payoff method', 'Snowball, avalanche or optimized, with your own numbers.'],
-  [4, 'dark', 'Try a what-if', 'See how an extra $200 a month moves the date.'],
-  [5, 'light', 'Each debt in detail', 'Credit used, daily interest and payoff date.'],
-  [6, 'dark', 'Count every win', 'Milestones and paid-off debts in one place.'],
-  [7, 'light', 'Due dates on a calendar', 'Everything due this month, day by day.'],
+  [2, 'dark', 'Set up in under a minute', 'Add your debts, pick a monthly amount, see your date.'],
+  [3, 'light', 'This month at a glance', 'Log a payment with one tap or a swipe.'],
+  [4, 'dark', 'Autopay logs itself', 'Tick autopay and those payments are logged for you.'],
+  [5, 'light', 'Pick your payoff method', 'Snowball, avalanche or optimized, with your own numbers.'],
+  [6, 'dark', 'Try a what-if', 'See how an extra $200 a month moves the date.'],
+  [7, 'light', 'Each debt in detail', 'Credit used, daily interest and payoff date.'],
   [8, 'dark', 'Payment reminders', 'Phone notifications or calendar alerts. No bank login.'],
 ];
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
-  fs.mkdirSync(path.join(__dirname, 'final'), { recursive: true });
+  const FINAL = process.env.FINAL || path.join(__dirname, 'final');
+  fs.mkdirSync(FINAL, { recursive: true });
   for (const [n, t, h, s] of C) {
-    const img = fs.readFileSync(path.join(__dirname, 'raw', `s${n}.png`)).toString('base64');
+    const img = fs.readFileSync(path.join(process.env.RAW || path.join(__dirname, 'raw'), `s${n}.png`)).toString('base64');
     const dark = t === 'dark';
     const html = `<style>${font(400)}${font(800)}
       body{margin:0;width:1080px;height:1920px;overflow:hidden;font-family:Sora;
@@ -32,7 +33,7 @@ const C = [
     </style><h1>${h}</h1><p>${s}</p><div class="ph"><img src="data:image/png;base64,${img}"></div>`;
     await p.setContent(html);
     await p.waitForTimeout(300);
-    await p.screenshot({ path: path.join(__dirname, 'final', `${String(n).padStart(2, '0')}-${t}.png`) });
+    await p.screenshot({ path: path.join(FINAL, `${String(n).padStart(2, '0')}-${t}.png`) });
   }
   await b.close();
 })();

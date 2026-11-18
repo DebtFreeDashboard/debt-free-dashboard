@@ -1,7 +1,11 @@
 # Play Store screenshots
 
 `screenshots/` holds the eight phone screenshots on the Play listing (1080x1920,
-light and dark alternating), uploaded Nov 13, 2026.
+light and dark alternating), uploaded Nov 17, 2026. Order: 1 Every debt, one
+total; 2 Set up in under a minute (setup step 2); 3 This month; 4 Autopay logs
+itself (setup step 3); 5 Payoff method; 6 What-if; 7 Each debt; 8 Reminders.
+Shots 2 and 4 are captured mid-setup by `SETUP(n)` in `raw.js`; `probe.js`
+pre-dismisses What's New and the monthly recap so neither covers a shot.
 
 To remake them after a visible change:
 
