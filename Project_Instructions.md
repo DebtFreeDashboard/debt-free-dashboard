@@ -391,10 +391,11 @@ Dates are Kevin's (Eastern time). Newest first.
   Site: homepage, calculators (`calc.css`, rebuilt), user guide, install page,
   thank-you page and `og-card.png` restyled; homepage screens and all three
   videos re-made (`tools/play-store/film.js`, new `film-setup.js`). New Play
-  screenshots and feature graphic in `tools/play-store/` (not uploaded yet;
-  the Nov 17 set is in review). **Play launcher icon** changes only with a
-  new Play release (rebuild in PWABuilder, Kevin signs); the store icon and
-  feature graphic are uploaded in Play Console.
+  screenshots (8), feature graphic and store icon in `tools/play-store/`,
+  sent for Google review Nov 18 (AI declaration: don't label). Gumroad cover
+  and thumbnail replaced the same day (`tools/gumroad/`). **Play launcher
+  icon** on phones changes only with a new Play release (rebuild in
+  PWABuilder, Kevin signs).
 
 - **2026-11-17** — Play listing: phone screenshots 2 and 4 replaced. "Set
   up in under a minute" (setup step 2, debt-free date) and "Autopay logs
