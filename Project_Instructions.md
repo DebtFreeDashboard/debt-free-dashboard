@@ -370,6 +370,13 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
 
+- **2026-11-17** — Play listing: phone screenshots 2 and 4 replaced. "Set
+  up in under a minute" (setup step 2, debt-free date) and "Autopay logs
+  itself" (setup step 3) took the places of "Count every win" and "Due dates
+  on a calendar". Sent for Google review the same evening; AI asset
+  declaration: don't label (real app captures). Sources in
+  `tools/play-store/` (commit f80fec9).
+
 - **2026-11-16** — v1.73.1: the hero label (`#hero-label`) reads "Owed in
   Your Plan" when any debt with a balance is excluded, else "Total Owed"
   (Kevin: with an exclusion it isn't the total). The subline drops "in your
