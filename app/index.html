@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DebtFree">
-<meta name="theme-color" content="#f4f4f7">
+<meta name="theme-color" content="#f1f2f0">
 <link rel="manifest" href="/app/manifest.json">
 <link rel="apple-touch-icon" href="/assets/icons/icon-192.png">
 <link rel="icon" href="/assets/logo/debtfree-favicon.svg" type="image/svg+xml">
@@ -25,14 +25,14 @@
   gtag('config', 'G-NCP56TD9BG');
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'Sora', system-ui, sans-serif;
-    background: #f4f4f7;
-    color: #1a1a2a;
+    font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+    background: #f1f2f0;
+    color: #1c1e21;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -46,28 +46,22 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 40px;
-    font-family: 'Sora', sans-serif;
+    font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
     font-size: 1.4rem;
     font-weight: 800;
     letter-spacing: -0.5px;
   }
 
-  .logo-pip {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: #00a884;
-    box-shadow: 0 0 12px #00a884;
-    animation: pulse 2s ease-in-out infinite;
-  }
+  .logo-pip { width: 30px; height: 30px; display: block; border-radius: 7px; }
 
   @keyframes pulse {
-    0%,100% { box-shadow: 0 0 8px #00a884; }
-    50% { box-shadow: 0 0 20px #00a884, 0 0 40px rgba(0,168,132,0.3); }
+    0%,100% { box-shadow: 0 0 8px #1c1e21; }
+    50% { box-shadow: 0 0 20px #1c1e21, 0 0 40px rgba(28,30,33,0.3); }
   }
 
   .card {
     background: #ffffff;
-    border: 1px solid rgba(10,10,30,0.10);
+    border: 1px solid rgba(28,30,33,0.10);
     border-radius: 20px;
     padding: 32px;
     width: 100%;
@@ -76,7 +70,7 @@
   }
 
   .card-title {
-    font-family: 'Sora', sans-serif;
+    font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
     font-size: 1.3rem;
     font-weight: 800;
     letter-spacing: -0.5px;
@@ -85,7 +79,7 @@
 
   .card-sub {
     font-size: 0.85rem;
-    color: #5a5a72;
+    color: #5d6166;
     font-weight: 300;
     margin-bottom: 24px;
     line-height: 1.55;
@@ -95,7 +89,7 @@
   .tabs {
     display: flex;
     gap: 4px;
-    background: #f0f0f4;
+    background: #e9eae7;
     border-radius: 10px;
     padding: 4px;
     margin-bottom: 24px;
@@ -106,11 +100,11 @@
     text-align: center;
     padding: 8px;
     border-radius: 7px;
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
     font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #9a9ab0;
+    letter-spacing: 0.01em;
+    text-transform: none;
+    color: #a0a4a8;
     cursor: pointer;
     transition: all 0.2s;
     border: none;
@@ -118,8 +112,8 @@
   }
 
   .tab.active {
-    background: #00a884;
-    color: #f4f4f7;
+    background: #f5d000;
+    color: #1c1e21;
     font-weight: 500;
   }
 
@@ -131,41 +125,41 @@
     align-items: flex-start;
     gap: 14px;
     padding: 14px 16px;
-    background: #f0f0f4;
+    background: #e9eae7;
     border-radius: 10px;
-    border: 1px solid rgba(10,10,30,0.08);
+    border: 1px solid rgba(28,30,33,0.08);
   }
 
   .step-num {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
     font-size: 0.65rem;
-    background: rgba(0,168,132,0.10);
-    color: #00a884;
-    border: 1px solid rgba(0,168,132,0.2);
+    background: rgba(245,208,0,0.10);
+    color: #1c1e21;
+    border: 1px solid rgba(28,30,33,0.2);
     border-radius: 5px;
     padding: 3px 7px;
     flex-shrink: 0;
     margin-top: 1px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
   }
 
   .step-text {
     font-size: 0.85rem;
     line-height: 1.5;
-    color: #2a2a3a;
+    color: #2c2e32;
     font-weight: 300;
   }
 
-  .step-text strong { color: #1a1a2a; font-weight: 500; }
-  .step-text .lime { color: #00a884; font-weight: 500; }
+  .step-text strong { color: #1c1e21; font-weight: 500; }
+  .step-text .lime { color: #1c1e21; font-weight: 500; }
 
   /* ── OPEN BUTTON ── */
   .btn-open {
     display: block;
     width: 100%;
-    background: #00a884;
-    color: #f4f4f7;
-    font-family: 'Sora', sans-serif;
+    background: #f5d000;
+    color: #1c1e21;
+    font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
     font-weight: 800;
     font-size: 1rem;
     padding: 16px;
@@ -180,31 +174,31 @@
   }
 
   .btn-open:hover {
-    background: #1bbf97;
+    background: #f5d000;
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(0,168,132,0.3);
+    box-shadow: 0 8px 24px rgba(28,30,33,0.3);
   }
 
   .already-installed {
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-family: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
     font-size: 0.7rem;
-    color: #9a9ab0;
+    color: #a0a4a8;
     text-align: center;
     margin-top: 12px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
   }
 
   .already-installed a {
-    color: #5a5a72;
+    color: #5d6166;
     text-decoration: none;
   }
 
-  .already-installed a:hover { color: #00a884; }
+  .already-installed a:hover { color: #1c1e21; }
 
   .step-text a,
   .step-text a:visited,
   .step-text a:hover {
-    color: #00a884 !important;
+    color: #1c1e21 !important;
     text-decoration: none;
   }
 
@@ -227,7 +221,7 @@
 <body>
 
 <div class="logo">
-  <div class="logo-pip"></div>
+  <img class="logo-pip" src="/assets/logo/debtfree-favicon.svg" alt="" width="30" height="30">
   DebtFree
 </div>
 
@@ -265,7 +259,7 @@
     </div>
     <div class="step">
       <div class="step-num">06</div>
-      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #00a884 !important;">User Guide</a></div>
+      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #1c1e21 !important;">User Guide</a></div>
     </div>
   </div>
 
@@ -292,7 +286,7 @@
     </div>
    <div class="step">
       <div class="step-num">05</div>
-      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #00a884 !important;">User Guide</a></div>
+      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #1c1e21 !important;">User Guide</a></div>
     </div>
   </div>
 
@@ -316,7 +310,7 @@
     </div>
    <div class="step">
       <div class="step-num">05</div>
-      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #00a884 !important;">User Guide</a></div>
+      <div class="step-text">Step by step user guide with Tips & Tricks. <a href="user-guide.html" style="color: #1c1e21 !important;">User Guide</a></div>
     </div>
   </div>
 

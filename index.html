@@ -79,32 +79,33 @@
 }
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <style>
   /* Palette unified with the DebtFree Dashboard light theme so the site and
      the app share one visual language. */
   :root {
-    --ink: #1a1a2a;
-    --ink2: #2a2a3a;
-    --cream: #f4f4f7;          /* page bg  (dashboard --bg) */
-    --cream2: #f0f0f4;         /* (dashboard --surface2) */
-    --cream3: #e6e6ee;         /* (dashboard --surface3) */
+    --hl: #f5d000;
+    --ink: #1c1e21;
+    --ink2: #2c2e32;
+    --cream: #f1f2f0;          /* page bg  (dashboard --bg) */
+    --cream2: #e9eae7;         /* (dashboard --surface2) */
+    --cream3: #dbdcd8;         /* (dashboard --surface3) */
     --white: #ffffff;          /* card surface (dashboard --surface) */
-    --gold: #00a884;           /* primary accent — dashboard teal */
-    --gold2: #2bb3aa;          /* secondary accent (dashboard --accent5) */
-    --gold-light: rgba(0,168,132,0.10);
-    --red: #e04848;
-    --green: #00a884;
-    --green-light: rgba(0,168,132,0.10);
-    --amber: #d99a1f;          /* dashboard --accent4, for premium tags */
-    --text: #1a1a2a;
-    --text-mid: #5a5a72;
-    --text-muted: #9a9ab0;
-    --border: rgba(10,10,30,0.10);
-    --border2: rgba(10,10,30,0.16);
-    --font-serif: 'Sora', sans-serif;
-    --font-sans: 'Sora', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --gold: #1c1e21;           /* text accent: graphite (fills use --hl) */
+    --gold2: #5d6166;
+    --gold-light: rgba(245,208,0,0.22);
+    --red: #c2362b;
+    --green: #1e6b47;
+    --green-light: rgba(30,107,71,0.10);
+    --amber: #1c1e21;          /* premium tags: graphite text, highlighter fill */
+    --text: #1c1e21;
+    --text-mid: #5d6166;
+    --text-muted: #a0a4a8;
+    --border: rgba(28,30,33,0.10);
+    --border2: rgba(28,30,33,0.16);
+    --font-serif: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -118,15 +119,7 @@
     overflow-x: hidden;
   }
 
-  /* ─── NOISE TEXTURE ─── */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-  }
+  body::after { content: none; }
 
   /* ─── LAUNCH STRIP (v1.7 announcement) ─── */
   .launch-strip {
@@ -136,7 +129,7 @@
     padding: 10px 20px;
     font-family: var(--font-mono);
     font-size: 0.78rem;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
     border-bottom: 1px solid rgba(14,14,14,0.15);
     position: relative;
     z-index: 101;
@@ -154,7 +147,7 @@
     border-radius: 3px;
     font-weight: 700;
     font-size: 0.65rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.01em;
     margin-right: 10px;
   }
   @media(max-width:600px) {
@@ -172,13 +165,13 @@
   .feature-badge-new {
     font-family: var(--font-mono);
     font-size: 0.58rem;
-    letter-spacing: 0.12em;
-    background: var(--gold);
+    letter-spacing: 0.01em;
+    background: var(--hl);
     color: var(--ink);
     padding: 3px 7px;
     border-radius: 3px;
     font-weight: 700;
-    text-transform: uppercase;
+    text-transform: none;
   }
 
   /* ─── HERO REASSURANCE MICRO-LINE ─── */
@@ -186,7 +179,7 @@
     margin-top: 14px;
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
     color: var(--text-muted);
     display: flex;
     gap: 18px;
@@ -249,7 +242,7 @@
   }
 
   .nav-cta:hover {
-    background: var(--gold);
+    background: var(--hl);
     color: var(--ink);
     transform: translateY(-1px);
     box-shadow: 0 4px 16px rgba(0,0,0,0.15);
@@ -281,7 +274,7 @@
   .deadline-strip[hidden] { display: none; }
   .deadline-strip .deadline-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: var(--amber); flex-shrink: 0;
+    background: var(--hl); flex-shrink: 0;
   }
   .deadline-strip a {
     color: var(--amber);
@@ -328,8 +321,8 @@
   .hero-kicker {
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--gold);
     margin-bottom: 20px;
     display: flex;
@@ -342,7 +335,7 @@
     content: '';
     display: block;
     width: 32px; height: 1px;
-    background: var(--gold);
+    background: var(--hl);
   }
 
   .hero-headline {
@@ -401,7 +394,7 @@
   }
 
   .btn-primary-lg:hover {
-    background: var(--gold);
+    background: var(--hl);
     color: var(--ink);
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(0,0,0,0.2);
@@ -475,8 +468,8 @@
   .section-label {
     font-family: var(--font-mono);
     font-size: 0.68rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--gold);
     margin-bottom: 16px;
     display: flex;
@@ -488,7 +481,7 @@
     content: '';
     display: block;
     width: 24px; height: 1px;
-    background: var(--gold);
+    background: var(--hl);
   }
 
   .section-title {
@@ -539,7 +532,7 @@
   .pain-num {
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.01em;
     color: var(--gold);
     margin-bottom: 12px;
   }
@@ -608,7 +601,7 @@
   .screen-mock {
     max-width: 900px;
     margin: 60px auto 0;
-    background: #12121a;
+    background: #242629;
     border-radius: 16px;
     border: 1px solid rgba(255,255,255,0.08);
     overflow: hidden;
@@ -616,7 +609,7 @@
   }
 
   .screen-bar {
-    background: #0a0a0f;
+    background: #1c1d20;
     padding: 14px 20px;
     display: flex;
     align-items: center;
@@ -645,13 +638,13 @@
   .mock-stat:nth-child(1) { border-color: #ff6b6b; }
   .mock-stat:nth-child(2) { border-color: #ffd166; }
   .mock-stat:nth-child(3) { border-color: #7b5ea7; }
-  .mock-stat:nth-child(4) { border-color: #00e5b0; }
+  .mock-stat:nth-child(4) { border-color: #1c1e21; }
 
   .mock-label {
     font-family: var(--font-mono);
     font-size: 0.55rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: rgba(255,255,255,0.3);
     margin-bottom: 8px;
   }
@@ -666,7 +659,7 @@
   .mock-stat:nth-child(1) .mock-val { color: #ff6b6b; }
   .mock-stat:nth-child(2) .mock-val { color: #ffd166; }
   .mock-stat:nth-child(3) .mock-val { color: #a78bdb; }
-  .mock-stat:nth-child(4) .mock-val { color: #00e5b0; }
+  .mock-stat:nth-child(4) .mock-val { color: #1c1e21; }
 
   .mock-chart {
     grid-column: 1 / -1;
@@ -681,9 +674,9 @@
 
   .mock-bar {
     flex: 1;
-    background: rgba(0,229,176,0.15);
+    background: rgba(245,208,0,0.15);
     border-radius: 3px 3px 0 0;
-    border-top: 2px solid rgba(0,229,176,0.5);
+    border-top: 2px solid rgba(28,30,33,0.5);
     transition: height 0.3s;
   }
 
@@ -786,8 +779,8 @@
   .proof-author {
     font-family: var(--font-mono);
     font-size: 0.7rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--text-muted);
   }
 
@@ -864,12 +857,12 @@
     content: 'PREMIUM';
     position: absolute; top: 16px; right: 16px;
     font-family: var(--font-mono); font-size: 0.58rem; font-weight: 700;
-    letter-spacing: 0.1em; color: var(--amber);
+    letter-spacing: 0.01em; color: var(--amber);
     border: 1px solid var(--amber); border-radius: 4px; padding: 2px 7px;
   }
   .tier-tag {
     display: inline-block; font-family: var(--font-mono); font-size: 0.62rem;
-    letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700;
+    letter-spacing: 0.01em; text-transform: none; font-weight: 700;
     color: var(--gold); background: var(--gold-light);
     border-radius: 4px; padding: 3px 9px; margin-bottom: 14px;
   }
@@ -959,8 +952,8 @@
   .pricing-eyebrow {
     font-family: var(--font-mono);
     font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--text-muted);
     margin-bottom: 8px;
   }
@@ -1049,7 +1042,7 @@
   }
 
   .btn-buy:hover {
-    background: var(--gold);
+    background: var(--hl);
     color: var(--ink);
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(0,0,0,0.25);
@@ -1145,9 +1138,9 @@
     .nav-brand-fallback {
       font-family: var(--font-display, system-ui), sans-serif;
       font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em;
-      color: #12121a; line-height: 1;
+      color: #242629; line-height: 1;
     }
-    .nav-brand-fallback span { color: #00b88c; }
+    .nav-brand-fallback span { color: #1c1e21; }
     .hero { padding: 60px 20px 40px; }
     .section { padding: 60px 20px; }
     .pain-section, .preview-section, .math-section, .pricing-section { padding: 60px 20px; }
@@ -1207,7 +1200,7 @@
   }
 
   .video-frame-bar {
-    background: #0a0a0f;
+    background: #1c1d20;
     padding: 10px 14px;
     display: flex;
     align-items: center;
@@ -1234,13 +1227,13 @@
     display: block;
     width: 100%;
     height: auto;
-    background: #0a0a0f;
+    background: #1c1d20;
   }
 
   /* 2026-11-13: phone-shaped frame for the new portrait app videos */
   .video-frame.phone { border-radius: 40px; border: 10px solid #15171c; background: #15171c; }
   .video-frame.phone video { border-radius: 30px; background: #fff; }
-  .phone-caption { text-align: center; margin-top: 16px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.03em; color: var(--text-muted); }
+  .phone-caption { text-align: center; margin-top: 16px; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.01em; color: var(--text-muted); }
   .shots-strip { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 4px 22px; margin-top: 40px; -webkit-overflow-scrolling: touch; }
   .shots-strip img { flex: 0 0 auto; width: 230px; height: auto; border-radius: 18px; scroll-snap-align: start; box-shadow: 0 14px 40px rgba(0,0,0,0.12); }
   @media(max-width:600px) { .shots-strip img { width: 200px; } }
@@ -1282,7 +1275,7 @@
     margin-top: 22px;
     font-family: var(--font-mono);
     font-size: 0.75rem;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.01em;
     color: rgba(255,255,255,0.4);
   }
 </style>
@@ -1570,7 +1563,7 @@
     <div class="hero-right">
       <div>
         <div class="video-frame phone">
-          <!-- 2026-11-13: ~21s loop of the v1.68 app (This Month swipe, Paid as planned, What If). 780x1560 H.264, ~0.9 MB. -->
+          <!-- 2026-11-18: ~17s loop of the v1.74 app (This Month swipe, Paid as planned, What If). 780x1560 H.264, ~0.5 MB. tools/play-store/film.js -->
           <video autoplay muted loop playsinline preload="metadata" poster="assets/videos/app-hero-cover.jpg" aria-label="DebtFree on a phone: logging a payment with a swipe, logging the month, and the What If slider">
             <source src="assets/videos/app-hero.mp4" type="video/mp4">
           </video>
@@ -1603,14 +1596,14 @@
 <!-- SETUP DEMO, then the feature tour -->
 <section class="preview-section" id="dashboard-demo">
   <div style="max-width:1100px; margin:0 auto">
-    <div class="section-label" style="color:rgba(201,168,76,0.8)">
-      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+    <div class="section-label" style="color:#5d6166">
+      <span style="background:var(--hl); height:1px; width:24px; display:block"></span>
       Inside the dashboard
     </div>
     <h2 class="section-title" style="color:var(--ink)">A real payoff plan,<br>built in under a minute.</h2>
     <div class="demo-video-wrap">
       <div class="video-frame phone">
-        <!-- 2026-11-14: v1.72 first setup from an empty app, recorded in real time (on-screen timer, no speed-up). Silent, captioned. 780x1560 H.264, ~2.5 MB. -->
+        <!-- 2026-11-18: v1.74 first setup from an empty app, recorded in real time (on-screen timer, no speed-up). Silent, captioned. 780x1560 H.264. tools/play-store/film-setup.js -->
         <video controls preload="metadata" playsinline poster="assets/videos/setup-demo-cover.jpg" aria-label="Setting up DebtFree from scratch: three debts, a monthly amount, due dates and reminders, in real time">
           <source src="assets/videos/setup-demo.mp4" type="video/mp4">
           Your browser doesn't support HTML5 video.
@@ -1620,18 +1613,18 @@
     </div>
     <div class="shots-strip" aria-label="App screenshots">
       <img src="assets/screens/01-light.webp" width="540" height="960" loading="lazy" alt="Every debt, one total: what you owe, what is paid off and your debt-free date">
-      <img src="assets/screens/02-dark.webp" width="540" height="960" loading="lazy" alt="This month at a glance: log a payment with one tap or a swipe">
-      <img src="assets/screens/03-light.webp" width="540" height="960" loading="lazy" alt="Pick your payoff method: snowball, avalanche or optimized">
-      <img src="assets/screens/04-dark.webp" width="540" height="960" loading="lazy" alt="Try a what-if: an extra 200 dollars a month moves the date">
-      <img src="assets/screens/05-light.webp" width="540" height="960" loading="lazy" alt="Each debt in detail: credit used, daily interest and payoff date">
-      <img src="assets/screens/06-dark.webp" width="540" height="960" loading="lazy" alt="Count every win: milestones and paid-off debts">
-      <img src="assets/screens/07-light.webp" width="540" height="960" loading="lazy" alt="Due dates on a calendar">
+      <img src="assets/screens/02-dark.webp" width="540" height="960" loading="lazy" alt="Set up in under a minute: add your debts, pick a monthly amount, see your date">
+      <img src="assets/screens/03-light.webp" width="540" height="960" loading="lazy" alt="This month at a glance: log a payment with one tap or a swipe">
+      <img src="assets/screens/04-dark.webp" width="540" height="960" loading="lazy" alt="Autopay logs itself: tick autopay and those payments are logged for you">
+      <img src="assets/screens/05-light.webp" width="540" height="960" loading="lazy" alt="Pick your payoff method: snowball, avalanche or optimized">
+      <img src="assets/screens/06-dark.webp" width="540" height="960" loading="lazy" alt="Try a what-if: an extra 200 dollars a month moves the date">
+      <img src="assets/screens/07-light.webp" width="540" height="960" loading="lazy" alt="Each debt in detail: credit used, daily interest and payoff date">
       <img src="assets/screens/08-dark.webp" width="540" height="960" loading="lazy" alt="Payment reminders: phone notifications or calendar alerts">
     </div>
     <h3 class="section-title" style="color:var(--ink); font-size:1.6rem; text-align:center; margin-top:60px">Then, every month.</h3>
     <div class="demo-video-wrap" style="margin-top:24px">
       <div class="video-frame phone">
-        <!-- 2026-11-13: 38s tour of v1.68 (This Month, Paid as planned, calendar, payoff orders, What If, Wins, reminders). 780x1560 H.264, ~1.7 MB. -->
+        <!-- 2026-11-18: 34s tour of v1.74 (This Month, Paid as planned, calendar, payoff orders, What If, Wins, reminders). 780x1560 H.264, ~1.3 MB. tools/play-store/film.js -->
         <video controls preload="none" playsinline poster="assets/videos/app-demo-cover.jpg">
           <source src="assets/videos/app-demo.mp4" type="video/mp4">
           Your browser doesn't support HTML5 video.
@@ -1646,7 +1639,7 @@
 <section class="pain-section">
   <div style="max-width:1100px; margin:0 auto">
     <div class="section-label" style="color:rgba(201,168,76,0.9)">
-      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+      <span style="background:var(--hl); height:1px; width:24px; display:block"></span>
       Sound familiar?
     </div>
     <h2 class="section-title" style="color:var(--ink)">You earn good money.<br><em style="color:var(--gold)">So why is the debt still there?</em></h2>
@@ -1782,9 +1775,9 @@
 <section class="pricing-section" id="pricing">
   <div style="max-width:1100px; margin:0 auto">
     <div class="section-label" style="justify-content:center; color:var(--gold)">
-      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+      <span style="background:var(--hl); height:1px; width:24px; display:block"></span>
       Simple pricing
-      <span style="background:var(--gold); height:1px; width:24px; display:block"></span>
+      <span style="background:var(--hl); height:1px; width:24px; display:block"></span>
     </div>
     <h2 class="section-title" style="color:var(--ink); text-align:center">Free to start.<br>$24 to go deeper.</h2>
     <p style="max-width:520px;margin:16px auto 0;color:var(--text-mid);text-align:center;">The free tier takes you all the way to debt-free. Premium adds the planning and analysis tools — a one-time payment, never a subscription.</p>
@@ -1846,7 +1839,7 @@
 
     </div>
 
-    <div style="text-align:center;margin-top:24px;font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);letter-spacing:0.05em;">
+    <div style="text-align:center;margin-top:24px;font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted);letter-spacing: 0.01em;">
       Activate Premium right inside the app with your license key. No account required.
     </div>
 

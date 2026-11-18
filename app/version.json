@@ -1,8 +1,12 @@
 {
-  "version": "1.73.1",
-  "releaseDate": "2026-11-16",
-  "releaseName": "A clearer label for your plan",
+  "version": "1.74.0",
+  "releaseDate": "2026-11-18",
+  "releaseName": "A new look",
   "notes": [
-    "When you leave a debt out of your payoff plan, like a car lease or a mortgage, the top card now reads “Owed in Your Plan” instead of “Total Owed,” so the label matches the number. If every debt is in your plan, nothing changes."
+    "DebtFree has a new look. The app is now graphite and white, with a highlighter yellow that marks your progress and the next thing to tap. Your debts, plan and settings are exactly as they were, in both the light and dark themes.",
+    "Each color now means one thing. Green is good news, like the interest you’re saving. Blue is worth a look, like the interest you’re paying now or a card that’s close to its limit. Red is kept for real problems.",
+    "A new typeface, Atkinson Hyperlegible, made to be easy to read. Every number is clearer, and a zero has a slash through it so it can’t be mistaken for an 8.",
+    "Labels are in plain sentence case instead of spaced-out capitals, and the glow effects are gone, so each screen is calmer.",
+    "A new app icon, and each kind of debt (credit card, student loan, car loan, personal loan, mortgage) has its own color on your debt cards and the by-account bar."
   ]
 }

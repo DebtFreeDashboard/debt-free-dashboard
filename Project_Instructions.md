@@ -127,7 +127,7 @@ deliberately inert (see below).
   loaded when `IS_PLAY_BUILD` (v1.55.4). The Play Data safety form must match
   whatever the Play app actually collects, so tell Kevin before adding any new
   tracking to the Play build.
-- **Store listing** (Play Console, Kevin edits it himself). Nov 10, 2026: new short
+- **Store listing** (Play Console; Claude may upload when Kevin asks). Nov 10, 2026: new short
   description ("Debt payoff planner & calculator. Snowball or avalanche. No bank
   login.") and six new captioned phone screenshots were sent for Google review.
 - **Compliance.** Trader status is declared in Play Console. Keep listing copy in
@@ -369,6 +369,32 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-18** — v1.74.0 "A new look" (Highlighter identity, chosen by
+  Kevin 2026-11-17; options and values in the project note
+  `theme-directions-2026-11-17`). Graphite and paper; `--hl` #f5d000 is the
+  fill for progress, the ring, primary buttons and the + (text on it
+  `--on-hl` #1c1e21); `--accent` is the text/border accent (yellow on dark,
+  graphite on light: yellow is never text on light). Signals: `--good`
+  (#1e6b47 / #6dbb8a) for good news (interest saved, paid off), `--accent4`
+  blue (#2d5ca6 / #86aef0) for a heads-up (interest/mo, $/day, credit used,
+  promo ending), `--accent3` red only for problems. Debt types: `--t-cc`
+  etc. (T3 Ink pack), read by `.debt-type-*` bands, badges and `typeColor()`
+  (replaced `TYPE_GLOW`). Atkinson Hyperlegible everywhere (all three font
+  tokens). Removed: grain overlay, lender colour washes (`debtGlowStyle`
+  returns transparent), glows, red-to-green bars (single `--hl` fill; credit
+  used is blue), uppercase spaced labels (sentence case), the pulsing header
+  dot (now the app icon). Total Owed in text colour. Share card draws the icon
+  (`drawAppIcon`). New icon K1 (today's frame, bars and arrow; yellow arrow on
+  graphite) in `assets/icons` (maskable mark at 80%, a heavier small version
+  for 32 px) and `assets/logo`; manifest and theme-color #1c1d20 / #f1f2f0.
+  Site: homepage, calculators (`calc.css`, rebuilt), user guide, install page,
+  thank-you page and `og-card.png` restyled; homepage screens and all three
+  videos re-made (`tools/play-store/film.js`, new `film-setup.js`). New Play
+  screenshots and feature graphic in `tools/play-store/` (not uploaded yet;
+  the Nov 17 set is in review). **Play launcher icon** changes only with a
+  new Play release (rebuild in PWABuilder, Kevin signs); the store icon and
+  feature graphic are uploaded in Play Console.
 
 - **2026-11-17** — Play listing: phone screenshots 2 and 4 replaced. "Set
   up in under a minute" (setup step 2, debt-free date) and "Autopay logs

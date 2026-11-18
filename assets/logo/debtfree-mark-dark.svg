@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="DebtFree">
 <title>DebtFree</title>
-<rect width="512" height="512" rx="112.6" fill="#0a0a0f"/>
-<g transform="translate(76.80,165.04) scale(0.90964)"><rect x="0.0" y="0.0" width="44.0" height="200.0" rx="6" fill="#00e5b0" opacity="0.46"/><rect x="70.0" y="56.0" width="44.0" height="144.0" rx="6" fill="#00e5b0" opacity="0.60"/><rect x="140.0" y="100.0" width="44.0" height="100.0" rx="6" fill="#00e5b0" opacity="0.74"/><rect x="210.0" y="140.0" width="44.0" height="60.0" rx="6" fill="#00e5b0" opacity="0.88"/><rect x="280.0" y="172.0" width="44.0" height="28.0" rx="6" fill="#00e5b0" opacity="1.02"/><circle cx="372.0" cy="178.0" r="22.0" fill="#00e5b0"/></g>
+<rect width="512" height="512" fill="#1c1e21"/>
+<path d="M330 396 H124 A26 26 0 0 1 98 370 V142 A26 26 0 0 1 124 116 H388 A26 26 0 0 1 414 142 V296" fill="none" stroke="#ededea" stroke-width="18" stroke-linecap="round"/>
+<rect x="134" y="196" width="42" height="168" rx="8" fill="#ededea"/>
+<rect x="192" y="240" width="42" height="124" rx="8" fill="#ededea" opacity="0.72"/>
+<rect x="250" y="286" width="42" height="78" rx="8" fill="#ededea" opacity="0.5"/>
+<rect x="308" y="326" width="42" height="38" rx="8" fill="#ededea" opacity="0.32"/>
+<path d="M146 168 C 236 160, 300 214, 352 290 S 392 352, 398 362" fill="none" stroke="#f5d000" stroke-width="22" stroke-linecap="round"/>
+<path d="M372 360 L 418 400 L 428 338 Z" fill="#f5d000" stroke="#f5d000" stroke-width="8" stroke-linejoin="round"/>
 </svg>

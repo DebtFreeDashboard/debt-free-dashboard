@@ -7,8 +7,7 @@ const CHART = '/home/claude/debt-free-dashboard/tools/node_modules/chart.js/dist
 const OUT = process.env.OUT || '/home/claude/build/shots/raw';
 fs.mkdirSync(OUT, { recursive: true });
 
-const fontCss = [400, 600, 700, 800].map(w => `@font-face{font-family:'Sora';font-weight:${w};font-style:normal;src:url(https://fonts.gstatic.com/local/sora-${w}.woff2) format('woff2');}`).join('\n') + '\n' +
-  [300, 400, 500, 700].map(w => `@font-face{font-family:'JetBrains Mono';font-weight:${w};font-style:normal;src:url(https://fonts.gstatic.com/local/jbm-${w}.woff2) format('woff2');}`).join('\n');
+const fontCss = [400, 700].map(w => `@font-face{font-family:'Atkinson Hyperlegible';font-weight:${w};font-style:normal;src:url(https://fonts.gstatic.com/local/atk-${w}.woff2) format('woff2');}`).join('\n');
 
 async function page(theme) {
   const browser = await chromium.launch();
@@ -17,9 +16,8 @@ async function page(theme) {
   await ctx.route('**/cdn.jsdelivr.net/**', r => r.fulfill({ path: CHART, contentType: 'application/javascript' }));
   await ctx.route('**/fonts.googleapis.com/**', r => r.fulfill({ body: fontCss, contentType: 'text/css' }));
   await ctx.route('**/fonts.gstatic.com/local/**', r => {
-    const m = r.request().url().match(/(sora|jbm)-(\d+)/);
-    const f = m[1] === 'sora' ? `${FONTS}/sora/files/sora-latin-${m[2]}-normal.woff2` : `${FONTS}/jetbrains-mono/files/jetbrains-mono-latin-${m[2]}-normal.woff2`;
-    r.fulfill({ path: f, contentType: 'font/woff2' });
+    const m = r.request().url().match(/atk-(\d+)/);
+    r.fulfill({ path: `${FONTS}/atkinson-hyperlegible/files/atkinson-hyperlegible-latin-${m[1]}-normal.woff2`, contentType: 'font/woff2' });
   });
   await ctx.route(/googletagmanager|google-analytics|clarity\.ms/, r => r.abort());
   await ctx.addInitScript(([debts, payments, theme]) => {
@@ -39,6 +37,9 @@ async function page(theme) {
   p.on('pageerror', e => console.log('PAGEERR', e.message));
   await p.goto('http://localhost:8911/app/dashboard.html?source=twa', { waitUntil: 'networkidle' });
   await p.waitForTimeout(1500);
+  // The payment check ("Did these go out?") opens when a sample due day is
+  // today; it would cover every shot.
+  await p.evaluate(() => { const d = document.getElementById('due-check-sheet'); if (d) d.classList.add('hidden'); window.maybeShowDueCheck = function () {}; });
   return { browser, p };
 }
 module.exports = { page, OUT };

@@ -6,24 +6,25 @@
 <meta name="robots" content="noindex,nofollow" />
 <title>You're In — DebtFree Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/logo/debtfree-favicon.svg" type="image/svg+xml">
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #f0f0f8;
-    --muted: #6b6b8a;
-    --dim: #3a3a58;
-    --lime: #c8f135;
-    --lime-dim: rgba(200,241,53,0.08);
-    --lime-border: rgba(200,241,53,0.2);
-    --font-d: 'Syne', sans-serif;
-    --font-m: 'DM Mono', monospace;
-    --font-b: 'DM Sans', sans-serif;
+    --hl: #f5d000;
+    --bg: #1c1d20;
+    --surface: #242629;
+    --surface2: #2c2e32;
+    --border: rgba(237,237,234,0.08);
+    --border2: rgba(237,237,234,0.14);
+    --text: #ededea;
+    --muted: #a3a6aa;
+    --dim: #6a6d72;
+    --lime: #f5d000;
+    --lime-dim: rgba(245,208,0,0.08);
+    --lime-border: rgba(245,208,0,0.25);
+    --font-d: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+    --font-m: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
+    --font-b: 'Atkinson Hyperlegible', system-ui, -apple-system, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,15 +39,7 @@
   }
 
   /* Grain */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.4;
-  }
+  body::after { content: none; }
 
   /* Grid bg */
   body::after {
@@ -54,8 +47,8 @@
     position: fixed;
     inset: 0;
     background-image:
-      linear-gradient(rgba(200,241,53,0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(200,241,53,0.025) 1px, transparent 1px);
+      linear-gradient(rgba(245,208,0,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(245,208,0,0.025) 1px, transparent 1px);
     background-size: 60px 60px;
     pointer-events: none;
     z-index: 0;
@@ -101,17 +94,17 @@
     to { opacity: 1; }
   }
 
-  .cb1  { height: 18px; background: #c8f135; animation-delay: 0.1s; }
-  .cb2  { height: 28px; background: #c8f135; animation-delay: 0.15s; opacity: 0.7; }
+  .cb1  { height: 18px; background: var(--hl); animation-delay: 0.1s; }
+  .cb2  { height: 28px; background: var(--hl); animation-delay: 0.15s; opacity: 0.7; }
   .cb3  { height: 12px; background: #ffd166; animation-delay: 0.2s; opacity: 0.8; }
-  .cb4  { height: 32px; background: #c8f135; animation-delay: 0.12s; }
-  .cb5  { height: 20px; background: #7b5ea7; animation-delay: 0.22s; opacity: 0.7; }
-  .cb6  { height: 14px; background: #c8f135; animation-delay: 0.18s; opacity: 0.5; }
+  .cb4  { height: 32px; background: var(--hl); animation-delay: 0.12s; }
+  .cb5  { height: 20px; background: #a3a6aa; animation-delay: 0.22s; opacity: 0.7; }
+  .cb6  { height: 14px; background: var(--hl); animation-delay: 0.18s; opacity: 0.5; }
   .cb7  { height: 26px; background: #ffd166; animation-delay: 0.08s; opacity: 0.6; }
-  .cb8  { height: 10px; background: #c8f135; animation-delay: 0.25s; }
-  .cb9  { height: 22px; background: #7b5ea7; animation-delay: 0.14s; opacity: 0.8; }
-  .cb10 { height: 16px; background: #c8f135; animation-delay: 0.19s; opacity: 0.6; }
-  .cb11 { height: 30px; background: #c8f135; animation-delay: 0.11s; }
+  .cb8  { height: 10px; background: var(--hl); animation-delay: 0.25s; }
+  .cb9  { height: 22px; background: #a3a6aa; animation-delay: 0.14s; opacity: 0.8; }
+  .cb10 { height: 16px; background: var(--hl); animation-delay: 0.19s; opacity: 0.6; }
+  .cb11 { height: 30px; background: var(--hl); animation-delay: 0.11s; }
   .cb12 { height: 8px;  background: #ffd166; animation-delay: 0.23s; opacity: 0.7; }
 
   /* ── HERO BLOCK ── */
@@ -132,8 +125,8 @@
     gap: 8px;
     font-family: var(--font-m);
     font-size: 0.68rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--lime);
     background: var(--lime-dim);
     border: 1px solid var(--lime-border);
@@ -193,8 +186,8 @@
   .download-label {
     font-family: var(--font-m);
     font-size: 0.62rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: rgba(10,10,15,0.5);
     margin-bottom: 6px;
   }
@@ -212,7 +205,7 @@
     font-family: var(--font-m);
     font-size: 0.72rem;
     color: rgba(10,10,15,0.5);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
   }
 
   .btn-download {
@@ -249,8 +242,8 @@
   .steps-label {
     font-family: var(--font-m);
     font-size: 0.62rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--muted);
     margin-bottom: 16px;
   }
@@ -280,7 +273,7 @@
     padding: 4px 8px;
     flex-shrink: 0;
     margin-top: 1px;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.01em;
   }
 
   .step-content { flex: 1; }
@@ -366,8 +359,8 @@
     color: #0a0a0f;
     font-family: var(--font-m);
     font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     padding: 4px 10px;
     border-radius: 20px;
     font-weight: 700;
@@ -412,7 +405,7 @@
   }
 
   .btn-video:hover {
-    background: rgba(200,241,53,0.14);
+    background: rgba(245,208,0,0.14);
     transform: translateY(-1px);
   }
 
@@ -445,7 +438,7 @@
   .btn-email {
     font-family: var(--font-m);
     font-size: 0.72rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.01em;
     color: var(--muted);
     background: var(--surface2);
     border: 1px solid var(--border2);
@@ -466,8 +459,8 @@
     text-align: center;
     font-family: var(--font-m);
     font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    text-transform: none;
     color: var(--dim);
   }
 
@@ -523,7 +516,7 @@
 
 <!-- NAV -->
 <nav class="site-nav">
-  <img src="assets/logo/debtfree-logo-primary-dark.svg" alt="DebtFree Dashboard" style="height:32px; width:auto;">
+  <img src="/assets/logo/debtfree-logo-primary-dark.svg" alt="DebtFree Dashboard" style="height:32px; width:auto;">
 </nav>
 
 <div class="page">
