@@ -1,7 +1,8 @@
 # Gumroad listing images
 
 The cover and thumbnail shown on the Gumroad product page
-(debtfreedashboard.gumroad.com/l/prfzv). Uploaded October 2, 2026 at the $24 price.
+(debtfreedashboard.gumroad.com/l/prfzv). Remade November 18, 2026 for the v1.74
+"Highlighter" look ($24 price). `app-home.png` is the app screenshot in the cover.
 
 | File | What |
 |---|---|
@@ -21,5 +22,5 @@ The cover and thumbnail shown on the Gumroad product page
 `tools/set-price.py` does NOT touch these files. They are a manual step of any price
 change, along with the Gumroad price itself.
 
-Fonts are Liberation Sans and DejaVu Sans Mono. On a machine without them the
-render falls back to Arial and a default monospace and will look slightly different.
+Fonts: Atkinson Hyperlegible from `fonts/` (no install needed). The icon is
+`assets/icons/icon-512.png`.
