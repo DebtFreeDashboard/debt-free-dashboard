@@ -158,7 +158,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="DebtFree">
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" content="#1c1d20">
 <script>
   // v1.57.0 — apply the saved theme before the first paint. applyTheme() runs
   // at the end of the page, so light-theme users saw a dark flash on every
@@ -167,7 +167,7 @@
     if (localStorage.getItem('debtfree_theme') !== 'dark') {
       document.documentElement.setAttribute('data-theme', 'light');
       var _tc = document.querySelector('meta[name="theme-color"]');
-      if (_tc) _tc.setAttribute('content', '#f4f4f7');
+      if (_tc) _tc.setAttribute('content', '#f1f2f0');
     }
   } catch (e) {}
   // v1.67.0 — app lock: hide the numbers before the first paint.
@@ -187,46 +187,60 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
 <title>[DEV] DebtFree Dashboard — Your Payoff Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --surface3: #22223a;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.12);
-    --text: #f0f0f8;
-    --text-muted: #7a7a9a;
-    --text-dim: #4a4a6a;
-    --accent: #00e5b0;
-    --accent2: #7b5ea7;
-    --accent3: #ff6b6b;
-    --accent4: #ffd166;
-    --accent5: #4ecdc4;
-    --glow: rgba(0,229,176,0.15);
-    --danger-glow: rgba(255,107,107,0.15);
-    --header-bg: #0a0a0f;
-    --font-display: 'Sora', sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-    --font-body: 'Sora', system-ui, sans-serif;
+    /* v1.74.0 — "Highlighter" identity. Graphite and paper; highlighter
+       yellow (--hl) for progress and the main action; dark green for good
+       news, blue for a heads-up, red only for real problems. --accent is the
+       text/border accent (yellow here, graphite in light), --hl the fill. */
+    --bg: #1c1d20;
+    --surface: #242629;
+    --surface2: #2c2e32;
+    --surface3: #383a3f;
+    --border: rgba(237,237,234,0.08);
+    --border2: rgba(237,237,234,0.14);
+    --text: #ededea;
+    --text-muted: #a3a6aa;
+    --text-dim: #6a6d72;
+    --accent: #f5d000;
+    --accent2: #a3a6aa;
+    --accent3: #f07360;
+    --accent4: #86aef0;
+    --accent5: #6dbb8a;
+    --hl: #f5d000;
+    --on-hl: #1c1e21;
+    --good: #6dbb8a;
+    --accent-rgb: 245,208,0;
+    --hl-rgb: 245,208,0;
+    --good-rgb: 109,187,138;
+    --problem-rgb: 240,115,96;
+    --headsup-rgb: 134,174,240;
+    --muted-rgb: 163,166,170;
+    --t-cc: #e57aae; --t-student: #b48cf0; --t-auto: #f0985a; --t-personal: #5cc9c0; --t-mortgage: #a3a9b0; --t-other: #6f757c;
+    --glow: transparent;
+    --danger-glow: transparent;
+    --header-bg: #1c1d20;
+    --font-display: 'Atkinson Hyperlegible', system-ui, sans-serif;
+    --font-mono: 'Atkinson Hyperlegible', system-ui, sans-serif;
+    --font-body: 'Atkinson Hyperlegible', system-ui, sans-serif;
     /* v1.46.0 — referenced 19 times since long before this release and
        never declared, so every use resolved to nothing and the fields and
        tiles that asked for it came out transparent. */
-    --card2: #1a1a26;
+    --card2: #2c2e32;
     --field-h: 44px;
     --field-h-lg: 52px;
     --radius: 16px;
     --radius-sm: 8px;
-    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow: 0 1px 2px rgba(0,0,0,0.35);
   }
 
   /* v1.13.0 — freemium UI: lock cards, premium tags, badge */
   .premium-tag {
     display:inline-block; font-family:var(--font-mono); font-size:0.58rem;
-    letter-spacing:0.08em; text-transform:uppercase; font-weight:700;
-    color:var(--accent4); border:1px solid var(--accent4); border-radius:4px;
+    letter-spacing:0.01em; text-transform:none; font-weight:700;
+    color:var(--on-hl); background:var(--hl); border:1px solid var(--hl); border-radius:4px;
     padding:1px 5px; margin-left:6px; vertical-align:middle;
   }
   .lock-card {
@@ -234,7 +248,7 @@
     background:var(--surface2); border:1px dashed var(--border2);
     border-radius:var(--radius-sm); padding:16px 18px; transition:border-color .15s, transform .15s;
   }
-  .lock-card:hover { border-color:var(--accent4); transform:translateY(-1px); }
+  .lock-card:hover { border-color:var(--accent); transform:translateY(-1px); }
   .lock-card--inline { background:transparent; }
   .lock-card-icon { font-size:1.4rem; flex-shrink:0; }
   .lock-card-body { flex:1; min-width:0; }
@@ -242,7 +256,7 @@
   .lock-card-desc { font-size:0.78rem; color:var(--text-muted); line-height:1.45; }
   .lock-card-cta {
     flex-shrink:0; font-family:var(--font-mono); font-size:0.72rem; font-weight:700;
-    letter-spacing:0.05em; color:#0a0a0f; background:var(--accent4);
+    letter-spacing:0.05em; color:var(--on-hl); background:var(--hl);
     border-radius:6px; padding:7px 14px;
   }
   /* Blur-style teaser (alternative, shown in the preview) */
@@ -264,7 +278,7 @@
   .blur-teaser .blur-overlay .lock-card-cta { cursor:pointer; }
   #premium-badge {
     display:none; align-items:center; gap:5px; font-family:var(--font-mono);
-    font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; font-weight:700;
+    font-size:0.6rem; letter-spacing:0.01em; text-transform:none; font-weight:700;
     color:var(--accent); border:1px solid var(--accent); border-radius:5px; padding:2px 7px;
   }
 
@@ -273,7 +287,7 @@
   .card.next-debt-card {
     position:relative; overflow:hidden;
     background-color: var(--surface);
-    background-image: radial-gradient(120% 90% at 0% 0%, var(--g1, transparent) 0%, var(--g2, transparent) 45%, transparent 75%);
+    background-image:none;
   }
   .next-debt-card .next-debt-main { align-items:center; flex-wrap:nowrap; gap:12px; }
   .nd-tile:empty { display:none; }
@@ -296,18 +310,18 @@
   .next-debt-sub { font-size:0.78rem; color:var(--text-muted); margin-top:4px; }
   .next-debt-figure { text-align:right; }
   .next-debt-amt { font-family:var(--font-mono); font-size:1.5rem; font-weight:700; color:var(--accent); }
-  .next-debt-amt-label { font-size:0.66rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; }
+  .next-debt-amt-label { font-size:0.66rem; color:var(--text-muted); text-transform:none; letter-spacing:0.01em; }
   .next-debt-bar { height:8px; background:var(--surface3); border-radius:4px; overflow:hidden; margin:14px 0 8px; }
-  .next-debt-bar-fill { height:100%; background:linear-gradient(90deg, var(--accent5), var(--accent)); border-radius:4px; transition:width .5s ease; }
+  .next-debt-bar-fill { height:100%; background:var(--hl); border-radius:4px; transition:width .5s ease; }
   .next-debt-eta { font-family:var(--font-mono); font-size:0.72rem; color:var(--text-muted); }
 
   /* v1.13.0 — Debt-Free Progress hero (free hook) */
   .hero-progress { text-align:center; padding:8px 0 4px; }
-  .hero-progress-label { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; }
+  .hero-progress-label { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); margin-bottom:6px; }
   .hero-progress-pct { font-family:var(--font-display); font-size:3.2rem; font-weight:900; line-height:1; color:var(--accent); }
   .hero-progress-sub { font-size:0.82rem; color:var(--text-muted); margin-top:8px; }
   .hero-progress-track { height:12px; background:var(--surface3); border-radius:6px; overflow:hidden; margin:18px 0 6px; }
-  .hero-progress-fill { height:100%; background:linear-gradient(90deg, var(--accent5), var(--accent)); border-radius:6px; transition:width .6s ease; box-shadow:0 0 18px var(--glow); }
+  .hero-progress-fill { height:100%; background:var(--hl); border-radius:6px; transition:width .6s ease; }
 
   /* v1.48.0 — Dashboard hero. One figure gets to be big: Total Owed, with the
      progress bar folded into the same card so the balance and the progress
@@ -317,11 +331,11 @@
      money actually goes sat fourth, below the fold on a phone. */
   .hero-card { padding:20px 18px 18px; }
   .hero-label {
-    font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.12em;
-    text-transform:uppercase; color:var(--text-muted); font-weight:700;
+    font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.01em;
+    text-transform:none; color:var(--text-muted); font-weight:700;
   }
   .hero-total {
-    font-family:var(--font-display); font-weight:800; color:var(--accent3);
+    font-family:var(--font-display); font-weight:800; color:var(--text);
     letter-spacing:-0.03em; line-height:1.05; margin-top:8px;
     font-size:clamp(2.1rem, 11vw, 2.9rem);
   }
@@ -329,13 +343,13 @@
   .hero-excl { font-size:0.72rem; color:var(--text-muted); margin-top:3px; opacity:0.85; }
   .hero-prog-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
   .hero-prog-line { font-size:clamp(0.7rem, 3.1vw, 0.78rem); color:var(--text); min-width:0; }
-  .hero-prog-line b { color:var(--accent); font-weight:700; }
+  .hero-prog-line b { color:var(--good); font-weight:700; }
   .hero-card .hero-progress-track { margin:18px 0 0; height:10px; }
   /* No emoji on this one: the hero line beside it is the longest string on
      the tab, and the phone glyph cost the ~30px that pushed it to wrap. */
   .hero-card .pc-share { flex-shrink:0; padding:0 14px; }
   /* v1.62.0 — hero: ring + total, split by lender, red-to-green bar */
-  .card.hero-card { background-image: radial-gradient(120% 90% at 0% 0%, var(--g1, transparent) 0%, var(--g2, transparent) 45%, transparent 75%); }
+  .card.hero-card { background-image:none; }
   .hero-head { display:flex; justify-content:space-between; align-items:center; min-height:30px; }
   .hero-head .pc-share { padding:4px 14px; border-radius:99px; font-size:0.74rem; }
   .hero-main { display:flex; align-items:center; gap:16px; margin-top:10px; }
@@ -346,7 +360,7 @@
   .hero-ring-in b { font-family:var(--font-display); font-weight:800; font-size:0.98rem; color:var(--text); }
   .hero-ring-in span { font-size:0.62rem; color:var(--text-muted); }
   .hero-split { margin-top:16px; }
-  .hero-split-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-muted); font-weight:700; }
+  .hero-split-label { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); font-weight:700; }
   .hero-segbar { display:flex; gap:3px; height:12px; border-radius:99px; overflow:hidden; margin:8px 0; }
   .hero-segbar > div { min-width:4px; }
   .hero-legend { display:flex; flex-wrap:wrap; gap:6px 12px; font-family:var(--font-mono); font-size:0.68rem; color:var(--text-muted); }
@@ -367,8 +381,8 @@
     border-radius:var(--radius-sm); padding:11px 10px; min-width:0;
   }
   .ministat-label {
-    font-family:var(--font-mono); font-size:0.57rem; letter-spacing:0.06em;
-    text-transform:uppercase; color:var(--text-muted); font-weight:700; line-height:1.3;
+    font-family:var(--font-mono); font-size:0.57rem; letter-spacing:0.01em;
+    text-transform:none; color:var(--text-muted); font-weight:700; line-height:1.3;
   }
   .ministat-value {
     font-family:var(--font-display); font-weight:800; margin-top:5px;
@@ -377,7 +391,8 @@
   /* --text-dim fails contrast on the light ground; --text-muted passes. */
   .ministat-sub { font-size:0.57rem; color:var(--text-muted); margin-top:3px; line-height:1.3; }
   .ministat.warn .ministat-value { color:var(--accent4); }
-  .ministat.info .ministat-value { color:var(--accent2); }
+  .ministat.info .ministat-value { color:var(--text); }
+  .ministat.good .ministat-value { color:var(--good); }
 
   /* v1.48.0 — the amount the plan actually sends to the target debt. The card
      showed the balance and the minimum but never this number, which is the one
@@ -410,9 +425,9 @@
   white-space: nowrap; color: var(--text); }
 .amort-table tbody tr:last-child td { border-bottom: none; }
 .amort-table .amort-m { color: var(--text-muted); }
-.amort-table .amort-int { color: var(--accent5); }
+.amort-table .amort-int { color: var(--accent4); }
 .amort-table .amort-bal { font-weight: 600; }
-.amort-table tr.amort-final td { color: var(--accent); font-weight: 700; }
+.amort-table tr.amort-final td { color: var(--good); font-weight: 700; }
 #amort-debt { width: 100%; }
 
 /* v1.42.0 — Coming Up rows. Deliberately calm: no red, no alarm colouring.
@@ -475,7 +490,7 @@
 .bill-tick { width:30px; height:30px; flex-shrink:0; padding:0; font-size:0.8rem; }
 .due-row-tick:hover, .bill-tick:hover { border-color:var(--accent); color:var(--accent); }
 .due-row-tick.is-marked, .bill-tick.is-marked {
-  background:var(--accent); border-color:var(--accent); color:#0a0a0f; font-weight:700;
+  background:var(--hl); border-color:var(--hl); color:var(--on-hl); font-weight:700;
 }
 .due-logged .due-row-sub { color:var(--text-muted); }
 
@@ -497,10 +512,10 @@
 .tm-swipe.is-dragging .due-row { transition:none; }
 .tm-act { position:absolute; top:0; bottom:0; display:flex; align-items:center; padding:0 16px;
   font-family:var(--font-mono); font-size:0.72rem; font-weight:700; letter-spacing:0.04em; opacity:0; }
-.tm-act-log { left:0; right:0; background:rgba(0,168,132,0.16); color:var(--accent); justify-content:flex-start; }
-.tm-act-later { left:0; right:0; background:rgba(245,158,11,0.16); color:var(--accent4); justify-content:flex-end; }
+.tm-act-log { left:0; right:0; background:rgba(var(--hl-rgb),0.16); color:var(--accent); justify-content:flex-start; }
+.tm-act-later { left:0; right:0; background:rgba(var(--headsup-rgb),0.16); color:var(--accent4); justify-content:flex-end; }
 .tm-swipe.show-log .tm-act-log, .tm-swipe.show-later .tm-act-later { opacity:1; }
-.tm-swipe.past.show-log .tm-act-log { background:var(--accent); color:#fff; }
+.tm-swipe.past.show-log .tm-act-log { background:var(--hl); color:var(--on-hl); }
 .tm-swipe.past.show-later .tm-act-later { background:var(--accent4); color:#fff; }
 .tm-row .due-row-main { cursor:pointer; }
 .tm-more { width:30px; height:30px; border-radius:6px; border:1px solid var(--border); background:var(--card2);
@@ -512,13 +527,13 @@
   padding:10px 0 2px; font-size:0.78rem; color:var(--text-muted); cursor:pointer; font-family:inherit; }
 .tm-more-rows:hover { color:var(--accent); }
 .tm-check { margin:0 0 10px; padding:10px 12px; border-radius:var(--radius-sm); background:var(--surface2); border:1px solid var(--border); }
-.tm-check-title { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; color:var(--text-muted); margin-bottom:4px; }
+.tm-check-title { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.01em; text-transform:none; font-weight:700; color:var(--text-muted); margin-bottom:4px; }
 .tm-check-row { font-size:0.76rem; line-height:1.45; color:var(--text); padding:3px 0 3px 14px; position:relative; }
 .tm-check-row::before { content:''; position:absolute; left:0; top:0.62em; width:6px; height:6px; border-radius:50%; background:var(--accent4); }
 .tm-check-limit::before { background:var(--text-muted); }
 /* v1.67.0 — calendar view */
 .tm-viewtog { display:inline-flex; gap:2px; padding:2px; border:1px solid var(--border); border-radius:8px; margin-left:auto; }
-.tm-viewtog button { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.05em; text-transform:uppercase;
+.tm-viewtog button { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.01em; text-transform:none;
   background:none; border:none; border-radius:6px; padding:4px 8px; color:var(--text-muted); cursor:pointer; }
 .tm-viewtog button.on { background:var(--surface2); color:var(--text); font-weight:700; }
 .tmc { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:3px; margin-top:4px; }
@@ -527,18 +542,18 @@
   border:1px solid transparent; border-radius:8px; background:none; color:var(--text-muted); font-size:0.78rem; cursor:pointer; padding:0; font-family:inherit; }
 .tmc-cell.tmc-has { color:var(--text); font-weight:600; background:var(--surface2); }
 .tmc-cell.tmc-today { border-color:var(--accent); }
-.tmc-cell.tmc-sel { background:var(--accent); color:#fff; }
+.tmc-cell.tmc-sel { background:var(--hl); color:var(--on-hl); }
 .tmc-empty { cursor:default; }
 .tmc-dots { display:flex; gap:2px; height:6px; }
 .tmc-dot { width:6px; height:6px; border-radius:50%; display:block; background:var(--text-muted); }
-.tmc-dot.tmc-due { background:var(--accent); }
+.tmc-dot.tmc-due { background:var(--hl); }
 .tmc-dot.tmc-passed { background:var(--accent4); }
 .tmc-dot.tmc-done { background:var(--text-muted); opacity:0.5; }
 .tmc-dot.tmc-scheduled { background:#6b7cff; }
 .tmc-dot.tmc-skipped { background:transparent; border:1px solid var(--text-muted); }
 .tmc-sel .tmc-dot { box-shadow:0 0 0 1px #fff; }
 .tmc-day { margin-top:12px; }
-.tmc-day-title { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-muted); font-weight:700; }
+.tmc-day-title { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); font-weight:700; }
 .tmc-none { font-size:0.8rem; color:var(--text-muted); padding:8px 0; }
 
 /* v1.67.0 — bottom tab bar on phones */
@@ -555,10 +570,10 @@
 html.bnav-pin .bnav { bottom:auto; }
 .bnav.bnav-hide { visibility:hidden; }
 .bnav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; border:none; cursor:pointer;
-  color:var(--text-muted); font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.04em; text-transform:uppercase; padding:4px 0; }
+  color:var(--text-muted); font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.01em; text-transform:none; padding:4px 0; }
 .bnav-item svg { width:22px; height:22px; }
 .bnav-item.active { color:var(--accent); font-weight:700; }
-.bnav-plus { flex:0 0 auto; width:54px; height:54px; margin:-18px 6px 0; border-radius:50%; background:var(--accent); color:#fff;
+.bnav-plus { flex:0 0 auto; width:54px; height:54px; margin:-18px 6px 0; border-radius:50%; background:var(--hl); color:var(--on-hl);
   border:4px solid var(--surface); display:flex; align-items:center; justify-content:center; cursor:pointer;
   box-shadow:0 6px 18px var(--glow); font-size:1.7rem; line-height:1; padding:0; }
 .hdr-gear { background:none; border:1px solid var(--border); border-radius:10px; width:36px; height:36px; color:var(--text-muted);
@@ -592,7 +607,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 .applock-link { background:none; border:none; color:var(--text-muted); font-size:0.78rem; cursor:pointer; margin-top:14px; text-decoration:underline; font-family:inherit; }
 .cal-sec-title { font-size:0.84rem; font-weight:700; margin-bottom:6px; }
 .push-note { font-size:0.72rem; color:var(--text-muted); line-height:1.45; margin-top:8px; }
-.push-on { font-size:0.8rem; color:var(--accent); font-weight:600; margin-top:4px; }
+.push-on { font-size:0.8rem; color:var(--good); font-weight:600; margin-top:4px; }
 .tm-tip { font-size:0.72rem; color:var(--text-muted); margin-top:8px; }
 .tm-foot { display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
 .tm-link { background:none; border:none; padding:0; text-align:left; cursor:pointer; font-size:0.78rem;
@@ -628,7 +643,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 .cal-g-link { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; margin-top:6px;
   border:1px solid var(--border); border-radius:8px; color:var(--text); text-decoration:none; font-size:0.84rem; }
 .cal-g-link:hover { border-color:var(--accent); }
-.cal-g-link.is-done { border-color:var(--accent); color:var(--accent); }
+.cal-g-link.is-done { border-color:var(--good); color:var(--good); }
 .cal-g-link.is-done::after { content:'\2713'; }
 .cal-g-sub { display:block; font-size:0.7rem; color:var(--text-muted); margin-top:2px; }
 .cal-g-day { color:var(--text-muted); font-family:var(--font-mono); font-size:0.72rem; }
@@ -643,7 +658,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 .plan-budget-breakdown { font-family:var(--font-mono); font-size:0.68rem; color:var(--text-muted);
   margin-top:10px; line-height:1.5; }
 .plan-budget-line { font-size:0.8rem; margin-top:6px; line-height:1.5; }
-.plan-budget-line.is-under { color:var(--accent); }
+.plan-budget-line.is-under { color:var(--good); }
 .plan-budget-line.is-level { color:var(--text-muted); }
 /* Over budget is amber, never red: the user picked both numbers and either one
    can move. It is a mismatch to look at, not a verdict. */
@@ -652,7 +667,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 /* v1.43.0 — sinking funds */
 .fund-row { padding:12px 0; border-bottom:1px solid var(--border); }
 .fund-row:last-child { border-bottom:none; }
-.fund-row.is-done .fund-sub { color:var(--accent); }
+.fund-row.is-done .fund-sub { color:var(--good); }
 .fund-head { display:flex; align-items:center; gap:8px; }
 .fund-name, .fund-name-static { flex:1; min-width:0; font-family:inherit; font-size:0.86rem; font-weight:600;
   padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); }
@@ -662,11 +677,11 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 .fund-del:hover { border-color:var(--accent3); color:var(--accent3); }
 .fund-fields { display:flex; gap:8px; margin-top:8px; }
 .fund-f { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
-.fund-f span { font-size:0.64rem; color:var(--text-muted); letter-spacing:0.04em; text-transform:uppercase; }
+.fund-f span { font-size:0.64rem; color:var(--text-muted); letter-spacing:0.01em; text-transform:none; }
 .fund-f input { width:100%; min-width:0; font-family:var(--font-mono); font-size:0.78rem; text-align:right;
   padding:6px 8px; border:1px solid var(--border); border-radius:6px; background:var(--card2); color:var(--text); }
 .fund-bar { height:4px; border-radius:2px; background:var(--card2); margin-top:10px; overflow:hidden; }
-.fund-bar-fill { height:100%; background:var(--accent5); border-radius:2px; }
+.fund-bar-fill { height:100%; background:var(--hl); border-radius:2px; }
 .fund-foot { display:flex; align-items:center; gap:10px; margin-top:8px; flex-wrap:wrap; }
 .fund-sub { flex:1; min-width:0; font-size:0.72rem; color:var(--text-muted); }
 .fund-counted { flex-shrink:0; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.05em;
@@ -682,8 +697,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
    a countdown to a price they will never be charged. */
 .deadline-inline {
   font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.02em;
-  color:var(--accent4); background:rgba(217,154,31,0.10);
-  border:1px solid rgba(217,154,31,0.28); border-radius:6px;
+  color:var(--accent4); background:rgba(var(--headsup-rgb),0.10);
+  border:1px solid rgba(var(--headsup-rgb),0.28); border-radius:6px;
   padding:7px 10px;
 }
 .deadline-inline[hidden] { display:none; }
@@ -693,8 +708,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .plan-row:last-of-type { margin-bottom: 0; }
   .plan-row-label {
     display: block; margin-bottom: 8px;
-    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--text-muted);
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing:0.01em;
+    text-transform:none; color: var(--text-muted);
   }
   .plan-row-note {
     text-transform: none; letter-spacing: 0.01em; opacity: 0.7;
@@ -717,8 +732,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   gap:12px; margin-bottom:10px;
 }
 .progress-compact .pc-label {
-  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.08em;
-  text-transform:uppercase; color:var(--text-muted);
+  font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.01em;
+  text-transform:none; color:var(--text-muted);
 }
 .progress-compact .pc-sub { font-size:0.82rem; margin-top:3px; }
 .progress-compact .pc-right { display:flex; align-items:center; gap:10px; flex-shrink:0; }
@@ -874,7 +889,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     position:relative; z-index:1; flex-shrink:0; width:18px; height:18px; border-radius:50%;
     background:var(--surface); border:2px solid var(--accent); margin-top:2px;
   }
-  .roadmap-node--final { background:var(--accent); box-shadow:0 0 14px var(--glow); }
+  .roadmap-node--final { background:var(--hl); box-shadow:0 0 14px var(--glow); }
   .roadmap-step-body { flex:1; min-width:0; }
   .roadmap-step-title { font-weight:700; font-size:0.95rem; }
   .roadmap-step-sub { font-family:var(--font-mono); font-size:0.74rem; color:var(--text-muted); margin-top:2px; }
@@ -906,8 +921,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .pf-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .pf-table { width:100%; border-collapse:collapse; font-size:0.85rem; min-width:560px; }
   .pf-th {
-    text-align:left; font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.06em;
-    text-transform:uppercase; color:var(--text-muted); font-weight:700;
+    text-align:left; font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.01em;
+    text-transform:none; color:var(--text-muted); font-weight:700;
     padding:10px 12px; border-bottom:1px solid var(--border2); white-space:nowrap; user-select:none;
   }
   .pf-th:hover { color:var(--text); }
@@ -958,8 +973,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       content: attr(data-label);
       font-family: var(--font-mono);
       font-size: 0.6rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      letter-spacing:0.01em;
+      text-transform:none;
       color: var(--text-muted);
       text-align: left;
       flex: 0 0 auto;
@@ -1001,28 +1016,42 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
      warm-neutral light greys, text darkened, accents nudged slightly deeper so
      they keep contrast on a light background. Dark remains the default. */
   [data-theme="light"] {
-    --bg: #f4f4f7;
+    --bg: #f1f2f0;
     --surface: #ffffff;
-    --surface2: #f0f0f4;
-    --surface3: #e6e6ee;
-    --border: rgba(10,10,30,0.10);
-    --border2: rgba(10,10,30,0.16);
-    --text: #1a1a2a;
-    --text-muted: #5a5a72;
-    --text-dim: #9a9ab0;
-    --accent: #00a884;       /* deepened from #00e5b0 for contrast on white */
-    --accent2: #6a4f96;
-    --accent3: #e04848;
-    --accent4: #d99a1f;
-    --accent5: #2bb3aa;
-    --glow: rgba(0,168,132,0.12);
-    --danger-glow: rgba(224,72,72,0.12);
-    --header-bg: #f4f4f7;
-    --shadow: 0 4px 24px rgba(20,20,50,0.10);
-    --card2: #f0f0f4;
+    --surface2: #e9eae7;
+    --surface3: #dbdcd8;
+    --border: rgba(28,30,33,0.11);
+    --border2: rgba(28,30,33,0.18);
+    --text: #1c1e21;
+    --text-muted: #5d6166;
+    --text-dim: #a0a4a8;
+    --accent: #1c1e21;       /* graphite: yellow is never text on light */
+    --accent2: #6e747b;
+    --accent3: #c2362b;
+    --accent4: #2d5ca6;
+    --accent5: #1e6b47;
+    --hl: #f5d000;
+    --on-hl: #1c1e21;
+    --good: #1e6b47;
+    --accent-rgb: 28,30,33;
+    --hl-rgb: 245,208,0;
+    --good-rgb: 30,107,71;
+    --problem-rgb: 194,54,43;
+    --headsup-rgb: 45,92,166;
+    --muted-rgb: 93,97,102;
+    --t-cc: #b03a78; --t-student: #7a4fc4; --t-auto: #c2621a; --t-personal: #18877f; --t-mortgage: #5d636b; --t-other: #8f959c;
+    --glow: transparent;
+    --danger-glow: transparent;
+    --header-bg: #f1f2f0;
+    --shadow: 0 1px 2px rgba(28,30,33,0.06);
+    --card2: #e9eae7;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-feature-settings: "tnum" 1; }
+  [data-theme="light"] .tm-link, [data-theme="light"] .dc-links button {
+    text-decoration: underline; text-decoration-color: var(--hl); text-decoration-thickness: 3px; text-underline-offset: 3px;
+  }
 
   body {
     font-family: var(--font-body);
@@ -1034,16 +1063,6 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Grain overlay */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.4;
-  }
 
   /* ─── HEADER ─── */
   /* v1.40.4 — a plain opaque bar again, with the compositing tricks removed.
@@ -1088,8 +1107,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     color: var(--text-muted);
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     padding: 7px 12px;
     border: 1px solid var(--border2);
     border-radius: 8px;
@@ -1098,12 +1117,12 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
   /* v1.51.0 — guide button: same chrome as the install link beside it. */
   .guide-hdr-btn { position:relative; display:inline-flex; align-items:center; gap:6px; background:none; cursor:pointer;
-    color:var(--text-muted); font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--text-muted); font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.01em; text-transform:none;
     padding:7px 12px; border:1px solid var(--border2); border-radius:8px; white-space:nowrap; transition:all .18s ease; }
   .guide-hdr-btn:hover { color:var(--accent); border-color:var(--accent); }
   .guide-hdr-icon { font-size:0.9rem; line-height:1; color:var(--accent); }
   .guide-badge { position:absolute; top:-6px; right:-6px; min-width:17px; height:17px; padding:0 4px; border-radius:9px;
-    background:var(--accent); color:#fff; font-size:0.62rem; font-weight:700; line-height:17px; text-align:center; letter-spacing:0; }
+    background:var(--hl); color:var(--on-hl); font-size:0.62rem; font-weight:700; line-height:17px; text-align:center; letter-spacing:0; }
   .guide-badge.dot { min-width:9px; width:9px; height:9px; padding:0; top:-3px; right:-3px; }
   .guide-card { position:relative; border-left:3px solid var(--accent); }
   .guide-hide { position:absolute; top:10px; right:12px; background:none; border:0; font-size:1.2rem; color:var(--text-dim); cursor:pointer; line-height:1; }
@@ -1113,13 +1132,13 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .guide-why { font-size:0.84rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px; }
   .guide-actions { display:flex; gap:8px; flex-wrap:wrap; }
   .guide-bar { height:4px; background:var(--surface3); border-radius:2px; margin-top:14px; overflow:hidden; }
-  .guide-bar-fill { height:100%; background:var(--accent); width:0; transition:width .3s ease; }
-  .gm-section { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin:16px 0 8px; }
-  .gm-next { background:rgba(0,168,132,0.08); border:1px solid rgba(0,168,132,0.25); border-radius:var(--radius-sm); padding:12px 14px; }
+  .guide-bar-fill { height:100%; background:var(--hl); width:0; transition:width .3s ease; }
+  .gm-section { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); margin:16px 0 8px; }
+  .gm-next { background:rgba(var(--hl-rgb),0.08); border:1px solid rgba(var(--accent-rgb),0.25); border-radius:var(--radius-sm); padding:12px 14px; }
   .gm-row { display:flex; align-items:flex-start; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
   .gm-row:last-child { border-bottom:0; }
   .gm-check { flex:0 0 20px; height:20px; border-radius:50%; border:1.5px solid var(--border2); display:flex; align-items:center; justify-content:center; font-size:0.7rem; color:transparent; margin-top:1px; }
-  .gm-row.done .gm-check { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .gm-row.done .gm-check { background:var(--hl); border-color:var(--hl); color:var(--on-hl); }
   .gm-text { flex:1; min-width:0; }
   .gm-title { font-size:0.88rem; font-weight:600; color:var(--text); }
   .gm-row.done .gm-title { color:var(--text-muted); font-weight:500; }
@@ -1173,18 +1192,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     margin-left: 0.32em;
   }
 
-  .logo-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 8px var(--accent); }
-    50% { box-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,229,176,0.3); }
-  }
+  .logo-mark { flex-shrink: 0; display: block; border-radius: 6px; }
 
   /* ─── TAB NAV BAR ─── */
   .tab-nav {
@@ -1211,8 +1219,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .nav-tab {
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     padding: 6px 16px;
     border-radius: 20px;
@@ -1226,7 +1234,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   .nd-plan-month { margin-top:8px; padding-top:8px; border-top:1px dashed var(--border2); font-size:0.78rem; line-height:1.45; color:var(--text-muted); }
   .po-sub { margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
-  .po-sub-title { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+  .po-sub-title { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
   .po-sub-desc { font-size:0.82rem; color:var(--text-muted); margin-bottom:14px; line-height:1.5; }
   #roadmap-teaser { cursor:pointer; }
   .log-oneoff { display:flex; align-items:center; gap:8px; margin-top:10px; font-size:0.78rem; color:var(--text-muted); cursor:pointer; }
@@ -1234,7 +1242,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .nav-tab.active, .nav-tab:hover {
     color: var(--accent);
     border-color: var(--accent);
-    background: rgba(0,229,176,0.06);
+    background: rgba(var(--hl-rgb),0.06);
   }
   /* v1.50.0 — all five tabs fit on a phone. At 390px the bar was 501px wide
      and Settings (license activation, backup) sat past the right edge with no
@@ -1288,8 +1296,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    background: linear-gradient(90deg, rgba(0,168,132,0.16), rgba(0,168,132,0.06));
-    border: 1px solid rgba(0,168,132,0.45);
+    background: linear-gradient(90deg, rgba(var(--hl-rgb),0.16), rgba(var(--hl-rgb),0.06));
+    border: 1px solid rgba(var(--accent-rgb),0.45);
     border-radius: var(--radius-sm);
     padding: 12px 14px;
     margin-bottom: 16px;
@@ -1304,10 +1312,10 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     display: inline-block;
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--accent);
-    border: 1px solid rgba(0,168,132,0.5);
+    border: 1px solid rgba(var(--accent-rgb),0.5);
     border-radius: 4px;
     padding: 2px 7px;
     margin-right: 8px;
@@ -1319,8 +1327,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     font-size: 0.72rem;
     letter-spacing: 0.04em;
     font-weight: 700;
-    background: var(--accent);
-    color: #0a0a0f;
+    background: var(--hl);
+    color: var(--on-hl);
     border: none;
     border-radius: 8px;
     padding: 10px 16px;
@@ -1348,8 +1356,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .field-optional {
     font-family: var(--font-mono);
     font-size: 0.58rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-dim);
     margin-left: 6px;
     font-weight: 400;
@@ -1366,8 +1374,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     display: flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255,107,107,0.10);
-    border: 1px solid rgba(255,107,107,0.4);
+    background: rgba(var(--problem-rgb),0.10);
+    border: 1px solid rgba(var(--problem-rgb),0.4);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
     margin-top: 14px;
@@ -1376,7 +1384,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
   input.field-invalid, select.field-invalid {
     border-color: var(--accent3) !important;
-    box-shadow: 0 0 0 2px rgba(255,107,107,0.15);
+    box-shadow: 0 0 0 2px rgba(0,0,0,0);
   }
 
   /* ─── CARDS ─── */
@@ -1392,8 +1400,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     font-family: var(--font-display);
     font-size: 0.8rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     margin-bottom: 16px;
     display: flex;
@@ -1403,7 +1411,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   .card-title .dot {
     width: 6px; height: 6px; border-radius: 50%;
-    background: var(--accent);
+    background: var(--hl);
   }
 
   /* ─── STAT GRID ─── */
@@ -1432,7 +1440,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 2px;
-    background: var(--accent);
+    background: var(--hl);
   }
 
   .stat-card.danger::before { background: var(--accent3); }
@@ -1442,8 +1450,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .stat-label {
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     margin-bottom: 6px;
   }
@@ -1492,8 +1500,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .form-field label {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     line-height: 1.3;
   }
@@ -1504,8 +1512,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .stat-mini-label {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     margin-bottom: 6px;
     line-height: 1.3;
@@ -1551,7 +1559,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   .form-field input:focus, .form-field select:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,229,176,0.08);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0);
   }
 
   .form-field select option { background: var(--surface2); color: var(--text); }
@@ -1580,13 +1588,13 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .btn-primary {
-    background: var(--accent);
-    color: #0a0a0f;
+    background: var(--hl);
+    color: var(--on-hl);
   }
 
   .btn-primary:hover {
     background: #00ffca;
-    box-shadow: 0 0 20px rgba(0,229,176,0.4);
+    box-shadow: 0 0 20px rgba(0,0,0,0);
     transform: translateY(-1px);
   }
 
@@ -1599,7 +1607,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .add-more > summary span { font-weight: 400; font-size: 0.76rem; color: var(--text-muted); margin-left: 4px; }
   .add-another-btn { margin-top: 14px; }
   #add-save-btn { margin-top: 10px; }
-  .add-session { background: rgba(0,168,132,0.08); border: 1px solid rgba(0,168,132,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.5; }
+  .add-session { background: rgba(var(--hl-rgb),0.08); border: 1px solid rgba(var(--accent-rgb),0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.5; }
   .add-session b { color: var(--accent); }
   .add-session .as-list { color: var(--text-muted); font-size: 0.78rem; margin-top: 2px; }
   /* v1.70.0 — recaps */
@@ -1608,16 +1616,16 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .rc-link { background:var(--surface); border:1px solid var(--border2); border-radius:999px; padding:7px 14px; font-size:0.8rem; font-weight:600; color:var(--text); cursor:pointer; font-family:inherit; }
   .rc-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .rc-stat { background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:12px; }
-  .rc-stat .k { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
+  .rc-stat .k { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); }
   .rc-stat .v { font-family:var(--font-display); font-weight:900; font-size:1.25rem; color:var(--text); margin-top:2px; }
   .rc-stat .s { font-size:0.72rem; color:var(--text-muted); margin-top:1px; }
-  .rc-stat.good .v { color:var(--accent); }
+  .rc-stat.good .v { color:var(--good); }
   .rc-wide { grid-column:1 / -1; }
   .rc-line { font-size:0.84rem; line-height:1.5; margin-top:12px; color:var(--text); }
   .rc-muted { font-size:0.74rem; color:var(--text-muted); margin-top:10px; line-height:1.45; }
   /* v1.69.3 — finish step */
   .fs-result { text-align:center; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px; margin-bottom:16px; }
-  .fs-label { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); }
+  .fs-label { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); }
   .fs-date { font-family:var(--font-display); font-weight:900; font-size:1.8rem; color:var(--accent); line-height:1.15; margin-top:2px; }
   .fs-sub { font-size:0.78rem; color:var(--text-muted); margin-top:2px; }
   .fs-q { display:block; font-weight:700; font-size:0.9rem; margin:4px 0 8px; color:var(--text); }
@@ -1631,7 +1639,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   /* v1.72.0 — first setup in the Add a Debt card: Debts, Extra, Reminders */
   .setup-steps { display:flex; gap:6px; margin:-4px 0 14px; }
   .setup-steps[hidden] { display:none; }
-  .setup-steps span { flex:1; text-align:center; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase;
+  .setup-steps span { flex:1; text-align:center; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.01em; text-transform:none;
     color:var(--text-muted); padding:7px 0 0; border-top:3px solid var(--border2); }
   .setup-steps span.on { color:var(--accent); border-top-color:var(--accent); font-weight:700; }
   .setup-steps span.done { color:var(--text); border-top-color:var(--accent); opacity:0.75; }
@@ -1649,7 +1657,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .ss-chips button.ss-clear { font-weight:500; color:var(--text-muted); }
   .ss-sum { font-size:0.8rem; color:var(--text-muted); margin:8px 0 14px; font-family:var(--font-mono); }
   .ss-sum b { color:var(--text); }
-  .ss-gain { font-size:0.78rem; color:var(--accent); font-weight:700; margin-top:4px; }
+  .ss-gain { font-size:0.78rem; color:var(--good); font-weight:700; margin-top:4px; }
   .ss-nav { display:flex; gap:10px; margin-top:16px; }
   .ss-nav .btn { flex:1; }
   .ss-nav .btn-ghost { flex:0 0 32%; }
@@ -1666,13 +1674,13 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .ss-notify .btn { width:100%; }
   .ss-notify .btn:disabled { opacity:0.45; cursor:not-allowed; }
   .ss-note { font-size:0.76rem; color:var(--text-muted); line-height:1.5; margin-top:8px; }
-  .ss-on { font-size:0.88rem; font-weight:700; color:var(--accent); }
+  .ss-on { font-size:0.88rem; font-weight:700; color:var(--good); }
   .ss-ios { list-style:none; margin:10px 0 0; padding:0; counter-reset:ss; }
   .ss-ios li { counter-increment:ss; display:flex; gap:10px; align-items:flex-start; padding:8px 0; font-size:0.86rem; line-height:1.45; border-top:1px solid var(--border); }
-  .ss-ios li::before { content:counter(ss); flex:0 0 24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; }
+  .ss-ios li::before { content:counter(ss); flex:0 0 24px; height:24px; border-radius:50%; background:var(--hl); color:var(--on-hl); font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; }
   .ss-ios li .btn { margin-top:6px; }
   .ss-share { display:inline-block; vertical-align:-3px; width:16px; height:16px; }
-  .setup-paste { display:flex; align-items:center; gap:10px; background:rgba(0,168,132,0.08); border:1px solid rgba(0,168,132,0.25); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px; font-size:0.84rem; }
+  .setup-paste { display:flex; align-items:center; gap:10px; background:rgba(var(--hl-rgb),0.08); border:1px solid rgba(var(--accent-rgb),0.25); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:14px; font-size:0.84rem; }
   .setup-paste[hidden] { display:none; }
   .setup-paste div { flex:1; }
   .fs-due-row input { width:84px; text-align:center; padding:9px 8px; font-size:0.95rem; border-radius:var(--radius-sm); border:1px solid var(--border2); background:var(--surface2); color:var(--text); font-family:var(--font-mono); }
@@ -1702,13 +1710,13 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .btn-danger {
     background: transparent;
     color: var(--accent3);
-    border: 1px solid rgba(255,107,107,0.3);
+    border: 1px solid rgba(var(--problem-rgb),0.3);
     font-size: 0.72rem;
     padding: 6px 10px;
   }
 
   .btn-danger:hover {
-    background: rgba(255,107,107,0.1);
+    background: rgba(var(--problem-rgb),0.1);
   }
 
   .btn-full { width: 100%; margin-top: 12px; padding: 14px; font-size: 0.9rem; }
@@ -1733,19 +1741,19 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .debt-type-badge {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     padding: 3px 8px;
     border-radius: 20px;
     flex-shrink: 0;
   }
 
-  .badge-cc { background: rgba(255,107,107,0.15); color: var(--accent3); border: 1px solid rgba(255,107,107,0.25); }
-  .badge-student { background: rgba(123,94,167,0.15); color: var(--accent2); border: 1px solid rgba(123,94,167,0.25); }
-  .badge-auto { background: rgba(78,205,196,0.15); color: var(--accent5); border: 1px solid rgba(78,205,196,0.25); }
-  .badge-personal { background: rgba(255,209,102,0.15); color: var(--accent4); border: 1px solid rgba(255,209,102,0.25); }
-  .badge-mortgage { background: rgba(0,229,176,0.1); color: var(--accent); border: 1px solid rgba(0,229,176,0.2); }
-  .badge-other { background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border); }
+  .badge-cc { background: transparent; color: var(--t-cc); border: 1px solid var(--t-cc); }
+  .badge-student { background: transparent; color: var(--t-student); border: 1px solid var(--t-student); }
+  .badge-auto { background: transparent; color: var(--t-auto); border: 1px solid var(--t-auto); }
+  .badge-personal { background: transparent; color: var(--t-personal); border: 1px solid var(--t-personal); }
+  .badge-mortgage { background: transparent; color: var(--t-mortgage); border: 1px solid var(--t-mortgage); }
+  .badge-other { background: transparent; color: var(--t-other); border: 1px solid var(--t-other); }
 
   .debt-name {
     font-family: var(--font-display);
@@ -1770,8 +1778,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .debt-stat-label {
     font-family: var(--font-mono);
     font-size: 0.58rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-dim);
   }
 
@@ -1794,7 +1802,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .progress-bar {
     height: 100%;
     border-radius: 2px;
-    background: var(--accent);
+    background: var(--hl);
     transition: width 0.6s cubic-bezier(.23,1,.32,1);
   }
 
@@ -1807,7 +1815,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
   .payoff-fill {
     height: 100%; border-radius: 99px;
-    background-image: linear-gradient(90deg, #e04848 0%, #e8792f 30%, #e9b23a 55%, #8fc94a 78%, #1fb57e 100%);
+    background-image: none; background-color: var(--hl);
     background-repeat: no-repeat;
     transition: width 0.6s cubic-bezier(.23,1,.32,1);
   }
@@ -1837,15 +1845,15 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     pointer-events: none;
   }
   .debt-item > * { position: relative; z-index: 1; }
-  .debt-type-cc       { --band: var(--accent3); --band-wash: rgba(224,72,72,0.10); }
-  .debt-type-student  { --band: var(--accent2); --band-wash: rgba(123,94,167,0.12); }
-  .debt-type-auto     { --band: var(--accent5); --band-wash: rgba(43,179,170,0.10); }
-  .debt-type-personal { --band: var(--accent4); --band-wash: rgba(217,154,31,0.10); }
-  .debt-type-mortgage { --band: var(--accent);  --band-wash: rgba(0,168,132,0.10); }
-  .debt-type-other    { --band: var(--text-dim); --band-wash: transparent; }
+  .debt-type-cc       { --band: var(--t-cc);       --band-wash: transparent; }
+  .debt-type-student  { --band: var(--t-student);  --band-wash: transparent; }
+  .debt-type-auto     { --band: var(--t-auto);     --band-wash: transparent; }
+  .debt-type-personal { --band: var(--t-personal); --band-wash: transparent; }
+  .debt-type-mortgage { --band: var(--t-mortgage); --band-wash: transparent; }
+  .debt-type-other    { --band: var(--t-other);    --band-wash: transparent; }
   /* v1.61.0 — premium rows get the same corner glow: on the name cell in the
      desktop table, on the whole stacked card on phones. */
-  .pf-table td.pf-name { background-image: radial-gradient(140% 120% at 0% 0%, var(--g1, transparent) 0%, var(--g2, transparent) 40%, transparent 70%); }
+  .pf-table td.pf-name { background-image:none; }
   .pf-title { display: flex; flex-direction: column; gap: 2px; }
   .pf-name-line { gap: 12px; }
   .pf-bigbal { display: none; }
@@ -1854,14 +1862,14 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     .pf-bigbal .dc-bal { margin-top: 10px; }
     .pf-table td[data-label="Balance"], .pf-table td[data-label="APR"], .pf-table td[data-label="Min"] { display: none; }
     .pf-table td.pf-name { background-image: none; }
-    .pf-table tr[data-id] { background-image: radial-gradient(120% 70% at 0% 0%, var(--g1, transparent) 0%, var(--g2, transparent) 45%, transparent 75%); }
+    .pf-table tr[data-id] { background-image:none; }
   }
 
   /* v1.61.0 — debt card, "corner glow" design */
   .debt-item.dcB {
     display: block; padding: 16px 16px 14px; border-radius: 18px;
     background-color: var(--surface2);
-    background-image: radial-gradient(120% 90% at 0% 0%, var(--g1) 0%, var(--g2) 45%, transparent 75%);
+    background-image:none;
   }
   .debt-item.dcB::before, .debt-item.dcB::after { display: none; }
   .dcB .dc-head { display: flex; align-items: center; gap: 12px; }
@@ -1872,7 +1880,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .dc-sub .due-tag { margin-left: 0; }
   .dc-pill { padding: 1px 8px; border-radius: 99px; font-size: 0.66rem; font-weight: 600; background: var(--surface3); color: var(--text); }
   .dc-pill-muted { color: var(--text-muted); }
-  .dc-pill-warn { background: rgba(224,72,72,0.12); color: var(--accent3); }
+  .dc-pill-warn { background: rgba(var(--problem-rgb),0.12); color: var(--accent3); }
   .dcB .dc-edit { font-size: 0.72rem; padding: 6px 12px; }
   .dcB .dc-del { font-size: 0.72rem; padding: 6px 9px; }
   .dc-bal {
@@ -1914,22 +1922,22 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .util-bar { margin-top: 10px; width: 100%; }
   .util-head {
     display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
-    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim);
+    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing:0.01em; text-transform:none; color: var(--text-dim);
   }
-  .util-fill { background-image: linear-gradient(90deg, #1fb57e 0%, #8fc94a 25%, #e9b23a 45%, #e8792f 70%, #e04848 100%); }
+  .payoff-fill.util-fill, .util-fill { background-image: none; background-color: var(--accent4); }
   .util-tag {
-    font-size: 0.58rem; letter-spacing: 0.06em; padding: 2px 8px; border-radius: 99px;
-    border: 1px solid var(--border2); color: var(--text-muted); text-transform: uppercase;
+    font-size: 0.58rem; letter-spacing:0.01em; padding: 2px 8px; border-radius: 99px;
+    border: 1px solid var(--border2); color: var(--text-muted); text-transform:none;
   }
-  .util-tag.util-low   { color: #1fb57e; border-color: rgba(31,181,126,0.45); }
-  .util-tag.util-mod   { color: #c99a1c; border-color: rgba(217,154,31,0.45); }
-  .util-tag.util-high  { color: #e8792f; border-color: rgba(232,121,47,0.45); }
-  .util-tag.util-vhigh, .util-tag.util-over { color: var(--accent3); border-color: rgba(224,72,72,0.45); }
+  .util-tag.util-low   { color: var(--good); border-color: rgba(var(--good-rgb),0.45); }
+  .util-tag.util-mod   { color: var(--text-muted); border-color: rgba(var(--headsup-rgb),0.45); }
+  .util-tag.util-high  { color: var(--accent4); border-color: rgba(var(--headsup-rgb),0.45); }
+  .util-tag.util-vhigh, .util-tag.util-over { color: var(--accent3); border-color: rgba(var(--problem-rgb),0.45); }
 
   /* v1.57.0 — add-debt field guide */
   .field-help {
     position: relative; margin-bottom: 16px;
-    background: rgba(43,179,170,0.08); border: 1px solid rgba(43,179,170,0.30);
+    background: rgba(var(--good-rgb),0.08); border: 1px solid rgba(var(--good-rgb),0.30);
     border-radius: var(--radius-sm);
   }
   .field-help-toggle {
@@ -1940,10 +1948,10 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .field-help-icon {
     flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
     display: inline-flex; align-items: center; justify-content: center;
-    background: rgba(43,179,170,0.18); color: var(--accent5);
+    background: rgba(var(--hl-rgb),0.35); color: var(--text);
     font-family: var(--font-mono); font-weight: 700; font-size: 0.85rem;
   }
-  .field-help-cta { color: var(--accent5); font-weight: 600; }
+  .field-help-cta { color: var(--accent); font-weight: 600; }
   .field-help-close {
     position: absolute; top: 8px; right: 8px; width: 30px; height: 30px;
     background: none; border: 0; border-radius: 8px; cursor: pointer;
@@ -1953,8 +1961,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .field-help-body { padding: 0 14px 12px 54px; }
   .field-help-body dl { display: grid; gap: 8px; }
   .field-help-body dt {
-    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
-    text-transform: uppercase; color: var(--accent5); font-weight: 700;
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing:0.01em;
+    text-transform:none; color: var(--text); font-weight: 700;
   }
   .field-help-body dd { font-size: 0.8rem; line-height: 1.45; color: var(--text-muted); margin: -4px 0 0; }
   @media (max-width: 560px) { .field-help-body { padding-left: 14px; } }
@@ -1982,7 +1990,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .strategy-card:hover { border-color: var(--border2); }
-  .strategy-card.selected { border-color: var(--accent); background: rgba(0,229,176,0.05); }
+  .strategy-card.selected { border-color: var(--accent); background: rgba(var(--hl-rgb),0.05); }
 
   .strategy-icon { font-size: 1.5rem; margin-bottom: 6px; }
 
@@ -2009,7 +2017,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .ss-diff { font-size: 0.64rem; color: var(--text-dim); margin-top: 2px; }
   .ss-chip {
     display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 99px;
-    font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 0.58rem; letter-spacing:0.01em; text-transform:none;
     color: var(--accent); border: 1px solid var(--accent); background: var(--glow);
   }
 
@@ -2022,8 +2030,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .timeline-table th {
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
+    text-transform:none;
+    letter-spacing:0.01em;
     color: var(--text-dim);
     font-size: 0.62rem;
     padding: 8px 10px;
@@ -2042,7 +2050,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   .timeline-table tr:hover td { background: var(--surface2); }
 
-  .paid-off-row td { color: var(--accent) !important; }
+  .paid-off-row td { color: var(--good) !important; }
 
   .order-num {
     display: inline-flex;
@@ -2083,8 +2091,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .whatif-result .label {
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     margin-bottom: 6px;
   }
@@ -2095,7 +2103,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     font-weight: 700;
   }
 
-  .whatif-result.positive .value { color: var(--accent); }
+  .whatif-result.positive .value { color: var(--good); }
   .whatif-result.negative .value { color: var(--accent3); }
 
   /* ─── v1.40.0 · UP NEXT ─── */
@@ -2112,7 +2120,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     height: 4px; background: var(--surface3); border-radius: 99px;
     margin-top: 6px; overflow: hidden;
   }
-  .upnext-fill { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .upnext-fill { display: block; height: 100%; background: var(--hl); border-radius: 99px; }
   .upnext-gap {
     font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent);
     text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums;
@@ -2128,7 +2136,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
   .btrack-why { font-size: 0.73rem; color: var(--text-dim); margin: 2px 0 9px; line-height: 1.4; }
   .btrack-bar { height: 3px; background: var(--surface3); border-radius: 99px; overflow: hidden; margin-bottom: 11px; }
-  .btrack-bar span { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .btrack-bar span { display: block; height: 100%; background: var(--hl); border-radius: 99px; }
 
   .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; }
   .chips.hidden { display: none; }
@@ -2141,18 +2149,18 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
   .chip .chip-i { font-size: 0.85rem; filter: grayscale(1) opacity(0.5); flex: none; line-height: 1; }
   .chip .chip-t { min-width: 0; }
-  .chip.got { border-color: rgba(0,229,176,0.45); color: var(--text); background: rgba(0,229,176,0.07); }
+  .chip.got { border-color: rgba(var(--accent-rgb),0.45); color: var(--text); background: rgba(var(--hl-rgb),0.07); }
   .chip.got .chip-i { filter: none; }
   .chip.is-next { border-color: var(--accent4); color: var(--text); }
   .chip.is-next .chip-i { filter: none; }
   .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  [data-theme="light"] .chip.got { border-color: rgba(0,168,132,0.5); background: rgba(0,168,132,0.08); }
+  [data-theme="light"] .chip.got { border-color: rgba(var(--accent-rgb),0.5); background: rgba(var(--hl-rgb),0.08); }
 
   .chip-more {
     margin-top: 10px; width: 100%; background: var(--surface2); color: var(--text-muted);
     border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px;
-    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
-    text-transform: uppercase; cursor: pointer;
+    font-family: var(--font-mono); font-size: 0.66rem; letter-spacing:0.01em;
+    text-transform:none; cursor: pointer;
   }
   .chip-more:hover { color: var(--text); border-color: var(--border2); }
   .chip-detail {
@@ -2177,8 +2185,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .milestone.achieved {
-    border-color: rgba(0,229,176,0.3);
-    background: rgba(0,229,176,0.04);
+    border-color: rgba(var(--accent-rgb),0.3);
+    background: rgba(var(--hl-rgb),0.04);
   }
 
   .milestone-icon {
@@ -2218,9 +2226,9 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     font-size: 0.65rem;
     padding: 3px 10px;
     border-radius: 20px;
-    background: rgba(0,229,176,0.1);
+    background: rgba(var(--hl-rgb),0.1);
     color: var(--accent);
-    border: 1px solid rgba(0,229,176,0.2);
+    border: 1px solid rgba(var(--accent-rgb),0.2);
     white-space: nowrap;
   }
 
@@ -2285,8 +2293,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .btn-delete-payment {
     font-family: var(--font-mono);
     font-size: 0.62rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-dim);
     background: none;
     border: 1px solid var(--border);
@@ -2299,7 +2307,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .payment-entry:hover .btn-delete-payment { opacity: 1; }
-  .btn-delete-payment:hover { color: var(--accent3); border-color: rgba(255,107,107,0.4); }
+  .btn-delete-payment:hover { color: var(--accent3); border-color: rgba(var(--problem-rgb),0.4); }
 
   /* Always fully visible on touch/mobile — no hover state available */
   @media (hover: none) {
@@ -2319,8 +2327,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     font-weight: 700;
     font-size: 0.85rem;
     letter-spacing: 0.03em;
-    background: var(--accent);
-    color: #0a0a0f;
+    background: var(--hl);
+    color: var(--on-hl);
     border: none;
     border-radius: 28px;
     padding: 14px 20px;
@@ -2370,8 +2378,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .toast-undo {
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--accent);
     background: none;
     border: 1px solid var(--accent);
@@ -2380,7 +2388,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     cursor: pointer;
     white-space: nowrap;
   }
-  .toast-undo:hover { background: rgba(0,168,132,0.1); }
+  .toast-undo:hover { background: rgba(var(--hl-rgb),0.1); }
 
   /* v1.19.0 — format segmented toggle in celebration modal */
   .seg-btn {
@@ -2431,7 +2439,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     padding: 20px;
     text-align: center;
   }
-  .ddr-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+  .ddr-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing:0.01em; text-transform:none; color: var(--text-muted); margin-bottom: 8px; }
   .ddr-big { font-family: var(--font-display); font-weight: 800; font-size: 2.6rem; color: var(--accent); line-height: 1; }
   .ddr-big span { font-size: 1rem; color: var(--text-muted); font-weight: 500; }
   .ddr-detail { font-size: 0.9rem; color: var(--text); margin-top: 10px; }
@@ -2448,11 +2456,11 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     flex-wrap: wrap;
     margin-top: 10px;
     padding: 10px 12px;
-    background: rgba(217,154,31,0.07);
-    border: 1px solid rgba(217,154,31,0.18);
+    background: rgba(var(--headsup-rgb),0.07);
+    border: 1px solid rgba(var(--headsup-rgb),0.18);
     border-radius: var(--radius-sm);
   }
-  .truecost-strip.warn { background: rgba(224,72,72,0.07); border-color: rgba(224,72,72,0.2); }
+  .truecost-strip.warn { background: rgba(var(--problem-rgb),0.07); border-color: rgba(var(--problem-rgb),0.2); }
   .tc-day { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; color: var(--accent4); white-space: nowrap; }
   .tc-day span { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; }
   .truecost-strip.warn .tc-day { color: var(--accent3); }
@@ -2484,19 +2492,19 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   /* v1.33.2 — separator in the Wins list for moved accounts */
   .wins-moved-head {
-    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.06em;
-    text-transform: uppercase; color: #b79ce0; margin: 14px 0 8px;
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing:0.01em;
+    text-transform:none; color: var(--accent2); margin: 14px 0 8px;
     padding-top: 12px; border-top: 1px solid var(--border);
   }
 
   /* v1.33.0 — closed-account details + moved-accounts group */
   .cdm-status {
-    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.05em;
-    text-transform: uppercase; padding: 8px 11px; border-radius: var(--radius-sm);
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing:0.01em;
+    text-transform:none; padding: 8px 11px; border-radius: var(--radius-sm);
     margin-bottom: 14px;
   }
-  .cdm-status.paid  { background: rgba(0,168,132,0.10); border: 1px solid rgba(0,168,132,0.3); color: var(--accent); }
-  .cdm-status.moved { background: rgba(123,94,167,0.12); border: 1px solid rgba(123,94,167,0.35); color: #b79ce0; }
+  .cdm-status.paid  { background: rgba(var(--good-rgb),0.10); border: 1px solid rgba(var(--good-rgb),0.3); color: var(--good); }
+  .cdm-status.moved { background: rgba(var(--muted-rgb),0.12); border: 1px solid rgba(var(--muted-rgb),0.35); color: var(--accent2); }
   .cdm-rows { display: flex; flex-direction: column; gap: 2px; }
   .cdm-row {
     display: flex; justify-content: space-between; gap: 12px; padding: 7px 0;
@@ -2510,21 +2518,21 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .cdm-hint { font-size: 0.76rem; color: var(--text-muted); line-height: 1.5; margin: 12px 0 4px; }
   .cdm-hint em { color: var(--text); font-style: normal; font-weight: 600; }
   .cdm-split { font-family: var(--font-mono); font-size: 0.72rem; margin-top: 4px; line-height: 1.5; }
-  .cdm-split-moved { color: #b79ce0; }
+  .cdm-split-moved { color: var(--accent2); }
   .cdm-split-kept { color: var(--accent); }
   .cdm-split-warn { color: var(--accent3); }
   .cdm-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 16px; }
 
   .paid-off-moved { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
   .moved-title {
-    font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.08em;
-    text-transform: uppercase; color: #b79ce0; margin-bottom: 6px;
+    font-family: var(--font-mono); font-size: 0.64rem; letter-spacing:0.01em;
+    text-transform:none; color: var(--accent2); margin-bottom: 6px;
   }
   .moved-note { font-size: 0.74rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
   .moved-note strong { color: var(--accent4); }
   .moved-item {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    background: rgba(123,94,167,0.07); border: 1px solid rgba(123,94,167,0.22);
+    background: rgba(var(--muted-rgb),0.07); border: 1px solid rgba(var(--muted-rgb),0.22);
     border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 8px;
   }
   .moved-main { flex: 1; min-width: 160px; font-size: 0.84rem; color: var(--text-muted); }
@@ -2546,17 +2554,17 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     border-radius: 6px;
     white-space: normal;
   }
-  .pf-promo.promo-ok    { background: rgba(123,94,167,0.12); border: 1px solid rgba(123,94,167,0.30); color: var(--text-muted); }
-  .pf-promo.promo-ok strong    { color: #b79ce0; }
-  .pf-promo.promo-tight { background: rgba(255,209,102,0.10); border: 1px solid rgba(255,209,102,0.38); color: var(--text-muted); }
+  .pf-promo.promo-ok    { background: rgba(var(--muted-rgb),0.12); border: 1px solid rgba(var(--muted-rgb),0.30); color: var(--text-muted); }
+  .pf-promo.promo-ok strong    { color: var(--accent2); }
+  .pf-promo.promo-tight { background: rgba(var(--headsup-rgb),0.10); border: 1px solid rgba(var(--headsup-rgb),0.38); color: var(--text-muted); }
   .pf-promo.promo-tight strong { color: var(--accent4); }
-  .pf-promo.promo-risk  { background: rgba(255,107,107,0.10); border: 1px solid rgba(255,107,107,0.40); color: var(--text-muted); }
+  .pf-promo.promo-risk  { background: rgba(var(--problem-rgb),0.10); border: 1px solid rgba(var(--problem-rgb),0.40); color: var(--text-muted); }
   .pf-promo.promo-risk strong  { color: var(--accent3); }
   .pf-promo.promo-over  { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-muted); }
 
   .pf-progress { margin-top: 6px; }
   .pf-progress-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 99px; overflow: hidden; }
-  .pf-progress-fill { height: 100%; background: linear-gradient(90deg,#00b88c,var(--accent)); border-radius: 99px; }
+  .pf-progress-fill { height: 100%; background: var(--hl); border-radius: 99px; }
   .pf-progress-meta {
     display: flex; justify-content: space-between; gap: 8px; margin-top: 4px;
     font-family: var(--font-mono); font-size: 0.58rem; color: var(--text-dim);
@@ -2570,8 +2578,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .rollover-note {
     margin-top: 14px;
     padding: 11px 13px;
-    background: rgba(0,168,132,0.07);
-    border: 1px solid rgba(0,168,132,0.22);
+    background: rgba(var(--hl-rgb),0.07);
+    border: 1px solid rgba(var(--accent-rgb),0.22);
     border-radius: var(--radius-sm);
     font-size: 0.78rem;
     color: var(--text-muted);
@@ -2581,8 +2589,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   /* v1.31.0 — Optimized strategy note */
   .optimized-note {
-    background: rgba(0,168,132,0.08);
-    border: 1px solid rgba(0,168,132,0.3);
+    background: rgba(var(--hl-rgb),0.08);
+    border: 1px solid rgba(var(--accent-rgb),0.3);
     border-radius: var(--radius-sm);
     padding: 12px 14px;
     margin-bottom: 14px;
@@ -2606,12 +2614,12 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .xfer-amt-wrap {
     display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
     margin: 6px 0 4px 30px; padding: 8px 10px;
-    background: rgba(0,168,132,0.06); border: 1px solid rgba(0,168,132,0.22);
+    background: rgba(var(--hl-rgb),0.06); border: 1px solid rgba(var(--accent-rgb),0.22);
     border-radius: var(--radius-sm);
   }
   .xfer-amt-label {
-    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.06em;
-    text-transform: uppercase; color: var(--text-muted); margin: 0;
+    font-family: var(--font-mono); font-size: 0.6rem; letter-spacing:0.01em;
+    text-transform:none; color: var(--text-muted); margin: 0;
   }
   .xfer-amt {
     flex: 1; min-width: 110px; padding: 7px 9px; font-family: var(--font-mono);
@@ -2621,7 +2629,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .xfer-amt-all {
     font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.05em;
     padding: 6px 10px; border-radius: 6px; cursor: pointer;
-    background: none; color: var(--accent); border: 1px solid rgba(0,168,132,0.4);
+    background: none; color: var(--accent); border: 1px solid rgba(var(--accent-rgb),0.4);
   }
   .xfer-leftover {
     font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent4);
@@ -2647,8 +2655,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
   .xfer-sub { font-size: 0.85rem; color: var(--text); line-height: 1.5; margin-bottom: 14px; }
   .xfer-risk { font-size: 0.82rem; line-height: 1.5; padding: 11px 13px; border-radius: var(--radius-sm); margin-bottom: 10px; }
-  .xfer-risk.ok   { background: rgba(0,168,132,0.09);  border: 1px solid rgba(0,168,132,0.3);  color: var(--text-muted); }
-  .xfer-risk.warn { background: rgba(224,72,72,0.09);  border: 1px solid rgba(224,72,72,0.35); color: var(--text-muted); }
+  .xfer-risk.ok   { background: rgba(var(--hl-rgb),0.09);  border: 1px solid rgba(var(--accent-rgb),0.3);  color: var(--text-muted); }
+  .xfer-risk.warn { background: rgba(var(--problem-rgb),0.09);  border: 1px solid rgba(var(--problem-rgb),0.35); color: var(--text-muted); }
   .xfer-risk strong { color: var(--text); }
   .xfer-stress { font-size: 0.78rem; color: var(--text-muted); line-height: 1.5; padding: 9px 0; border-top: 1px solid var(--border); }
   .xfer-stress strong { color: var(--text); }
@@ -2660,8 +2668,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     align-items: baseline;
     gap: 10px;
     flex-wrap: wrap;
-    background: rgba(0,168,132,0.09);
-    border: 1px solid rgba(0,168,132,0.3);
+    background: rgba(var(--hl-rgb),0.09);
+    border: 1px solid rgba(var(--accent-rgb),0.3);
     border-radius: var(--radius-sm);
     padding: 10px 14px;
     margin-bottom: 10px;
@@ -2669,8 +2677,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .asb-label {
     font-family: var(--font-mono);
     font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
   }
   .asb-value {
@@ -2686,7 +2694,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     line-height: 1.45;
     margin-bottom: 12px;
   }
-  .comparison-card.is-current { outline: 2px solid rgba(0,168,132,0.55); outline-offset: -2px; }
+  .comparison-card.is-current { outline: 2px solid rgba(var(--accent-rgb),0.55); outline-offset: -2px; }
   .comparison-card.is-current h4::after {
     content: ' \2014 YOUR STRATEGY';
     font-family: var(--font-mono);
@@ -2702,12 +2710,12 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     background: var(--surface2);
   }
   .lump-opt-panel.opt-available {
-    background: rgba(217,154,31,0.09);
-    border-color: rgba(217,154,31,0.4);
+    background: rgba(var(--headsup-rgb),0.09);
+    border-color: rgba(var(--headsup-rgb),0.4);
   }
   .lump-opt-panel.opt-good {
-    background: rgba(0,168,132,0.07);
-    border-color: rgba(0,168,132,0.25);
+    background: rgba(var(--hl-rgb),0.07);
+    border-color: rgba(var(--accent-rgb),0.25);
   }
   .lump-opt-head { display: flex; gap: 10px; align-items: flex-start; }
   .lump-opt-icon { font-size: 1.2rem; line-height: 1.2; }
@@ -2720,7 +2728,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
   .lump-opt-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
   .lump-opt-text strong { color: var(--accent4); }
-  .opt-good .lump-opt-text strong { color: var(--accent); }
+  .opt-good .lump-opt-text strong { color: var(--good); }
   .lump-opt-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 12px; }
 
   /* v1.26.0 — Paid Off Debts trophy case */
@@ -2735,8 +2743,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     gap: 2px;
     margin-bottom: 14px;
     padding: 12px 14px;
-    background: rgba(0,168,132,0.07);
-    border: 1px solid rgba(0,168,132,0.22);
+    background: rgba(var(--hl-rgb),0.07);
+    border: 1px solid rgba(var(--accent-rgb),0.22);
     border-radius: var(--radius-sm);
   }
   .po-sum-item {
@@ -2748,7 +2756,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     min-width: 0;
     padding: 5px 0;
   }
-  .po-sum-item + .po-sum-item { border-top: 1px solid rgba(0,168,132,0.14); }
+  .po-sum-item + .po-sum-item { border-top: 1px solid rgba(var(--accent-rgb),0.14); }
   .po-sum-val {
     font-family: var(--font-display);
     font-weight: 800;
@@ -2760,8 +2768,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .po-sum-label {
     font-family: var(--font-mono);
     font-size: 0.62rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     text-align: right;
     line-height: 1.3;
@@ -2779,8 +2787,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     .po-sum-label { text-align: left; }
   }
   .paid-off-item {
-    border-color: rgba(0,168,132,0.3) !important;
-    background: rgba(0,168,132,0.04) !important;
+    border-color: rgba(var(--accent-rgb),0.3) !important;
+    background: rgba(var(--hl-rgb),0.04) !important;
   }
   .po-date {
     font-family: var(--font-mono);
@@ -2793,8 +2801,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   /* v1.25.0 — in-app browser banner */
   .inapp-banner {
-    background: linear-gradient(135deg, rgba(217,154,31,0.14), rgba(217,154,31,0.06));
-    border: 1px solid rgba(217,154,31,0.4);
+    background: linear-gradient(135deg, rgba(var(--headsup-rgb),0.14), rgba(var(--headsup-rgb),0.06));
+    border: 1px solid rgba(var(--headsup-rgb),0.4);
     border-radius: var(--radius);
     padding: 14px 16px;
     margin-bottom: 18px;
@@ -2817,8 +2825,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     font-family: var(--font-mono);
     font-size: 0.72rem;
     letter-spacing: 0.04em;
-    background: var(--accent4);
-    color: #1a1a2a;
+    background: var(--hl);
+    color: var(--on-hl);
     border: none;
     border-radius: 8px;
     padding: 9px 16px;
@@ -2836,8 +2844,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .collapse-all-btn {
     font-family: var(--font-mono);
     font-size: 0.66rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-muted);
     background: none;
     border: 1px solid var(--border);
@@ -2879,15 +2887,15 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     gap: 4px;
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     padding: 3px 10px;
     border-radius: 20px;
   }
 
-  .tag-accent { background: rgba(0,229,176,0.1); color: var(--accent); border: 1px solid rgba(0,229,176,0.2); }
+  .tag-accent { background: rgba(var(--hl-rgb),0.1); color: var(--accent); border: 1px solid rgba(var(--accent-rgb),0.2); }
   .tag-muted { background: var(--surface3); color: var(--text-dim); }
-  .tag-warn { background: rgba(255,184,77,0.12); color: var(--accent4); border: 1px solid rgba(255,184,77,0.35); }
+  .tag-warn { background: rgba(var(--headsup-rgb),0.12); color: var(--accent4); border: 1px solid rgba(var(--headsup-rgb),0.35); }
 
   .empty-state {
     text-align: center;
@@ -2899,8 +2907,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .empty-state p { font-size: 0.85rem; line-height: 1.6; }
 
   .alert {
-    background: rgba(0,229,176,0.06);
-    border: 1px solid rgba(0,229,176,0.2);
+    background: rgba(var(--hl-rgb),0.06);
+    border: 1px solid rgba(var(--accent-rgb),0.2);
     border-radius: var(--radius-sm);
     padding: 12px 16px;
     font-size: 0.82rem;
@@ -2912,8 +2920,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .alert.warning {
-    background: rgba(255,209,102,0.06);
-    border-color: rgba(255,209,102,0.2);
+    background: rgba(var(--headsup-rgb),0.06);
+    border-color: rgba(var(--headsup-rgb),0.2);
     color: var(--accent4);
   }
 
@@ -2936,10 +2944,10 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     -webkit-appearance: none;
     width: 16px;
     height: 16px;
-    background: var(--accent);
+    background: var(--hl);
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(0,229,176,0.4);
+    box-shadow: 0 0 8px rgba(0,0,0,0);
   }
 
   .range-wrap { padding: 8px 0; }
@@ -2980,23 +2988,23 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     height: 30px;
     margin-top: -12px;             /* (6px track - 30px thumb) / 2 */
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--hl);
     cursor: pointer;
-    box-shadow: 0 0 0 4px rgba(0,229,176,0.22);
+    box-shadow: 0 0 0 4px rgba(0,0,0,0);
     transition: box-shadow 0.15s;
   }
   input[type=range].wi-slider::-webkit-slider-thumb:hover,
   input[type=range].wi-slider:active::-webkit-slider-thumb {
-    box-shadow: 0 0 0 7px rgba(0,229,176,0.32);
+    box-shadow: 0 0 0 7px rgba(0,0,0,0);
   }
   input[type=range].wi-slider::-moz-range-thumb {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: var(--accent);
+    background: var(--hl);
     cursor: pointer;
     border: none;
-    box-shadow: 0 0 0 4px rgba(0,229,176,0.22);
+    box-shadow: 0 0 0 4px rgba(0,0,0,0);
   }
   /* value box + nudge buttons + preset chips */
   .wi-stepper { display: inline-flex; align-items: center; gap: 4px; }
@@ -3019,15 +3027,15 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     border: 1px solid var(--border); background: var(--card2); color: var(--text-muted); cursor: pointer;
     white-space: nowrap;
   }
-  .wi-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,176,0.08); }
-  .wi-chip.lump.active { border-color: var(--accent4); color: var(--accent4); background: rgba(201,168,76,0.10); }
+  .wi-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(var(--hl-rgb),0.08); }
+  .wi-chip.lump.active { border-color: var(--accent4); color: var(--accent4); background: rgba(var(--headsup-rgb),0.10); }
   input[type=range].wi-slider.lump::-webkit-slider-thumb {
     background: var(--accent4);
-    box-shadow: 0 0 0 3px rgba(201,168,76,0.25);
+    box-shadow: 0 0 0 3px rgba(var(--headsup-rgb),0.25);
   }
   input[type=range].wi-slider.lump::-moz-range-thumb {
     background: var(--accent4);
-    box-shadow: 0 0 0 3px rgba(201,168,76,0.25);
+    box-shadow: 0 0 0 3px rgba(var(--headsup-rgb),0.25);
   }
   .range-label {
     display: flex;
@@ -3039,8 +3047,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .cta-bar {
-    background: linear-gradient(135deg, rgba(0,229,176,0.08), rgba(123,94,167,0.08));
-    border: 1px solid rgba(0,229,176,0.2);
+    background: linear-gradient(135deg, rgba(var(--hl-rgb),0.08), rgba(var(--muted-rgb),0.08));
+    border: 1px solid rgba(var(--accent-rgb),0.2);
     border-radius: var(--radius);
     padding: 20px;
     text-align: center;
@@ -3191,8 +3199,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     margin-top: 8px;
     font-size: 0.78rem;
     color: var(--text-muted);
-    background: rgba(0,168,132,0.07);
-    border: 1px solid rgba(0,168,132,0.2);
+    background: rgba(var(--hl-rgb),0.07);
+    border: 1px solid rgba(var(--accent-rgb),0.2);
     border-radius: var(--radius-sm);
     padding: 8px 10px;
     line-height: 1.4;
@@ -3235,7 +3243,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
   }
-  .reorder-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(0,168,132,0.08); }
+  .reorder-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(var(--hl-rgb),0.08); }
   .reorder-btn:disabled { opacity: 0.3; cursor: default; }
   .pf-drag { display: none; }
   body.hybrid-mode .pf-drag { display: inline-flex; vertical-align: middle; margin-right: 6px; }
@@ -3244,8 +3252,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .pf-hybrid-note {
     font-size: 0.75rem;
     color: var(--text-muted);
-    background: rgba(0,168,132,0.06);
-    border: 1px solid rgba(0,168,132,0.2);
+    background: rgba(var(--hl-rgb),0.06);
+    border: 1px solid rgba(var(--accent-rgb),0.2);
     border-radius: var(--radius-sm);
     padding: 8px 10px;
     margin-bottom: 10px;
@@ -3254,7 +3262,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 
   .debt-item.drag-over {
     border-color: var(--accent) !important;
-    background: rgba(0,229,176,0.05) !important;
+    background: rgba(var(--hl-rgb),0.05) !important;
   }
 
   .debt-item.dragging {
@@ -3267,8 +3275,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .update-balance-btn {
     font-family: var(--font-mono);
     font-size: 0.65rem;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+    letter-spacing:0.01em;
+    text-transform:none;
     color: var(--text-dim);
     background: none;
     border: 1px dashed var(--border2);
@@ -3335,8 +3343,8 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   }
 
   .comparison-card.best {
-    border-color: rgba(0,229,176,0.35);
-    background: rgba(0,229,176,0.04);
+    border-color: rgba(var(--accent-rgb),0.35);
+    background: rgba(var(--hl-rgb),0.04);
   }
 
   .comparison-card.best h4 { color: var(--accent); }
@@ -3348,13 +3356,13 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 .drive-hdr-icon{font-size:1.05rem;line-height:1;}
 .drive-dot{width:8px;height:8px;border-radius:50%;background:#9aa0a6;flex:0 0 8px;}
 .drive-dot.ok{background:#2e9e5b;}
-.drive-dot.stale{background:#e0a030;}
+.drive-dot.stale{background:var(--accent4);}
 .drive-dot.never{background:#9aa0a6;}
 .drive-dot.busy{background:#4a90d9;animation:drivePulse 1s infinite;}
 @keyframes drivePulse{0%,100%{opacity:1}50%{opacity:.3}}
 .drive-card.quiet{padding:10px 14px;font-size:.85rem;opacity:.75;display:flex;align-items:center;gap:10px;
   flex-wrap:wrap;justify-content:space-between;}
-.drive-card.loud{border-left:3px solid #e0a030;}
+.drive-card.loud{border-left:3px solid var(--accent4);}
 /* v1.49.2 — .modal .drive-card already clears the border, but it is declared
    earlier in the sheet and carries the same specificity, so .drive-card.loud
    won and drew an amber bar down the inside of the Drive dialog. The modal
@@ -3412,7 +3420,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 <div class="sticky-top">
 <header>
   <h1 class="logo">
-    <div class="logo-dot"></div>
+    <svg class="logo-mark" viewBox="0 0 512 512" width="26" height="26" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#1c1e21"/><path d="M318 400 H124 A30 30 0 0 1 94 370 V142 A30 30 0 0 1 124 112 H388 A30 30 0 0 1 418 142 V290" fill="none" stroke="#ededea" stroke-width="34" stroke-linecap="round"/><rect x="140" y="200" width="56" height="166" rx="10" fill="#ededea"/><rect x="216" y="258" width="56" height="108" rx="10" fill="#ededea" opacity="0.65"/><rect x="292" y="314" width="56" height="52" rx="10" fill="#ededea" opacity="0.4"/><path d="M154 166 C 250 156, 318 220, 366 300 L 382 330" fill="none" stroke="#f5d000" stroke-width="40" stroke-linecap="round"/><path d="M342 330 L 420 420 L 448 306 Z" fill="#f5d000" stroke="#f5d000" stroke-width="14" stroke-linejoin="round"/></svg>
     <span class="logo-brand">DebtFree</span><span class="logo-suffix">Dashboard</span>
   </h1>
   <a href="/app/index.html" class="install-link" id="install-link">
@@ -3499,7 +3507,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
          (or it is hidden); the header button always brings the full list back. -->
     <div class="card guide-card" id="guide-card" style="display:none">
       <button type="button" class="guide-hide" aria-label="Hide the setup guide" onclick="hideGuideCard()">&times;</button>
-      <div class="guide-flag">&#9656; NEXT STEP <span class="guide-progress" id="guide-progress"></span></div>
+      <div class="guide-flag">&#9656; Next step <span class="guide-progress" id="guide-progress"></span></div>
       <div class="guide-title" id="guide-title"></div>
       <div class="guide-why" id="guide-why"></div>
       <div class="guide-actions">
@@ -3562,7 +3570,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         <div class="ministat-value" id="stat-date">&mdash;</div>
         <div class="ministat-sub" id="stat-months">add debts</div>
       </div>
-      <div class="ministat">
+      <div class="ministat good">
         <div class="ministat-label">Interest saved</div>
         <div class="ministat-value" id="stat-saved">$0</div>
         <div class="ministat-sub">vs. minimums only</div>
@@ -3587,7 +3595,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
          what? The card also never stated the amount the plan sends here, which
          was the actual question being asked. Both are fixed below. -->
     <div class="card next-debt-card" id="next-debt-card" style="display:none">
-      <div class="next-debt-flag" id="next-debt-flag">&#9656; WHERE YOUR EXTRA GOES</div>
+      <div class="next-debt-flag" id="next-debt-flag">&#9656; Where your extra goes</div>
       <div class="next-debt-main">
         <span class="nd-tile" id="next-debt-tile"></span>
         <div class="next-debt-info">
@@ -3693,7 +3701,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         <button type="button" class="btn btn-primary" onclick="setupPaste()">Paste my setup</button>
       </div>
       <!-- v1.23.0 — first-run welcome (shows only with zero debts) -->
-      <div id="welcome-hint" style="display:none;background:rgba(0,168,132,0.08);border:1px solid rgba(0,168,132,0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.5;">
+      <div id="welcome-hint" style="display:none;background:rgba(var(--hl-rgb),0.08);border:1px solid rgba(var(--accent-rgb),0.25);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;font-size:0.85rem;line-height:1.5;">
         &#128075; <strong>Welcome!</strong> Add your first debt below &mdash; your freedom date appears the moment you do. Your balances stay on your device &mdash; never on our servers.
       </div>
       <!-- v1.69.0 — what this session has added so far, with the date it gives. -->
@@ -3792,7 +3800,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <!-- Promo APR toggle -->
       <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
         <input type="checkbox" id="debt-has-promo" onchange="togglePromoFields()" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
-        <label for="debt-has-promo" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
+        <label for="debt-has-promo" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);cursor:pointer;">
           0% or promo rate on this debt
         </label>
       </div>
@@ -3826,13 +3834,13 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <div id="installment-fields" style="display:none; margin-top:12px;">
         <div style="display:flex; align-items:center; gap:10px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
           <input type="checkbox" id="debt-include-strategy" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
-          <label for="debt-include-strategy" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
+          <label for="debt-include-strategy" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);cursor:pointer;">
             Include in payoff strategy
           </label>
           <span id="debt-include-hint" style="font-size:0.7rem;color:var(--text-muted);margin-left:auto;"></span>
         </div>
         <details style="margin-top:10px; padding:12px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
-          <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
+          <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
           <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
             <div class="form-field">
               <label for="debt-orig-principal">Original Principal ($)</label>
@@ -4147,7 +4155,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">Schedule future one-time payments like bonuses or tax refunds. These feed into your payoff simulation so your Freedom Date reflects your real plan.</p>
       <div id="lump-sum-list"></div>
       <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border);border-radius:8px;overflow:hidden;">
-        <button id="lump-mode-auto" onclick="setLumpMode('auto')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--accent);color:#0a0a0f;font-weight:700;letter-spacing:0.05em;">&#9654; Strategy Decides</button>
+        <button id="lump-mode-auto" onclick="setLumpMode('auto')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--hl);color:var(--on-hl);font-weight:700;letter-spacing:0.05em;">&#9654; Strategy Decides</button>
         <button id="lump-mode-manual" onclick="setLumpMode('manual')" style="flex:1;padding:8px 12px;font-family:var(--font-mono);font-size:0.72rem;border:none;cursor:pointer;background:var(--card2);color:var(--text-muted);letter-spacing:0.05em;">&#9776; I Choose Debt</button>
       </div>
       <div id="lump-debt-field" style="display:none;margin-bottom:12px;">
@@ -4521,7 +4529,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
     </div>
 
     <div class="next-debt-card card" id="upnext-card" style="display:none">
-      <div class="next-debt-flag">&#9656; UP NEXT</div>
+      <div class="next-debt-flag">&#9656; Up next</div>
       <div class="upnext" id="upnext-list"></div>
     </div>
 
@@ -4679,7 +4687,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <div id="debt-free-date" style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);letter-spacing:0.06em;margin-bottom:20px;"></div>
       <p id="debt-free-msg" style="font-size:0.9rem;line-height:1.6;color:var(--text);margin-bottom:20px;"></p>
       <div id="debt-free-leftover" style="background:var(--card2);border-radius:12px;padding:16px;margin-bottom:24px;display:none;">
-        <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Remaining from Lump Sum</div>
+        <div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);margin-bottom:6px;">Remaining from Lump Sum</div>
         <div id="debt-free-leftover-amount" style="font-family:var(--font-display);font-size:2rem;font-weight:900;color:var(--accent);">$0</div>
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">after all debts are cleared</div>
       </div>
@@ -5051,7 +5059,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.73.1';
+const APP_VERSION = '1.74.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5059,6 +5067,19 @@ const APP_VERSION = '1.73.1';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.74.0',
+    date: 'November 18, 2026',
+    name: 'A new look',
+    whatsNew: [
+      'DebtFree has a new look. The app is now graphite and white, with a highlighter yellow that marks your progress and the next thing to tap. Your debts, plan and settings are exactly as they were, in both the light and dark themes.',
+      'Each color now means one thing. Green is good news, like the interest you’re saving. Blue is worth a look, like the interest you’re paying now or a card that’s close to its limit. Red is kept for real problems.',
+      'A new typeface, Atkinson Hyperlegible, made to be easy to read. Every number is clearer, and a zero has a slash through it so it can’t be mistaken for an 8.',
+      'Labels are in plain sentence case instead of spaced-out capitals, and the glow effects are gone, so each screen is calmer.',
+      'A new app icon, and each kind of debt (credit card, student loan, car loan, personal loan, mortgage) has its own color on your debt cards and the by-account bar.'
+    ],
+    fixes: []
+  },
   {
     version: '1.73.1',
     date: 'November 16, 2026',
@@ -6754,7 +6775,7 @@ function renderWhatsNewEntries(entries) {
   function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
   function section(label, items) {
     if (!items || !items.length) return '';
-    return '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin:14px 0 8px;">' + label + '</div>' +
+    return '<div style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);margin:14px 0 8px;">' + label + '</div>' +
       '<ul style="margin:0;padding-left:20px;font-size:0.88rem;line-height:1.6;color:var(--text);">' +
       items.map(function(x){ return '<li style="margin-bottom:6px;">' + esc(x) + '</li>'; }).join('') +
       '</ul>';
@@ -6768,7 +6789,7 @@ function renderWhatsNewEntries(entries) {
     return '<div style="padding:16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-top:14px;">' +
       '<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;">' +
         '<span style="font-family:var(--font-display);font-size:1.15rem;font-weight:900;color:var(--accent);">v' + esc(e.version) + '</span>' +
-        (e.name ? '<span style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);">' + esc(e.name) + '</span>' : '') +
+        (e.name ? '<span style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);">' + esc(e.name) + '</span>' : '') +
         '<span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--text-dim);margin-left:auto;">' + esc(e.date) + '</span>' +
       '</div>' +
       whatsNewBlock + fixesBlock + fallback +
@@ -7613,7 +7634,7 @@ function milestoneKeysAchieved() {
 function milestoneContent(key) {
   const paidOffCount = debts.filter(function(d){ return d.originalBalance > 0 && d.balance <= 0 && !isTransferred(d); }).length;
   if (key === 'debtfree') {
-    return { emoji: '\uD83C\uDF89', headline: 'DEBT-FREE', sub: 'Every debt eliminated. The plan worked.', big: 'Freedom.' };
+    return { emoji: '\uD83C\uDF89', headline: 'Debt-free', sub: 'Every debt eliminated. The plan worked.', big: 'Freedom.' };
   }
   if (key.indexOf('elim:') === 0) {
     const id = parseInt(key.split(':')[1], 10);
@@ -8832,13 +8853,13 @@ function renderHeroExtras(pct) {
   var hasOrig = totalOriginal() > 0;
   var c = progressScaleRgb(pct), rgb = c.join(',');
   if (card) {
-    card.style.setProperty('--g1', live.length ? 'rgba(' + rgb + ',0.30)' : 'transparent');
-    card.style.setProperty('--g2', live.length ? 'rgba(' + rgb + ',0.10)' : 'transparent');
+    card.style.setProperty('--g1', 'transparent');
+    card.style.setProperty('--g2', 'transparent');
   }
   var ring = document.getElementById('hero-ring');
   if (ring) {
     ring.style.display = (hasOrig && live.length) ? '' : 'none';
-    ring.style.background = 'conic-gradient(rgb(' + rgb + ') 0 ' + (Math.max(0, Math.min(100, pct)) * 3.6).toFixed(1) + 'deg, var(--surface3) 0)';
+    ring.style.background = 'conic-gradient(var(--hl) 0 ' + (Math.max(0, Math.min(100, pct)) * 3.6).toFixed(1) + 'deg, var(--surface3) 0)';
     var rp = document.getElementById('hero-ring-pct');
     if (rp) rp.textContent = pct.toFixed(1) + '%';   // same figure as the line under the bar
   }
@@ -8855,7 +8876,7 @@ function renderHeroExtras(pct) {
   split.style.display = '';
   var hexOf = function(d) {
     var i = ISSUER_BY_ID[d.issuer];
-    return (i && i.brand) || TYPE_GLOW[d.type] || TYPE_GLOW.other;
+    return (i && i.brand) || typeColor(d.type);
   };
   var short = function(v) { return v >= 1000 ? '$' + (v / 1000).toFixed(v >= 100000 ? 0 : 1) + 'k' : fmt(v); };
   document.getElementById('hero-segbar').innerHTML = live.map(function(d) {
@@ -8872,13 +8893,15 @@ function renderHeroExtras(pct) {
 // v1.61.0 — card glow colour: the lender's brand colour, or the debt type's
 // colour when no lender is set. Returned as ready-made rgba stops so the CSS
 // doesn't depend on color-mix() (older iOS).
-var TYPE_GLOW = { cc: '#e04848', student: '#6a4f96', auto: '#2bb3aa', personal: '#d99a1f', mortgage: '#00a884', other: '#8a8aa0' };
+// v1.74.0 — debt-type colours live in CSS (--t-*) so they follow the theme.
+function typeColor(t) {
+  var v = '';
+  try { v = getComputedStyle(document.documentElement).getPropertyValue('--t-' + (t || 'other')).trim(); } catch (e) {}
+  return v || '#8f959c';
+}
 function debtGlowStyle(d) {
-  var i = ISSUER_BY_ID[d && d.issuer];
-  var hex = (i && i.brand) || TYPE_GLOW[(d && d.type)] || TYPE_GLOW.other;
-  var m = /^#?([0-9a-f]{6})$/i.exec(hex) || [0, '8a8aa0'];
-  var n = parseInt(m[1], 16), r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
-  return '--g1:rgba(' + r + ',' + g + ',' + b + ',0.40);--g2:rgba(' + r + ',' + g + ',' + b + ',0.13)';
+  // v1.74.0 — no lender colour wash behind cards any more.
+  return '--g1:transparent;--g2:transparent';
 }
 
 // v1.61.0 — the debt card ("corner glow" design). One builder for the free
@@ -11549,19 +11572,18 @@ function drawShareCard(content, format) {
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  const styles = getComputedStyle(document.documentElement);
-  const accent = (styles.getPropertyValue('--accent').trim() || '#00a884');
   const isLight = (document.documentElement.getAttribute('data-theme') === 'light');
-  const bg = isLight ? '#f4f4f7' : '#0a0a0f';
-  const surface = isLight ? '#ffffff' : '#12121a';
-  const ink = isLight ? '#1a1a2a' : '#f0f0f8';
-  const muted = isLight ? '#5a5a72' : '#7a7a9a';
+  // v1.74.0 — Highlighter palette. Figures are graphite on light and
+  // highlighter yellow on dark; yellow is never text on a light card.
+  const accent = isLight ? '#1c1e21' : '#f5d000';
+  const bg = isLight ? '#f1f2f0' : '#1c1d20';
+  const surface = isLight ? '#ffffff' : '#242629';
+  const ink = isLight ? '#1c1e21' : '#ededea';
+  const muted = isLight ? '#5d6166' : '#a3a6aa';
+  const line = isLight ? 'rgba(28,30,33,0.11)' : 'rgba(237,237,234,0.08)';
 
   // Background fills the whole frame
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  const glow = ctx.createRadialGradient(W*0.85, H*0.12, 0, W*0.85, H*0.12, W*0.6);
-  glow.addColorStop(0, hexA(accent, 0.18)); glow.addColorStop(1, hexA(accent, 0));
-  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
 
   // Panel: square uses a bordered card; story uses a taller card inset within
   // the safe band so IG's top/bottom chrome overlaps only the background.
@@ -11572,24 +11594,17 @@ function drawShareCard(content, format) {
   const panelH = isStory ? (H - 600) : (H - pad*2);   // safe-band bottom
   roundRect(ctx, panelX, panelY, panelW, panelH, 48);
   ctx.fillStyle = surface; ctx.fill();
-  ctx.lineWidth = 2; ctx.strokeStyle = hexA(accent, 0.35); ctx.stroke();
+  ctx.lineWidth = 2; ctx.strokeStyle = line; ctx.stroke();
 
   const cx = W / 2;
   const inX = panelX + 70;      // inner left
   const top = panelY + 70;      // inner top
 
-  // Logo
-  ctx.fillStyle = accent;
-  roundRect(ctx, inX, top, 92, 92, 22); ctx.fill();
-  ctx.fillStyle = isLight ? '#ffffff' : '#0a0a0f';
-  ctx.font = '700 46px Sora, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('DF', inX + 46, top + 50);
+  // Logo: the app icon and the wordmark
+  drawAppIcon(ctx, inX, top, 92);
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = ink; ctx.font = '800 44px Sora, sans-serif';
-  ctx.fillText('DebtFree', inX + 120, top + 40);
-  ctx.fillStyle = muted; ctx.font = '500 26px "JetBrains Mono", monospace';
-  ctx.fillText('DASHBOARD', inX + 120, top + 78);
+  ctx.fillStyle = ink; ctx.font = '700 50px "Atkinson Hyperlegible", sans-serif';
+  ctx.fillText('DebtFree', inX + 120, top + 64);
 
   // Vertical rhythm — story has more room so spread things out
   // v1.51.7 — square block moved up and the stat strip down: a description
@@ -11608,15 +11623,15 @@ function drawShareCard(content, format) {
   // Big line — auto-fit
   ctx.fillStyle = ink;
   let size = isStory ? 108 : 92;
-  ctx.font = '800 ' + size + 'px Sora, sans-serif';
+  ctx.font = '700 ' + size + 'px "Atkinson Hyperlegible", sans-serif';
   while (ctx.measureText(content.big).width > maxW && size > 40) {
-    size -= 4; ctx.font = '800 ' + size + 'px Sora, sans-serif';
+    size -= 4; ctx.font = '700 ' + size + 'px "Atkinson Hyperlegible", sans-serif';
   }
   ctx.fillText(content.big, cx, bigY);
 
   // Sub line
   ctx.fillStyle = muted;
-  ctx.font = '400 34px "Sora", sans-serif';
+  ctx.font = '400 34px "Atkinson Hyperlegible", sans-serif';
   wrapText(ctx, content.sub, cx, subY, maxW, 46);
 
   // Stat strip (real data)
@@ -11633,12 +11648,30 @@ function drawShareCard(content, format) {
   drawStat(ctx, panelX + panelW*0.70, stripY, freedom, 'freedom date', accent, muted);
 
   // URL baked in
-  ctx.fillStyle = muted; ctx.font = '500 30px "JetBrains Mono", monospace';
+  ctx.fillStyle = muted; ctx.font = '400 30px "Atkinson Hyperlegible", sans-serif';
   ctx.fillText('mydebtdashboard.com', cx, urlY);
 
   const preview = document.getElementById('share-card-preview');
   if (preview) preview.src = canvas.toDataURL('image/png');
   canvas.toBlob(function(b){ _lastCardBlob = b; }, 'image/png');
+}
+
+// v1.74.0 — the app icon (frame, falling bars, highlighter arrow) on a canvas.
+function drawAppIcon(ctx, x, y, size) {
+  const k = size / 512;
+  ctx.save(); ctx.translate(x, y); ctx.scale(k, k);
+  roundRect(ctx, 0, 0, 512, 512, 112); ctx.fillStyle = '#1c1e21'; ctx.fill();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#ededea'; ctx.lineWidth = 18;
+  ctx.stroke(new Path2D('M330 396 H124 A26 26 0 0 1 98 370 V142 A26 26 0 0 1 124 116 H388 A26 26 0 0 1 414 142 V296'));
+  [[134, 196, 168, 1], [192, 240, 124, 0.72], [250, 286, 78, 0.5], [308, 326, 38, 0.32]].forEach(function(b) {
+    ctx.globalAlpha = b[3]; ctx.fillStyle = '#ededea'; roundRect(ctx, b[0], b[1], 42, b[2], 8); ctx.fill();
+  });
+  ctx.globalAlpha = 1; ctx.strokeStyle = '#f5d000'; ctx.lineWidth = 22;
+  ctx.stroke(new Path2D('M146 168 C 236 160, 300 214, 352 290 S 392 352, 398 362'));
+  ctx.fillStyle = '#f5d000'; ctx.lineWidth = 8;
+  const head = new Path2D('M372 360 L 418 400 L 428 338 Z'); ctx.fill(head); ctx.stroke(head);
+  ctx.restore();
 }
 
 // Canvas helpers
@@ -11662,9 +11695,9 @@ function wrapText(ctx, text, cx, y, maxW, lh) {
   lines.forEach(function(l, i){ ctx.fillText(l, cx, y + i*lh); });
 }
 function drawStat(ctx, cx, y, big, label, accent, muted) {
-  ctx.fillStyle = accent; ctx.font = '800 68px Sora, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillStyle = accent; ctx.font = '700 68px "Atkinson Hyperlegible", sans-serif'; ctx.textAlign = 'center';
   ctx.fillText(big, cx, y);
-  ctx.fillStyle = muted; ctx.font = '500 26px "JetBrains Mono", monospace';
+  ctx.fillStyle = muted; ctx.font = '400 28px "Atkinson Hyperlegible", sans-serif';
   ctx.fillText(label, cx, y + 44);
 }
 
@@ -11705,8 +11738,7 @@ function confettiBurst() {
   const ctx = c.getContext('2d');
   c.width = window.innerWidth; c.height = window.innerHeight;
   const styles = getComputedStyle(document.documentElement);
-  const accent = styles.getPropertyValue('--accent').trim() || '#00a884';
-  const colors = [accent, '#ffd166', '#4ecdc4', '#ff6b6b', '#ffffff'];
+  const colors = ['#f5d000', '#6dbb8a', '#86aef0', '#e57aae', '#ededea'];
   const parts = [];
   for (let i = 0; i < 140; i++) {
     parts.push({ x: c.width/2, y: c.height*0.4, vx: (Math.random()-0.5)*16, vy: Math.random()*-16 - 4,
@@ -13091,7 +13123,7 @@ function applyTheme() {
     document.documentElement.removeAttribute('data-theme');
   }
   var meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', theme === 'light' ? '#f4f4f7' : '#0a0a0f');
+  if (meta) meta.setAttribute('content', theme === 'light' ? '#f1f2f0' : '#1c1d20');
   var tog = document.getElementById('theme-toggle');
   if (tog) tog.checked = (theme === 'light');
 }
@@ -13385,12 +13417,12 @@ function setLumpMode(mode) {
   const hint = document.getElementById('lump-auto-hint');
 
   if (mode === 'auto') {
-    if (autoBtn) { autoBtn.style.background = 'var(--accent)'; autoBtn.style.color = '#0a0a0f'; autoBtn.style.fontWeight = '700'; }
+    if (autoBtn) { autoBtn.style.background = 'var(--hl)'; autoBtn.style.color = 'var(--on-hl)'; autoBtn.style.fontWeight = '700'; }
     if (manualBtn) { manualBtn.style.background = 'var(--card2)'; manualBtn.style.color = 'var(--text-muted)'; manualBtn.style.fontWeight = '400'; }
     if (debtField) debtField.style.display = 'none';
     if (hint) hint.textContent = 'The system will allocate this amount across your debts following your current strategy.';
   } else {
-    if (manualBtn) { manualBtn.style.background = 'var(--accent)'; manualBtn.style.color = '#0a0a0f'; manualBtn.style.fontWeight = '700'; }
+    if (manualBtn) { manualBtn.style.background = 'var(--hl)'; manualBtn.style.color = 'var(--on-hl)'; manualBtn.style.fontWeight = '700'; }
     if (autoBtn) { autoBtn.style.background = 'var(--card2)'; autoBtn.style.color = 'var(--text-muted)'; autoBtn.style.fontWeight = '400'; }
     if (debtField) debtField.style.display = 'block';
     if (hint) hint.textContent = 'Payment will be applied to the selected debt account only.';
@@ -13674,7 +13706,7 @@ function showDebtFreeModal(date, leftover, allocations) {
   const breakdown = document.getElementById('debt-free-breakdown');
   if (allocations && allocations.length) {
     breakdown.innerHTML =
-      '<div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">How this lump sum is applied</div>' +
+      '<div style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);margin-bottom:10px;">How this lump sum is applied</div>' +
       allocations.map(function(a) {
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">' +
           '<span style="color:var(--text);">' + escapeHtml(a.debtName) + '</span>' +
@@ -13764,7 +13796,7 @@ function renderLumpSumList() {
   });
   list.innerHTML = sorted.map(function(l) {
     const modeTag = l.mode === 'auto'
-      ? '<span class="tag" style="margin-left:4px;font-size:0.6rem;background:rgba(0,229,176,0.12);color:var(--accent);border:1px solid rgba(0,229,176,0.3);">strategy</span>'
+      ? '<span class="tag" style="margin-left:4px;font-size:0.6rem;background:rgba(var(--hl-rgb),0.12);color:var(--accent);border:1px solid rgba(var(--accent-rgb),0.3);">strategy</span>'
       : '<span class="tag tag-accent" style="margin-left:4px;font-size:0.6rem;">manual</span>';
 
     if (editingLumpSumId === l.id) {
@@ -16838,7 +16870,7 @@ function renderNextDebt() {
 
   // v1.50.0 — the heading only talks about "your extra" when there is one.
   const _flagEl = document.getElementById('next-debt-flag');
-  if (_flagEl) _flagEl.textContent = '\u25b8 ' + (planExtra() > 0 ? 'WHERE YOUR EXTRA GOES' : 'NEXT DEBT IN LINE');
+  if (_flagEl) _flagEl.textContent = '\u25b8 ' + (planExtra() > 0 ? 'Where your extra goes' : 'Next debt in line');
 
   // v1.50.0 — what the plan still counts on THIS month. The plan's month 1
   // is the current calendar month (anchored in v1.38.0): whatever it pays in
@@ -17457,8 +17489,8 @@ function renderChart() {
   // v1.16.0 — colors follow the active theme (previously hardcoded to the
   // dark palette, so light-theme users got dim ticks and invisible grids).
   const _styles = getComputedStyle(document.documentElement);
-  const _accent = _styles.getPropertyValue('--accent').trim() || '#00e5b0';
-  const _muted  = _styles.getPropertyValue('--text-muted').trim() || '#7a7a9a';
+  const _accent = _styles.getPropertyValue('--accent').trim() || '#f5d000';
+  const _muted  = _styles.getPropertyValue('--text-muted').trim() || '#a3a6aa';
 
   const ctx = document.getElementById('payoffChart').getContext('2d');
   if (payoffChart) payoffChart.destroy();
@@ -17471,7 +17503,7 @@ function renderChart() {
         label: 'Remaining Balance',
         data,
         borderColor: _accent,
-        backgroundColor: 'rgba(0,168,132,0.07)',
+        backgroundColor: 'rgba(245,208,0,0.14)',
         borderWidth: 2,
         pointRadius: 0,
         fill: true,
@@ -17491,11 +17523,11 @@ function renderChart() {
       },
       scales: {
         x: {
-          ticks: { color: _muted, maxTicksLimit: 8, font: { family: "'JetBrains Mono'" } },
+          ticks: { color: _muted, maxTicksLimit: 8, font: { family: "'Atkinson Hyperlegible'" } },
           grid: { color: 'rgba(128,128,128,0.1)' }
         },
         y: {
-          ticks: { color: _muted, callback: v => fmt(v), font: { family: "'JetBrains Mono'" } },
+          ticks: { color: _muted, callback: v => fmt(v), font: { family: "'Atkinson Hyperlegible'" } },
           grid: { color: 'rgba(128,128,128,0.1)' }
         }
       }
@@ -17611,9 +17643,9 @@ function renderCashflow() {
   }
 
   const styles = getComputedStyle(document.documentElement);
-  const accent = styles.getPropertyValue('--accent').trim() || '#00e5b0';
-  const muted = styles.getPropertyValue('--text-muted').trim() || '#7a7a9a';
-  const amber = styles.getPropertyValue('--accent4').trim() || '#d99a1f';
+  const accent = styles.getPropertyValue('--accent').trim() || '#f5d000';
+  const muted = styles.getPropertyValue('--text-muted').trim() || '#a3a6aa';
+  const amber = styles.getPropertyValue('--accent4').trim() || '#2d5ca6';
 
   // v1.15.0 — planned-lump marker plugin: dashed vertical line + flag + label
   // at each month a scheduled lump sum (or pending payment) lands.
@@ -17648,7 +17680,7 @@ function renderCashflow() {
         ctx.fillStyle = amber;
         ctx.beginPath(); ctx.moveTo(px - 5, top - 1); ctx.lineTo(px + 5, top - 1); ctx.lineTo(px, top + 7); ctx.closePath(); ctx.fill();
         // label
-        ctx.font = "10px 'JetBrains Mono', monospace";
+        ctx.font = "11px 'Atkinson Hyperlegible', sans-serif";
         ctx.fillStyle = amber;
         ctx.textAlign = 'center';
         ctx.fillText(shortAmt(mk.amount) + ' lump', px, top - 5);
@@ -17665,7 +17697,7 @@ function renderCashflow() {
       label: 'Monthly minimums remaining',
       data: series,
       borderColor: accent,
-      backgroundColor: 'rgba(0,168,132,0.07)',
+      backgroundColor: 'rgba(245,208,0,0.14)',
       borderWidth: 2, pointRadius: 0, fill: true, stepped: true
     }]},
     options: {
@@ -17673,8 +17705,8 @@ function renderCashflow() {
       layout: { padding: { top: markers.length ? 16 : 0 } },
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return fmt(c.raw) + '/mo'; } } } },
       scales: {
-        x: { ticks: { color: muted, maxTicksLimit: 8, font: { family: "'JetBrains Mono'" } }, grid: { display: false } },
-        y: { ticks: { color: muted, font: { family: "'JetBrains Mono'" }, callback: function(v){ return '$' + v; } }, grid: { color: 'rgba(128,128,128,0.1)' }, beginAtZero: true }
+        x: { ticks: { color: muted, maxTicksLimit: 8, font: { family: "'Atkinson Hyperlegible'" } }, grid: { display: false } },
+        y: { ticks: { color: muted, font: { family: "'Atkinson Hyperlegible'" }, callback: function(v){ return '$' + v; } }, grid: { color: 'rgba(128,128,128,0.1)' }, beginAtZero: true }
       }
     },
     plugins: [lumpMarkerPlugin]
@@ -19419,11 +19451,11 @@ function renderMilestones() {
   if (pdCard) pdCard.style.display = closedAll.length ? 'block' : 'none';
 
   const rowFor = function(d, transferred) {
-    const accent = transferred ? 'rgba(123,94,167,' : 'rgba(0,229,176,';
+    const accent = transferred ? 'rgba(var(--muted-rgb),' : 'rgba(var(--good-rgb),';
     const label = transferred
-      ? 'MOVED &#8644;'
-      : 'PAID OFF ✓';
-    const labelColor = transferred ? '#b79ce0' : 'var(--accent)';
+      ? 'Moved &#8644;'
+      : 'Paid off ✓';
+    const labelColor = transferred ? 'var(--accent2)' : 'var(--good)';
     const dest = transferred && d.transferTo
       ? `<div class="debt-stat"><span class="debt-stat-label">Moved to</span><span class="debt-stat-val">${escapeHtml(d.transferTo)}</span></div>` : '';
     const amt = transferred && d.transferAmount != null
@@ -21861,7 +21893,7 @@ function showOrphanBanner() {
 
   const banner = document.createElement('div');
   banner.id = 'orphan-banner';
-  banner.style.cssText = 'position:sticky;top:0;z-index:100;background:#3a1a1a;border-bottom:1px solid rgba(255,120,120,0.4);padding:12px 16px;color:#f0d4d4;font-family:Sora,sans-serif;font-size:0.85rem;line-height:1.4;';
+  banner.style.cssText = 'position:sticky;top:0;z-index:100;background:#3a1a1a;border-bottom:1px solid rgba(var(--problem-rgb),0.4);padding:12px 16px;color:#f0d4d4;font-family:Sora,sans-serif;font-size:0.85rem;line-height:1.4;';
   // Build DOM nodes (no innerHTML interpolation of debt names — XSS-safe)
   const title = document.createElement('div');
   title.style.cssText = 'font-weight:700;margin-bottom:6px;color:#ff9090;';
@@ -21876,7 +21908,7 @@ function showOrphanBanner() {
   actions.style.cssText = 'display:flex;gap:8px;';
   const removeBtn = document.createElement('button');
   removeBtn.className = 'btn';
-  removeBtn.style.cssText = 'background:#c8f135;color:#0a0a0f;border:none;padding:8px 14px;border-radius:6px;font-family:JetBrains Mono,monospace;font-size:0.75rem;font-weight:700;cursor:pointer;';
+  removeBtn.style.cssText = 'background:var(--hl);color:var(--on-hl);border:none;padding:8px 14px;border-radius:6px;font-family:inherit;font-size:0.75rem;font-weight:700;cursor:pointer;';
   removeBtn.textContent = 'Remove orphans';
   removeBtn.onclick = function() {
     const validIds = new Set(debts.map(function(d) { return d.id; }));
@@ -21888,7 +21920,7 @@ function showOrphanBanner() {
   };
   const dismissBtn = document.createElement('button');
   dismissBtn.className = 'btn';
-  dismissBtn.style.cssText = 'background:transparent;color:#d8b8b8;border:1px solid rgba(216,184,184,0.3);padding:8px 14px;border-radius:6px;font-family:JetBrains Mono,monospace;font-size:0.75rem;cursor:pointer;';
+  dismissBtn.style.cssText = 'background:transparent;color:#d8b8b8;border:1px solid rgba(216,184,184,0.3);padding:8px 14px;border-radius:6px;font-family:inherit;font-size:0.75rem;cursor:pointer;';
   dismissBtn.textContent = 'Keep & dismiss';
   dismissBtn.onclick = function() { banner.remove(); };
   actions.appendChild(removeBtn);
@@ -22300,14 +22332,14 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
   banner.id = 'install-banner';
   banner.style.cssText = `
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-    background: var(--surface); border-top: 1px solid rgba(200,241,53,0.3);
+    background: var(--surface); border-top: 1px solid var(--border2);
     padding: 16px 20px; display: flex; align-items: center;
-    gap: 14px; font-family: 'Sora', sans-serif;
+    gap: 14px; font-family: var(--font-body);
     animation: slideUp 0.3s ease;
   `;
   banner.innerHTML = `
     <div style="flex:1">
-      <div style="font-family:'Sora',sans-serif;font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:3px;">
+      <div style="font-family:var(--font-body);font-weight:700;font-size:0.9rem;color:var(--text);margin-bottom:3px;">
         Add DebtFree to your home screen
       </div>
       <div style="font-size:0.75rem;color:var(--text-muted);line-height:1.4;">
@@ -22316,11 +22348,11 @@ if (isIos() && !isInStandaloneMode() && !localStorage.getItem('installDismissed'
           : 'Tap <strong style="color:var(--accent)">Share</strong> then <strong style="color:var(--accent)">Add to Home Screen</strong> for the full app experience'}
       </div>
     </div>
-    ${_bannerHasData ? '<button id="install-copy-btn" onclick="setupCopy().then(function(){var b=document.getElementById(\'install-copy-btn\');if(b)b.textContent=\'Copied\';})" style="background:var(--accent);border:none;color:#fff;border-radius:6px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">Copy</button>' : ''}
+    ${_bannerHasData ? '<button id="install-copy-btn" onclick="setupCopy().then(function(){var b=document.getElementById(\'install-copy-btn\');if(b)b.textContent=\'Copied\';})" style="background:var(--hl);border:none;color:var(--on-hl);border-radius:6px;padding:6px 12px;font-size:0.75rem;font-weight:700;cursor:pointer;white-space:nowrap;">Copy</button>' : ''}
     <button onclick="document.getElementById('install-banner').remove();localStorage.setItem('installDismissed','1')"
       style="background:none;border:1px solid var(--border2);color:var(--text-muted);
              border-radius:6px;padding:6px 12px;font-size:0.75rem;cursor:pointer;
-             font-family:'JetBrains Mono',monospace;white-space:nowrap;">
+             font-family:var(--font-body);white-space:nowrap;">
       Not now
     </button>
   `;
@@ -22474,7 +22506,7 @@ if (isInStandaloneMode() ||
     <!-- Promo APR toggle -->
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
       <input type="checkbox" id="edit-has-promo" onchange="toggleEditPromoFields()" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
-      <label for="edit-has-promo" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
+      <label for="edit-has-promo" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);cursor:pointer;">
         0% or promo rate on this debt
       </label>
     </div>
@@ -22507,13 +22539,13 @@ if (isInStandaloneMode() ||
     <div id="edit-installment-fields" style="display:none; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:10px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
         <input type="checkbox" id="edit-include-strategy" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" />
-        <label for="edit-include-strategy" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">
+        <label for="edit-include-strategy" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);cursor:pointer;">
           Include in payoff strategy
         </label>
         <span id="edit-include-hint" style="font-size:0.7rem;color:var(--text-muted);margin-left:auto;"></span>
       </div>
       <details style="margin-top:10px; padding:12px; background:var(--surface2); border-radius:var(--radius-sm); border:1px solid var(--border);">
-        <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
+        <summary style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.01em;text-transform:none;color:var(--text-muted);cursor:pointer;">Advanced — original loan details (optional)</summary>
         <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:10px;">
           <div class="form-field">
             <label for="edit-orig-principal">Original Principal ($)</label>
