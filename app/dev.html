@@ -1675,6 +1675,9 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .ss-notify .btn:disabled { opacity:0.45; cursor:not-allowed; }
   .ss-note { font-size:0.76rem; color:var(--text-muted); line-height:1.5; margin-top:8px; }
   .ss-on { font-size:0.88rem; font-weight:700; color:var(--good); }
+  .ss-early .ss-q { margin-top:0; }
+  .ss-early .ss-due-row input[type=text] { background:var(--surface); }
+  .ss-early .btn { margin-top:10px; }
   .ss-ios { list-style:none; margin:10px 0 0; padding:0; counter-reset:ss; }
   .ss-ios li { counter-increment:ss; display:flex; gap:10px; align-items:flex-start; padding:8px 0; font-size:0.86rem; line-height:1.45; border-top:1px solid var(--border); }
   .ss-ios li::before { content:counter(ss); flex:0 0 24px; height:24px; border-radius:50%; background:var(--hl); color:var(--on-hl); font-weight:800; font-size:0.78rem; display:flex; align-items:center; justify-content:center; }
@@ -3877,6 +3880,12 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
         </div>
         <div class="ss-sum" id="ss-sum"></div>
         <div class="fs-result"><div class="fs-label">Debt-free</div><div class="fs-date" id="ss-date">&mdash;</div><div class="fs-sub" id="ss-sub"></div><div class="ss-gain" id="ss-gain"></div></div>
+        <!-- v1.75.0 — reminders offered on the screen after the first debts, under the date -->
+        <div class="ss-notify ss-early" id="ss2-remind" hidden>
+          <div class="ss-q">Get a reminder before each payment? <span>Optional</span></div>
+          <div id="ss2-due"></div>
+          <div id="ss2-notify"></div>
+        </div>
         <div class="ss-nav"><button type="button" class="btn btn-ghost" onclick="setupSaveExtra(); setupGo(1)">Back</button><button type="button" class="btn btn-primary" onclick="setupSaveExtra(); setupGo(3)">Next</button></div>
         <button type="button" class="ss-skip" onclick="document.getElementById('ss-amt').value=''; ssMode('extra'); setupSaveExtra(); setupGo(3)">Skip &middot; minimums only</button>
       </div>
@@ -5059,7 +5068,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.74.0';
+const APP_VERSION = '1.75.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5067,6 +5076,15 @@ const APP_VERSION = '1.74.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.75.0',
+    date: 'November 19, 2026',
+    name: 'Reminders, sooner',
+    whatsNew: [
+      'When you set up DebtFree, you can now turn on payment reminders right under your debt-free date. Add the day each payment is due and tap Remind me. You’ll get a notification 3 days before and on the day, at 9 AM.'
+    ],
+    fixes: []
+  },
   {
     version: '1.74.0',
     date: 'November 18, 2026',
@@ -10336,6 +10354,7 @@ function setupOpenExtra() {
   var ex = _ssSeen ? Math.round(Number(extraMonthly) || 0) : 0;
   if (amt) amt.value = _ssModeV === 'total' ? String(_ssMins() + ex) : (ex ? String(ex) : '');
   ssPreview();
+  setupOpenEarly();
 }
 function ssMode(m) {
   var ex = _ssExtra();
@@ -10386,39 +10405,48 @@ function setupSaveExtra() {
   extraMonthly = extra;
   var field = document.getElementById('extra-payment');
   if (field) field.value = extra || '';
+  _ssReadDue('ss2-due');   // v1.75.0 — due days typed under the date carry to step 3
   save(); render();
 }
 
 // ── Step 3: due days, autopay, notifications ──────────────────────────
-function setupOpenReminders() {
-  var list = document.getElementById('ss-due');
-  var act = (debts || []).filter(function (d) { return d && d.balance > 0; });
-  if (list) list.innerHTML = act.map(function (d) {
+function _ssDueRows() {
+  return (debts || []).filter(function (d) { return d && d.balance > 0; }).map(function (d) {
     return '<div class="ss-due-row"><span class="nm">' + escapeHtml(d.name) + '</span>'
       + '<input type="text" inputmode="numeric" maxlength="2" placeholder="Day" data-id="' + d.id + '" value="' + (sanitizeDueDay(d.dueDay) || '') + '" aria-label="Due day for ' + escapeHtml(d.name) + '" oninput="setupNotifySync()" />'
       + '<label><input type="checkbox" data-ap="' + d.id + '"' + (d.autopay ? ' checked' : '') + ' /> Autopay</label></div>';
   }).join('');
+}
+function setupOpenReminders() {
+  var list = document.getElementById('ss-due');
+  if (list) list.innerHTML = _ssDueRows();
   setupNotifyRender();
 }
-function setupSaveDue() {
+// Reads the due-day rows in one list (step 3's #ss-due or step 2's #ss2-due)
+// into the debts. Doesn't save; callers do.
+function _ssReadDue(listId) {
   var today = localDateStr(), n = 0, ap = 0;
-  document.querySelectorAll('#ss-due input[data-id]').forEach(function (inp) {
+  document.querySelectorAll('#' + listId + ' input[data-id]').forEach(function (inp) {
     var d = (debts || []).find(function (x) { return String(x.id) === inp.getAttribute('data-id'); });
     if (!d) return;
     var day = sanitizeDueDay(inp.value);
     d.dueDay = day || null;
     if (!day) d.dueDay2 = null;
     if (day) n++;
-    var cb = document.querySelector('#ss-due input[data-ap="' + d.id + '"]');
+    var cb = document.querySelector('#' + listId + ' input[data-ap="' + d.id + '"]');
     var on = !!(cb && cb.checked && day);
     if (on && !d.autopay) { d.autopaySince = today; ap++; }
     d.autopay = on;
   });
-  save(); render();
   return { days: n, autopay: ap };
 }
-function _ssHasDueDays() {
-  return [].some.call(document.querySelectorAll('#ss-due input[data-id]'), function (i) { return !!sanitizeDueDay(i.value); });
+function setupSaveDue(listId) {
+  var r = _ssReadDue(listId || 'ss-due');
+  save(); render();
+  return r;
+}
+function _ssHasDueDays(listId) {
+  return [].some.call(document.querySelectorAll('#' + (listId || 'ss-due') + ' input[data-id]'), function (i) { return !!sanitizeDueDay(i.value); });
 }
 var _ssPushState = '';
 function setupNotifySync() {
@@ -10426,6 +10454,48 @@ function setupNotifySync() {
   if (b) b.disabled = !_ssHasDueDays();
   var h = document.getElementById('ss-push-hint');
   if (h) h.style.display = _ssHasDueDays() ? 'none' : '';
+  var b2 = document.getElementById('ss2-push-btn');
+  if (b2) b2.disabled = !_ssHasDueDays('ss2-due');
+  var h2 = document.getElementById('ss2-push-hint');
+  if (h2) h2.style.display = _ssHasDueDays('ss2-due') ? 'none' : '';
+}
+// v1.75.0 — the reminders offer under step 2's debt-free date. Only where
+// notifications can actually be turned on right here (not iPhone Safari tabs,
+// not blocked, reminder service not known to be down); step 3 keeps every
+// fallback (calendar, iPhone hand-off) for everyone else.
+function _ssEarlyOk() {
+  return !_isIOSSafariTab() && pushSupport().ok && _pushServerOk !== false;
+}
+function setupOpenEarly() {
+  var box = document.getElementById('ss2-remind');
+  if (!box) return;
+  var list = document.getElementById('ss2-due'), out = document.getElementById('ss2-notify');
+  if (pushPrefs()) {
+    box.hidden = false;
+    if (list) list.innerHTML = '';
+    if (out) out.innerHTML = '<div class="ss-on">&#10003; Reminders are on</div><div class="ss-note">3 days before each payment and on the day, at 9 AM.</div>';
+    return;
+  }
+  if (!_ssEarlyOk()) { box.hidden = true; if (list) list.innerHTML = ''; if (out) out.innerHTML = ''; return; }
+  box.hidden = false;
+  if (list) list.innerHTML = _ssDueRows();
+  if (out) out.innerHTML = '<button type="button" class="btn btn-primary" id="ss2-push-btn" onclick="setupPushOnEarly()">&#128276; Remind me before payments</button>'
+    + '<div class="ss-note" id="ss2-push-hint">Add a due day above first.</div>'
+    + '<div class="ss-note">3 days before each payment and on the day, at 9 AM. Debts on autopay log themselves, so they don&rsquo;t need one.</div>'
+    + '<div class="ss-note" id="ss2-push-msg" role="status"></div>';
+  setupNotifySync();
+}
+async function setupPushOnEarly() {
+  var msg = document.getElementById('ss2-push-msg'), b = document.getElementById('ss2-push-btn');
+  setupSaveDue('ss2-due');
+  if (b) b.disabled = true;
+  try {
+    await enablePush('before', 3, false, 'setup_plan');
+    setupOpenEarly();
+  } catch (e) {
+    if (b) b.disabled = false;
+    if (msg) msg.textContent = /permission/.test(String(e && e.message)) ? 'Notifications weren’t allowed. You can still carry on.' : 'Couldn’t reach the reminder service. Try again, or set reminders on the next step.';
+  }
 }
 var _SHARE_SVG = '<svg class="ss-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
 function setupNotifyRender() {
@@ -10461,7 +10531,7 @@ async function setupPushOn() {
   setupSaveDue();
   if (b) b.disabled = true;
   try {
-    await enablePush('before', 3, false);
+    await enablePush('before', 3, false, 'setup_reminders');
     setupNotifyRender();
   } catch (e) {
     if (b) b.disabled = false;
@@ -16654,7 +16724,7 @@ async function _pushPost(path, body) {
 }
 function _pushKeyBytes(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return _unb64(s); }
 
-async function enablePush(cadence, lead, names) {
+async function enablePush(cadence, lead, names, via) {
   // Permission first, straight from the tap (iPhone requires it).
   var perm = await Notification.requestPermission();
   if (perm !== 'granted') throw new Error('permission');
@@ -16669,7 +16739,7 @@ async function enablePush(cadence, lead, names) {
   _savePush(p);
   _lastReminderState = null;
   writeReminderState();
-  trackShare('push_on', { _category: 'engagement', cadence: cadence, lead: lead });
+  trackShare('push_on', { _category: 'engagement', cadence: cadence, lead: lead, via: via || 'sheet' });
   return p;
 }
 async function disablePush() {
@@ -16748,7 +16818,7 @@ async function pushSaveFromSheet() {
   var msg = document.getElementById('push-msg');
   if (msg) msg.textContent = '';
   try {
-    await enablePush(cad, parseInt(o.daysBefore, 10) || 3, o.names);
+    await enablePush(cad, parseInt(o.daysBefore, 10) || 3, o.names, 'sheet');
     renderPushControls(); render();
     _infoToast('Notifications are on');
   } catch (e) {

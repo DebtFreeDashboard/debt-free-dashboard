@@ -1,4 +1,4 @@
-// v1.69.0 — add-debt form: four core fields, More details, Save & add another,
+// v1.75.0 — step 2 reminders offer (A2). v1.69.0 — add-debt form: four core fields, More details, Save & add another,
 // running session strip, type guessed from name/lender, estimated minimum flag.
 // Needs the repo root served on 8911 (python3 -m http.server 8911).
 const { chromium } = require('playwright');
@@ -87,6 +87,15 @@ const vis = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); i
   ok(await p.evaluate(() => !document.getElementById('setup-s1').hidden && document.getElementById('setup-s2').hidden && extraMonthly === 300), 'Back returns to the debts and keeps $300');
   await p.click('#add-save-btn'); await p.waitForTimeout(400);
   ok(await p.evaluate(() => document.getElementById('ss-amt').value) === '300', 'and Next brings it back');
+  // v1.75.0 — reminders offered under the step 2 date where notifications work.
+  ok(await p.evaluate(() => document.getElementById('ss2-remind').hidden), 'step 2: no reminders offer without notification support');
+  await p.evaluate(() => { window.__ps = pushSupport; window.pushSupport = () => ({ ok: true }); setupOpenEarly(); });
+  const e2 = await p.evaluate(() => ({ shown: !document.getElementById('ss2-remind').hidden, rows: document.querySelectorAll('#ss2-due .ss-due-row').length, dis: document.getElementById('ss2-push-btn').disabled }));
+  ok(e2.shown && e2.rows === 2 && e2.dis, 'step 2: with notifications, offer shows a row per debt and waits for a due day');
+  await p.evaluate(() => { document.querySelector('#ss2-due input[data-id]').value = '18'; setupNotifySync(); });
+  ok(await p.evaluate(() => !document.getElementById('ss2-push-btn').disabled), 'step 2: a due day enables Remind me');
+  await p.evaluate(() => { document.querySelector('#ss2-due input[data-id]').value = ''; window.pushSupport = window.__ps; setupOpenEarly(); });
+  ok(await p.evaluate(() => document.getElementById('ss2-remind').hidden), 'step 2: offer hides again without support');
   await p.evaluate(() => document.querySelector('#setup-s2 .btn-primary').click()); await p.waitForTimeout(400);
   console.log('A3. Reminders step');
   const cal = await p.evaluate(() => /calendar/i.test(document.getElementById('ss-notify').textContent));
