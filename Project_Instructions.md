@@ -169,7 +169,7 @@ Besides page views, the site sends:
 | `tm_statement` | The app's This Month card | A balance updated from a statement (`direction` is `up`, `down` or `same`) |
 | `tm_view`, `plus_open`, `plus_pick` | The app | This Month list/calendar switch (`view`); the phone bar's + opened, and what was picked (`pick`: `log`, `batch`, `add`) |
 | `applock_on`, `applock_off`, `applock_pin_changed`, `applock_removed_forgot` | The app's Settings | App lock turned on (`bio` true when Face ID / fingerprint was added), off, PIN changed, removed after the forgot-PIN wait |
-| `push_on`, `push_off` | The app's reminders sheet | Phone notifications turned on (`cadence`, `lead`) or off |
+| `push_on`, `push_off` | The app's reminders sheet and first setup | Phone notifications turned on (`cadence`, `lead`, `via`: `setup_plan` under the step 2 date, `setup_reminders` in step 3, `sheet` from the reminders sheet) or off |
 | `add_another`, `add_session_done` | The app's Add a Debt card | A debt saved with Save & add another (`session_count`); a run of adds finished with Save & see my plan |
 | `setup_step`, `setup_finish_done` | The app's first setup (steps inside Add a Debt) | A step reached (`step` 2 or 3, `debt_count`); finished (`extra_band`, `due_days`, `autopay`, `reminders` yes/no). `setup_finish_open` is retired |
 | `setup_copy`, `setup_paste` | iPhone setup hand-off | Setup copied in Safari (`ok`); pasted in the Home Screen app (`debt_count`) |
@@ -396,6 +396,23 @@ Dates are Kevin's (Eastern time). Newest first.
   and thumbnail replaced the same day (`tools/gumroad/`). **Play launcher
   icon** on phones changes only with a new Play release (rebuild in
   PWABuilder, Kevin signs).
+
+- **2026-11-19** — v1.75.0 "Reminders, sooner". GA4 (platform=play): the
+  three outside Play users (Nov 9, 10, 15) each added one debt and none turned
+  on reminders. Two came before notifications existed; the third reached setup
+  step 2 (monthly plan) and left before step 3, the only place reminders were
+  offered. One came back on their own 10 days later. Step 2 now shows a
+  reminders offer under the debt-free date (`#ss2-remind`, `setupOpenEarly()`,
+  `setupPushOnEarly()`): due day + Autopay per debt (same rows as step 3 via
+  `_ssDueRows()`), then "Remind me before payments" (needs a due day). Shown
+  only where push can be turned on right there (`_ssEarlyOk()`: not an iPhone
+  Safari tab, not denied, service not known down); otherwise hidden and step 3
+  keeps every fallback. Due days typed there are kept on Back, Next or Skip
+  (`setupSaveExtra()` reads `#ss2-due` via `_ssReadDue()`), and step 3 opens
+  with them filled in and "Notifications are on" if turned on. `push_on` gains
+  `via` (`setup_plan`, `setup_reminders`, `sheet`); register `via` as a GA4
+  custom dimension to split them (Kevin, GA admin). Measure: share of new Play
+  users with `push_on`, then returns around their first due date.
 
 - **2026-11-17** — Play listing: phone screenshots 2 and 4 replaced. "Set
   up in under a minute" (setup step 2, debt-free date) and "Autopay logs

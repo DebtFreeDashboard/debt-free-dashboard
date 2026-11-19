@@ -1,12 +1,8 @@
 {
-  "version": "1.74.0",
-  "releaseDate": "2026-11-18",
-  "releaseName": "A new look",
+  "version": "1.75.0",
+  "releaseDate": "2026-11-19",
+  "releaseName": "Reminders, sooner",
   "notes": [
-    "DebtFree has a new look. The app is now graphite and white, with a highlighter yellow that marks your progress and the next thing to tap. Your debts, plan and settings are exactly as they were, in both the light and dark themes.",
-    "Each color now means one thing. Green is good news, like the interest you’re saving. Blue is worth a look, like the interest you’re paying now or a card that’s close to its limit. Red is kept for real problems.",
-    "A new typeface, Atkinson Hyperlegible, made to be easy to read. Every number is clearer, and a zero has a slash through it so it can’t be mistaken for an 8.",
-    "Labels are in plain sentence case instead of spaced-out capitals, and the glow effects are gone, so each screen is calmer.",
-    "A new app icon, and each kind of debt (credit card, student loan, car loan, personal loan, mortgage) has its own color on your debt cards and the by-account bar."
+    "When you set up DebtFree, you can now turn on payment reminders right under your debt-free date. Add the day each payment is due and tap Remind me. You’ll get a notification 3 days before and on the day, at 9 AM."
   ]
 }
