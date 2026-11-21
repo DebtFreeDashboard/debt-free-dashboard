@@ -79,10 +79,17 @@
         var acc = '';
         for (var j0 = i0; j0 < r.ws.length; j0++) {
           acc += (acc ? ' ' : '') + r.ws[j0].t;
-          if (exact.test(acc.replace(/[:.]+$/, ''))) { a = i0; b = j0; break; }
+          if (exact.test(acc.replace(/[:.]+$/, ''))) { a = i0; b = j0; }
+          else if (a >= 0) break;
         }
       }
       if (a < 0) continue;
+      // The label must end where its value starts. "New Balance Transfers +$0.00"
+      // is a different line that happens to begin with "New Balance". A header
+      // row whose next word starts another label (Discover's "New Balance
+      // Minimum Payment ...") still counts, with its value read below.
+      var next = r.ws[b + 1];
+      if (next && /^[A-Za-z]/.test(next.t) && !HEADER_NEXT.test(next.t) && !MONTH_WORD.test(next.t)) continue;
       var v = valueFn(r.ws.slice(b + 1).map(function (w) { return w.t; }).join(' '));
       if (v != null) { found.push(v); continue; }
       var lx0 = r.ws[a].x, lx1 = r.ws[b].x + r.ws[b].w;
@@ -93,6 +100,9 @@
     }
     return found;
   }
+
+  var MONTH_WORD = new RegExp('^(' + MONTHS + ')', 'i');
+  var HEADER_NEXT = /^(minimum|payment|amount|due|credit|statement|previous|total|new|available|current|past)$/i;
 
   var LENDERS = [
     ['American Express', /american express|\bamex\b/i], ['Apple Card', /apple card/i], ['Bank of America', /bank of america/i],
@@ -125,14 +135,17 @@
     f.dueDate = find(R, /payment due date|payment due by|amount due|due date/i, isoDate, { not: /late|warning/i });
     f.creditLimit = find(R, /(total )?credit (line|limit)/i, money, { not: /available|cash/i });
     f.statementDate = find(R, /statement (closing )?date:?|closing date|statement closing/i, isoDate);
-    var purch = R.find(function (r) { return /^\W*purchases\b/i.test(r.text) && /%/.test(r.text); });
+    var purch = R.find(function (r) { return /^\W*((regular|standard|base) )?purchases?\b/i.test(r.text) && /%/.test(r.text); });
     f.apr = purch ? pct(purch.text) : null;
     if (f.apr == null && f.kind !== 'card') { var anyApr = R.find(function (r) { return /\bAPR\b|interest rate|annual percentage/i.test(r.text) && /%/.test(r.text); }); f.apr = anyApr ? pct(anyApr.text) : null; }
     var promo = R.find(function (r) { return /promotional apr|deferred interest|promo(tional)? rate/i.test(r.text) && DATE.test(r.text) && /%/.test(r.text); });
     f.promo = promo ? { apr: pct(promo.text), until: isoDate(promo.text), deferred: /deferred/i.test(promo.text) } : null;
     var made = all.match(/payments made\s+0*(\d+)\s+of\s+0*(\d+)/i);
     f.payments = made ? { made: +made[1], of: +made[2] } : null;
-    var lender = LENDERS.find(function (l) { return l[1].test(all); });
+    // Several names can appear ("USAA American Express Card"): the one printed
+    // most often is the lender.
+    var lender = null, most = 0;
+    LENDERS.forEach(function (l) { var n = (all.match(new RegExp(l[1].source, 'gi')) || []).length; if (n > most) { most = n; lender = l; } });
     f.lender = lender ? lender[0] : null;
     return f;
   }

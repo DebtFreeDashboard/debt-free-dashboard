@@ -28,6 +28,19 @@ ok('dates: numeric, short year, month name; impossible dates refused',
   ok('a value read the same way twice beats a misread one', R.read([page]).balance === 2500);
 }
 {
+  // USAA statement (2026-11-21): "New Balance Transfers +$0.00" was read as the
+  // balance, "Regular Purchases (v) 29.65%" was missed, and the title bar's
+  // "American Express" beat the lender, USAA, printed all over the page.
+  const W = (t, x, y) => t.split(' ').map((s, i) => ({ x: x + i * 90, y, w: 80, h: 20, t: s }));
+  const page = [].concat(W('USAA American Express Card', 0, 50), W('New Balance $2,374.10', 0, 100), W('New Balance Transfers + $0.00', 0, 150),
+    W('Fees Charged + $0.00', 0, 200), W('USAA Credit Card Payments', 0, 250), W('Credit Limit $15,000.00', 0, 300),
+    W('Regular Purchases (v) 29.65% $0.00 $0.00', 0, 350), W('Regular Cash Advances (v) 29.65% $2,188.35 $54.07', 0, 400), W('Visit usaa.com', 0, 450));
+  const f = R.read([page]);
+  ok('a longer line that starts with a label is not that label', f.balance === 2374.1, 'balance ' + f.balance);
+  ok('"Regular Purchases" counts as the purchase APR', f.apr === 29.65, 'apr ' + f.apr);
+  ok('the lender printed most often wins', f.lender === 'USAA', 'lender ' + f.lender);
+}
+{
   const html = fs.readFileSync(path.join(ROOT, 'app/scan-test.html'), 'utf8');
   ok('test page: noindex, no analytics, OCR files served from this site',
     /noindex/.test(html) && !/googletagmanager|clarity|gtag\(/.test(html) && /corePath: '\/app\/scan\/ocr\/'/.test(html) && /langPath: '\/app\/scan\/ocr\/'/.test(html));

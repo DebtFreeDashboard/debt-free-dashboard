@@ -58,7 +58,8 @@
   <p class="fine">Engine: Tesseract (Apache-2.0), loaded from mydebtdashboard.com the first time (about 7 MB), then reused.</p>
 </main>
 <script src="/app/scan/ocr/tesseract.min.js"></script>
-<script src="/app/scan/statement-reader.js"></script>
+<!-- The service worker serves scripts cache-first, so bump ?v= with every reader change. -->
+<script src="/app/scan/statement-reader.js?v=2"></script>
 <script>
 (function () {
   'use strict';

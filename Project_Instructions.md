@@ -397,6 +397,15 @@ Dates are Kevin's (Eastern time). Newest first.
   (Synchrony "no interest if paid in full"), which the reader can detect.
   Test page `/app/scan-test.html` for Kevin's iPhone: pick screenshots, mark
   each field right or wrong, Copy results (marks and timing only).
+  Same evening, Kevin's first iPhone run (a USAA American Express card):
+  balance read as $0 and APR missed. Causes: "New Balance Transfers +$0.00"
+  counted as a New Balance line; "Regular Purchases (v)" not seen as the
+  purchase row; the title bar's "American Express" beat USAA. Fixed (a label
+  must be followed by its value, a month name or the next header label;
+  "Regular/Standard Purchases" accepted; the lender named most often wins).
+  All 6 statements now 45/45 in the browser. The page loads the reader with
+  `?v=`, because the service worker serves scripts cache-first: bump it with
+  every reader change.
 
 - **2026-11-21 (later)** — Spanish demand test (backlog D9; no app release).
   New `/es/` homepage (quick calculator, what the app does, FAQ) and three
