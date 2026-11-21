@@ -1131,6 +1131,15 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .guide-title { font-weight:700; font-size:1.05rem; color:var(--text); margin-bottom:6px; padding-right:24px; }
   .guide-why { font-size:0.84rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px; }
   .guide-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  /* v1.76.0 — Premium offer, Play app only, once setup is done. */
+  .po-offer { position:relative; border-left:3px solid var(--hl); }
+  .po-offer[hidden] { display:none; }
+  .po-offer-flag { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.1em; color:var(--accent); margin-bottom:8px; }
+  .po-offer-title { font-weight:700; font-size:1.05rem; color:var(--text); margin-bottom:6px; padding-right:24px; }
+  .po-offer-why { font-size:0.84rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px; }
+  .po-offer-actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .po-offer-actions .btn-primary { flex:1; min-width:180px; }
+  .po-offer-msg { margin-top:8px; font-size:0.78rem; font-family:var(--font-mono); }
   .guide-bar { height:4px; background:var(--surface3); border-radius:2px; margin-top:14px; overflow:hidden; }
   .guide-bar-fill { height:100%; background:var(--hl); width:0; transition:width .3s ease; }
   .gm-section { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.01em; text-transform:none; color:var(--text-muted); margin:16px 0 8px; }
@@ -3580,6 +3589,22 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       </div>
     </div>
 
+    <!-- v1.76.0 — Premium offer. Google Play app only, once first setup is
+         done, only while Play's buy button works, never in the example.
+         "Not now" hides it for good; Settings keeps Premium either way.
+         Play billing only: no Gumroad link or price here, ever. -->
+    <div class="card po-offer play-only" id="premium-offer" hidden>
+      <button type="button" class="guide-hide" aria-label="Hide the Premium offer" onclick="dismissPremiumOffer('x')">&times;</button>
+      <div class="po-offer-flag">Premium</div>
+      <div class="po-offer-title">See your whole plan, debt by debt</div>
+      <div class="po-offer-why">Premium adds the month each debt clears, What-If lump sums, bills and sinking funds, and the amortization schedule. One payment through Google Play, no subscription. Everything you use now stays free.</div>
+      <div class="po-offer-actions">
+        <button type="button" class="btn btn-primary" id="premium-offer-buy" onclick="buyOnPlay('offer')">Unlock Premium</button>
+        <button type="button" class="btn btn-ghost" onclick="dismissPremiumOffer('not_now')">Not now</button>
+      </div>
+      <div class="po-offer-msg" id="play-offer-msg" role="status"></div>
+    </div>
+
     <!-- v1.42.0 — what else is due, beside where the extra is going. Dashboard
          rather than Strategy because this is a daily action, not a planning
          tool (the same split v1.30.0 applied when the budget card moved). -->
@@ -5068,7 +5093,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.75.0';
+const APP_VERSION = '1.76.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5076,6 +5101,15 @@ const APP_VERSION = '1.75.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.76.0',
+    date: 'November 21, 2026',
+    name: 'Premium, easier to find',
+    whatsNew: [
+      'In the Google Play app, once your plan is set up, the dashboard now shows what Premium adds and its price, with a button to buy it through Google Play. Tap Not now and it won’t come back. Premium is always in Settings, and everything you use now stays free.'
+    ],
+    fixes: []
+  },
   {
     version: '1.75.0',
     date: 'November 19, 2026',
@@ -13080,28 +13114,33 @@ async function verifyPlayPurchase(token) {
     return false;
   } catch (e) { return null; }
 }
-async function buyOnPlay() {
+async function buyOnPlay(via) {
   if (_playBusy || !playBillingReady()) return;
-  var msg = document.getElementById('play-buy-msg');
+  // v1.76.0: `via` says which button started it: 'settings' (Settings >
+  // Premium) or 'offer' (the dashboard offer). Messages show beside that button.
+  via = via === 'offer' ? 'offer' : 'settings';
+  var msg = document.getElementById(via === 'offer' ? 'play-offer-msg' : 'play-buy-msg');
   var say = function (t, c) { if (msg) { msg.textContent = t; msg.style.color = c || 'var(--text-muted)'; } };
   _playBusy = true;
-  trackShare('play_purchase_start', { _category: 'revenue', debt_count: debts.length });
+  trackShare('play_purchase_start', { _category: 'revenue', debt_count: debts.length, via: via });
   try {
     var req = new PaymentRequest([{ supportedMethods: 'https://play.google.com/billing', data: { sku: PLAY_SKU } }],
       { total: { label: 'Total', amount: { currency: 'USD', value: '0' } } });
     var res;
     try { res = await req.show(); }
-    catch (e) { say(''); trackShare('play_purchase_cancel', { _category: 'revenue' }); return; }
+    catch (e) { say(''); trackShare('play_purchase_cancel', { _category: 'revenue', via: via }); return; }
     var token = res && res.details && res.details.purchaseToken;
-    if (!token) { try { await res.complete('fail'); } catch (e) {} say('The purchase did not go through. Nothing was charged.', 'var(--accent3)'); trackShare('play_purchase_error', { _category: 'revenue', stage: 'no_token' }); return; }
+    if (!token) { try { await res.complete('fail'); } catch (e) {} say('The purchase did not go through. Nothing was charged.', 'var(--accent3)'); trackShare('play_purchase_error', { _category: 'revenue', stage: 'no_token', via: via }); return; }
     grantPlayPremium();
     try { await res.complete('success'); } catch (e) {}
     say('\u2713 Premium unlocked. Thank you for supporting the project!', 'var(--accent)');
-    trackShare('play_purchase_success', { _category: 'revenue', debt_count: debts.length });
+    // The dashboard offer hides itself once Premium is on, so say it in a toast too.
+    if (via === 'offer' && typeof _infoToast === 'function') { try { _infoToast('\u2713 Premium unlocked. Thank you for supporting the project!'); } catch (e) {} }
+    trackShare('play_purchase_success', { _category: 'revenue', debt_count: debts.length, via: via });
     verifyPlayPurchase(token);
   } catch (e) {
     say('Couldn\u2019t open Google Play billing. Try again in a moment.', 'var(--accent3)');
-    trackShare('play_purchase_error', { _category: 'revenue', stage: 'request' });
+    trackShare('play_purchase_error', { _category: 'revenue', stage: 'request', via: via });
   } finally { _playBusy = false; }
 }
 // v1.55.3: what the Premium note says while there's no buy button. Play
@@ -13134,6 +13173,40 @@ function renderPlayBuy() {
   if (diag) diag.textContent = (!ready && _playReason) ? 'Status: ' + _playReason : '';
   var btn = document.getElementById('play-buy-btn');
   if (btn && ready) btn.textContent = 'Unlock Premium \u2014 ' + _playPrice;
+  renderPremiumOffer();
+}
+// v1.76.0 — the Premium offer on the dashboard (Play app only). Before this,
+// Premium in the Play app lived only in Settings: the three outside Play
+// users (Nov 9-20) never opened Settings, so none ever saw the buy button.
+// Shown once first setup is over (finished, or left and come back), so it
+// never competes with setup or its reminders offer; only when Play's buy
+// button works (in Edge there is nothing to tap); never in the example.
+var LS_PLAY_OFFER = 'debtfree_play_offer';   // 'dismissed' after Not now or ×
+function _premiumOfferDue() {
+  if (!IS_PLAY_BUILD || isPremium || !playBillingReady()) return false;
+  try { if (localStorage.getItem(LS_PLAY_OFFER) === 'dismissed') return false; } catch (e) { return false; }
+  try {
+    if (_demoMode || _inFirstSetup()) return false;
+    return _activePlanDebts().length > 0;
+  } catch (e) { return false; }
+}
+function renderPremiumOffer() {
+  var card = document.getElementById('premium-offer');
+  if (!card) return;
+  var due = _premiumOfferDue();
+  card.hidden = !due;
+  if (!due) return;
+  var b = document.getElementById('premium-offer-buy');
+  if (b && _playPrice) b.textContent = 'Unlock Premium \u2014 ' + _playPrice;
+  var n = 0; try { n = _activePlanDebts().length; } catch (e) {}
+  trackOnce('premium_offer_shown', 'premium_offer_shown', { _category: 'revenue', debt_count: n });
+}
+function dismissPremiumOffer(how) {
+  try { localStorage.setItem(LS_PLAY_OFFER, 'dismissed'); } catch (e) {}
+  var card = document.getElementById('premium-offer');
+  if (card) card.hidden = true;
+  trackShare('premium_offer_dismiss', { _category: 'revenue', via: how === 'x' ? 'x' : 'not_now' });
+  try { _infoToast('Premium is always in Settings.'); } catch (e) {}
 }
 // Re-check when the app comes back to the foreground (a refund, or a purchase
 // finished on another device), at most every 10 minutes.
@@ -14005,6 +14078,7 @@ function render() {
   populateLumpDebtSelect();
   applyPremiumState();     // v1.13.0 — show/hide gated features + teasers
   applyDataCardVisibility(); // v1.14.0 — cash-flow + roadmap cards/teasers
+  renderPremiumOffer();      // v1.76.0 — Play app only
   // Keep What If in sync — only update if sliders are at zero to avoid disrupting active scenario
   const wiExtra = document.getElementById('wi-extra');
   const wiLump  = document.getElementById('wi-lump');
