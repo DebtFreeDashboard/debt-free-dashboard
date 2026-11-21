@@ -175,6 +175,17 @@ const GA = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-NCP
   gtag('config', 'G-NCP56TD9BG', _dfInternal ? { traffic_type: 'internal' } : {});
 </script>`;
 
+// Spanish twins (tools/build-es.js). Both sides carry hreflang links.
+const ES = {
+  'debt-payoff-calculator': '/es/calculadoras/calculadora-pago-de-deudas/',
+  'debt-snowball-calculator': '/es/calculadoras/calculadora-bola-de-nieve/',
+  'credit-card-payoff-calculator': '/es/calculadoras/calculadora-tarjeta-de-credito/'
+};
+function hreflang(url) {
+  const slug = url.replace(SITE, '').split('/').filter(Boolean).pop();
+  const es = ES[slug];
+  return es ? `\n<link rel="alternate" hreflang="en" href="${url}">\n<link rel="alternate" hreflang="es" href="${SITE}${es}">\n<link rel="alternate" hreflang="x-default" href="${url}">` : '';
+}
 function head({ title, desc, url, jsonld }) {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -183,7 +194,7 @@ function head({ title, desc, url, jsonld }) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
-<link rel="canonical" href="${url}">
+<link rel="canonical" href="${url}">${hreflang(url)}
 <link rel="icon" href="/assets/logo/debtfree-mark-transparent.svg" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/icons/apple-touch-icon.png">
@@ -362,7 +373,9 @@ function build() {
     { loc: SITE + '/', pri: '1.0', freq: 'monthly' },
     { loc: SITE + '/app/dashboard.html', pri: '0.9', freq: 'weekly' },
     { loc: SITE + '/calculators/', pri: '0.9', freq: 'monthly', mod: hubDate(all) }
-  ].concat(PAGES.filter(p => all[p.slug]).map(p => ({ loc: `${SITE}/calculators/${p.slug}/`, pri: '0.8', freq: 'monthly', mod: pageDate(all, p) })));
+  ].concat(PAGES.filter(p => all[p.slug]).map(p => ({ loc: `${SITE}/calculators/${p.slug}/`, pri: '0.8', freq: 'monthly', mod: pageDate(all, p) })))
+    // Spanish pages (tools/build-es.js), listed here because this build rewrites the sitemap whole.
+    .concat(['/es/'].concat(Object.values(ES)).map(u => ({ loc: SITE + u, pri: u === '/es/' ? '0.7' : '0.6', freq: 'monthly' })));
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.mod || TODAY}</lastmod>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.pri}</priority>\n  </url>`).join('\n') + '\n</urlset>\n');
   return { pages: PAGES.length, version: APP_VERSION };

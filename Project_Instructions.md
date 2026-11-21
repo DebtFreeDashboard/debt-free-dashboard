@@ -88,6 +88,7 @@ handles technical execution end to end.
 | `calculators/content/<slug>.json` | Copy for each calculator page (edit this, then rebuild) |
 | `tools/build-calculators.js` | Builds `/calculators/` (hub + every page) from `content/` and its `PAGES` list |
 | `tools/make-calc-engine.js` | Generates `calculators/assets/engine.js` from `dashboard.html` so the math never drifts |
+| `es/` | Spanish pages (demand test, backlog D9): `/es/` and three calculators under `/es/calculadoras/`. **Generated** by `tools/build-es.js` (copy lives in that file); behaviour in `es/assets/es.js`; math from `calculators/assets/engine.js`. Tests: `node tools/test-es.js` (needs the 8911 server) |
 | `sitemap.xml` | Every public page, calculators included. Add new pages here |
 | `.well-known/assetlinks.json` | Links the Play app to the site (upload + Play App Signing keys). Don't touch unless the signing key changes |
 | `tools/play-store/` | Play listing screenshots (8, light/dark) and the scripts that make them. See its README |
@@ -181,6 +182,7 @@ Besides page views, the site sends:
 | `play_purchase_start`, `play_purchase_success`, `play_purchase_cancel`, `play_purchase_error` | The app (Play app only) | Google Play's purchase sheet opened, finished, was closed, or failed. Since v1.76.0 `via` says which button: `offer` (dashboard offer) or `settings` |
 | `home_calc_used` | Homepage | Someone typed in the hero calculator (once per page load) |
 | `ios_guide_open`, `ios_guide_safari`, `ios_guide_copy` | Homepage (iPhone/iPad) | The Home Screen guide opened from "Get the free app" (`location`: `hero`, `final`, `sticky`, `link`; `browser`: `safari`, `chrome`, `other`, `inapp`), "Try opening in Safari" tapped, the link copied (`ok`) |
+| `es_interest` | Spanish pages | Someone tapped "Sí, la quiero en español" (wants the app in Spanish). Once per browser; `location` is `home` or the calculator slug. The Spanish pages' `calc_used`, `calc_handoff` and `arrive_from_*` carry `lang: es` and `calc_page`/`landed_on` starting `es-` / `es/` |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
 
@@ -373,6 +375,25 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-21 (later)** — Spanish demand test (backlog D9; no app release).
+  New `/es/` homepage (quick calculator, what the app does, FAQ) and three
+  calculators: `calculadora-pago-de-deudas` (twin of debt-payoff-calculator),
+  `calculadora-bola-de-nieve` (debt-snowball-calculator),
+  `calculadora-tarjeta-de-credito` (credit-card-payoff-calculator). Built by
+  `tools/build-es.js`; `es/assets/es.js` uses the same engine, so numbers match
+  the English pages and the app. Every page says the app is in English for
+  now; the hand-off button says "(en inglés)" and imports the debts as on the
+  English calculators. "Sí, la quiero en español" sends `es_interest` (the
+  signal for translating the app); nothing else is collected. hreflang both
+  ways (English twins get it from `ES` in `tools/build-calculators.js`, the
+  homepage by hand), sitemap lists the four pages (written by
+  build-calculators), homepage footer links "En español". No Gumroad link;
+  the $24 mention is `web-only`. Rebuilding the calculators also moved every
+  page's asset version to 1.76.0 and its date to Nov 21. Spanish copy was
+  written by Claude and has not been read by a native speaker. Kevin: submit
+  the sitemap and request indexing for `/es/` in Search Console. Decide after
+  ~6–8 weeks of search data: Spanish search arrivals, `es_interest` taps.
 
 - **2026-11-21** — Homepage (backlog D1, D3, F4; no app release). **D1** hero
   calculator under the headline (`#hero-calc`): total debt, average APR,
