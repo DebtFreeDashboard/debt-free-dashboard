@@ -89,6 +89,7 @@ handles technical execution end to end.
 | `tools/build-calculators.js` | Builds `/calculators/` (hub + every page) from `content/` and its `PAGES` list |
 | `tools/make-calc-engine.js` | Generates `calculators/assets/engine.js` from `dashboard.html` so the math never drifts |
 | `es/` | Spanish pages (demand test, backlog D9): `/es/` and three calculators under `/es/calculadoras/`. **Generated** by `tools/build-es.js` (copy lives in that file); behaviour in `es/assets/es.js`; math from `calculators/assets/engine.js`. Tests: `node tools/test-es.js` (needs the 8911 server) |
+| `app/scan-test.html`, `app/scan/` | Statement reader test page (backlog B3). Not linked, `noindex`, no analytics. `app/scan/statement-reader.js` turns OCR words into debt fields (reusable in the app); `app/scan/ocr/` is Tesseract.js 6.0.1 + core 6.0.0 (LSTM builds) + `eng` best_int data, self-hosted so nothing goes to another site (Apache-2.0, ~11 MB). Tests: `node tools/test-scan.js` (made-up statement; never commit real statements) |
 | `sitemap.xml` | Every public page, calculators included. Add new pages here |
 | `.well-known/assetlinks.json` | Links the Play app to the site (upload + Play App Signing keys). Don't touch unless the signing key changes |
 | `tools/play-store/` | Play listing screenshots (8, light/dark) and the scripts that make them. See its README |
@@ -375,6 +376,27 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-21 (evening)** — Statement reader test (backlog B3; no app
+  release). Kevin's 8 screenshots (Discover and Bank of America card
+  statements, 2 pages each; Synchrony/Sleep Number, 2 pages; Stellantis Jeep
+  lease; Xfinity bill) were read in this session only and not kept. In the
+  browser with the self-hosted OCR every checked field came out right: balance,
+  minimum or amount due, due date, purchase APR, credit limit, the BofA 0%
+  balance-transfer promo and its end date, the Synchrony deferred-interest
+  promo, lease payments made. Rules that got it there, all generic: rows built
+  from word positions across the whole page; label then value to the right, or
+  directly below for column layouts; every copy of a label votes (the payment
+  coupon repeats the key numbers); repair of OCR's misread thousands mark and
+  dropped decimal point; screenshots scaled up to ~2,400 px before reading; a
+  date it can't read is left blank. 4–10 s per statement on a desktop CPU.
+  Tuned on these statements, so other lenders are untested. Findings for the
+  real feature: card APRs sit on the interest page, so it needs several
+  screenshots per debt; a lease and a cable bill have no balance (they belong
+  in Bills, which is Premium); the app has no model for deferred interest
+  (Synchrony "no interest if paid in full"), which the reader can detect.
+  Test page `/app/scan-test.html` for Kevin's iPhone: pick screenshots, mark
+  each field right or wrong, Copy results (marks and timing only).
 
 - **2026-11-21 (later)** — Spanish demand test (backlog D9; no app release).
   New `/es/` homepage (quick calculator, what the app does, FAQ) and three
