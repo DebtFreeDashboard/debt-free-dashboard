@@ -184,7 +184,6 @@
     display: flex;
     gap: 18px;
     flex-wrap: wrap;
-    animation: fadeIn 0.6s ease 0.35s both;
   }
   .hero-reassure span::before {
     content: '✓ ';
@@ -328,7 +327,6 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    animation: fadeIn 0.6s ease both;
   }
 
   .hero-kicker::before {
@@ -340,13 +338,14 @@
 
   .hero-headline {
     font-family: var(--font-serif);
-    font-size: clamp(2.8rem, 8vw, 6.5rem);
+    /* D1: was up to 6.5rem; smaller since 2026-11-21 so the calculator's
+       answer sits above the fold on laptops too */
+    font-size: clamp(2.8rem, 8vw, 4.4rem);
     font-weight: 900;
     line-height: 0.95;
     letter-spacing: -2px;
     max-width: 900px;
-    margin-bottom: 28px;
-    animation: fadeIn 0.6s ease 0.1s both;
+    margin-bottom: 24px;
   }
 
   .hero-headline em {
@@ -364,7 +363,6 @@
     max-width: 560px;
     line-height: 1.7;
     margin-bottom: 40px;
-    animation: fadeIn 0.6s ease 0.2s both;
   }
 
   .hero-actions {
@@ -372,7 +370,6 @@
     align-items: center;
     gap: 20px;
     flex-wrap: wrap;
-    animation: fadeIn 0.6s ease 0.3s both;
   }
 
   .btn-primary-lg {
@@ -425,7 +422,6 @@
     margin-top: 64px;
     padding-top: 48px;
     border-top: 1px solid var(--cream3);
-    animation: fadeIn 0.6s ease 0.4s both;
     flex-wrap: wrap;
     gap: 32px;
   }
@@ -450,10 +446,75 @@
     font-weight: 400;
   }
 
+  /* F4 (2026-11-21): the hero no longer fades in. Its text waited up to a
+     second behind fadeIn, so phones showed an empty hero and page-speed tools
+     counted it late. Nothing on the page uses this keyframe now; kept for
+     anything added later. */
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
   }
+
+
+  /* ─── D1 (2026-11-21): HERO CALCULATOR ─── */
+  .hero-calc {
+    background: var(--white);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 18px 18px 14px;
+    margin: 0 0 26px;
+    max-width: 560px;
+  }
+  .hc-title { font-weight: 700; font-size: 0.95rem; color: var(--ink); margin-bottom: 12px; }
+  .hc-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .hc-fields label { display: flex; flex-direction: column; gap: 5px; font-size: 0.74rem; color: var(--text-mid); }
+  .hc-fields input {
+    font: 700 1.05rem var(--font-sans); color: var(--ink);
+    background: var(--cream); border: 1px solid var(--border2); border-radius: 8px;
+    padding: 10px 10px; width: 100%; min-width: 0;
+  }
+  .hc-fields input:focus { outline: 2px solid var(--ink); outline-offset: 1px; }
+  .hc-fields input.bad { border-color: var(--red); }
+  .hc-out { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); min-height: 74px; }
+  .hc-label { font-size: 0.74rem; color: var(--text-mid); }
+  .hc-date { font-weight: 800; font-size: clamp(1.6rem, 5vw, 2.1rem); color: var(--ink); letter-spacing: -0.5px; line-height: 1.15; }
+  .hc-meta { font-size: 0.85rem; color: var(--text-mid); margin-top: 2px; }
+  .hc-more { font-size: 0.85rem; color: var(--ink); margin-top: 8px; }
+  .hc-more strong { box-shadow: inset 0 -0.45em 0 var(--gold-light); }
+  .hc-warn { font-size: 0.88rem; color: var(--ink); line-height: 1.5; }
+  .hc-warn::before { content: 'Heads-up: '; font-weight: 700; }
+  .hc-note { font-size: 0.74rem; color: var(--text-mid); margin-top: 10px; line-height: 1.5; }
+  @media (max-width: 420px) {
+    .hero-calc { padding: 14px 14px 12px; }
+    .hc-fields { gap: 8px; }
+    .hc-fields input { font-size: 1rem; padding: 9px 8px; }
+  }
+
+  /* ─── D3 (2026-11-21): SMART DOWNLOAD BUTTON + IPHONE GUIDE ─── */
+  .hero-web-alt { display: none; font-size: 0.85rem; color: var(--text-mid); }
+  .is-android:not(.in-play-app) .hero-web-alt { display: inline; }
+  .is-android:not(.in-play-app) .play-badge.home-dup { display: none !important; }
+  .ios-guide[hidden] { display: none; }
+  .ios-guide { position: fixed; inset: 0; z-index: 400; background: rgba(28,30,33,0.55); display: flex; align-items: flex-end; justify-content: center; }
+  .ios-guide-card {
+    background: var(--white); color: var(--ink); width: 100%; max-width: 480px;
+    border-radius: 18px 18px 0 0; padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+    max-height: 92vh; overflow-y: auto;
+  }
+  @media (min-width: 600px) { .ios-guide { align-items: center; } .ios-guide-card { border-radius: 18px; } }
+  .ios-guide-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+  .ios-guide-head h2 { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.3px; }
+  .ios-guide-x { background: none; border: 0; font-size: 1.6rem; line-height: 1; color: var(--text-mid); cursor: pointer; padding: 0 4px; }
+  .ios-guide-sub { font-size: 0.9rem; color: var(--text-mid); line-height: 1.5; margin-bottom: 14px; }
+  .ios-guide ol { list-style: none; counter-reset: s; margin: 0 0 16px; }
+  .ios-guide li { counter-increment: s; display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 0.95rem; line-height: 1.45; }
+  .ios-guide li::before { content: counter(s); flex: 0 0 26px; height: 26px; border-radius: 50%; background: var(--hl); color: var(--ink); font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; }
+  .ios-guide .ig-ico { display: inline-block; vertical-align: -3px; }
+  .ios-guide .ig-btn { display: block; text-align: center; background: var(--ink); color: var(--cream); font-weight: 700; padding: 14px; border-radius: 8px; text-decoration: none; border: 0; width: 100%; font-size: 1rem; cursor: pointer; font-family: var(--font-sans); }
+  .ios-guide .ig-btn2 { display: block; text-align: center; margin-top: 10px; color: var(--ink); font-size: 0.9rem; background: none; border: 1px solid var(--border2); padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-family: var(--font-sans); text-decoration: none; }
+  .ios-guide .ig-alt { display: block; text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--text-mid); }
+  .ios-guide [data-ig-inapp], .ios-guide [data-ig-browser] { display: none; }
+  .ios-guide.inapp [data-ig-inapp], .ios-guide:not(.inapp) [data-ig-browser] { display: block; }
 
   /* ─── SECTION WRAPPER ─── */
   .section {
@@ -1542,15 +1603,29 @@
     <div class="hero-left">
       <div class="hero-kicker">Free to use · No account · Works offline</div>
       <h1 class="hero-headline">See your real<br>debt-free date.<br><em>Free.</em></h1>
+      <!-- D1 (2026-11-21): quick calculator, same engine as the app
+           (/calculators/assets/engine.js). Runs on the device; nothing is sent. -->
+      <div class="hero-calc" id="hero-calc">
+        <div class="hc-title">Try it with your numbers</div>
+        <div class="hc-fields">
+          <label for="hc-bal">Total debt<input id="hc-bal" inputmode="decimal" autocomplete="off" value="$12,000"></label>
+          <label for="hc-apr">Average APR<input id="hc-apr" inputmode="decimal" autocomplete="off" value="22%"></label>
+          <label for="hc-pay">Monthly payment<input id="hc-pay" inputmode="decimal" autocomplete="off" value="$400"></label>
+        </div>
+        <div class="hc-out" id="hc-out" aria-live="polite"></div>
+        <p class="hc-note">One combined balance for a quick look. The free app plans each debt on its own and compares payoff orders.</p>
+      </div>
       <p class="hero-sub">Credit cards, auto loans, student loans, even your mortgage — one payoff plan with crystal-clear math in 60 seconds. Free for your whole payoff journey. A one-time <strong style="color:var(--ink)">$24</strong> unlocks the premium planning suite. No subscription, ever.</p>
       <div class="hero-actions">
         <a href="https://mydebtdashboard.com/app/dashboard.html"
            class="btn-primary-lg"
+           data-smart-cta="hero"
            data-cta-label="hero-primary"
            data-cta-location="hero">
           Open the Dashboard — Free <span class="arrow">→</span>
         </a>
         <a href="#dashboard-demo" class="hero-cta-secondary">▸ Watch setup, start to finish</a>
+        <a href="https://mydebtdashboard.com/app/dashboard.html" class="hero-web-alt" data-cta-location="hero-web-alt">or use it in your browser</a>
       </div>
       <div class="hero-reassure">
         <span>Free, unlimited debts</span>
@@ -1558,7 +1633,7 @@
         <span>Premium just $24 once</span>
       </div>
       <!-- 2026-11-07: Google Play badge (hidden on iPhone/iPad and inside the Play app) -->
-      <a class="play-badge" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dhome_hero" target="_blank" rel="noopener" data-play-badge="home_hero" style="display:inline-flex;align-items:center;gap:10px;line-height:1.3;text-decoration:none;margin-top:18px;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.8rem;color:var(--text-muted)">On Android? Get the app.</span></a>
+      <a class="play-badge home-dup" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dhome_hero" target="_blank" rel="noopener" data-play-badge="home_hero" style="display:inline-flex;align-items:center;gap:10px;line-height:1.3;text-decoration:none;margin-top:18px;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.8rem;color:var(--text-muted)">On Android? Get the app.</span></a>
     </div>
     <div class="hero-right">
       <div>
@@ -1933,6 +2008,7 @@
     <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap;">
       <a href="https://mydebtdashboard.com/app/dashboard.html"
          class="btn-primary-lg"
+         data-smart-cta="final"
          data-cta-label="final-cta"
          data-cta-location="footer-cta"
          style="display:inline-flex;">
@@ -1940,7 +2016,7 @@
       </a>
     </div>
     <p style="color:var(--text-muted); font-size:0.78rem; margin-top:16px">Free to use · No account · Premium $24 one-time</p>
-    <a class="play-badge" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dhome_final" target="_blank" rel="noopener" data-play-badge="home_final" style="display:inline-flex;align-items:center;gap:10px;line-height:1.3;text-decoration:none;margin-top:14px;justify-content:center;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.8rem;color:var(--text-muted)">On Android? Get the app.</span></a>
+    <a class="play-badge home-dup" href="https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&amp;referrer=utm_source%3Dmydebtdashboard%26utm_medium%3Dbadge%26utm_campaign%3Dhome_final" target="_blank" rel="noopener" data-play-badge="home_final" style="display:inline-flex;align-items:center;gap:10px;line-height:1.3;text-decoration:none;margin-top:14px;justify-content:center;"><img src="/assets/badges/google-play-badge.png" alt="Get it on Google Play" width="150" height="58" style="display:block;height:auto"><span style="font-size:0.8rem;color:var(--text-muted)">On Android? Get the app.</span></a>
   </div>
 </section>
 
@@ -1948,6 +2024,7 @@
 <div class="sticky-buy-bar">
  <a href="https://mydebtdashboard.com/app/dashboard.html"
    class="bar-starter"
+   data-smart-cta="sticky"
    data-cta-label="sticky-mobile"
    data-cta-location="sticky-bar">
   Open the Dashboard — Free →
@@ -2025,7 +2102,149 @@ if (document.readyState === 'loading') {
 }
 </script>
 
+
+<!-- D3 (2026-11-21): iPhone install guide. iPhone has no app store listing, so
+     "Get the free app" opens these steps instead. Shown only on iPhone/iPad. -->
+<div class="ios-guide" id="ios-guide" hidden role="dialog" aria-modal="true" aria-labelledby="ios-guide-title">
+  <div class="ios-guide-card">
+    <div class="ios-guide-head">
+      <h2 id="ios-guide-title">Put DebtFree on your Home Screen</h2>
+      <button class="ios-guide-x" type="button" data-ig-close aria-label="Close">&times;</button>
+    </div>
+    <p class="ios-guide-sub">Free, about 30 seconds, no App Store or account. It opens full screen like any app and can send payment reminders.</p>
+    <div data-ig-inapp>
+      <ol>
+        <li><span>This page is open inside another app. Open it in Safari first: tap <strong>&middot;&middot;&middot;</strong> or the compass at the top or bottom, then <strong>Open in Safari</strong> (or <strong>Open in browser</strong>).</span></li>
+        <li><span>No such option? Copy the link below, open Safari and paste it in the address bar.</span></li>
+        <li><span>In Safari, these steps open again on their own for the last part.</span></li>
+      </ol>
+      <a class="ig-btn" href="x-safari-https://mydebtdashboard.com/?ios_install=1" data-ig-safari>Try opening in Safari</a>
+      <button class="ig-btn2" type="button" data-ig-copy>Copy the link</button>
+    </div>
+    <div data-ig-browser>
+      <ol>
+        <li><span>Tap <strong>Open DebtFree</strong> below.</span></li>
+        <li><span>Tap Share <svg class="ig-ico" width="18" height="20" viewBox="0 0 18 20" aria-hidden="true"><path d="M9 1v12M5 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 8H3a1.5 1.5 0 0 0-1.5 1.5v8A1.5 1.5 0 0 0 3 19h12a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 15 8h-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> (in Safari it&rsquo;s at the bottom, or under <strong>&middot;&middot;&middot;</strong>), then <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</span></li>
+        <li><span>Open DebtFree from your Home Screen and add your debts there. iPhone keeps the Home Screen app&rsquo;s data separate from Safari&rsquo;s.</span></li>
+      </ol>
+      <a class="ig-btn" href="https://mydebtdashboard.com/app/dashboard.html?from=ios_guide" data-cta-location="ios-guide">Open DebtFree &rarr;</a>
+    </div>
+    <a class="ig-alt" href="#" data-ig-close>Not now</a>
+  </div>
+</div>
 <style>.is-ios .play-badge,.in-play-app .play-badge{display:none!important}</style>
+<script src="/calculators/assets/engine.js"></script>
+<script>
+/* D1 (2026-11-21): hero calculator. One combined balance, run through the same
+   simulate() the app uses (DFEngine). Runs on the device; nothing is sent. */
+(function () {
+  var E = window.DFEngine, out = document.getElementById('hc-out');
+  if (!E || !out) { var c = document.getElementById('hero-calc'); if (c) c.hidden = true; return; }
+  var ids = ['hc-bal', 'hc-apr', 'hc-pay'], used = false, timer = null;
+  function num(id) { var n = parseFloat(String(document.getElementById(id).value).replace(/[$,%\s]/g, '')); return isFinite(n) ? n : NaN; }
+  function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+  function monthLong(m) { return E.planMonthDate(m).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
+  function monthShort(m) { return E.planMonthDate(m).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }); }
+  function plan(bal, apr, pay) {
+    return E.run([{ id: 1, name: 'Total debt', type: 'cc', balance: bal, apr: apr, realApr: apr, minPayment: pay }], 0, 'avalanche');
+  }
+  function flag(id, bad) { document.getElementById(id).classList.toggle('bad', !!bad); return !!bad; }
+  function compute() {
+    var bal = num('hc-bal'), apr = num('hc-apr'), pay = num('hc-pay');
+    var b1 = flag('hc-bal', !(bal > 0 && bal <= 10000000)), b2 = flag('hc-apr', !(apr >= 0 && apr <= 100)), b3 = flag('hc-pay', !(pay > 0));
+    if (b1 || b2 || b3) { out.innerHTML = '<p class="hc-warn">Enter a total balance, an APR between 0 and 100, and a monthly payment.</p>'; return; }
+    var interest = bal * apr / 1200;
+    if (pay <= interest + 0.005) {
+      out.innerHTML = '<p class="hc-warn">At ' + apr + '% APR, ' + money(bal) + ' adds about ' + money(interest) + ' of interest a month, so a ' + money(pay) + ' payment never reaches zero.</p>';
+      return;
+    }
+    var r = plan(bal, apr, pay);
+    if (!r || r.diverged) { out.innerHTML = '<p class="hc-warn">This payment doesn&rsquo;t reach zero within 50 years.</p>'; return; }
+    var more = plan(bal, apr, pay + 100), extra = '';
+    if (more && !more.diverged && more.months < r.months) {
+      var saved = r.totalInterest - more.totalInterest;
+      extra = '<div class="hc-more">With $100 more a month: <strong>' + monthShort(more.months) + '</strong>' + (saved >= 1 ? ', ' + money(saved) + ' less interest' : '') + '.</div>';
+    }
+    out.innerHTML = '<div class="hc-label">Debt-free</div><div class="hc-date">' + monthLong(r.months) + '</div>' +
+      '<div class="hc-meta">' + r.months + ' payment' + (r.months === 1 ? '' : 's') + ' &middot; ' + money(r.totalInterest) + ' in interest</div>' + extra;
+  }
+  ids.forEach(function (id) {
+    document.getElementById(id).addEventListener('input', function () {
+      clearTimeout(timer); timer = setTimeout(compute, 180);
+      if (!used) { used = true; try { if (typeof gtag === 'function') gtag('event', 'home_calc_used', { event_category: 'acquisition' }); } catch (e) {} }
+    });
+  });
+  compute();
+})();
+
+/* D3 (2026-11-21): smart download button. Android browsers get Google Play
+   (not inside the Play app); iPhone/iPad get the Home Screen guide; everyone
+   else keeps "Open the Dashboard". Runs before DOMContentLoaded, so the
+   homepage's home_to_app listener only binds to links that still open the app. */
+(function () {
+  var h = document.documentElement, ua = navigator.userAgent || '';
+  var inPlay = false; try { inPlay = sessionStorage.getItem('debtfree_play') === '1'; } catch (e) {}
+  var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var android = /Android/i.test(ua) && !inPlay;
+  var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  function track(name, p) { try { if (typeof gtag === 'function') gtag('event', name, Object.assign({ event_category: 'acquisition' }, p || {})); } catch (e) {} }
+  var CAMPAIGN = { hero: 'home_hero_button', final: 'home_final_button', sticky: 'home_sticky' };
+  var buttons = document.querySelectorAll('[data-smart-cta]');
+
+  if (android) {
+    h.className += ' is-android';
+    buttons.forEach(function (a) {
+      var where = a.getAttribute('data-smart-cta');
+      a.href = 'https://play.google.com/store/apps/details?id=com.mydebtdashboard.app&referrer=' +
+        encodeURIComponent('utm_source=mydebtdashboard&utm_medium=button&utm_campaign=' + CAMPAIGN[where]);
+      a.target = '_blank'; a.rel = 'noopener';
+      a.setAttribute('data-play-badge', CAMPAIGN[where]);   /* play_badge_click fires with this location */
+      a.innerHTML = where === 'sticky' ? 'Get the free app on Google Play' : 'Get the free app on Google Play <span class="arrow">&rarr;</span>';
+    });
+    return;
+  }
+  if (!ios || standalone || inPlay) return;
+
+  var sheet = document.getElementById('ios-guide');
+  if (!sheet) return;
+  var inapp = (typeof dfDetectInApp === 'function' && dfDetectInApp()) ||
+    (/(FBAN|FBAV|Instagram|Line\/|GSA\/|Snapchat|TikTok|musical_ly|LinkedInApp|Twitter|Pinterest)/i.test(ua) ? 'other_app' : null);
+  var browser = inapp ? 'inapp' : (/CriOS/.test(ua) ? 'chrome' : (/FxiOS|EdgiOS|OPiOS/.test(ua) ? 'other' : 'safari'));
+  if (inapp) sheet.classList.add('inapp');
+  var lastWhere = 'hero', opener = null;
+
+  buttons.forEach(function (a) {
+    var where = a.getAttribute('data-smart-cta');
+    a.innerHTML = where === 'sticky' ? 'Get the free app' : 'Get the free app <span class="arrow">&rarr;</span>';
+    a.addEventListener('click', function (e) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      lastWhere = where; opener = a;
+      sheet.hidden = false; document.body.style.overflow = 'hidden';
+      var x = sheet.querySelector('.ios-guide-x'); if (x) x.focus();
+      track('ios_guide_open', { location: where, browser: browser, in_app: inapp || '(browser)' });
+    }, true);
+  });
+  function close(e) {
+    if (e) e.preventDefault();
+    sheet.hidden = true; document.body.style.overflow = '';
+    if (opener) opener.focus();
+  }
+  sheet.querySelectorAll('[data-ig-close]').forEach(function (b) { b.addEventListener('click', close); });
+  sheet.addEventListener('click', function (e) { if (e.target === sheet) close(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !sheet.hidden) close(); });
+  var safari = sheet.querySelector('[data-ig-safari]');
+  if (safari) safari.addEventListener('click', function () { track('ios_guide_safari', { location: lastWhere, in_app: inapp || '(browser)' }); });
+  var copy = sheet.querySelector('[data-ig-copy]');
+  if (copy) copy.addEventListener('click', function () {
+    var link = 'https://mydebtdashboard.com/?ios_install=1';
+    function done(ok) { copy.textContent = ok ? 'Link copied. Paste it in Safari.' : link; track('ios_guide_copy', { ok: ok ? 'yes' : 'no', in_app: inapp || '(browser)' }); }
+    try { navigator.clipboard.writeText(link).then(function () { done(true); }, function () { done(false); }); } catch (err) { done(false); }
+  });
+  /* Arriving from the copied link (or ?ios_install=1): open the guide straight away. */
+  try { if (/[?&]ios_install=1/.test(location.search) && !inapp) { sheet.hidden = false; track('ios_guide_open', { location: 'link', browser: browser, in_app: '(browser)' }); } } catch (e) {}
+})();
+</script>
+
 <script>(function(){var h=document.documentElement,u=navigator.userAgent||'';if(/iPhone|iPad|iPod/.test(u)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1))h.className+=' is-ios';try{if(sessionStorage.getItem('debtfree_play')==='1')h.className+=' in-play-app'}catch(e){}document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-play-badge]');if(a&&typeof gtag==='function')gtag('event','play_badge_click',{event_category:'acquisition',location:a.getAttribute('data-play-badge'),page_path:location.pathname})});})();</script>
 </body>
 </html>

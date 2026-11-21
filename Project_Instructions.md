@@ -179,6 +179,8 @@ Besides page views, the site sends:
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
 | `premium_offer_shown`, `premium_offer_dismiss` | The app's dashboard (Play app only) | The Premium offer was shown (once per launch, `debt_count`); hidden for good with Not now or × (`via`: `not_now`, `x`) |
 | `play_purchase_start`, `play_purchase_success`, `play_purchase_cancel`, `play_purchase_error` | The app (Play app only) | Google Play's purchase sheet opened, finished, was closed, or failed. Since v1.76.0 `via` says which button: `offer` (dashboard offer) or `settings` |
+| `home_calc_used` | Homepage | Someone typed in the hero calculator (once per page load) |
+| `ios_guide_open`, `ios_guide_safari`, `ios_guide_copy` | Homepage (iPhone/iPad) | The Home Screen guide opened from "Get the free app" (`location`: `hero`, `final`, `sticky`, `link`; `browser`: `safari`, `chrome`, `other`, `inapp`), "Try opening in Safari" tapped, the link copied (`ok`) |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
 
@@ -371,6 +373,28 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-21** — Homepage (backlog D1, D3, F4; no app release). **D1** hero
+  calculator under the headline (`#hero-calc`): total debt, average APR,
+  monthly payment → debt-free month, payments, interest, and what $100 more a
+  month changes. Runs `DFEngine.run` from `/calculators/assets/engine.js` (same
+  math as the app), on the device; no hand-off into the app (a single combined
+  balance would fight first setup). Headline capped at 4.4rem so the answer
+  is above the fold on laptops. **D3** smart download button
+  (`data-smart-cta` on the hero, final and sticky buttons): Android browsers
+  (not the Play app) get "Get the free app on Google Play" (utm campaigns
+  `home_hero_button`, `home_final_button`, `home_sticky`, sends
+  `play_badge_click`), with "or use it in your browser" and the duplicate
+  badges hidden; iPhone/iPad get "Get the free app", which opens the Home
+  Screen guide (`#ios-guide`): open the app page, Share, Add to Home Screen,
+  set up inside the Home Screen app. Inside Instagram/TikTok/Facebook it
+  first says to open Safari (`x-safari-https://` link plus Copy the link to
+  `/?ios_install=1`, which reopens the guide in Safari). Desktop and the Play
+  app unchanged. **F4** hero no longer fades in. New events `home_calc_used`,
+  `ios_guide_open`, `ios_guide_safari`, `ios_guide_copy`. Measure: on iPhone,
+  `ios_guide_open` → `home_to_app` (`cta_location` ios-guide) and Home Screen
+  launches; on Android, `play_badge_click` by location and Play "Third-party
+  referrals".
 
 - **2026-11-21** — v1.76.0 "Premium, easier to find". GA4 (platform=play,
   Nov 10-20): outside Play users had a working buy button but none opened
