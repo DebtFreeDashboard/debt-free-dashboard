@@ -1,8 +1,8 @@
 {
-  "version": "1.76.0",
+  "version": "1.77.0",
   "releaseDate": "2026-11-21",
-  "releaseName": "Premium, easier to find",
+  "releaseName": "Fill in a debt from your statement",
   "notes": [
-    "In the Google Play app, once your plan is set up, the dashboard now shows what Premium adds and its price, with a button to buy it through Google Play. Tap Not now and it won’t come back. Premium is always in Settings, and everything you use now stays free."
+    "Adding a debt? Tap Fill from statement and pick screenshots of your latest statement: the page with the balance and minimum, and the page with the interest rate. DebtFree reads them right on your phone and fills in the form. Check each number before you save; anything it can’t read stays blank. Your screenshots are never uploaded or saved."
   ]
 }

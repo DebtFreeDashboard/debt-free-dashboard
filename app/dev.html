@@ -1947,6 +1947,26 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   .util-tag.util-vhigh, .util-tag.util-over { color: var(--accent3); border-color: rgba(var(--problem-rgb),0.45); }
 
   /* v1.57.0 — add-debt field guide */
+  /* v1.77.0 — fill the add form from statement screenshots (read on the device) */
+  .scan-cta { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:14px; font-size:0.85rem; line-height:1.4; }
+  .scan-cta b { color:var(--text); }
+  .scan-cta .btn { white-space:nowrap; }
+  .scan-banner { background:rgba(45,92,166,0.08); border:1px solid rgba(45,92,166,0.35); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:14px; font-size:0.82rem; line-height:1.5; color:var(--text); }
+  .scan-banner b { display:block; margin-bottom:2px; }
+  .scan-banner ul { margin:6px 0 0 18px; }
+  .scan-banner li { margin:2px 0; }
+  input.scan-filled, select.scan-filled { outline:2px solid var(--accent4); outline-offset:1px; }
+  .field-shell input.scan-filled { outline:none; }
+  .field-shell:has(input.scan-filled) { outline:2px solid var(--accent4); outline-offset:1px; border-radius:var(--radius-sm); }
+  .scan-steps { margin:4px 0 12px 0; padding:0; list-style:none; counter-reset:scs; }
+  .scan-steps li { counter-increment:scs; display:flex; gap:10px; padding:8px 0; border-top:1px solid var(--border); font-size:0.86rem; line-height:1.45; }
+  .scan-steps li::before { content:counter(scs); flex:0 0 24px; height:24px; border-radius:50%; background:var(--hl); color:var(--on-hl, #1c1e21); font-weight:700; font-size:0.78rem; display:flex; align-items:center; justify-content:center; }
+  .scan-pick { display:block; text-align:center; cursor:pointer; }
+  .scan-pick input { display:none; }
+  .scan-note { font-size:0.76rem; color:var(--text-muted); line-height:1.5; margin-top:10px; }
+  .scan-status { font-size:0.85rem; color:var(--text); margin-top:10px; min-height:1.3em; }
+  .scan-bar { height:6px; background:var(--surface3); border-radius:3px; overflow:hidden; margin-top:6px; }
+  .scan-bar span { display:block; height:100%; width:0; background:var(--hl); transition:width 0.2s; }
   .field-help {
     position: relative; margin-bottom: 16px;
     background: rgba(var(--good-rgb),0.08); border: 1px solid rgba(var(--good-rgb),0.30);
@@ -3734,6 +3754,12 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       </div>
       <!-- v1.69.0 — what this session has added so far, with the date it gives. -->
       <div id="add-session" class="add-session" hidden aria-live="polite"></div>
+      <!-- v1.77.0 — fill this form from screenshots of a statement, read on the device. -->
+      <div class="scan-cta" id="scan-cta">
+        <div><b>Have a statement?</b><br>Fill this in from screenshots of it.</div>
+        <button type="button" class="btn btn-ghost" onclick="openScan()">Fill from statement</button>
+      </div>
+      <div id="scan-banner" class="scan-banner" hidden aria-live="polite"></div>
       <!-- v1.57.0 — field help. Collapsed by default; dismiss hides it for good. -->
       <div id="field-help" class="field-help">
         <button type="button" class="field-help-toggle" onclick="toggleFieldHelp()" aria-expanded="false" aria-controls="field-help-body">
@@ -4850,6 +4876,31 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   </div>
 </div>
 
+<!-- v1.77.0 — Fill from a statement. Screenshots are read on this device by an
+     OCR engine served from this site (app/scan/ocr); nothing is uploaded or kept. -->
+<div id="scan-sheet" class="modal-overlay hidden" onclick="closeScan(event)" role="dialog" aria-modal="true" aria-labelledby="scan-title">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <div class="modal-title" id="scan-title">Fill from a statement</div>
+      <button class="modal-close" aria-label="Close" onclick="closeScan()">&times;</button>
+    </div>
+    <div id="scan-intro">
+      <ol class="scan-steps">
+        <li><span>Open this debt&rsquo;s latest statement in your lender&rsquo;s app or website (the statement itself, often a PDF, not the account home screen).</span></li>
+        <li><span>Take a screenshot of the page with the <b>balance, minimum payment and due date</b>. On most cards the <b>interest rate (APR)</b> is on a later page: screenshot that page too.</span></li>
+        <li><span>Tap <b>Choose screenshots</b> and pick up to 4, all from the same statement.</span></li>
+        <li><span><b>Check every number</b> it fills in before you save. Anything it can&rsquo;t read stays blank for you to type.</span></li>
+      </ol>
+      <label class="btn btn-primary btn-full scan-pick">Choose screenshots<input type="file" id="scan-files" accept="image/*" multiple onchange="runScan(this)"></label>
+      <div class="scan-note">Read right here on your phone. Your screenshots are never uploaded or saved, and account numbers are ignored. The first time, the reader downloads once (about 7&nbsp;MB). One statement takes about 5 to 15 seconds. <a href="/user-guide.html#fill-from-statement" target="_blank" rel="noopener" style="color:var(--text)">Step-by-step guide</a></div>
+    </div>
+    <div id="scan-progress" hidden>
+      <div class="scan-status" id="scan-status">Getting ready&hellip;</div>
+      <div class="scan-bar"><span id="scan-bar"></span></div>
+    </div>
+    <div class="form-error" id="scan-error" style="display:none;margin-top:10px;"></div>
+  </div>
+</div>
 <div id="due-check-sheet" class="modal-overlay hidden" onclick="closeDueCheck(event)" role="dialog" aria-modal="true" aria-labelledby="dc-title">
   <div class="modal" style="max-width:460px;">
     <div class="modal-header">
@@ -5093,7 +5144,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.76.0';
+const APP_VERSION = '1.77.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5101,6 +5152,15 @@ const APP_VERSION = '1.76.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.77.0',
+    date: 'November 21, 2026',
+    name: 'Fill in a debt from your statement',
+    whatsNew: [
+      'Adding a debt? Tap Fill from statement and pick screenshots of your latest statement: the page with the balance and minimum, and the page with the interest rate. DebtFree reads them right on your phone and fills in the form. Check each number before you save; anything it can’t read stays blank. Your screenshots are never uploaded or saved.'
+    ],
+    fixes: []
+  },
   {
     version: '1.76.0',
     date: 'November 21, 2026',
@@ -9986,6 +10046,7 @@ function addDebt(confirmed) {
   { var _ty = document.getElementById('debt-type'); if (_ty) { _ty.value = 'cc'; onDebtTypeChange('add'); } _typeTouched = false; }
   { var _am = document.getElementById('add-more'); if (_am) _am.open = false; }
   _addSessionNames.push(name);
+  if (typeof scanFormSaved === 'function') scanFormSaved();
 
   if (typeof _resetRedistDismiss === 'function') _resetRedistDismiss();
   save();
@@ -10030,6 +10091,175 @@ function addDebtAndAnother() {
   if (card && card.scrollIntoView) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   setTimeout(function () { var n = document.getElementById('debt-name'); if (n && n.focus) n.focus(); }, 300);
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// v1.77.0 — Fill from a statement (backlog B3)
+// Screenshots of a statement are read on this device by Tesseract (served
+// from /app/scan/ocr, loaded only when someone uses this) and turned into
+// fields by /app/scan/statement-reader.js, the reader proven on the test
+// page (app/scan-test.html). Nothing is uploaded or stored; only the numbers
+// the person then saves end up in their plan. Analytics carry counts only.
+// The reader can be wrong, so it only fills the form: the person checks
+// every field and saves as usual. Bumping READER_V busts the service
+// worker's cache-first copy of the reader.
+// ══════════════════════════════════════════════════════════════════════
+var SCAN_READER_V = 7;
+var _scanWorker = null, _scanLoading = null, _scanFilled = false;
+function _scanLoadScript(src) {
+  return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = function () { rej(new Error('load')); }; document.head.appendChild(s); });
+}
+function _scanReady() {
+  if (_scanLoading) return _scanLoading;
+  _scanLoading = Promise.all([
+    window.Tesseract ? Promise.resolve() : _scanLoadScript('/app/scan/ocr/tesseract.min.js'),
+    window.DFStatementReader ? Promise.resolve() : _scanLoadScript('/app/scan/statement-reader.js?v=' + SCAN_READER_V)
+  ]).catch(function (e) { _scanLoading = null; throw e; });
+  return _scanLoading;
+}
+function openScan() {
+  var m = document.getElementById('scan-sheet'); if (!m) return;
+  document.getElementById('scan-intro').hidden = false;
+  document.getElementById('scan-progress').hidden = true;
+  var er = document.getElementById('scan-error'); er.style.display = 'none'; er.textContent = '';
+  var f = document.getElementById('scan-files'); if (f) f.value = '';
+  m.classList.remove('hidden');
+  trackShare('scan_open', { _category: 'activation', in_setup: _inFirstSetup() ? 'yes' : 'no' });
+  _scanReady().catch(function () {});   // start the download while they pick
+}
+function closeScan(e) {
+  if (e && e.target && e.target.id !== 'scan-sheet') return;
+  var m = document.getElementById('scan-sheet'); if (m) m.classList.add('hidden');
+}
+function _scanStatus(t, pct) {
+  var s = document.getElementById('scan-status'); if (s) s.textContent = t;
+  var b = document.getElementById('scan-bar'); if (b && pct != null) b.style.width = Math.max(4, Math.min(100, pct)) + '%';
+}
+// Small statement print reads better bigger: scale to about 2,400 px wide.
+async function _scanPrep(file) {
+  var img = await createImageBitmap(file);
+  var k = Math.min(2, 2400 / img.width);
+  if (k <= 1.05) return file;
+  var c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  var g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, c.width, c.height);
+  return c;
+}
+function _scanWords(data) {
+  var out = [];
+  (data.blocks || []).forEach(function (b) { (b.paragraphs || []).forEach(function (p) { (p.lines || []).forEach(function (l) { (l.words || []).forEach(function (w) {
+    out.push({ x: w.bbox.x0, y: w.bbox.y0, w: w.bbox.x1 - w.bbox.x0, h: w.bbox.y1 - w.bbox.y0, t: w.text });
+  }); }); }); });
+  return out;
+}
+async function runScan(input) {
+  var files = Array.prototype.slice.call((input && input.files) || [], 0, 4);
+  if (!files.length) return;
+  var er = document.getElementById('scan-error'); er.style.display = 'none';
+  document.getElementById('scan-intro').hidden = true;
+  document.getElementById('scan-progress').hidden = false;
+  var t0 = Date.now(), page = 0;
+  try {
+    _scanStatus('Getting the reader ready (first time only)…', 3);
+    await _scanReady();
+    if (!_scanWorker) {
+      _scanWorker = await Tesseract.createWorker('eng', 1, {
+        workerPath: '/app/scan/ocr/worker.min.js', corePath: '/app/scan/ocr/', langPath: '/app/scan/ocr/', workerBlobURL: false,
+        logger: function (m) { if (m.status === 'recognizing text') _scanStatus('Reading screenshot ' + (page + 1) + ' of ' + files.length + '…', ((page + m.progress) / files.length) * 100); }
+      });
+    }
+    var pages = [];
+    for (page = 0; page < files.length; page++) {
+      _scanStatus('Reading screenshot ' + (page + 1) + ' of ' + files.length + '…', (page / files.length) * 100);
+      var res = await _scanWorker.recognize(await _scanPrep(files[page]), {}, { blocks: true, text: false });
+      pages.push(_scanWords(res.data));
+    }
+    var f = DFStatementReader.read(pages);
+    var found = scanApply(f);
+    trackShare('scan_done', { _category: 'activation', pages: files.length, kind: f.kind || 'none', found: found, secs: Math.round((Date.now() - t0) / 1000) });
+    closeScan();
+  } catch (err) {
+    trackShare('scan_error', { _category: 'activation', stage: _scanWorker ? 'read' : 'load' });
+    document.getElementById('scan-intro').hidden = false;
+    document.getElementById('scan-progress').hidden = true;
+    er.textContent = navigator.onLine === false && !_scanWorker
+      ? 'The reader needs an internet connection the first time. Try again when you’re online, or type the numbers in.'
+      : 'Those screenshots couldn’t be read. Try again with the statement page itself, or type the numbers in.';
+    er.style.display = 'block';
+  }
+}
+function _scanMoney(n) { return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function _scanSet(id, v) {
+  var el = document.getElementById(id); if (!el || v == null || v === '') return false;
+  el.value = v; el.classList.add('scan-filled');
+  if (!el._scanHook) { el._scanHook = true; el.addEventListener('input', function () { el.classList.remove('scan-filled'); }); el.addEventListener('change', function () { el.classList.remove('scan-filled'); }); }
+  return true;
+}
+// Fill the add form from what the reader found. Returns how many fields it filled.
+function scanApply(f) {
+  scanClearMarks();
+  var notes = [], n = 0, money2 = function (v) { return v == null ? null : (Math.round(v * 100) / 100).toFixed(2); };
+  var TYPE = { card: 'cc', mortgage: 'mortgage', student: 'student', auto: 'auto', loan: 'personal' };
+  var noBalance = f.balance == null || !(f.balance > 0);
+  if (noBalance && (f.kind === 'bill' || (f.kind === 'auto' && f.payments))) {
+    notes.push('This looks like ' + (f.kind === 'bill' ? 'a bill' : 'a lease') + ': there’s no balance on it to pay down, so it isn’t a debt for your payoff plan. Nothing was filled in.');
+    _scanBanner('Nothing filled in', notes);
+    return 0;
+  }
+  // Name first: it drives the lender logo and type guesses the form already does.
+  if (f.lender && _scanSet('debt-name', f.lender)) { n++; _issuerTouched = false; onDebtNameInput(); }
+  if (f.kind && TYPE[f.kind]) {
+    var ty = document.getElementById('debt-type');
+    if (ty) { ty.value = TYPE[f.kind]; ty.classList.add('scan-filled'); _typeTouched = true; onDebtTypeChange('add'); n++; }
+  }
+  if (_scanSet('debt-balance', money2(f.balance))) n++;
+  var min = f.minimum;
+  if (f.kind === 'mortgage' && f.escrow > 0 && min > f.escrow) {
+    min = Math.round((min - f.escrow) * 100) / 100;
+    notes.push('Minimum set to ' + _scanMoney(min) + ': the ' + _scanMoney(f.minimum) + ' amount due minus ' + _scanMoney(f.escrow) + ' of escrow (taxes and insurance), which doesn’t pay down the loan.');
+  }
+  if (_scanSet('debt-min', money2(min))) n++;
+  if (f.dueDate && _scanSet('debt-due-day', String(+f.dueDate.slice(8, 10)))) n++;
+  if (f.kind === 'card' && _scanSet('debt-credit-limit', money2(f.creditLimit))) n++;
+  if (f.apr != null && _scanSet('debt-apr', String(f.apr))) n++;
+  if (f.promo && f.promo.until) {
+    var cb = document.getElementById('debt-has-promo');
+    if (cb && !cb.checked) { cb.checked = true; togglePromoFields(); }
+    _scanSet('debt-promo-apr', f.promo.deferred ? '0' : String(f.promo.apr));
+    _scanSet('debt-promo-end', f.promo.until);
+    if (f.apr != null) _scanSet('debt-post-promo-apr', String(f.apr));
+    var tf = document.getElementById('debt-transfer-fee'); if (tf) tf.value = '';
+    updateFeePreview(); n++;
+    notes.push('Promo rate until ' + fmtShortDate(f.promo.until) + ', applied to the whole balance. Any transfer fee is already in the statement balance, so the fee box is left empty.');
+    if (f.promo.deferred) notes.push('This is a deferred-interest promotion: if any of it is unpaid on ' + fmtShortDate(f.promo.until) + ', the card can charge the interest back to the purchase date. DebtFree models it as a plain 0% rate, so that charge isn’t in your plan.');
+  }
+  var missing = [];
+  if (f.balance == null) missing.push('balance');
+  if (f.apr == null) missing.push('interest rate (APR)');
+  if (f.minimum == null) missing.push('minimum payment');
+  if (f.dueDate == null) missing.push('due date');
+  if (missing.length) notes.push('Not found: ' + missing.join(', ') + '. Type ' + (missing.length > 1 ? 'them' : 'it') + ' in from your statement.' + (f.apr == null && f.kind === 'card' ? ' The APR is usually on the page headed Interest Charge Calculation.' : ''));
+  // Details live under More details: open it so the person sees what was filled.
+  if (f.dueDate || f.creditLimit || f.promo || f.kind !== 'card') { var am = document.getElementById('add-more'); if (am) am.open = true; }
+  _scanFilled = n > 0;
+  _scanBanner(n ? 'Filled in from your statement: please check each number' : 'Nothing could be read', notes.concat(n ? ['Filled fields have a blue outline. Fix anything that’s off, then save as usual.'] : ['Try the statement page itself (often a PDF) rather than the account screen, or type the numbers in.']));
+  var bal = document.getElementById('debt-balance'); if (bal && n) { try { bal.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }
+  return n;
+}
+function fmtShortDate(iso) { var d = new Date(iso + 'T00:00:00'); return isNaN(d) ? iso : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
+function _scanBanner(title, notes) {
+  var b = document.getElementById('scan-banner'); if (!b) return;
+  b.innerHTML = '<b>' + escapeHtml(title) + '</b>' + (notes.length ? '<ul>' + notes.map(function (t) { return '<li>' + escapeHtml(t) + '</li>'; }).join('') + '</ul>' : '');
+  b.hidden = false;
+}
+function scanClearMarks() {
+  document.querySelectorAll('.scan-filled').forEach(function (el) { el.classList.remove('scan-filled'); });
+  var b = document.getElementById('scan-banner'); if (b) { b.hidden = true; b.innerHTML = ''; }
+}
+function scanFormSaved() {
+  if (_scanFilled) trackShare('scan_saved', { _category: 'activation' });
+  _scanFilled = false;
+  scanClearMarks();
+}
+
 function addDebtFinish() {
   // v1.72.0 — first setup: no preview, no jump to Home; on to step 2.
   if (_inFirstSetup()) {

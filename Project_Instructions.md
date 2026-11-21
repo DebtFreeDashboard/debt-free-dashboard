@@ -183,6 +183,7 @@ Besides page views, the site sends:
 | `play_purchase_start`, `play_purchase_success`, `play_purchase_cancel`, `play_purchase_error` | The app (Play app only) | Google Play's purchase sheet opened, finished, was closed, or failed. Since v1.76.0 `via` says which button: `offer` (dashboard offer) or `settings` |
 | `home_calc_used` | Homepage | Someone typed in the hero calculator (once per page load) |
 | `ios_guide_open`, `ios_guide_safari`, `ios_guide_copy` | Homepage (iPhone/iPad) | The Home Screen guide opened from "Get the free app" (`location`: `hero`, `final`, `sticky`, `link`; `browser`: `safari`, `chrome`, `other`, `inapp`), "Try opening in Safari" tapped, the link copied (`ok`) |
+| `scan_open`, `scan_done`, `scan_saved`, `scan_error` | The app's Add a Debt card (v1.77.0) | Fill from statement opened (`in_setup` yes/no); screenshots read (`pages`, `kind`, `found` = fields filled, `secs`); a debt saved from a filled form; the reader failed (`stage`: `load` or `read`). Counts only, never values |
 | `es_interest` | Spanish pages | Someone tapped "Sí, la quiero en español" (wants the app in Spanish). Once per browser; `location` is `home` or the calculator slug. The Spanish pages' `calc_used`, `calc_handoff` and `arrive_from_*` carry `lang: es` and `calc_page`/`landed_on` starting `es-` / `es/` |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -376,6 +377,30 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-21 (night)** — v1.77.0 "Fill in a debt from your statement"
+  (backlog B3, Kevin's go-ahead after 9 statements, 71/71 fields). Add a Debt
+  (regular and setup step 1) shows "Have a statement? Fill from statement"
+  (`#scan-cta`). The sheet (`#scan-sheet`) gives four numbered steps (open the
+  statement itself, screenshot the balance page and the APR page, pick up to 4,
+  check every number), the privacy line and a link to the user guide's new
+  "Fill from a statement" section (`user-guide.html#fill-from-statement`, plus
+  a troubleshooting card). `openScan()` starts loading Tesseract and the reader
+  (`/app/scan/…`, `SCAN_READER_V` = 7, bump with the test page's `?v=`);
+  `runScan()` scales and reads each screenshot with a progress bar;
+  `scanApply()` only fills the form: name (lender → logo and type guesses),
+  type, balance, minimum, due day, credit limit (cards), APR, promo (0% until
+  the end date on the whole balance, APR after = purchase APR, transfer fee
+  left empty since the fee is in the statement balance). Mortgage minimum =
+  amount due − escrow. Deferred-interest promos filled as 0% with a note that
+  the plan doesn't include a charge-back. Leases and bills: nothing filled,
+  explained. Filled fields get a blue outline (`.scan-filled`, cleared on edit),
+  `#scan-banner` lists notes and anything not found, More details opens, and
+  nothing is saved until the person saves (`scanFormSaved()` from the add
+  reset clears marks). Privacy policy section added. Play Data safety:
+  unchanged (images never leave the device; new events are counts). Tests:
+  `tools/test-scan-app.js` (18, made-up statements drawn in the browser),
+  `tools/test-scan.js` (27).
 
 - **2026-11-21 (evening)** — Statement reader test (backlog B3; no app
   release). Kevin's 8 screenshots (Discover and Bank of America card
