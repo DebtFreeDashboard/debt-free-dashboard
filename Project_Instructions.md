@@ -177,6 +177,8 @@ Besides page views, the site sends:
 | `autopay_on`, `autopay_logged` | The app | Autopay turned on for a debt (`via`: `edit`, `add`, `due_check`); autopay payments logged on open (`count`) |
 | `due_check_open`, `due_check_paid` | The app's payment check ("Did these go out?") | Shown (`rows`, `via`: `open`, `notification`); a payment logged from it. Skips send `tm_skip` with `via: due_check`, notification Paid taps send `tm_log` with `via: notification` |
 | `cal_open`, `cal_added` | The app's This Month card | The calendar reminders sheet opened; reminders added (`via` is `ics` or `google`) |
+| `premium_offer_shown`, `premium_offer_dismiss` | The app's dashboard (Play app only) | The Premium offer was shown (once per launch, `debt_count`); hidden for good with Not now or × (`via`: `not_now`, `x`) |
+| `play_purchase_start`, `play_purchase_success`, `play_purchase_cancel`, `play_purchase_error` | The app (Play app only) | Google Play's purchase sheet opened, finished, was closed, or failed. Since v1.76.0 `via` says which button: `offer` (dashboard offer) or `settings` |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
 
@@ -369,6 +371,20 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-21** — v1.76.0 "Premium, easier to find". GA4 (platform=play,
+  Nov 10-20): outside Play users had a working buy button but none opened
+  Settings, the only place it lived; zero `play_purchase_start`. The
+  dashboard now shows a Premium offer card (`#premium-offer`, under the stat
+  strip) in the Play app only: once first setup is over (finished, or left
+  and come back), only while Play's buy button works, never in the example,
+  never for Premium users. Its button runs the same `buyOnPlay()` as
+  Settings, with Play's own price; Not now or × hides it for good
+  (`debtfree_play_offer`) with a toast that Premium is in Settings. No
+  Gumroad link or price in it. New events `premium_offer_shown`,
+  `premium_offer_dismiss`; `play_purchase_*` gain `via` (`offer`,
+  `settings`, already a GA4 custom dimension). No new data collected, so the
+  Play Data safety form is unchanged. Test: `node tools/test-premium-offer.js`.
 
 - **2026-11-18** — v1.74.0 "A new look" (Highlighter identity, chosen by
   Kevin 2026-11-17; options and values in the project note

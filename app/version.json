@@ -1,8 +1,8 @@
 {
-  "version": "1.75.0",
-  "releaseDate": "2026-11-19",
-  "releaseName": "Reminders, sooner",
+  "version": "1.76.0",
+  "releaseDate": "2026-11-21",
+  "releaseName": "Premium, easier to find",
   "notes": [
-    "When you set up DebtFree, you can now turn on payment reminders right under your debt-free date. Add the day each payment is due and tap Remind me. You’ll get a notification 3 days before and on the day, at 9 AM."
+    "In the Google Play app, once your plan is set up, the dashboard now shows what Premium adds and its price, with a button to buy it through Google Play. Tap Not now and it won’t come back. Premium is always in Settings, and everything you use now stays free."
   ]
 }
