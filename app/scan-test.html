@@ -59,18 +59,18 @@
 </main>
 <script src="/app/scan/ocr/tesseract.min.js"></script>
 <!-- The service worker serves scripts cache-first, so bump ?v= with every reader change. -->
-<script src="/app/scan/statement-reader.js?v=3"></script>
+<script src="/app/scan/statement-reader.js?v=7"></script>
 <script>
 (function () {
   'use strict';
   var input = document.getElementById('files'), statusEl = document.getElementById('status');
   var worker = null, last = null;
-  var LABELS = { lender: 'Lender', kind: 'Type', balance: 'Balance', minimum: 'Minimum / amount due', dueDate: 'Due date', apr: 'APR (purchases)', creditLimit: 'Credit limit', promo: 'Promo rate', statementDate: 'Statement date', payments: 'Payments made' };
-  var KIND = { card: 'Credit card', auto: 'Car loan / lease', loan: 'Loan', bill: 'Bill (no interest)' };
+  var LABELS = { lender: 'Lender', kind: 'Type', balance: 'Balance', minimum: 'Minimum / amount due', dueDate: 'Due date', apr: 'APR (purchases)', creditLimit: 'Credit limit', promo: 'Promo rate', statementDate: 'Statement date', payments: 'Payments made', escrow: 'Escrow in the amount due' };
+  var KIND = { card: 'Credit card', mortgage: 'Mortgage', student: 'Student loan', auto: 'Car loan / lease', loan: 'Loan', bill: 'Bill (no interest)' };
   function fmt(k, v) {
     if (v == null) return '— not found';
     if (k === 'kind') return KIND[v] || v;
-    if (k === 'balance' || k === 'minimum' || k === 'creditLimit') return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (k === 'balance' || k === 'minimum' || k === 'creditLimit' || k === 'escrow') return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     if (k === 'apr') return v + '%';
     if (k === 'promo') return v.apr + '% until ' + v.until + (v.deferred ? ' (deferred interest)' : '');
     if (k === 'payments') return v.made + ' of ' + v.of;
@@ -124,6 +124,7 @@
       var tb = document.getElementById('fields'); tb.innerHTML = '';
       Object.keys(LABELS).forEach(function (k) {
         if ((k === 'payments' || k === 'creditLimit' || k === 'promo' || k === 'statementDate') && f[k] == null && f.kind !== 'card') return;
+        if (k === 'escrow' && f[k] == null) return;
         var tr = document.createElement('tr');
         tr.innerHTML = '<td class="k">' + LABELS[k] + '</td><td class="v"></td><td class="m"><button type="button" data-ok="1" aria-label="Right">✓</button> <button type="button" data-ok="0" aria-label="Wrong">✗</button></td>';
         tr.querySelector('.v').textContent = fmt(k, f[k]);

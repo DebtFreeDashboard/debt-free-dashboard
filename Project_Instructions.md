@@ -417,6 +417,15 @@ Dates are Kevin's (Eastern time). Newest first.
   mark a card; statement date from "Billing Period", "Opening/Closing Date" or
   "New balance as of" (last date). 8 statements, 63/63 fields in the browser.
   Reader now `?v=3`. Record so far: each new bank needed 1–3 rule fixes.
+  Then a mortgage (Washington Savings Bank): lender, type and balance missed
+  (amount due, due date, rate, statement date right). Added: type `mortgage`
+  (and `student` by servicer names); loan balances from "Outstanding/Unpaid/
+  Current Principal (Balance)"; `escrow`, the taxes-and-insurance part of the
+  amount due (the "(Taxes/Insurance)" line first, never the escrow account
+  balance), so the real feature can use principal + interest as the payment;
+  lenders not on the list from "<Name> Savings Bank / Bank / Credit Union /
+  ..." including a logo split over two lines, minus payment-slip words
+  ("RETURN TO:"). 9 statements, 71/71 in the browser; reader `?v=7`.
 
 - **2026-11-21 (later)** — Spanish demand test (backlog D9; no app release).
   New `/es/` homepage (quick calculator, what the app does, FAQ) and three

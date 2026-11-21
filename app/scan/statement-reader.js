@@ -139,9 +139,15 @@
     var f = {};
     // "Minimum Payment Warning" is the disclosure every US card statement must print.
     f.kind = /credit (access )?(line|limit)|minimum payment warning/i.test(all) ? 'card'
+      : /mortgage|escrow/i.test(all) ? 'mortgage'
+      : /student loan|navient|nelnet|mohela|aidvantage|sallie mae|edfinancial|federal (direct|student)/i.test(all) ? 'student'
       : /vehicle|\bVIN\b|\blease\b|payments made/i.test(all) ? 'auto'
       : /\bAPR\b|annual percentage/i.test(all) ? 'loan' : 'bill';
     f.balance = find(R, /new balance( total)?:?/i, money, { not: /previous/i });
+    // Loans print what's left as a principal balance instead.
+    [/(outstanding|unpaid|current) principal( balance)?:?/i, /principal balance:?/i, /(outstanding|current|loan) balance:?/i].forEach(function (re) {
+      if (f.balance == null) f.balance = find(R, re, money, { not: /beginning|original|interest paid/i });
+    });
     f.minimum = find(R, /(total )?minimum payment( due)?/i, money, { not: /warning|only|late|if we do not/i });
     // Bills and loans: the amount due, most specific label first.
     [/total amount due/i, /please pay/i, /amount due/i, /payment amount/i, /(regular )?monthly payment/i].forEach(function (re) {
@@ -165,6 +171,14 @@
       if (!until && R[k + 1] && /expire|until|ends?\b/i.test(R[k + 1].text)) until = isoDate(R[k + 1].text);
       if (until) f.promo = { apr: pct(t), until: until, deferred: /deferred/i.test(t) };
     }
+    // Mortgages: the amount due includes escrow (taxes and insurance), which
+    // pays no debt down; kept apart so the app can use principal + interest.
+    f.escrow = null;
+    if (f.kind === 'mortgage') {
+      // The payment's escrow part first; a bare "Escrow $3,850.82" is usually the escrow account's balance.
+      f.escrow = find(R, /escrow \(taxes\/insurance\)|escrow (payment|amount|deposit)/i, money);
+      if (f.escrow == null) f.escrow = find(R, /escrow/i, money, { not: /balance|disbursed|^\W*escrow\s+\$?[\d,]+\.\d\d\s*$/i });
+    }
     var made = all.match(/payments made\s+0*(\d+)\s+of\s+0*(\d+)/i);
     f.payments = made ? { made: +made[1], of: +made[2] } : null;
     // Several names can appear ("USAA American Express Card"): the one printed
@@ -172,6 +186,36 @@
     var lender = null, most = 0;
     LENDERS.forEach(function (l) { var n = (all.match(new RegExp(l[1].source, 'gi')) || []).length; if (n > most) { most = n; lender = l; } });
     f.lender = lender ? lender[0] : null;
+    // A lender not on the list: the first name that looks like one
+    // ("Washington Savings Bank", "XYZ Federal Credit Union").
+    if (!f.lender) {
+      // Most telling ending first, so "SAVINGS BANK" beats the "Mortgage
+      // Statement" heading beside the logo. A logo often splits the name over
+      // two lines ("Washington" / "SAVINGS BANK"): then the word above it,
+      // in the same column, is the start of the name.
+      var ENDS = ['federal credit union', 'credit union', 'savings bank', 'bank', 'lending', 'servicing', 'financial', 'mortgage'];
+      var tidy = function (t) { return t.replace(/\s+/g, ' ').trim().split(' ').map(function (w) { return w.length > 3 && w === w.toUpperCase() ? w.charAt(0) + w.slice(1).toLowerCase() : w; }).join(' '); };
+      ENDS.some(function (end) {
+        var re = new RegExp('\\b' + end.replace(/ /g, '\\s+') + '\\b', 'i');
+        for (var i = 0; i < R.length; i++) {
+          var r = R[i], m = r.text.match(re); if (!m) continue;
+          var endIdx = r.text.slice(0, m.index).split(' ').filter(Boolean).length;
+          var before = r.ws.slice(Math.max(0, endIdx - 3), endIdx).map(function (w) { return w.t; }).filter(function (t) { return /^[A-Z][A-Za-z&.'-]*$/.test(t); });
+          // Payment-slip words are not part of a name ("RETURN TO: WASHINGTON ...").
+          while (before.length && /^(return|to|mail|pay|payable|remit|send|from|make|checks?)$/i.test(before[0])) before.shift();
+          if (!before.length && i > 0) {
+            var x0 = r.ws[endIdx] ? r.ws[endIdx].x : r.ws[0].x;
+            for (var j = i - 1; j >= Math.max(0, i - 3) && !before.length; j--) {
+              var cand = R[j].ws.find(function (w) { return Math.abs(w.x - x0) < Math.max(60, w.h * 3); });
+              if (cand && /^[A-Z][A-Za-z&.'-]+$/.test(cand.t)) before = [cand.t];
+            }
+          }
+          if (!before.length) continue;
+          f.lender = tidy(before.join(' ') + ' ' + m[0]); return true;
+        }
+        return false;
+      });
+    }
     return f;
   }
 

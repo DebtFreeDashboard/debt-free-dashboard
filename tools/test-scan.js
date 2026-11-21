@@ -58,6 +58,17 @@ ok('dates: numeric, short year, month name; impossible dates refused',
   ok('"Credit Access Line" is a card and its limit', h.kind === 'card' && h.creditLimit === 12000 && h.statementDate === '2026-10-26', JSON.stringify(h));
 }
 {
+  // Mortgage statement (2026-11-21).
+  const W = (t, x, y) => t.split(' ').map((s, i) => ({ x: x + i * 110, y, w: 100, h: 20, t: s }));
+  const m = R.read([[].concat(W('Riverside Mortgage Statement', 0, 50), W('Statement Date 11/16/26', 600, 80), W('SAVINGS BANK', 0, 110),
+    W('Outstanding Principal Balance $487,067.44', 0, 300), W('Interest Rate 6.125%', 0, 330), W('Escrow $3,850.82', 0, 360),
+    W('Principal $551.98', 600, 300), W('Escrow (Taxes/Insurance) $612.32', 600, 360), W('Total Amount Due $3,650.37', 600, 400),
+    W('RETURN TO: RIVERSIDE SAVINGS BANK', 0, 900))]);
+  ok('mortgage: type, principal balance, rate', m.kind === 'mortgage' && m.balance === 487067.44 && m.apr === 6.125, JSON.stringify(m));
+  ok('mortgage: escrow in the payment, not the escrow balance', m.escrow === 612.32 && m.minimum === 3650.37, 'escrow ' + m.escrow);
+  ok('a lender off the list, its name split over two logo lines', m.lender === 'Riverside Savings Bank', m.lender);
+}
+{
   const html = fs.readFileSync(path.join(ROOT, 'app/scan-test.html'), 'utf8');
   ok('test page: noindex, no analytics, OCR files served from this site',
     /noindex/.test(html) && !/googletagmanager|clarity|gtag\(/.test(html) && /corePath: '\/app\/scan\/ocr\/'/.test(html) && /langPath: '\/app\/scan\/ocr\/'/.test(html));
