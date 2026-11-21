@@ -406,6 +406,17 @@ Dates are Kevin's (Eastern time). Newest first.
   All 6 statements now 45/45 in the browser. The page loads the reader with
   `?v=`, because the service worker serves scripts cache-first: bump it with
   every reader change.
+  Later: Kevin's iPhone runs on Citi Double Cash and Chase Amazon Prime Visa
+  (first statements from banks the rules were not written on). Citi: APR,
+  promo and statement date missed, limit read as the $4,200 cash-advance line.
+  Chase: typed as a loan (no "Credit Line" wording). Fixes, all generic: a
+  value slightly off its label's line still counts; the below-lookup skips
+  lines the label excludes ("Includes ... cash"); "Standard Purch" is the
+  purchase row; a promo's end date can sit on the next line ("... Rate Expires
+  11/15/27"); "Credit Access Line" and the card-only "Minimum Payment Warning"
+  mark a card; statement date from "Billing Period", "Opening/Closing Date" or
+  "New balance as of" (last date). 8 statements, 63/63 fields in the browser.
+  Reader now `?v=3`. Record so far: each new bank needed 1–3 rule fixes.
 
 - **2026-11-21 (later)** — Spanish demand test (backlog D9; no app release).
   New `/es/` homepage (quick calculator, what the app does, FAQ) and three

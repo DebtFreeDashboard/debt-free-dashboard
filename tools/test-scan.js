@@ -41,6 +41,23 @@ ok('dates: numeric, short year, month name; impossible dates refused',
   ok('the lender printed most often wins', f.lender === 'USAA', 'lender ' + f.lender);
 }
 {
+  // Citi and Chase statements (2026-11-21).
+  const W = (t, x, y, h = 20) => t.split(' ').map((s, i) => ({ x: x + i * 90, y, w: 80, h, t: s }));
+  const citi = [].concat(W('Billing Period: 10/15/26-11/13/26', 0, 50), W('New balance as of 11/13/26: $7,731.00', 0, 100),
+    W('Credit limit', 600, 300), W('$13,700', 1100, 291), W('Includes $4,200 cash advance limit', 600, 330),
+    W('Standard Purch 21.74% (V) $0.00 (D) $0.00', 0, 500), W('BalTrnOffer 4 0.00% $7,784.33 (D) $0.00', 0, 540),
+    W('(Balance Transfer Rate Expires 11/15/27)', 0, 580), W('Minimum Payment Warning: If you make only', 0, 700));
+  const c = R.read([citi]);
+  ok('statement date: the closing day of a billing period', c.statementDate === '2026-11-13', c.statementDate);
+  ok('a value printed a little off its label\'s line still belongs to it', c.creditLimit === 13700, 'limit ' + c.creditLimit);
+  ok('"Standard Purch" is the purchase APR', c.apr === 21.74, 'apr ' + c.apr);
+  ok('promo end date on the line under the offer', JSON.stringify(c.promo) === JSON.stringify({ apr: 0, until: '2027-11-15', deferred: false }), JSON.stringify(c.promo));
+  ok('"Minimum Payment Warning" marks a credit card', c.kind === 'card', c.kind);
+  const chase = [].concat(W('Opening/Closing Date 09/27/26 - 10/26/26', 0, 50), W('Credit Access Line $12,000', 0, 100), W('Cash Access Line $2,400', 0, 150));
+  const h = R.read([chase]);
+  ok('"Credit Access Line" is a card and its limit', h.kind === 'card' && h.creditLimit === 12000 && h.statementDate === '2026-10-26', JSON.stringify(h));
+}
+{
   const html = fs.readFileSync(path.join(ROOT, 'app/scan-test.html'), 'utf8');
   ok('test page: noindex, no analytics, OCR files served from this site',
     /noindex/.test(html) && !/googletagmanager|clarity|gtag\(/.test(html) && /corePath: '\/app\/scan\/ocr\/'/.test(html) && /langPath: '\/app\/scan\/ocr\/'/.test(html));

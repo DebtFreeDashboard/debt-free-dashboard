@@ -53,6 +53,12 @@
     var mo = MONTHS.split('|').indexOf(m[4].toLowerCase().slice(0, 3)) + 1;
     return m[6] + '-' + pad(mo) + '-' + pad(+m[5]);
   }
+  // The last date in a text: a period "10/15/26-11/13/26" closes on its last day.
+  function lastDate(s) {
+    var re = new RegExp(DATE.source, 'gi'), m, last = null;
+    while ((m = re.exec(s))) last = isoDate(m[0]);
+    return last;
+  }
   function pct(s) { var m = s.match(/(\d{1,2}\.\d{1,3})\s?%/); return m ? parseFloat(m[1]) : null; }
 
   // The value for a label: the first match to its right on the same row;
@@ -92,8 +98,16 @@
       if (next && /^[A-Za-z]/.test(next.t) && !HEADER_NEXT.test(next.t) && !MONTH_WORD.test(next.t)) continue;
       var v = valueFn(r.ws.slice(b + 1).map(function (w) { return w.t; }).join(' '));
       if (v != null) { found.push(v); continue; }
-      var lx0 = r.ws[a].x, lx1 = r.ws[b].x + r.ws[b].w;
+      var lx0 = r.ws[a].x, lx1 = r.ws[b].x + r.ws[b].w, lh = r.ws[b].h;
+      // A right-aligned value printed a few pixels higher or lower than its
+      // label (Citi's "Credit limit ... $13,700") can land on the next row over.
+      var side = [R[i - 1], R[i + 1]].filter(Boolean).map(function (o) {
+        if (Math.abs(o.cy - r.cy) > lh * 1.1) return '';
+        return o.ws.filter(function (w) { return w.x > lx1; }).map(function (w) { return w.t; }).join(' ');
+      }).map(valueFn).filter(function (x) { return x != null; });
+      if (side.length) { found.push(side[0]); continue; }
       for (var j = i + 1; j < Math.min(R.length, i + 3); j++) {
+        if (opts.not && opts.not.test(R[j].text)) continue;
         var near = R[j].ws.filter(function (w) { return w.x + w.w > lx0 - 20 && w.x < lx1 + 20; }).map(function (w) { return w.t; }).join(' ');
         var v2 = valueFn(near); if (v2 != null) { found.push(v2); break; }
       }
@@ -123,7 +137,8 @@
     pages.forEach(function (ws) { R = R.concat(rows(ws.filter(function (w) { return w.t && w.t.trim(); }))); });
     var all = R.map(function (r) { return r.text; }).join('\n');
     var f = {};
-    f.kind = /credit (line|limit)/i.test(all) ? 'card'
+    // "Minimum Payment Warning" is the disclosure every US card statement must print.
+    f.kind = /credit (access )?(line|limit)|minimum payment warning/i.test(all) ? 'card'
       : /vehicle|\bVIN\b|\blease\b|payments made/i.test(all) ? 'auto'
       : /\bAPR\b|annual percentage/i.test(all) ? 'loan' : 'bill';
     f.balance = find(R, /new balance( total)?:?/i, money, { not: /previous/i });
@@ -133,13 +148,23 @@
       if (f.minimum == null) f.minimum = find(R, re, money, { not: /base monthly|past due/i });
     });
     f.dueDate = find(R, /payment due date|payment due by|amount due|due date/i, isoDate, { not: /late|warning/i });
-    f.creditLimit = find(R, /(total )?credit (line|limit)/i, money, { not: /available|cash/i });
+    f.creditLimit = find(R, /(total )?credit (access )?(line|limit)/i, money, { not: /available|cash|includes|over the/i });
     f.statementDate = find(R, /statement (closing )?date:?|closing date|statement closing/i, isoDate);
-    var purch = R.find(function (r) { return /^\W*((regular|standard|base) )?purchases?\b/i.test(r.text) && /%/.test(r.text); });
+    if (f.statementDate == null) f.statementDate = find(R, /(opening\/closing|open to close) date:?|billing period:?|statement period:?|new balance as of/i, lastDate);
+    var purch = R.find(function (r) { return /^\W*((regular|standard|base) )?purch(ases?)?\b/i.test(r.text) && /%/.test(r.text); });
     f.apr = purch ? pct(purch.text) : null;
     if (f.apr == null && f.kind !== 'card') { var anyApr = R.find(function (r) { return /\bAPR\b|interest rate|annual percentage/i.test(r.text) && /%/.test(r.text); }); f.apr = anyApr ? pct(anyApr.text) : null; }
-    var promo = R.find(function (r) { return /promotional apr|deferred interest|promo(tional)? rate/i.test(r.text) && DATE.test(r.text) && /%/.test(r.text); });
-    f.promo = promo ? { apr: pct(promo.text), until: isoDate(promo.text), deferred: /deferred/i.test(promo.text) } : null;
+    // A promo row names the offer and its rate; the end date is on the same
+    // row (BofA, Synchrony) or the line under it (Citi: "(Balance Transfer Rate
+    // Expires 11/15/27)").
+    f.promo = null;
+    for (var k = 0; k < R.length && !f.promo; k++) {
+      var t = R[k].text;
+      if (!/promotional apr|deferred interest|promo(tional)? rate|baltrn|transfer offer|offer\s*\d*\s+\d/i.test(t) || pct(t) == null) continue;
+      var until = isoDate(t);
+      if (!until && R[k + 1] && /expire|until|ends?\b/i.test(R[k + 1].text)) until = isoDate(R[k + 1].text);
+      if (until) f.promo = { apr: pct(t), until: until, deferred: /deferred/i.test(t) };
+    }
     var made = all.match(/payments made\s+0*(\d+)\s+of\s+0*(\d+)/i);
     f.payments = made ? { made: +made[1], of: +made[2] } : null;
     // Several names can appear ("USAA American Express Card"): the one printed
