@@ -517,6 +517,9 @@
   .ios-guide .ig-btn2 { display: block; text-align: center; margin-top: 10px; color: var(--ink); font-size: 0.9rem; background: none; border: 1px solid var(--border2); padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-family: var(--font-sans); text-decoration: none; }
   .ios-guide .ig-alt { display: block; text-align: center; margin-top: 14px; font-size: 0.85rem; color: var(--text-mid); }
   .ios-guide [data-ig-inapp], .ios-guide [data-ig-browser] { display: none; }
+  .ios-guide .ig-ask { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .ios-guide .ig-ask p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.45; margin: 0; }
+  .ios-guide .ig-ask[hidden] { display: none; }
   .ios-guide.inapp [data-ig-inapp], .ios-guide:not(.inapp) [data-ig-browser] { display: block; }
 
   /* ─── SECTION WRAPPER ─── */
@@ -2133,6 +2136,10 @@ if (document.readyState === 'loading') {
       </ol>
       <a class="ig-btn" href="https://mydebtdashboard.com/app/dashboard.html?from=ios_guide" data-cta-location="ios-guide">Open DebtFree &rarr;</a>
     </div>
+    <div class="ig-ask" data-ig-ask>
+      <p>Rather get DebtFree from the App Store? An iPhone App Store version is being considered.</p>
+      <button class="ig-btn2" type="button" data-ig-ask-yes>I&rsquo;d use an App Store version</button>
+    </div>
     <a class="ig-alt" href="#" data-ig-close>Not now</a>
   </div>
 </div>
@@ -2243,6 +2250,16 @@ if (document.readyState === 'loading') {
     var link = 'https://mydebtdashboard.com/?ios_install=1';
     function done(ok) { copy.textContent = ok ? 'Link copied. Paste it in Safari.' : link; track('ios_guide_copy', { ok: ok ? 'yes' : 'no', in_app: inapp || '(browser)' }); }
     try { navigator.clipboard.writeText(link).then(function () { done(true); }, function () { done(false); }); } catch (err) { done(false); }
+  });
+  /* v1.78.0: would they rather have an App Store version? One answer per
+     device (same key as the app's question, same origin); a GA count only. */
+  var ask = sheet.querySelector('[data-ig-ask]'), askYes = sheet.querySelector('[data-ig-ask-yes]');
+  var asked = null; try { asked = localStorage.getItem('debtfree_ios_ask'); } catch (e) {}
+  if (ask && asked) ask.hidden = true;
+  if (askYes) askYes.addEventListener('click', function () {
+    var before = null; try { before = localStorage.getItem('debtfree_ios_ask'); localStorage.setItem('debtfree_ios_ask', 'yes'); } catch (e) {}
+    if (!before) track('ios_app_interest', { answer: 'yes', where: 'home_guide', location: lastWhere, in_app: inapp || '(browser)' });
+    askYes.disabled = true; askYes.textContent = 'Thanks, counted.';
   });
   /* Arriving from the copied link (or ?ios_install=1): open the guide straight away. */
   try { if (/[?&]ios_install=1/.test(location.search) && !inapp) { sheet.hidden = false; track('ios_guide_open', { location: 'link', browser: browser, in_app: '(browser)' }); } } catch (e) {}

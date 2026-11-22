@@ -1,8 +1,8 @@
 {
-  "version": "1.77.0",
-  "releaseDate": "2026-11-21",
-  "releaseName": "Fill in a debt from your statement",
+  "version": "1.78.0",
+  "releaseDate": "2026-11-22",
+  "releaseName": "An App Store version?",
   "notes": [
-    "Adding a debt? Tap Fill from statement and pick screenshots of your latest statement: the page with the balance and minimum, and the page with the interest rate. DebtFree reads them right on your phone and fills in the form. Check each number before you save; anything it can’t read stays blank. Your screenshots are never uploaded or saved."
+    "On iPhone or iPad, the dashboard asks one question: would you use DebtFree from the App Store? Tap an answer or close it, and it won’t ask again. Only the answer is counted; nothing else is collected."
   ]
 }

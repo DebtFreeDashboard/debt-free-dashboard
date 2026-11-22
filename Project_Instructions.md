@@ -184,6 +184,7 @@ Besides page views, the site sends:
 | `home_calc_used` | Homepage | Someone typed in the hero calculator (once per page load) |
 | `ios_guide_open`, `ios_guide_safari`, `ios_guide_copy` | Homepage (iPhone/iPad) | The Home Screen guide opened from "Get the free app" (`location`: `hero`, `final`, `sticky`, `link`; `browser`: `safari`, `chrome`, `other`, `inapp`), "Try opening in Safari" tapped, the link copied (`ok`) |
 | `scan_open`, `scan_done`, `scan_saved`, `scan_error` | The app's Add a Debt card (v1.77.0) | Fill from statement opened (`in_setup` yes/no); screenshots read (`pages`, `kind`, `found` = fields filled, `secs`); a debt saved from a filled form; the reader failed (`stage`: `load` or `read`). Counts only, never values |
+| `ios_app_ask_shown`, `ios_app_interest` | The app's dashboard (iPhone/iPad, website only) and the homepage Home Screen guide | The App Store question was shown (`where: app`, `home_screen`, `debt_count`; once per launch); answered (`answer`: `yes`, `no`, `dismiss`; `where`: `app` or `home_guide`, plus `location` on the homepage). One answer per device (`debtfree_ios_ask`, shared by the homepage and the app) |
 | `es_interest` | Spanish pages | Someone tapped "Sí, la quiero en español" (wants the app in Spanish). Once per browser; `location` is `home` or the calculator slug. The Spanish pages' `calc_used`, `calc_handoff` and `arrive_from_*` carry `lang: es` and `calc_page`/`landed_on` starting `es-` / `es/` |
 | `arrive_from_search` | Calculator pages and hub | First page of a visit that came from a search engine. Params `landed_on` (page slug) and `source` (referrer or utm) |
 | `arrive_from_ai` | Calculator pages and hub | Same, for visits from AI assistants (ChatGPT, Perplexity, Claude, Gemini, Copilot and similar) |
@@ -377,6 +378,20 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-22** — v1.78.0 "An App Store version?" (iOS feasibility, Kevin's
+  go-ahead). GA: 39% of website visitors are on iPhone (12 of 31, Nov 15-21).
+  iPhone/iPad visitors (website only, never the Play app) now see one question
+  on the dashboard once first setup is over (`#ios-app-ask`, `renderIosAsk()`,
+  `answerIosAsk()`): "Would you use DebtFree from the App Store?" Yes / No
+  thanks / ×. The homepage Home Screen guide (`#ios-guide`) adds "I'd use an
+  App Store version" (`[data-ig-ask]`). Both share `debtfree_ios_ask`, so a
+  device answers once. Events `ios_app_ask_shown`, `ios_app_interest`; counts
+  only, nothing else collected. Measure: `ios_app_interest` answer=yes users vs
+  `ios_app_ask_shown` users. Same day: the Traction board's iOS bar now counts
+  all Play installs since launch (Kevin), split store / direct / website, and
+  the daily report records Play-vs-web engagement (GA `platform` user
+  property via Supermetrics). Tests: `tools/test-ios-ask.js` (23, needs 8911).
 
 - **2026-11-21 (night)** — v1.77.0 "Fill in a debt from your statement"
   (backlog B3, Kevin's go-ahead after 9 statements, 71/71 fields). Add a Debt

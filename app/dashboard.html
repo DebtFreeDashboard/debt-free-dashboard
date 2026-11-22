@@ -1011,6 +1011,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
   /* v1.76.0 — Premium offer, Play app only, once setup is done. */
   .po-offer { position:relative; border-left:3px solid var(--hl); }
   .po-offer[hidden] { display:none; }
+  .po-offer-actions[hidden] { display:none; }
   .po-offer-flag { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.1em; color:var(--accent); margin-bottom:8px; }
   .po-offer-title { font-weight:700; font-size:1.05rem; color:var(--text); margin-bottom:6px; padding-right:24px; }
   .po-offer-why { font-size:0.84rem; color:var(--text-muted); line-height:1.5; margin-bottom:14px; }
@@ -3502,6 +3503,20 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <div class="po-offer-msg" id="play-offer-msg" role="status"></div>
     </div>
 
+    <!-- v1.78.0 — iPhone App Store interest (backlog: iOS feasibility, Nov 22).
+         iPhone/iPad only, never in the Play app, never during setup or the
+         example. One answer per device; the answer is a GA count, nothing else. -->
+    <div class="card po-offer" id="ios-app-ask" hidden>
+      <button type="button" class="guide-hide" aria-label="Hide this question" onclick="answerIosAsk('dismiss')">&times;</button>
+      <div class="po-offer-flag">iPhone</div>
+      <div class="po-offer-title">Would you use DebtFree from the App Store?</div>
+      <div class="po-offer-why" id="ios-app-ask-why">An App Store version for iPhone is being considered. It would install in one tap, with no Add to Home Screen steps. Nothing is decided yet; your answer is just counted.</div>
+      <div class="po-offer-actions" id="ios-app-ask-actions">
+        <button type="button" class="btn btn-primary" onclick="answerIosAsk('yes')">Yes, I&rsquo;d use it</button>
+        <button type="button" class="btn btn-ghost" onclick="answerIosAsk('no')">No thanks</button>
+      </div>
+    </div>
+
     <!-- v1.42.0 — what else is due, beside where the extra is going. Dashboard
          rather than Strategy because this is a daily action, not a planning
          tool (the same split v1.30.0 applied when the budget card moved). -->
@@ -5021,7 +5036,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.77.0';
+const APP_VERSION = '1.78.0';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5029,6 +5044,15 @@ const APP_VERSION = '1.77.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.78.0',
+    date: 'November 22, 2026',
+    name: 'An App Store version?',
+    whatsNew: [
+      'On iPhone or iPad, the dashboard asks one question: would you use DebtFree from the App Store? Tap an answer or close it, and it won’t ask again. Only the answer is counted; nothing else is collected.'
+    ],
+    fixes: []
+  },
   {
     version: '1.77.0',
     date: 'November 21, 2026',
@@ -13315,6 +13339,51 @@ function dismissPremiumOffer(how) {
   trackShare('premium_offer_dismiss', { _category: 'revenue', via: how === 'x' ? 'x' : 'not_now' });
   try { _infoToast('Premium is always in Settings.'); } catch (e) {}
 }
+// v1.78.0 — would iPhone users use an App Store version? (Nov 22: 39% of web
+// visitors are on iPhone.) Asked once per device, after first setup, on the
+// website only (the Play app is Android). The answer is a GA count.
+var LS_IOS_ASK = 'debtfree_ios_ask';   // 'yes' | 'no' | 'dismiss'
+function _isAppleMobile() {
+  try {
+    var ua = navigator.userAgent || '';
+    return /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  } catch (e) { return false; }
+}
+function _iosAskDue() {
+  if (IS_PLAY_BUILD || !_isAppleMobile()) return false;
+  try { if (localStorage.getItem(LS_IOS_ASK)) return false; } catch (e) { return false; }
+  try {
+    if (_demoMode || _inFirstSetup()) return false;
+    return _activePlanDebts().length > 0;
+  } catch (e) { return false; }
+}
+function _iosStandalone() {
+  try { return !!(window.navigator.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)); } catch (e) { return false; }
+}
+var _iosAskAnswered = false;
+function renderIosAsk() {
+  var card = document.getElementById('ios-app-ask');
+  if (!card) return;
+  if (_iosAskAnswered) return;   // keep the thank-you on screen until the next launch
+  var due = _iosAskDue();
+  card.hidden = !due;
+  if (!due) return;
+  var n = 0; try { n = _activePlanDebts().length; } catch (e) {}
+  trackOnce('ios_app_ask_shown', 'ios_app_ask_shown', { _category: 'research', where: 'app', home_screen: _iosStandalone() ? 'yes' : 'no', debt_count: n });
+}
+function answerIosAsk(answer) {
+  answer = answer === 'yes' ? 'yes' : answer === 'no' ? 'no' : 'dismiss';
+  try { localStorage.setItem(LS_IOS_ASK, answer); } catch (e) {}
+  trackShare('ios_app_interest', { _category: 'research', answer: answer, where: 'app', home_screen: _iosStandalone() ? 'yes' : 'no' });
+  var card = document.getElementById('ios-app-ask');
+  if (!card) return;
+  if (answer === 'dismiss') { card.hidden = true; return; }
+  _iosAskAnswered = true;
+  var why = document.getElementById('ios-app-ask-why'), acts = document.getElementById('ios-app-ask-actions');
+  if (why) why.textContent = 'Thanks, your answer is counted.';
+  if (acts) acts.hidden = true;
+  setTimeout(function () { card.hidden = true; }, 4000);
+}
 // Re-check when the app comes back to the foreground (a refund, or a purchase
 // finished on another device), at most every 10 minutes.
 var _playLastSync = 0, _playLastRetry = 0;
@@ -14186,6 +14255,7 @@ function render() {
   applyPremiumState();     // v1.13.0 — show/hide gated features + teasers
   applyDataCardVisibility(); // v1.14.0 — cash-flow + roadmap cards/teasers
   renderPremiumOffer();      // v1.76.0 — Play app only
+  renderIosAsk();            // v1.78.0 — iPhone/iPad, website only
   // Keep What If in sync — only update if sliders are at zero to avoid disrupting active scenario
   const wiExtra = document.getElementById('wi-extra');
   const wiLump  = document.getElementById('wi-lump');
