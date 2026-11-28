@@ -1,4 +1,5 @@
-/* test-review-prompt.js — v1.55.0 Google Play review prompt
+/* test-review-prompt.js — Google Play review prompt (v1.55.0; bar lowered and
+ * recap moment added in v1.78.1: 2+ open days, 1+ payment, 30-day wait)
  *
  *   python3 -m http.server 8911     (repo root, another shell)
  *   node tools/test-review-prompt.js
@@ -35,8 +36,25 @@ const PAYS = [{ id: 11, debtId: 1, debtName: 'Card A', amount: 250, date: day(9)
       window.__opened = 0; openPlayListing = function () { window.__opened++; };
       window.__ev = []; const _ts = trackShare; trackShare = function (a, p) { window.__ev.push(a + ':' + (p && p.choice)); };
       if (modal) document.getElementById('whatsnew-modal').classList.remove('hidden');
+      if (act === 'recap' || act === 'recapShare') {
+        const _ym = (d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'))(new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1));
+        openMonthRecap(_ym, false);
+        await new Promise(r => setTimeout(r, 300));
+        if (act === 'recap') [...document.querySelectorAll('#recap-sheet button')].find(x => x.textContent.trim() === 'Done').click();
+        else { closeRecap(null, true); }
+        await new Promise(r => setTimeout(r, 1200));
+        const shownR = !!document.getElementById('review-prompt');
+        return { shown: shownR, again: false, st1: {}, opened: 0, ev: window.__ev, days: JSON.parse(localStorage.getItem('debtfree_open_days')) };
+      }
       logPaymentCore(1, 50, localDateStr());
       await new Promise(r => setTimeout(r, 2900));
+      if (act === 'celebrate') {
+        const cel = !document.getElementById('celebrate-overlay').classList.contains('hidden');
+        const before = !!document.getElementById('review-prompt');
+        [...document.querySelectorAll('#celebrate-overlay button')].find(x => x.textContent.trim() === 'Done').click();
+        await new Promise(r => setTimeout(r, 1200));
+        return { shown: cel && !before && !!document.getElementById('review-prompt'), again: false, st1: {}, opened: 0, ev: window.__ev, days: [] };
+      }
       const shown = !!document.getElementById('review-prompt');
       if (shown && act === 'later') document.getElementById('review-later').click();
       if (shown && act === 'go') document.getElementById('review-go').click();
@@ -69,23 +87,32 @@ const PAYS = [{ id: 11, debtId: 1, debtName: 'Card A', amount: 250, date: day(9)
   ck('website (not Play app): never prompts', !r.shown);
   ck('website: Settings rate button hidden', !r.rateBtn);
 
-  r = await run({ openDays: [day(10), day(2)] });
-  ck('only 2 open days (+today = 3) still OK? -> today counts', r.shown, JSON.stringify(r.days));
+  r = await run({ openDays: [day(1)] });
+  ck('opened yesterday and today (2 days): prompts', r.shown, JSON.stringify(r.days));
 
-  r = await run({ openDays: [day(10)] });
-  ck('fewer than 3 open days: no prompt', !r.shown, JSON.stringify(r.days));
+  r = await run({ openDays: [] });
+  ck('first day of use (today only): no prompt', !r.shown, JSON.stringify(r.days));
 
-  r = await run({ openDays: [day(4), day(2), day(1)] });
-  ck('first use under 7 days ago: no prompt', !r.shown);
+  r = await run({ openDays: [day(3)], pays: [], act: 'celebrate' });
+  ck('first-ever payment on a second day: asks once its celebration is closed', r.shown, JSON.stringify(r));
 
-  r = await run({ pays: [] });
-  ck('first-ever payment (fewer than 2 logged): no prompt', !r.shown);
+  r = await run({ state: { shown: 1, last: Date.now() - 20 * 864e5 } });
+  ck('asked 20 days ago: no prompt', !r.shown);
 
-  r = await run({ state: { shown: 1, last: Date.now() - 30 * 864e5 } });
-  ck('asked 30 days ago: no prompt', !r.shown);
+  r = await run({ state: { shown: 1, last: Date.now() - 31 * 864e5 } });
+  ck('asked 31 days ago: asks again', r.shown);
 
-  r = await run({ state: { shown: 1, last: Date.now() - 61 * 864e5 } });
-  ck('asked 61 days ago: asks again', r.shown);
+  r = await run({ act: 'recap' });
+  ck('closing the monthly recap (Done): prompts', r.shown, JSON.stringify(r));
+
+  r = await run({ act: 'recapShare' });
+  ck('recap closing to share: no prompt', !r.shown);
+
+  r = await run({ act: 'recap', play: false });
+  ck('website: closing the recap never prompts', !r.shown);
+
+  r = await run({ act: 'recap', openDays: [] });
+  ck('recap on the first day of use: no prompt', !r.shown);
 
   r = await run({ state: { shown: 3, last: Date.now() - 200 * 864e5 } });
   ck('already asked 3 times: never again', !r.shown);

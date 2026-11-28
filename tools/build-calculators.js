@@ -18,6 +18,8 @@ const OUTDIR = path.join(ROOT, 'calculators');
 const SITE = 'https://mydebtdashboard.com';
 const APP_VERSION = (fs.readFileSync(path.join(ROOT, 'app', 'dashboard.html'), 'utf8').match(/APP_VERSION = '([^']+)'/) || [])[1];
 const TODAY = process.env.BUILD_DATE || new Date().toISOString().slice(0, 10);
+// Date the comparison pages' facts were last checked (keep in step with CHECKED in build-compare.js).
+const COMPARE_DATE = '2026-11-28';
 
 // ── starting numbers ─────────────────────────────────────────
 const MIX = [
@@ -258,7 +260,7 @@ var kind=AI.test(ref)||AIUTM.test(utm)?'ai':(SE.test(ref)?'search':'');
 if(!kind||typeof gtag!=='function')return;
 gtag('event','arrive_from_'+kind,{event_category:'acquisition',landed_on:location.pathname.split('/').filter(Boolean).pop()||'calculators',source:ref||utm});
 }catch(e){}})();</script>`;
-const FOOTER = `<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
+const FOOTER = `<footer class="site"><a href="/">Home</a><a href="/calculators/">Calculators</a><a href="/compare/">Compare apps</a><a href="/app/dashboard.html">Dashboard</a><a href="/privacy.html">Privacy</a><div style="margin-top:10px">&copy; 2026 DebtFree Dashboard</div></footer>
 ${PLAY_SCRIPT}
 ${ARRIVAL_SCRIPT}`;
 const DISCLAIMER = `<p class="disclaimer">Estimates for illustration. The calculations assume interest is charged monthly at APR &divide; 12, payments are made on time, and no new charges are added; your lender’s figures may differ. These pages describe what the math shows and are not financial advice.</p>`;
@@ -375,13 +377,16 @@ function build() {
     { loc: SITE + '/calculators/', pri: '0.9', freq: 'monthly', mod: hubDate(all) }
   ].concat(PAGES.filter(p => all[p.slug]).map(p => ({ loc: `${SITE}/calculators/${p.slug}/`, pri: '0.8', freq: 'monthly', mod: pageDate(all, p) })))
     // Spanish pages (tools/build-es.js), listed here because this build rewrites the sitemap whole.
-    .concat(['/es/'].concat(Object.values(ES)).map(u => ({ loc: SITE + u, pri: u === '/es/' ? '0.7' : '0.6', freq: 'monthly' })));
+    .concat(['/es/'].concat(Object.values(ES)).map(u => ({ loc: SITE + u, pri: u === '/es/' ? '0.7' : '0.6', freq: 'monthly' })))
+    // Comparison pages (tools/build-compare.js, 2026-11-28). Required here, not at
+    // the top, because build-compare.js requires this file for its shared parts.
+    .concat(require('./build-compare.js').URLS.map(u => ({ loc: SITE + u, pri: u === '/compare/' ? '0.7' : '0.6', freq: 'monthly', mod: COMPARE_DATE })));
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     urls.map(u => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.mod || TODAY}</lastmod>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.pri}</priority>\n  </url>`).join('\n') + '\n</urlset>\n');
   return { pages: PAGES.length, version: APP_VERSION };
 }
 
-module.exports = { build, PAGES, GROUPS };
+module.exports = { build, PAGES, GROUPS, SITE, APP_VERSION, esc, head, NAV, FOOTER, CTA, FOUNDER };
 if (require.main === module) {
   const r = build();
   console.log(`built ${r.pages} calculator pages + hub (assets v${r.version})`);

@@ -4716,7 +4716,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
       <button class="btn btn-primary" onclick="shareShareCard()">Share my win</button>
       <button class="btn btn-ghost" onclick="downloadShareCard()">Save image</button>
     </div>
-    <button class="btn btn-ghost" style="margin-top:10px;width:100%;" onclick="closeCelebrate()">Done</button>
+    <button class="btn btn-ghost" style="margin-top:10px;width:100%;" onclick="closeCelebrate(true)">Done</button>
   </div>
 </div>
 <canvas id="share-card-canvas" style="display:none;"></canvas>
@@ -5036,7 +5036,7 @@ html.app-locked #applock-screen { display:flex; position:fixed; inset:0; z-index
 // ═══════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════
-const APP_VERSION = '1.78.0';
+const APP_VERSION = '1.78.1';
 
 // v1.7.1 -- Release notes shown in the What's New modal.
 // NEWEST RELEASE FIRST. For each release, list user-visible wins in `whatsNew`
@@ -5044,6 +5044,15 @@ const APP_VERSION = '1.78.0';
 // leave `whatsNew` empty; if the fixes aren't worth calling out specifically,
 // leave `fixes` empty (the modal will say "Stability and bug fixes").
 const RELEASE_NOTES = [
+  {
+    version: '1.78.1',
+    date: 'November 28, 2026',
+    name: 'Small fix',
+    whatsNew: [],
+    fixes: [
+      "In the Google Play app, the request for a Play review can now come a little sooner: after you’ve used DebtFree on two different days, right after you log a payment, close a win, or close your monthly recap. It still asks at most three times, waits a month after “Not now”, and stops for good once you tap “Leave a review”."
+    ]
+  },
   {
     version: '1.78.0',
     date: 'November 22, 2026',
@@ -10301,14 +10310,18 @@ function openYearReview(year, auto) {
   document.getElementById('recap-sheet').classList.remove('hidden');
   trackShare('recap_open', { _category: 'engagement', kind: 'year', auto: auto ? 'yes' : 'no' });
 }
-function closeRecap(e) {
+function closeRecap(e, toShare) {
   var m = document.getElementById('recap-sheet');
   if (!m || (e && e.target !== m)) return;
+  var wasOpen = !m.classList.contains('hidden');
   m.classList.add('hidden');
+  // v1.78.1 — a natural moment to ask for a Play review (Play app only;
+  // reviewPromptEligible decides). Not when the recap is closing to share.
+  if (wasOpen && !toShare && typeof maybeAskForReview === 'function') setTimeout(maybeAskForReview, 700);
 }
 function shareRecap() {
   if (!_recapCard) return;
-  closeRecap();
+  closeRecap(null, true);
   var c = _recapCard, overlay = document.getElementById('celebrate-overlay');
   if (!overlay) return;
   document.getElementById('celebrate-emoji').textContent = c.emoji;
@@ -11369,6 +11382,13 @@ function logPaymentCore(debtId, amount, date, note) {
 // once the user has opened the app on 3+ different days across 7+ days and
 // logged 2+ payments. "Not now" waits 60 days; at most 3 asks; any tap on
 // "Leave a review" ends it for good.
+// v1.78.1 — that bar was never reached (0 asks in three weeks of Play use;
+// ~6 active devices). Now: opened on 2+ different days and at least one
+// payment on record (autopay rows count). Two moments: right after a logged
+// payment, and when the person closes the monthly recap or year in review
+// (autopay users rarely log by hand, but the recap reaches them on the 1st).
+// "Not now" waits 30 days; still at most 3 asks, still no pre-question or
+// reward.
 var LS_OPEN_DAYS = 'debtfree_open_days';
 var LS_REVIEW_PROMPT = 'debtfree_review_prompt';
 var PLAY_LISTING_URL = 'https://play.google.com/store/apps/details?id=com.mydebtdashboard.app';
@@ -11394,14 +11414,12 @@ function reviewPromptEligible(now) {
   if (!IS_PLAY_BUILD || _demoMode || !debts.length) return false;
   var st = _reviewState();
   if (st.done || (st.shown || 0) >= 3) return false;
-  if (st.last && now - st.last < 60 * 864e5) return false;
+  if (st.last && now - st.last < 30 * 864e5) return false;
   var days = [];
   try { days = JSON.parse(localStorage.getItem(LS_OPEN_DAYS) || '[]') || []; } catch (e) {}
-  if (days.length < 3) return false;
-  var first = new Date(days[0] + 'T00:00:00').getTime();
-  if (!(now - first >= 7 * 864e5)) return false;
+  if (!Array.isArray(days) || days.length < 2) return false;
   var logged = payments.filter(function (p) { return !p.pending; }).length;
-  return logged >= 2;
+  return logged >= 1;
 }
 function maybeAskForReview() {
   var now = Date.now();
@@ -11785,10 +11803,14 @@ function shareProgress() {
   // No confetti — this is a deliberate share, not a surprise celebration.
 }
 
-function closeCelebrate() {
+function closeCelebrate(byUser) {
   const overlay = document.getElementById('celebrate-overlay');
+  const wasOpen = !!(overlay && !overlay.classList.contains('hidden'));
   if (overlay) overlay.classList.add('hidden');
   _lastCardBlob = null;
+  // v1.78.1 — a win just closed is a natural moment for the Play review ask
+  // (the ask after the payment that earned it was skipped while this showed).
+  if (byUser && wasOpen && typeof maybeAskForReview === 'function') setTimeout(maybeAskForReview, 700);
 }
 
 // Draw the shareable win card. Competence-framed, URL baked in.

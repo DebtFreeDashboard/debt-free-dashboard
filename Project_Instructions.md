@@ -90,6 +90,7 @@ handles technical execution end to end.
 | `tools/make-calc-engine.js` | Generates `calculators/assets/engine.js` from `dashboard.html` so the math never drifts |
 | `es/` | Spanish pages (demand test, backlog D9): `/es/` and three calculators under `/es/calculadoras/`. **Generated** by `tools/build-es.js` (copy lives in that file); behaviour in `es/assets/es.js`; math from `calculators/assets/engine.js`. Tests: `node tools/test-es.js` (needs the 8911 server) |
 | `app/scan-test.html`, `app/scan/` | Statement reader test page (backlog B3). Not linked, `noindex`, no analytics. `app/scan/statement-reader.js` turns OCR words into debt fields (reusable in the app); `app/scan/ocr/` is Tesseract.js 6.0.1 + core 6.0.0 (LSTM builds) + `eng` best_int data, self-hosted so nothing goes to another site (Apache-2.0, ~11 MB). Tests: `node tools/test-scan.js` (made-up statement; never commit real statements) |
+| `compare/` | Comparison pages for search (backlog D7): hub plus `undebt-it-alternative`, `debt-payoff-planner-alternative`, `debt-payoff-app-without-bank-login`. **Generated** by `tools/build-compare.js` (copy, facts and their sources live in that file). Re-check every fact about another product before changing it |
 | `sitemap.xml` | Every public page, calculators included. Add new pages here |
 | `.well-known/assetlinks.json` | Links the Play app to the site (upload + Play App Signing keys). Don't touch unless the signing key changes |
 | `tools/play-store/` | Play listing screenshots (8, light/dark) and the scripts that make them. See its README |
@@ -378,6 +379,28 @@ The app's own version history, written for users, is `RELEASE_NOTES` in
 `app/dashboard.html` (mirrored in `app/version.json`). This log adds what those
 notes don't cover: site pages, tracking, the Play listing and project setup.
 Dates are Kevin's (Eastern time). Newest first.
+
+- **2026-11-28** — v1.78.1: the Play review prompt had never fired (0
+  `review_prompt` shown in three weeks; ~6 active devices), and ratings gate
+  Google's featuring forms (Apps Innovation Corner needs 4.0+, Featuring
+  Nomination 3.0+). Now: opened on 2+ days and 1+ payment on record (autopay
+  rows count); asked after a logged payment, after closing a win
+  (`closeCelebrate(true)` from Done) or after closing the monthly recap / year
+  in review (`closeRecap`, not when it closes to share). "Not now" waits 30
+  days; still 3 asks max, no pre-question, no reward. Tests:
+  `test-review-prompt.js` (22). Same day, backlog D7: four comparison pages
+  under `/compare/` (hub, Undebt.it alternative, Debt Payoff Planner
+  alternative, debt payoff without a bank login), built by
+  `tools/build-compare.js` with facts from each product's own site or store
+  listing, checked Nov 28 (sources listed in the file), each page saying where
+  the other product is stronger. Footer link "Compare apps" on calculator pages,
+  "Compare debt apps" on the homepage; sitemap lists them (written by
+  build-calculators). Calculators rebuilt (assets v1.78.1) and engine
+  regenerated. Kevin: submit the sitemap and request indexing for the four
+  `/compare/` pages in Search Console. Same day: new Play full description
+  (debt snowball / avalanche / payoff calculator / credit card payoff / 0% APR
+  keywords; autopay, reminders, twice a month) sent for Google review; watch
+  Play search installs on the Traction board.
 
 - **2026-11-22** — v1.78.0 "An App Store version?" (iOS feasibility, Kevin's
   go-ahead). GA: 39% of website visitors are on iPhone (12 of 31, Nov 15-21).

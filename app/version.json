@@ -1,8 +1,8 @@
 {
-  "version": "1.78.0",
-  "releaseDate": "2026-11-22",
-  "releaseName": "An App Store version?",
+  "version": "1.78.1",
+  "releaseDate": "2026-11-28",
+  "releaseName": "Small fix",
   "notes": [
-    "On iPhone or iPad, the dashboard asks one question: would you use DebtFree from the App Store? Tap an answer or close it, and it won’t ask again. Only the answer is counted; nothing else is collected."
+    "In the Google Play app, the request for a Play review can now come a little sooner: after you’ve used DebtFree on two different days, right after you log a payment, close a win, or close your monthly recap. It still asks at most three times, waits a month after “Not now”, and stops for good once you tap “Leave a review”."
   ]
 }
